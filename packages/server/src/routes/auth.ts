@@ -1,5 +1,13 @@
 import { FastifyInstance } from 'fastify';
+import jwt from 'jsonwebtoken';
 import { validateInitData } from '../middleware/telegramAuth.js';
+
+/**
+ * Auth routes — Telegram initData validation → signed JWT session
+ */
+
+const JWT_SECRET = process.env.JWT_SECRET || process.env.BOT_TOKEN || 'dev-secret';
+const JWT_TTL_SECONDS = 60 * 60; // 1 hour
 
 export async function authRoutes(app: FastifyInstance) {
   /**
@@ -18,15 +26,15 @@ export async function authRoutes(app: FastifyInstance) {
       return reply.status(401).send({ error: 'Invalid initData' });
     }
 
-    // Generate simple JWT-like token (for MVP)
-    const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
-    const payload = btoa(JSON.stringify({
-      id: user.id,
-      username: user.username,
-      iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + 3600, // 1 hour
-    }));
-    const token = `${header}.${payload}.${btoa('signature_placeholder')}`;
+    const token = jwt.sign(
+      {
+        id: user.id,
+        username: user.username ?? null,
+        first_name: user.first_name,
+      },
+      JWT_SECRET,
+      { algorithm: 'HS256', expiresIn: JWT_TTL_SECONDS }
+    );
 
     return {
       token,
@@ -37,4 +45,17 @@ export async function authRoutes(app: FastifyInstance) {
       },
     };
   });
+}
+
+/**
+ * Verify a session token (used by telegramAuthHook)
+ */
+export function verifySessionToken(token: string): { id: number; username?: string; first_name?: string } | null {
+  try {
+    const payload = jwt.verify(token, JWT_SECRET, { algorithms: ['HS256'] });
+    if (typeof payload === 'string') return null;
+    return payload as { id: number; username?: string; first_name?: string };
+  } catch {
+    return null;
+  }
 }

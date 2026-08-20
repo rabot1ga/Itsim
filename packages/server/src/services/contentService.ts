@@ -1,4 +1,4 @@
-import { readFileSync } from 'fs';
+import { readFileSync, readdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -68,8 +68,7 @@ function loadAndValidate(filename: string, schema: any, data?: any): any {
 
 function loadEventFiles(): any[] {
   const eventsDir = join(CONTENT_DIR, 'events');
-  const fs = require('fs');
-  const files = fs.readdirSync(eventsDir).filter((f: string) => f.endsWith('.json'));
+  const files = readdirSync(eventsDir).filter((f: string) => f.endsWith('.json'));
   const allEvents: any[] = [];
   for (const file of files) {
     const data = JSON.parse(readFileSync(join(eventsDir, file), 'utf-8'));
@@ -83,16 +82,32 @@ function loadEventFiles(): any[] {
 function validateCrossReferences(bundle: ContentBundle) {
   const skillIds = new Set(bundle.skills.map((s: any) => s.id));
   const eventIds = new Set(bundle.events.map((e: any) => e.id));
-  const companyIds = new Set(bundle.companies.map((c: any) => c.id));
   const npcIds = new Set(bundle.npcs.map((n: any) => n.id));
+
+  // Soft skills live in PlayerState.softSkills and are valid event targets
+  const softSkillIds = new Set([
+    'communication',
+    'english',
+    'time_management',
+    'leadership',
+    'stress_resistance',
+    'public_speaking',
+  ]);
 
   // Validate skill references in events
   for (const event of bundle.events) {
     for (const choice of event.choices) {
       if (choice.effects?.skill) {
         for (const skillId of Object.keys(choice.effects.skill)) {
-          if (!skillIds.has(skillId)) {
+          if (!skillIds.has(skillId) && !softSkillIds.has(skillId)) {
             console.warn(`⚠ Event ${event.id}: unknown skill "${skillId}"`);
+          }
+        }
+      }
+      if (choice.effects?.relation) {
+        for (const npcId of Object.keys(choice.effects.relation)) {
+          if (!npcIds.has(npcId)) {
+            console.warn(`⚠ Event ${event.id}: unknown npc "${npcId}"`);
           }
         }
       }

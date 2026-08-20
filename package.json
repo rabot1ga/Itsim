@@ -11,11 +11,11 @@
     "packages/sim"
   ],
   "scripts": {
-    "dev": "concurrently \"npm run dev -w packages/server\" \"npm run dev -w packages/client\"",
-    "build": "npm run build -w packages/shared && npm run build -w packages/server && npm run build -w packages/client",
-    "test": "npm run test -w packages/shared",
-    "simulate": "tsx packages/sim/src/simulate.ts",
-    "lint": "tsc --noEmit"
+    "dev": "npm run build -w packages/shared && concurrently \"npm run dev -w packages/server\" \"npm run dev -w packages/client\" \"npm run dev -w packages/bot\"",
+    "build": "npm run build -w packages/shared && npm run build -w packages/server && npm run build -w packages/client && npm run build -w packages/bot && npm run build -w packages/sim",
+    "test": "npm run build -w packages/shared && npm run test -w packages/shared && npm run test -w packages/sim",
+    "simulate": "npm run build -w packages/shared && tsx packages/sim/src/simulate.ts",
+    "lint": "npm run build -w packages/shared && tsc -p packages/shared && tsc -p packages/server && tsc -p packages/client && tsc -p packages/bot && tsc -p packages/sim"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",

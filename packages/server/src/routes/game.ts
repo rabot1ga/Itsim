@@ -1,249 +1,857 @@
 import { FastifyInstance } from 'fastify';
 import { telegramAuthHook } from '../middleware/telegramAuth.js';
+import { getContent } from '../services/contentService.js';
+import { loadState, saveState } from '../services/gameStore.js';
 import {
   createNewPlayer,
   calculateMaxEnergy,
   calculateOfflineBankedDays,
   advanceLastTick,
   applyXp,
+  applySoftXp,
   applyMotivationDrift,
+  applyEventEffects,
+  pickEvent,
   calculateRating,
+  checkAchievements,
+  totalSkillLevels,
+  clamp,
+  GRADE_SALARIES,
+  GRADE_ENERGY,
+  GRADE_REQUIREMENTS,
+  GRADE_ORDER,
+  careerLevelIndex,
+  weeklySalary,
+  HOUSING_COSTS,
+  freelancePayment,
+  interviewChance,
+  rollInterview,
+  preScreenMatch,
+  preScreenResult,
+  type PlayerState,
+  type GameEvent,
+  type Grade,
+  type Offer,
+  type Application,
 } from '@itsim/shared';
 
-// In-memory game state storage (MVP — replace with DB)
-const gameStates = new Map<string, any>();
+/**
+ * Game routes — server-authoritative game loop.
+ * Client sends intents (actions), server computes effects.
+ */
+
+type StoredState = PlayerState & {
+  telegramId: string;
+  lastTickAt: number;
+  ratingScore: number;
+  activeEventId: string | null;
+  freelanceDoneToday: boolean;
+  lastFreelanceDay: number;
+  mainSkillId: string;
+};
+
+// Idempotent action cache: userId -> idempotencyKey -> response
+const completedActions = new Map<string, Map<string, any>>();
+
+// Energy costs for non-study actions (study costs come from balance.json xpSources)
+const EXTRA_ENERGY_COSTS: Record<string, number> = {
+  work_task: 4,
+  work_overtime: 5,
+  pet_project: 3,
+  freelance: 4,
+  rest_sleep: 0,
+  rest_walk: 1,
+  rest_bar: 2,
+  rest_hobby: 1,
+  rest_gym: 2,
+  networking: 2,
+  apply_job: 1,
+  buy_item: 0,
+  upgrade_housing: 0,
+  accept_offer: 0,
+  decline_offer: 0,
+  cancel_application: 0,
+};
+
+const GRADE_POSITIONS: Record<Grade, string> = {
+  unemployed: 'Безработный',
+  intern: 'Стажёр',
+  junior: 'Junior-разработчик',
+  middle: 'Middle-разработчик',
+  senior: 'Senior-разработчик',
+  teamlead: 'Teamlead',
+  architect: 'Архитектор',
+  cto: 'CTO',
+};
+
+function rng(): number {
+  return Math.random();
+}
+
+function eventPhaseChance(balance: any, day: number): number {
+  if (day <= 10) return balance.eventChanceOnboarding ?? 0.2;
+  if (day <= 30) return balance.eventChanceEarly ?? 0.35;
+  if (day <= 150) return balance.eventChanceMid ?? 0.28;
+  return balance.eventChanceLate ?? 0.2;
+}
+
+function fmtMoney(amount: number): string {
+  if (amount >= 1000000) return `${(amount / 1000000).toFixed(1)} млн ₽`;
+  if (amount >= 1000) return `${(amount / 1000).toFixed(0)} тыс ₽`;
+  return `${amount} ₽`;
+}
+
+/**
+ * Attach the UI message to the response state (client shows state._lastEvent)
+ */
+function respondState(state: StoredState, message?: string) {
+  return { ...state, _lastEvent: message };
+}
+
+/**
+ * Highest grade the player currently qualifies for (skill + communication + reputation)
+ */
+function targetGrade(state: PlayerState): Grade | null {
+  let best: Grade | null = null;
+  const comm = state.softSkills['communication']?.level ?? 0;
+  for (const grade of GRADE_ORDER) {
+    if (grade === 'unemployed' || grade === 'cto') continue;
+    const req = GRADE_REQUIREMENTS[grade];
+    if (totalSkillLevels(state) >= req.skill && comm >= req.comm && state.reputation >= req.rep) {
+      best = grade;
+    }
+  }
+  return best;
+}
 
 export async function gameRoutes(app: FastifyInstance) {
   // All game routes require auth
   app.addHook('preHandler', telegramAuthHook);
 
   /**
-   * GET /api/game/state
-   * Get current state + offline accrual
+   * GET /api/game/state — current state + offline energy banking
    */
-  app.get('/state', async (request, reply) => {
+  app.get('/state', async (request) => {
     const user = (request as any).telegramUser;
     const userId = String(user.id);
 
-    let state = gameStates.get(userId);
+    let state = loadState(userId) as StoredState | null;
     const isNew = !state;
-
     if (!state) {
-      state = createNewPlayer();
-      state.telegramId = userId;
-      state.lastTickAt = Date.now();
-      gameStates.set(userId, state);
+      state = { ...createNewPlayer(), telegramId: userId, lastTickAt: Date.now(), ratingScore: 0, activeEventId: null, freelanceDoneToday: false, lastFreelanceDay: 0, mainSkillId: 'javascript' } as StoredState;
     }
 
-    // Calculate offline days
+    // Offline energy banking (1 game day / 3.5 real hours, max 7 in bank)
     const banked = calculateOfflineBankedDays(state.lastTickAt, Date.now());
-    state.bankedDays = Math.min(7, state.bankedDays + banked);
     if (banked > 0) {
+      state.bankedDays = Math.min(7, state.bankedDays + banked);
       state.lastTickAt = advanceLastTick(state.lastTickAt, banked);
     }
 
-    // Recalculate max energy
     state.maxEnergy = calculateMaxEnergy(state);
+    state.ratingScore = calculateRating(state);
+
+    // Surface pending chain events even if the user missed the day roll
+    let activeEvent: GameEvent | null = null;
+    if (state.activeEventId) {
+      activeEvent = getContent().events.find((e: any) => e.id === state.activeEventId) ?? null;
+    } else {
+      const due = state.pendingEvents.find((e) => e.triggerDay <= state.currentDay);
+      if (due) {
+        const ev = getContent().events.find((e: any) => e.id === due.eventId);
+        if (ev) {
+          state.activeEventId = ev.id;
+          activeEvent = ev;
+        }
+      }
+    }
+
+    saveState(userId, state);
 
     return {
-      state,
+      state: respondState(state, isNew ? 'Добро пожаловать в IT Life Simulator! 💻' : undefined),
       isNew,
       offlineDaysEarned: banked,
+      activeEvent,
     };
   });
 
   /**
-   * POST /api/game/action
-   * Perform an action (idempotent)
+   * POST /api/game/action — perform a game action (idempotent)
    */
   app.post('/action', async (request, reply) => {
     const user = (request as any).telegramUser;
     const userId = String(user.id);
-    const { actionId, params, idempotencyKey } = request.body as any;
+    const { actionId, params, idempotencyKey } = request.body as { actionId?: string; params?: any; idempotencyKey?: string };
 
-    const state = gameStates.get(userId);
+    if (!actionId) {
+      return reply.status(400).send({ error: 'actionId required' });
+    }
+
+    const state = loadState(userId) as StoredState | null;
     if (!state) {
       return reply.status(404).send({ error: 'Game not started' });
     }
 
-    // Idempotency check (simplified)
+    // Idempotency — return the stored result for a duplicate request
     if (idempotencyKey) {
-      const existing = state._completedActions?.get?.(idempotencyKey);
-      if (existing) return { state, delta: existing.delta };
+      const cache = completedActions.get(userId);
+      const existing = cache?.get(idempotencyKey);
+      if (existing) return { state: respondState(state, existing.message), delta: existing.delta, activeEvent: null };
     }
 
-    // Validate energy
-    const energyCost = getActionEnergyCost(actionId, params);
+    const content = getContent();
+
+    // Validate costs BEFORE any mutation (idempotency-safe)
+    const energyCost = getActionEnergyCost(actionId, content);
     if (state.energy < energyCost) {
-      return reply.status(400).send({ error: 'Not enough energy' });
+      return reply.status(400).send({ error: 'Не хватает энергии — заверши день или отдохни', state: respondState(state) });
     }
 
-    // Apply action
-    const delta = applyAction(state, actionId, params);
+    const moneyCost = getActionMoneyCost(actionId, params, state, content);
+    if (moneyCost !== null && state.money < moneyCost) {
+      return reply.status(400).send({ error: 'Не хватает денег', state: respondState(state) });
+    }
 
-    // Deduct energy
+    const result = applyAction(state, actionId, params, content);
+    if (result.error) {
+      return reply.status(400).send({ error: result.error, state: respondState(state) });
+    }
+
     state.energy -= energyCost;
-    state.totalActions = (state.totalActions || 0) + 1;
+    if (moneyCost !== null) state.money -= moneyCost;
 
-    // Track idempotency
-    if (idempotencyKey) {
-      if (!state._completedActions) state._completedActions = new Map();
-      state._completedActions.set(idempotencyKey, { delta });
-    }
-
-    // Recalc rating
-    state.ratingScore = calculateRating(state);
-
-    return { state, delta };
-  });
-
-  /**
-   * POST /api/game/advance-day
-   * End current day and advance
-   */
-  app.post('/advance-day', async (request, reply) => {
-    const user = (request as any).telegramUser;
-    const userId = String(user.id);
-    const state = gameStates.get(userId);
-
-    if (!state) {
-      return reply.status(404).send({ error: 'Game not started' });
-    }
-
-    // Apply daily effects
-    const { motivation } = applyMotivationDrift(
-      state.motivation,
-      state.health,
-      state.job !== null,
-      state.job?.companyCulture?.motivationPerDay ?? 0
-    );
-    state.motivation = motivation;
-
-    // Regen energy
-    state.energy = Math.min(state.maxEnergy, state.energy + calculateMaxEnergy(state) * 0.3);
-
-    // Advance day
-    state.currentDay++;
-    state.daysSinceRegistration++;
-
-    // Check for rent
-    if (state.currentDay % 30 === 0) {
-      const housingCost = getHousingCost(state.housingLevel);
-      if (state.money >= housingCost) {
-        state.money -= housingCost;
-        state._lastEvent = `💰 Оплачено жильё: ${formatMoney(housingCost)}`;
-      } else {
-        state._lastEvent = '⚠️ Не хватило на оплату жилья!';
-      }
-    }
-
-    // Check for salary
-    if (state.job && state.currentDay % 7 === 0) {
-      const salary = Math.round(state.job.salary / 4.3);
-      state.money += salary;
-      state._lastEvent = `💰 Получена зарплата: ${formatMoney(salary)}`;
-    }
-
-    // Recalc
+    state.totalActions += 1;
     state.maxEnergy = calculateMaxEnergy(state);
     state.ratingScore = calculateRating(state);
+    saveState(userId, state);
 
-    return { state };
+    const response = { state: respondState(state, result.message), delta: result.delta, activeEvent: null };
+    if (idempotencyKey) {
+      if (!completedActions.has(userId)) completedActions.set(userId, new Map());
+      completedActions.get(userId)!.set(idempotencyKey, { delta: result.delta, message: result.message });
+    }
+    return response;
   });
 
   /**
-   * POST /api/game/event-choice
-   * Make a choice in an event
+   * POST /api/game/advance-day — end current day, apply daily effects
+   */
+  app.post('/advance-day', async (request) => {
+    const user = (request as any).telegramUser;
+    const userId = String(user.id);
+
+    const state = loadState(userId) as StoredState | null;
+    if (!state) {
+      return { error: 'Game not started' };
+    }
+
+    const messages: string[] = [];
+    const content = getContent();
+
+    advanceDay(state, content, messages);
+
+    // Event roll
+    const event = maybeTriggerEvent(state, content);
+    if (event) {
+      messages.push(`📢 ${event.title}`);
+    }
+
+    // Achievements
+    const earned = checkAchievements(state, content.achievements);
+    for (const a of earned) {
+      messages.push(`🏆 Достижение: ${a.icon} ${a.name} — ${a.description}`);
+    }
+
+    saveState(userId, state);
+
+    return {
+      state: respondState(state, messages.length > 0 ? messages.join('\n') : undefined),
+      messages,
+      activeEvent: event,
+    };
+  });
+
+  /**
+   * POST /api/game/event-choice — resolve an event choice
    */
   app.post('/event-choice', async (request, reply) => {
     const user = (request as any).telegramUser;
     const userId = String(user.id);
-    const { eventId, choiceIndex } = request.body as any;
+    const { eventId, choiceIndex } = request.body as { eventId?: string; choiceIndex?: number };
 
-    const state = gameStates.get(userId);
+    const state = loadState(userId) as StoredState | null;
     if (!state) return reply.status(404).send({ error: 'Game not started' });
 
-    // Simplified event handling
-    state._lastChoice = { eventId, choiceIndex };
+    if (!eventId || choiceIndex === undefined) {
+      return reply.status(400).send({ error: 'eventId and choiceIndex required' });
+    }
+    if (state.activeEventId !== eventId) {
+      return reply.status(400).send({ error: 'Это событие уже не активно' });
+    }
 
-    return { state };
+    const content = getContent();
+    const event = content.events.find((e: any) => e.id === eventId);
+    if (!event) return reply.status(404).send({ error: 'Событие не найдено' });
+
+    const choice = event.choices[choiceIndex];
+    if (!choice) return reply.status(400).send({ error: 'Некорректный выбор' });
+
+    // Requirement gates (energy/money/skills/relations)
+    const req = choice.requires;
+    if (req) {
+      if (req.energy && state.energy < req.energy) {
+        return reply.status(400).send({ error: 'Не хватает энергии для этого выбора' });
+      }
+      if (req.money && state.money < req.money) {
+        return reply.status(400).send({ error: 'Не хватает денег для этого выбора' });
+      }
+      if (req.skill) {
+        for (const [skillId, level] of Object.entries(req.skill as Record<string, number>)) {
+          if ((state.skills[skillId]?.level ?? 0) < level) {
+            return reply.status(400).send({ error: 'Недостаточно навыков для этого выбора' });
+          }
+        }
+      }
+      if (req.minRelation) {
+        for (const [npcId, rel] of Object.entries(req.minRelation as Record<string, number>)) {
+          if ((state.relationships[npcId] ?? 0) < rel) {
+            return reply.status(400).send({ error: 'Отношения недостаточно хорошие для этого выбора' });
+          }
+        }
+      }
+    }
+
+    // Apply effects (returns a new state object)
+    const updated = applyEventEffects(state, choice);
+    Object.assign(state, updated);
+
+    // Event bookkeeping
+    const hist = state.eventHistory[eventId] ?? { lastDay: 0, count: 0 };
+    state.eventHistory = { ...state.eventHistory, [eventId]: { lastDay: state.currentDay, count: hist.count + 1 } };
+    state.recentEventTags = [...state.recentEventTags, ...(event.tags ?? [])].slice(-6);
+    state.activeEventId = null;
+
+    // Chain events
+    if (choice.chain && rng() < (choice.chain.chance ?? 1)) {
+      state.pendingEvents = [
+        ...state.pendingEvents.filter((e) => e.eventId !== choice.chain!.eventId),
+        { eventId: choice.chain!.eventId, triggerDay: state.currentDay + choice.chain!.afterDays },
+      ];
+    }
+
+    const earned = checkAchievements(state, content.achievements);
+    const followup = choice.followup ?? '';
+    const extra = earned.map((a) => `🏆 Достижение: ${a.icon} ${a.name}`).join('\n');
+    const message = [followup, extra].filter(Boolean).join('\n') || undefined;
+
+    state.maxEnergy = calculateMaxEnergy(state);
+    state.ratingScore = calculateRating(state);
+    saveState(userId, state);
+
+    return {
+      state: respondState(state, message),
+      followup,
+      activeEvent: null,
+      achievements: earned,
+    };
+  });
+
+  /**
+   * POST /api/game/reset — start over (dev convenience)
+   */
+  app.post('/reset', async (request) => {
+    const user = (request as any).telegramUser;
+    const userId = String(user.id);
+    const state = { ...createNewPlayer(), telegramId: userId, lastTickAt: Date.now(), ratingScore: 0, activeEventId: null, freelanceDoneToday: false, lastFreelanceDay: 0, mainSkillId: 'javascript' } as StoredState;
+    saveState(userId, state);
+    return { state: respondState(state, 'Новая жизнь началась! 💻'), activeEvent: null };
   });
 }
 
-// Helper functions
-function getActionEnergyCost(actionId: string, params?: any): number {
-  const costs: Record<string, number> = {
-    study_youtube: 2,
-    study_book: 1,
-    study_stepik: 2,
-    study_course: 3,
-    study_advanced_course: 3,
-    study_mentor: 3,
-    work_task: 4,
-    pet_project: 3,
-    freelance_work: 4,
-    rest_sleep: 0,
-    rest_walk: 1,
-    rest_bar: 2,
-    rest_hobby: 1,
-    networking: 2,
-  };
-  return costs[actionId] ?? 2;
+// ---------------------------------------------------------------------------
+// Action helpers
+// ---------------------------------------------------------------------------
+
+function getActionEnergyCost(actionId: string, content: any): number {
+  if (actionId.startsWith('study_')) {
+    return content.balance.xpSources?.[actionId]?.energy ?? 2;
+  }
+  if (actionId === 'networking') {
+    return content.balance.networking?.energy ?? EXTRA_ENERGY_COSTS.networking;
+  }
+  return EXTRA_ENERGY_COSTS[actionId] ?? 1;
 }
 
-function applyAction(state: any, actionId: string, params?: any): any {
+function getActionMoneyCost(actionId: string, params: any, state: PlayerState, content: any): number | null {
+  switch (actionId) {
+    case 'study_book':
+    case 'study_stepik':
+    case 'study_course':
+    case 'study_advanced_course':
+    case 'study_mentor':
+      return content.balance.xpSources?.[actionId]?.cost ?? 0;
+    case 'rest_bar':
+      return 2000;
+    case 'rest_gym':
+      return 3000;
+    case 'buy_item': {
+      const item = content.items.find((i: any) => i.id === params?.itemId);
+      return item ? item.price : null;
+    }
+    case 'upgrade_housing': {
+      const next = state.housingLevel + 1;
+      if (next > 4) return null;
+      return HOUSING_COSTS[next] ?? null;
+    }
+    default:
+      return null;
+  }
+}
+
+interface ActionResult {
+  error?: string;
+  message?: string;
+  delta?: Record<string, any>;
+}
+
+function applyAction(state: StoredState, actionId: string, params: any, content: any): ActionResult {
   const delta: Record<string, any> = {};
 
+  // ---- Study actions ----
   if (actionId.startsWith('study_')) {
-    const xpGain = getStudyXp(actionId);
-    const skillId = params?.skillId || 'javascript';
-    const currentSkill = state.skills[skillId] || { level: 0, xp: 0 };
-    const result = applyXp(currentSkill, xpGain, state.motivation);
-    state.skills[skillId] = result;
-    delta.skills = { [skillId]: { from: currentSkill.level, to: result.level } };
-    state.money -= (params?.cost || 0);
-    delta.money = -(params?.cost || 0);
+    const source = content.balance.xpSources?.[actionId];
+    if (!source) return { error: 'Неизвестное действие' };
+
+    const skillId = params?.skillId || state.mainSkillId || 'javascript';
+    if (source.maxLevel && (state.skills[skillId]?.level ?? 0) >= source.maxLevel) {
+      return { error: 'Этот источник знаний больше ничего не даёт — пора переходить на следующий уровень' };
+    }
+
+    state.mainSkillId = skillId;
+    const current = state.skills[skillId] ?? { level: 0, xp: 0 };
+    const next = applyXp(current, source.xp ?? 6, state.motivation);
+    state.skills = { ...state.skills, [skillId]: next };
+    delta.skills = { [skillId]: { from: current.level, to: next.level } };
+    delta.money = -(source.cost ?? 0);
+
+    const leveled = next.level > current.level ? ` (${current.level} → ${next.level})` : '';
+    return { message: `📚 Учёба: ${skillId}${leveled}`, delta };
   }
 
-  if (actionId === 'pet_project') {
-    const skillId = params?.skillId || 'javascript';
-    const currentSkill = state.skills[skillId] || { level: 0, xp: 0 };
-    const result = applyXp(currentSkill, 12, state.motivation);
-    state.skills[skillId] = result;
-    delta.skills = { [skillId]: { from: currentSkill.level, to: result.level } };
-    // Pet project gives reputation too
-    state.reputation = Math.min(100, (state.reputation || 0) + 0.5);
-    delta.reputation = 0.5;
-  }
+  switch (actionId) {
+    // ---- Work ----
+    case 'work_task': {
+      if (!state.job) return { error: 'У тебя нет работы. Сначала откликнись на вакансию в разделе «Карьера»' };
+      const learningMult = state.job.companyCulture?.learningMult ?? 1;
+      const skillId = state.mainSkillId;
+      const current = state.skills[skillId] ?? { level: 0, xp: 0 };
+      const next = applyXp(current, Math.round(8 * learningMult), state.motivation);
+      state.skills = { ...state.skills, [skillId]: next };
+      state.job.daysWorked += 1;
+      state.motivation = clamp(state.motivation - 1, 0, 100);
+      delta.skills = { [skillId]: { from: current.level, to: next.level } };
+      return { message: '💼 Закрыл рабочие задачи. Ретроспектива отменена, все свободны' };
+    }
 
-  if (actionId === 'rest_bar' || actionId === 'rest_walk' || actionId === 'rest_hobby') {
-    const motGain = { rest_bar: 12, rest_walk: 8, rest_hobby: 10, rest_sleep: 15 };
-    state.motivation = Math.min(100, (state.motivation || 50) + (motGain[actionId] || 5));
-    delta.motivation = motGain[actionId] || 5;
-  }
+    case 'work_overtime': {
+      if (!state.job) return { error: 'У тебя нет работы' };
+      const skillId = state.mainSkillId;
+      const current = state.skills[skillId] ?? { level: 0, xp: 0 };
+      const next = applyXp(current, 10, state.motivation);
+      state.skills = { ...state.skills, [skillId]: next };
+      const bonus = Math.round(weeklySalary(state.job.salary) * 0.2);
+      state.money += bonus;
+      state.motivation = clamp(state.motivation - 4, 0, 100);
+      state.health = clamp(state.health - 1, 0, 100);
+      state.job.daysWorked += 1;
+      delta.money = bonus;
+      delta.skills = { [skillId]: { from: current.level, to: next.level } };
+      return { message: `🌙 Переработка. Начальник доволен (+${fmtMoney(bonus)}), спина — нет` };
+    }
 
-  return delta;
+    case 'pet_project': {
+      const skillId = state.mainSkillId;
+      const current = state.skills[skillId] ?? { level: 0, xp: 0 };
+      const next = applyXp(current, 12, state.motivation);
+      state.skills = { ...state.skills, [skillId]: next };
+      state.reputation = clamp(state.reputation + 0.5, 0, 100);
+      delta.reputation = 0.5;
+      delta.skills = { [skillId]: { from: current.level, to: next.level } };
+      return { message: '🚀 Пет-проект: ещё один TODO-трекер в портфолио. Репутация растёт' };
+    }
+
+    // ---- Freelance ----
+    case 'freelance': {
+      if (state.freelanceDoneToday) return { error: 'Сегодня уже был фриланс-заказ. Заказчики спят' };
+      const skillId = state.mainSkillId;
+      const level = state.skills[skillId]?.level ?? 0;
+      if (level < 3) return { error: 'Слишком мало опыта для фриланса — покачай навыки' };
+      const difficulty = level < 25 ? 'easy' : level < 50 ? 'medium' : 'hard';
+      const cooldown = { easy: 3, medium: 5, hard: 7 }[difficulty];
+      if (state.lastFreelanceDay !== undefined && state.currentDay - state.lastFreelanceDay < cooldown) {
+        return { error: 'Заказчики пока не вернулись с новыми проектами. Попробуй позже' };
+      }
+      const payment = freelancePayment(level, state.reputation, difficulty);
+      state.money += payment;
+      state.freelanceDoneToday = true;
+      state.lastFreelanceDay = state.currentDay;
+      const current = state.skills[skillId] ?? { level: 0, xp: 0 };
+      const next = applyXp(current, 5, state.motivation);
+      state.skills = { ...state.skills, [skillId]: next };
+      state.reputation = clamp(state.reputation + 0.2, 0, 100);
+      delta.money = payment;
+      return { message: `🛠 Фриланс-заказ выполнен: +${fmtMoney(payment)}. Отзыв: «всё ок, но правки уже в личке»` };
+    }
+
+    // ---- Rest ----
+    case 'rest_sleep':
+      state.motivation = clamp(state.motivation + 15, 0, 100);
+      state.health = clamp(state.health + 2, 0, 100);
+      delta.motivation = 15;
+      delta.health = 2;
+      return { message: '😴 Поспал как человек. Или как айтишник: 10 часов' };
+
+    case 'rest_walk':
+      state.motivation = clamp(state.motivation + 8, 0, 100);
+      state.health = clamp(state.health + 1, 0, 100);
+      delta.motivation = 8;
+      delta.health = 1;
+      return { message: '🚶 Прогулка. Впервые за неделю увидел солнце' };
+
+    case 'rest_bar':
+      state.motivation = clamp(state.motivation + 12, 0, 100);
+      delta.motivation = 12;
+      return { message: '🍺 Бар с друзьями: обсудили дженерики, легаси и почему всё горит' };
+
+    case 'rest_hobby':
+      state.motivation = clamp(state.motivation + 10, 0, 100);
+      delta.motivation = 10;
+      return { message: '🎮 Хобби-вечер. Да, сборка лего — это тоже хобби' };
+
+    case 'rest_gym':
+      state.health = clamp(state.health + 3, 0, 100);
+      state.motivation = clamp(state.motivation + 2, 0, 100);
+      delta.health = 3;
+      delta.motivation = 2;
+      return { message: '🏋️ Качалка. Мышцы болят, зато деплой не страшен' };
+
+    // ---- Social ----
+    case 'networking': {
+      const net = content.balance.networking ?? { commXp: 5, repGain: 0.5, energy: 2 };
+      const comm = state.softSkills['communication'] ?? { level: 0, xp: 0 };
+      state.softSkills = { ...state.softSkills, communication: applySoftXp(comm, net.commXp) };
+      state.reputation = clamp(state.reputation + net.repGain, 0, 100);
+      delta.reputation = net.repGain;
+      const npcs = content.npcs as any[];
+      if (npcs.length > 0 && rng() < 0.3) {
+        const npc = npcs[Math.floor(rng() * npcs.length)];
+        state.relationships = { ...state.relationships, [npc.id]: clamp((state.relationships[npc.id] ?? 0) + 2, -100, 100) };
+        return { message: `🤝 Митап: новые знакомства (+${npc.name} в контактах). Доклад был скучный, пицца — нет` };
+      }
+      return { message: '🤝 Митап: раздал визитки, собрал 40 стикеров. Репутация растёт' };
+    }
+
+    // ---- Career ----
+    case 'apply_job': {
+      if (state.job) return { error: 'У тебя уже есть работа. Сначала уволься... то есть дойди до выгорания' };
+      if (state.currentApplication && ['pending', 'interview_scheduled'].includes(state.currentApplication.status)) {
+        return { error: 'У тебя уже есть активный отклик. Дождись результата' };
+      }
+
+      const companyId = params?.companyId;
+      const company = (content.companies as any[]).find((c) => c.id === companyId);
+      if (!company) return { error: 'Компания не найдена' };
+
+      const english = state.softSkills['english']?.level ?? 0;
+      if (english < (company.requiresEnglish ?? 0)) {
+        return { error: `Нужен английский ${company.requiresEnglish}+. Твой уровень: ${english}. Качай язык!` };
+      }
+
+      const grade = targetGrade(state);
+      if (!grade) {
+        return { error: 'Пока рано откликаться — подтяни навыки (18+ суммарно) и коммуникацию' };
+      }
+
+      const req = GRADE_REQUIREMENTS[grade];
+      const skillId = state.mainSkillId;
+      const requirements = { [skillId]: req.skill };
+      const matchScore = preScreenMatch(
+        Object.fromEntries(Object.entries(state.skills).map(([k, v]) => [k, v.level])),
+        requirements
+      );
+      const screen = preScreenResult(matchScore);
+
+      const application: Application = {
+        companyId,
+        position: GRADE_POSITIONS[grade],
+        grade,
+        status: screen.passed ? 'interview_scheduled' : 'rejected',
+        matchScore,
+        interviewDay: state.currentDay + 2,
+        requirements,
+        result: screen.passed ? undefined : 'rejected',
+      };
+      state.currentApplication = application;
+      delta.application = application;
+
+      if (!screen.passed) {
+        return { message: `📄 ${company.name}: ${screen.msg}`, delta };
+      }
+      return { message: `📄 Отклик в «${company.name}» отправлен. ${screen.msg} Собеседование через 2 дня` };
+    }
+
+    case 'cancel_application': {
+      if (!state.currentApplication) return { error: 'Нет активного отклика' };
+      state.currentApplication = null;
+      return { message: 'Отклик отозван. Заказчики кармы плакали' };
+    }
+
+    case 'accept_offer': {
+      const offer = state.pendingOffers.find((o) => o.companyId === params?.companyId);
+      if (!offer) return { error: 'Оффер не найден или истёк' };
+      const company = (content.companies as any[]).find((c) => c.id === offer.companyId);
+      if (!company) return { error: 'Компания не найдена' };
+
+      state.job = {
+        companyId: offer.companyId,
+        position: offer.position,
+        grade: offer.grade,
+        salary: offer.salary,
+        energyPerDay: GRADE_ENERGY[offer.grade],
+        daysWorked: 0,
+        daysSinceLastPromotion: 0,
+        companyCulture: company.culture,
+      };
+      state.grade = offer.grade;
+      state.pendingOffers = [];
+      state.currentApplication = null;
+      delta.job = state.job;
+
+      return { message: `🎉 Ты принят в «${company.name}» на позицию ${offer.position}! Зарплата: ${fmtMoney(offer.salary)}/мес` };
+    }
+
+    case 'decline_offer': {
+      const before = state.pendingOffers.length;
+      state.pendingOffers = state.pendingOffers.filter((o) => o.companyId !== params?.companyId);
+      if (state.pendingOffers.length === before) return { error: 'Оффер не найден' };
+      return { message: 'Оффер отклонён. HR переживёт... наверное' };
+    }
+
+    // ---- Shop ----
+    case 'buy_item': {
+      const item = (content.items as any[]).find((i) => i.id === params?.itemId);
+      if (!item) return { error: 'Предмет не найден' };
+      if (state.items.includes(item.id)) return { error: 'Уже куплено' };
+      state.items = [...state.items, item.id];
+      state.maxEnergy = calculateMaxEnergy(state);
+      delta.items = [...state.items];
+      return { message: `🛒 Куплено: ${item.name}` };
+    }
+
+    case 'upgrade_housing': {
+      const next = (state.housingLevel + 1) as 0 | 1 | 2 | 3 | 4;
+      if (next > 4) return { error: 'Лучше уже некуда. Это пентхаус, Карл' };
+      const cost = HOUSING_COSTS[next];
+      if (state.money < cost) return { error: 'Не хватает денег на переезд' };
+      state.housingLevel = next;
+      state.maxEnergy = calculateMaxEnergy(state);
+      delta.housingLevel = next;
+      return { message: `🏠 Переезд: новый уровень жилья ${next}. Запах картонных коробок — запах свободы` };
+    }
+
+    default:
+      return { error: 'Неизвестное действие' };
+  }
 }
 
-function getStudyXp(actionId: string): number {
-  const xpValues: Record<string, number> = {
-    study_youtube: 6,
-    study_book: 10,
-    study_stepik: 14,
-    study_course: 22,
-    study_advanced_course: 30,
-    study_mentor: 38,
+// ---------------------------------------------------------------------------
+// Day cycle
+// ---------------------------------------------------------------------------
+
+function advanceDay(state: StoredState, content: any, messages: string[]) {
+  const company = state.job
+    ? (content.companies as any[]).find((c: any) => c.id === state.job!.companyId)
+    : null;
+  const culture = company?.culture ?? null;
+
+  // 1. Motivation drift + burnout
+  const drift = applyMotivationDrift(
+    state.motivation,
+    state.health,
+    state.job !== null,
+    culture?.motivationPerDay ?? 0
+  );
+  state.motivation = drift.motivation;
+  if (state.motivation <= 0) {
+    state.burnoutDays += 1;
+    if (state.burnoutDays === 3) {
+      messages.push('🔥 Ты на грани выгорания. Срочно отдохни!');
+    }
+  } else if (state.motivation >= 50) {
+    state.burnoutDays = 0;
+  }
+
+  // 2. Health drift
+  state.health = clamp(state.health + (culture?.healthPerDay ?? 0), 0, 100);
+
+  // 3. Day counter
+  state.currentDay += 1;
+  state.daysSinceRegistration += 1;
+
+  // 4. Job: work day, layoff risk, warnings, promotion
+  if (state.job) {
+    state.job.daysWorked += 1;
+    state.job.daysSinceLastPromotion += 1;
+
+    if (state.jobWarnings >= 3) {
+      messages.push(`💀 Три предупреждения — тебя уволили из ${company?.name ?? 'компании'}. Свобода!`);
+      state.job = null;
+    } else if (company && rng() < (company.culture?.layoffRisk ?? 0)) {
+      messages.push(`📉 Сокращение в «${company.name}». Ты в списке. Рынок, держись!`);
+      state.job = null;
+    } else if (state.job.daysSinceLastPromotion >= 7) {
+      tryPromote(state, company, messages);
+    }
+  }
+
+  // 5. Weekly salary
+  if (state.job && state.currentDay % 7 === 0) {
+    const salary = weeklySalary(state.job.salary);
+    state.money += salary;
+    messages.push(`💰 Зарплата: +${fmtMoney(salary)}`);
+  }
+
+  // 6. Monthly rent
+  if (state.currentDay % 30 === 0) {
+    const cost = HOUSING_COSTS[state.housingLevel] ?? 0;
+    if (state.money >= cost) {
+      state.money -= cost;
+      messages.push(`🏠 Оплачено жильё: ${fmtMoney(cost)}`);
+    } else {
+      state.money = 0;
+      state.motivation = clamp(state.motivation - 8, 0, 100);
+      messages.push(`⚠️ Не хватило денег на жильё (${fmtMoney(cost)}). Мотивация упала. Срочно нужен доход!`);
+    }
+  }
+
+  // 7. Interview resolution
+  const app = state.currentApplication;
+  if (app && app.status === 'interview_scheduled' && state.currentDay >= app.interviewDay) {
+    resolveInterview(state, app, content, messages);
+  }
+
+  // 8. Offer expiry
+  for (const offer of state.pendingOffers) {
+    offer.expiresInDays -= 1;
+  }
+  const expired = state.pendingOffers.filter((o) => o.expiresInDays <= 0);
+  if (expired.length > 0) {
+    state.pendingOffers = state.pendingOffers.filter((o) => o.expiresInDays > 0);
+    messages.push(`⏳ Оффер${expired.length > 1 ? 'ы' : ''} истек${expired.length > 1 ? 'ли' : ''}: ${expired.map((o) => o.position).join(', ')}`);
+  }
+
+  // 9. Daily reset
+  state.freelanceDoneToday = false;
+
+  // 10. Recalc
+  state.maxEnergy = calculateMaxEnergy(state);
+  state.energy = Math.min(state.maxEnergy, state.energy + Math.floor(state.maxEnergy * 0.5));
+  state.ratingScore = calculateRating(state);
+}
+
+function tryPromote(state: StoredState, company: any, messages: string[]) {
+  const idx = careerLevelIndex(state.job!.grade);
+  const next = GRADE_ORDER[idx + 1];
+  if (!next || next === 'cto') return;
+
+  const req = GRADE_REQUIREMENTS[next];
+  const comm = state.softSkills['communication']?.level ?? 0;
+  if (totalSkillLevels(state) < req.skill || comm < req.comm || state.reputation < req.rep) return;
+
+  const salaryMult = company?.salaryMult ?? 1;
+  const newSalary = Math.round((GRADE_SALARIES[next] * salaryMult) / 1000) * 1000;
+  state.job = {
+    ...state.job!,
+    position: GRADE_POSITIONS[next],
+    grade: next,
+    salary: newSalary,
+    daysSinceLastPromotion: 0,
   };
-  return xpValues[actionId] ?? 6;
+  state.grade = next;
+  messages.push(`🚀 Повышение! Теперь ты ${GRADE_POSITIONS[next]} (${fmtMoney(newSalary)}/мес). Поздравляем, тебя ждёт ещё больше созвонов`);
 }
 
-function getHousingCost(level: number): number {
-  const costs = [5000, 25000, 50000, 40000, 150000];
-  return costs[level] ?? 5000;
+function resolveInterview(state: StoredState, app: Application, content: any, messages: string[]) {
+  const company = (content.companies as any[]).find((c: any) => c.id === app.companyId);
+  if (!company) {
+    state.currentApplication = null;
+    return;
+  }
+
+  const skillLevels = Object.fromEntries(Object.entries(state.skills).map(([k, v]) => [k, v.level]));
+  const communication = state.softSkills['communication']?.level ?? 0;
+  const answerScore = 0.6 + rng() * 0.4; // mini-game result, 0.6..1.0
+
+  const chance = interviewChance({
+    skills: skillLevels,
+    requirements: app.requirements,
+    communication,
+    reputation: state.reputation,
+    companyBar: company.interviewBar ?? 1,
+    answerScore,
+  });
+
+  const passed = rollInterview(chance, rng);
+
+  if (passed) {
+    const salary = Math.round((GRADE_SALARIES[app.grade] * (company.salaryMult ?? 1)) / 1000) * 1000;
+    const offer: Offer = {
+      companyId: company.id,
+      position: app.position,
+      grade: app.grade,
+      salary,
+      requirements: app.requirements,
+      expiresInDays: 5,
+      interviewBar: company.interviewBar ?? 1,
+      companyToxicity: company.toxicity ?? 0,
+    };
+    state.pendingOffers = [...state.pendingOffers, offer];
+    app.status = 'accepted';
+    app.result = 'accepted';
+    messages.push(`🎉 Собеседование в «${company.name}» пройдено! Оффер: ${app.position}, ${fmtMoney(salary)}/мес. Действует 5 дней — принять в «Карьере»`);
+  } else {
+    app.status = 'rejected';
+    app.result = 'rejected';
+    messages.push(`😔 «${company.name}»: мы впечатлены вашим резюме, но решили двигаться с другим кандидатом. Не расстраивайся — попробуй ещё раз через пару дней`);
+  }
 }
 
-function formatMoney(amount: number): string {
-  if (amount >= 1000000) return `${(amount / 1000000).toFixed(1)} млн ₽`;
-  if (amount >= 1000) return `${(amount / 1000).toFixed(0)} тыс ₽`;
-  return `${amount} ₽`;
+// ---------------------------------------------------------------------------
+// Events
+// ---------------------------------------------------------------------------
+
+function maybeTriggerEvent(state: StoredState, content: any): GameEvent | null {
+  // Pending chain events have absolute priority
+  const dueIndex = state.pendingEvents.findIndex((e) => e.triggerDay <= state.currentDay);
+  if (dueIndex >= 0) {
+    const [due] = state.pendingEvents.splice(dueIndex, 1);
+    const event = (content.events as any[]).find((e) => e.id === due.eventId);
+    if (event) {
+      state.activeEventId = event.id;
+      return event;
+    }
+  }
+
+  // Random event roll
+  const chance = eventPhaseChance(content.balance, state.currentDay);
+  if (rng() < chance) {
+    const event = pickEvent(state, content.events, rng);
+    if (event) {
+      state.activeEventId = event.id;
+      return event;
+    }
+  }
+
+  return null;
 }

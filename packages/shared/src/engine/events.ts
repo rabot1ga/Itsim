@@ -1,5 +1,16 @@
 import { PlayerState, GameEvent, EventChoice } from '../types';
 import { clamp, weightedPick } from './utils';
+import { applyXp, applySoftXp } from './skills';
+
+/** Soft skills that live in PlayerState.softSkills (not .skills) */
+const SOFT_SKILL_IDS = new Set([
+  'communication',
+  'english',
+  'time_management',
+  'leadership',
+  'stress_resistance',
+  'public_speaking',
+]);
 
 /**
  * Event engine — sections 9.2, 9.4
@@ -91,8 +102,10 @@ export function pickEvent(
     if (event) return event;
   }
 
-  // 2. Filter eligible events
+  // 2. Filter eligible events (chain-only events are excluded from the random pool)
   const eligible = pool.filter(e => {
+    if (e.chainOnly) return false;
+
     const hist = p.eventHistory[e.id];
     const lastDay = hist?.lastDay ?? -999;
     const count = hist?.count ?? 0;
@@ -121,7 +134,8 @@ export function pickEvent(
 }
 
 /**
- * Apply event effects to player state
+ * Apply event effects to player state.
+ * Returns a NEW state object (shallow copy) — the caller must use the result.
  */
 export function applyEventEffects(
   p: PlayerState,
@@ -130,7 +144,7 @@ export function applyEventEffects(
   const e = choice.effects;
   if (!e) return p;
 
-  const next = { ...p };
+  const next: PlayerState = { ...p };
 
   // Apply numeric effects
   if (e.energy !== undefined) next.energy = clamp(next.energy + e.energy, 0, next.maxEnergy);
@@ -140,16 +154,18 @@ export function applyEventEffects(
   if (e.reputation !== undefined) next.reputation = clamp(next.reputation + e.reputation, 0, 100);
   if (e.karma !== undefined) { /* karma is tracking only, no gameplay effect yet */ }
 
-  // Skill effects
+  // Skill effects — XP goes through the normal leveling curve
   if (e.skill) {
     next.skills = { ...next.skills };
-    for (const [skillId, xp] of Object.entries(e.skill)) {
-      const current = next.skills[skillId] ?? { level: 0, xp: 0 };
-      // Simple XP addition for events
-      next.skills[skillId] = {
-        level: current.level,
-        xp: current.xp + xp * 10, // events give significant XP
-      };
+    next.softSkills = { ...next.softSkills };
+    for (const [skillId, rawXp] of Object.entries(e.skill)) {
+      if (SOFT_SKILL_IDS.has(skillId)) {
+        const current = next.softSkills[skillId] ?? { level: 0, xp: 0 };
+        next.softSkills[skillId] = applySoftXp(current, rawXp);
+      } else {
+        const current = next.skills[skillId] ?? { level: 0, xp: 0 };
+        next.skills[skillId] = applyXp(current, rawXp, next.motivation);
+      }
     }
   }
 
@@ -165,6 +181,11 @@ export function applyEventEffects(
   // Job warnings
   if (e.jobWarnings !== undefined) {
     next.jobWarnings = (next.jobWarnings ?? 0) + e.jobWarnings;
+  }
+
+  // Burnout days
+  if (e.burnoutDays !== undefined) {
+    next.burnoutDays = Math.max(0, (next.burnoutDays ?? 0) + e.burnoutDays);
   }
 
   return next;

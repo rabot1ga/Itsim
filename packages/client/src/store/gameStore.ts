@@ -2,22 +2,48 @@ import { create } from 'zustand';
 
 export type Screen = 'menu' | 'game' | 'loading';
 
+const API_BASE = '/api';
+
+// Auth: keep the Telegram initData + session token for subsequent requests
+let authInitData: string | null = null;
+let sessionToken: string | null = null;
+
+async function api(path: string, init: RequestInit = {}): Promise<{ ok: boolean; status: number; data: any }> {
+  const headers: Record<string, string> = {
+    Authorization: sessionToken ? `Bearer ${sessionToken}` : authInitData ? `tma ${authInitData}` : '',
+    ...(init.headers as Record<string, string> | undefined),
+  };
+  // Only send Content-Type when there is a body (Fastify rejects empty JSON bodies)
+  if (init.body) headers['Content-Type'] = 'application/json';
+
+  const res = await fetch(`${API_BASE}${path}`, {
+    ...init,
+    headers,
+  });
+  const data = await res.json().catch(() => ({}));
+  return { ok: res.ok, status: res.status, data };
+}
+
 interface GameState {
   initialized: boolean;
   screen: Screen;
   player: any;
   currentView: string;
   error: string | null;
+  activeEvent: any;
 
   // Actions
   initGame: (initData: string) => Promise<void>;
   setScreen: (screen: Screen) => void;
   setView: (view: string) => void;
-  performAction: (actionId: string, params?: any) => Promise<void>;
+  performAction: (actionId: string, params?: any) => Promise<boolean>;
   advanceDay: () => Promise<void>;
+  chooseEvent: (eventId: string, choiceIndex: number) => Promise<void>;
+  applyToCompany: (companyId: string) => Promise<boolean>;
+  acceptOffer: (companyId: string) => Promise<boolean>;
+  declineOffer: (companyId: string) => Promise<boolean>;
+  clearError: () => void;
 }
-
-const API_BASE = '/api';
 
 export const useGameStore = create<GameState>((set, get) => ({
   initialized: false,
@@ -25,35 +51,37 @@ export const useGameStore = create<GameState>((set, get) => ({
   player: null,
   currentView: 'main',
   error: null,
+  activeEvent: null,
 
   initGame: async (initData: string) => {
     try {
-      // Auth
-      const authRes = await fetch(`${API_BASE}/auth/telegram`, {
+      authInitData = initData;
+
+      // 1. Auth: validate initData, get session token
+      const auth = await api('/auth/telegram', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ initData }),
       });
-      const auth = await authRes.json();
-
-      if (!authRes.ok) {
-        throw new Error(auth.error || 'Auth failed');
+      if (!auth.ok) {
+        throw new Error(auth.data?.error || 'Auth failed');
       }
+      sessionToken = auth.data.token;
 
-      // Get game state
-      const stateRes = await fetch(`${API_BASE}/game/state`, {
-        headers: { Authorization: `tma ${initData}` },
-      });
-      const gameData = await stateRes.json();
+      // 2. Load game state
+      const stateRes = await api('/game/state');
+      if (!stateRes.ok) {
+        throw new Error(stateRes.data?.error || 'Failed to load game state');
+      }
 
       set({
         initialized: true,
-        player: gameData.state,
-        screen: gameData.isNew ? 'game' : 'menu',
+        player: stateRes.data.state,
+        activeEvent: stateRes.data.activeEvent ?? null,
+        screen: stateRes.data.isNew ? 'game' : 'menu',
       });
     } catch (err: any) {
       console.error('Init error:', err);
-      // For demo: show menu anyway
+      // For demo/dev: show menu anyway
       set({
         initialized: true,
         screen: 'menu',
@@ -76,51 +104,78 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   setScreen: (screen) => set({ screen }),
   setView: (view) => set({ currentView: view }),
+  clearError: () => set({ error: null }),
 
   performAction: async (actionId, params) => {
     const { player } = get();
-    if (!player) return;
+    if (!player) return false;
 
     try {
-      const res = await fetch(`${API_BASE}/game/action`, {
+      const res = await api('/game/action', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'tma mock',
-        },
         body: JSON.stringify({
           actionId,
           params,
-          idempotencyKey: crypto.randomUUID(),
+          idempotencyKey: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
         }),
       });
-      const data = await res.json();
-      if (data.state) {
-        set({ player: data.state });
+      if (res.data?.state) {
+        set({ player: res.data.state, activeEvent: res.data.activeEvent ?? null, error: null });
       }
+      if (!res.ok) {
+        set({ error: res.data?.error || 'Действие не выполнено' });
+        return false;
+      }
+      return true;
     } catch (err) {
       console.error('Action error:', err);
+      set({ error: 'Сервер недоступен' });
+      return false;
     }
   },
 
   advanceDay: async () => {
-    const { player } = get();
-    if (!player) return;
-
     try {
-      const res = await fetch(`${API_BASE}/game/advance-day`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: 'tma mock',
-        },
-      });
-      const data = await res.json();
-      if (data.state) {
-        set({ player: data.state });
+      const res = await api('/game/advance-day', { method: 'POST' });
+      if (res.data?.state) {
+        set({ player: res.data.state, activeEvent: res.data.activeEvent ?? null, error: null });
+      }
+      if (!res.ok) {
+        set({ error: res.data?.error || 'Не удалось завершить день' });
       }
     } catch (err) {
       console.error('Advance day error:', err);
+      set({ error: 'Сервер недоступен' });
     }
+  },
+
+  chooseEvent: async (eventId, choiceIndex) => {
+    try {
+      const res = await api('/game/event-choice', {
+        method: 'POST',
+        body: JSON.stringify({ eventId, choiceIndex }),
+      });
+      if (res.data?.state) {
+        set({ player: res.data.state, activeEvent: null, error: null });
+      }
+      if (!res.ok) {
+        set({ error: res.data?.error || 'Выбор не принят' });
+      }
+    } catch (err) {
+      console.error('Event choice error:', err);
+      set({ error: 'Сервер недоступен' });
+    }
+  },
+
+  applyToCompany: async (companyId) => {
+    return await get().performAction('apply_job', { companyId });
+  },
+
+  acceptOffer: async (companyId) => {
+    return await get().performAction('accept_offer', { companyId });
+  },
+
+  declineOffer: async (companyId) => {
+    return await get().performAction('decline_offer', { companyId });
   },
 }));

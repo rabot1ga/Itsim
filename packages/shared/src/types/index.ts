@@ -88,6 +88,7 @@ export interface PlayerJob {
   energyPerDay: number;
   daysWorked: number;
   daysSinceLastPromotion: number;
+  companyCulture?: CompanyCulture;
 }
 
 export interface Offer {
@@ -104,9 +105,11 @@ export interface Offer {
 export interface Application {
   companyId: CompanyId;
   position: string;
+  grade: Grade;
   status: 'pending' | 'interview_scheduled' | 'rejected' | 'accepted';
   matchScore: number;
   interviewDay: number;
+  requirements: Record<SkillId, number>;
   answerScore?: number;
   resultDay?: number;
   result?: 'accepted' | 'rejected';
@@ -212,6 +215,7 @@ export interface GameEvent {
   maxOccurrences?: number;
   minGameDay?: number;
   conditions?: EventConditions;
+  chainOnly?: boolean;
   choices: EventChoice[];
 }
 

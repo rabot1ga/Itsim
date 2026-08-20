@@ -11,28 +11,36 @@ const ACTIONS = [
   { id: 'study_book', icon: '📖', name: 'Читать книгу', energy: 1, cost: 1500, category: 'study' },
   { id: 'study_stepik', icon: '🎓', name: 'Stepik курс', energy: 2, cost: 2000, category: 'study' },
   { id: 'study_course', icon: '💻', name: 'Платный курс', energy: 3, cost: 15000, category: 'study' },
-  
+
   // Work actions
   { id: 'work_task', icon: '💼', name: 'Рабочая задача', energy: 4, cost: 0, category: 'work' },
+  { id: 'work_overtime', icon: '🌙', name: 'Переработка', energy: 5, cost: 0, category: 'work' },
   { id: 'pet_project', icon: '🚀', name: 'Пет-проект', energy: 3, cost: 0, category: 'work' },
-  
+  { id: 'freelance', icon: '🛠', name: 'Фриланс-заказ', energy: 4, cost: 0, category: 'work' },
+
   // Rest actions
   { id: 'rest_sleep', icon: '😴', name: 'Поспать', energy: 0, cost: 0, category: 'rest' },
   { id: 'rest_walk', icon: '🚶', name: 'Прогулка', energy: 1, cost: 0, category: 'rest' },
-  { id: 'rest_bar', icon: '🍺', name: 'Бар с друзьями', energy: 1, cost: 2000, category: 'rest' },
+  { id: 'rest_bar', icon: '🍺', name: 'Бар с друзьями', energy: 2, cost: 2000, category: 'rest' },
   { id: 'rest_hobby', icon: '🎮', name: 'Хобби', energy: 1, cost: 0, category: 'rest' },
-  
+  { id: 'rest_gym', icon: '🏋️', name: 'Качалка', energy: 2, cost: 3000, category: 'rest' },
+
   // Social
   { id: 'networking', icon: '🤝', name: 'Нетворкинг', energy: 2, cost: 0, category: 'social' },
 ];
 
 export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
-  const { player, performAction } = useGameStore();
+  const player = useGameStore((s) => s.player);
+  const activeEvent = useGameStore((s) => s.activeEvent);
+  const error = useGameStore((s) => s.error);
+  const clearError = useGameStore((s) => s.clearError);
+  const performAction = useGameStore((s) => s.performAction);
+  const chooseEvent = useGameStore((s) => s.chooseEvent);
 
   if (!player) return null;
 
   const handleAction = (actionId: string) => {
-    performAction(actionId, { skillId: 'javascript' });
+    performAction(actionId, { skillId: player.mainSkillId || 'javascript' });
   };
 
   const canAct = (energy: number) => player.energy >= energy;
@@ -40,16 +48,43 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
 
   const categories = [
     { id: 'study', label: '📚 Учёба', actions: ACTIONS.filter(a => a.category === 'study') },
-    { id: 'work', label: '💼 Работа', actions: ACTIONS.filter(a => a.category === 'work') },
+    { id: 'work', label: '💼 Работа и проекты', actions: ACTIONS.filter(a => a.category === 'work') },
     { id: 'rest', label: '😌 Отдых', actions: ACTIONS.filter(a => a.category === 'rest') },
     { id: 'social', label: '🤝 Социальное', actions: ACTIONS.filter(a => a.category === 'social') },
   ];
 
   return (
     <div className="space-y-4 animate-fade-in">
+      {/* Active event */}
+      {activeEvent && (
+        <div className="game-card border-amber-500/40 bg-amber-500/5">
+          <p className="text-sm font-bold text-amber-300 mb-1">{activeEvent.title}</p>
+          <p className="text-sm text-slate-300 mb-3">{activeEvent.description}</p>
+          <div className="space-y-2">
+            {activeEvent.choices.map((choice: any, i: number) => (
+              <button
+                key={i}
+                onClick={() => chooseEvent(activeEvent.id, i)}
+                className="w-full text-left px-3 py-2 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 hover:border-amber-500/50 rounded-lg text-sm text-slate-200 transition-colors"
+              >
+                {choice.text}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Error toast */}
+      {error && (
+        <div className="game-card border-red-500/40 bg-red-500/10 cursor-pointer" onClick={clearError}>
+          <p className="text-sm text-red-300">⚠️ {error}</p>
+          <p className="text-xs text-slate-500 mt-0.5">Нажми, чтобы скрыть</p>
+        </div>
+      )}
+
       {/* Event notification area */}
       {player._lastEvent && (
-        <div className="game-card border-primary-500/30 bg-primary-500/5">
+        <div className="game-card border-primary-500/30 bg-primary-500/5 whitespace-pre-line">
           <p className="text-sm text-slate-300">{player._lastEvent}</p>
         </div>
       )}

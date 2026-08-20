@@ -70,6 +70,9 @@ export const EventSchema = z.object({
   maxOccurrences: z.number().int().positive().optional(),
   minGameDay: z.number().int().min(0).default(0),
   conditions: EventConditionsSchema.optional(),
+  // Chain-only events never enter the random pool — they trigger
+  // exclusively through `chain` references of other events
+  chainOnly: z.boolean().default(false),
   choices: z.array(EventChoiceSchema).min(2).max(4),
 });
 
@@ -219,6 +222,13 @@ export const BalanceSchema = z.object({
     cost: z.number().default(0),
     maxLevel: z.number().default(100),
   })),
+
+  // Networking tuning (communication XP, reputation gain, energy cost)
+  networking: z.object({
+    commXp: z.number().default(5),
+    repGain: z.number().default(0.5),
+    energy: z.number().default(2),
+  }).default({ commXp: 5, repGain: 0.5, energy: 2 }),
 
   // Event frequency
   eventChanceOnboarding: z.number().default(0.20),

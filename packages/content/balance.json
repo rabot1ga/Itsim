@@ -18,7 +18,7 @@
   "motivationMultSlope": 0.006,
   "xpSources": {
     "study_youtube": { "xp": 6, "energy": 2, "cost": 0, "maxLevel": 40 },
-    "study_book": { "xp": 10, "energy": 1, "cost": 1500, "maxLevel": 60 },
+    "study_book": { "xp": 12, "energy": 1, "cost": 1500, "maxLevel": 60 },
     "study_stepik": { "xp": 14, "energy": 2, "cost": 2000, "maxLevel": 70 },
     "study_course": { "xp": 22, "energy": 3, "cost": 15000, "maxLevel": 82 },
     "study_advanced_course": { "xp": 30, "energy": 3, "cost": 60000, "maxLevel": 92 },
@@ -27,6 +27,7 @@
     "pet_project": { "xp": 12, "energy": 3, "cost": 0, "maxLevel": 100 },
     "freelance_work": { "xp": 5, "energy": 4, "cost": 0, "maxLevel": 100 }
   },
+  "networking": { "commXp": 10, "repGain": 0.5, "energy": 1 },
   "eventChanceOnboarding": 0.20,
   "eventChanceEarly": 0.35,
   "eventChanceMid": 0.28,
