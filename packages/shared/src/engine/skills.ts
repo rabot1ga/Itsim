@@ -77,20 +77,30 @@ export function canLearnSkill(
 }
 
 /**
- * Check if player qualifies for a perk
+ * Check if player qualifies for a perk.
+ * `branchOf` maps skillId → branch (from content); without it the
+ * legacy id-prefix heuristic is used as a fallback.
  */
 export function canUnlockPerk(
   p: PlayerState,
-  requires: Record<string, number>
+  requires: Record<string, number>,
+  branchOf?: Record<string, string>
 ): boolean {
   for (const [key, requiredLevel] of Object.entries(requires)) {
     // Check if it's a branch requirement like "frontendBranch"
     if (key.endsWith('Branch')) {
       const branchName = key.replace('Branch', '');
-      // Sum skill levels in the branch
-      const branchSkills = Object.entries(p.skills)
-        .filter(([k]) => k.startsWith(branchName) || k === branchName);
-      const total = branchSkills.reduce((sum, [, v]) => sum + v.level, 0);
+      let total = 0;
+      if (branchOf) {
+        total = Object.entries(p.skills)
+          .filter(([skillId]) => branchOf[skillId] === branchName)
+          .reduce((sum, [, v]) => sum + v.level, 0);
+      } else {
+        // Legacy fallback: sum skill levels whose ids match the branch prefix
+        total = Object.entries(p.skills)
+          .filter(([skillId]) => skillId.startsWith(branchName) || skillId === branchName)
+          .reduce((sum, [, v]) => sum + v.level, 0);
+      }
       if (total < requiredLevel) return false;
     } else if (key === 'communication' || key === 'leadership' || key === 'english' ||
                key === 'stress_resistance' || key === 'time_management' || key === 'public_speaking') {

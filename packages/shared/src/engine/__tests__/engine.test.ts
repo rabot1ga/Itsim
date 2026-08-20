@@ -493,3 +493,35 @@ describe('mining', () => {
     expect(electricitySaveOfItems(['solar1', 'solar2'], defs)).toBe(0.9);
   });
 });
+
+// ---- Perks (branch requirements, energy bonus) ----
+
+import { canUnlockPerk, calculateMaxEnergy } from '../../index';
+
+describe('perks', () => {
+  it('branch requirements resolve via the branch map (not id prefixes)', () => {
+    const p = createNewPlayer();
+    p.skills = {
+      solidity: { level: 20, xp: 0 },
+      web3: { level: 20, xp: 0 },
+      // ids do NOT start with "blockchain" — old heuristic would fail
+    };
+    const branchOf = { solidity: 'blockchain', web3: 'blockchain' };
+    expect(canUnlockPerk(p, { blockchainBranch: 40 }, branchOf)).toBe(true);
+    expect(canUnlockPerk(p, { blockchainBranch: 41 }, branchOf)).toBe(false);
+  });
+
+  it('perk energy bonus raises max energy and stays clamped', () => {
+    const p = createNewPlayer();
+    expect(calculateMaxEnergy(p)).toBe(10);
+    expect(calculateMaxEnergy(p, 1)).toBe(11);
+    expect(calculateMaxEnergy(p, 100)).toBeLessThanOrEqual(16);
+  });
+
+  it('soft skill requirements are checked against softSkills', () => {
+    const p = createNewPlayer();
+    p.softSkills['communication'] = { level: 22, xp: 0 };
+    expect(canUnlockPerk(p, { communication: 20 })).toBe(true);
+    expect(canUnlockPerk(p, { communication: 25 })).toBe(false);
+  });
+});

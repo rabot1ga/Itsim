@@ -30,6 +30,8 @@ import {
   preScreenResult,
   generatePlayerSeed,
   getGeneticTraits,
+  canLearnSkill,
+  canUnlockPerk,
   miningDailyIncome,
   hashrateOfItems,
   electricitySaveOfItems,
@@ -78,6 +80,9 @@ const EXTRA_ENERGY_COSTS: Record<string, number> = {
   accept_offer: 0,
   decline_offer: 0,
   cancel_application: 0,
+  study_english: 2,
+  study_english_course: 3,
+  use_banked_day: 0,
 };
 
 const GRADE_POSITIONS: Record<Grade, string> = {
@@ -128,13 +133,14 @@ function respondState(state: StoredState, message?: string) {
 /**
  * Highest grade the player currently qualifies for (skill + communication + reputation)
  */
-function targetGrade(state: PlayerState): Grade | null {
+function targetGrade(state: StoredState, content: any): Grade | null {
   let best: Grade | null = null;
   const comm = state.softSkills['communication']?.level ?? 0;
+  const discount = Math.min(0.5, perkEffectSum(state, content, 'jobRequirementDiscount'));
   for (const grade of GRADE_ORDER) {
     if (grade === 'unemployed' || grade === 'cto') continue;
     const req = GRADE_REQUIREMENTS[grade];
-    if (totalSkillLevels(state) >= req.skill && comm >= req.comm && state.reputation >= req.rep) {
+    if (totalSkillLevels(state) >= req.skill * (1 - discount) && comm >= req.comm && state.reputation >= req.rep) {
       best = grade;
     }
   }
@@ -172,7 +178,7 @@ export async function gameRoutes(app: FastifyInstance) {
       state.lastTickAt = advanceLastTick(state.lastTickAt, banked);
     }
 
-    state.maxEnergy = calculateMaxEnergy(state);
+    state.maxEnergy = recalcMaxEnergy(state, getContent());
     state.ratingScore = calculateRating(state);
 
     // Surface pending chain events even if the user missed the day roll
@@ -247,7 +253,7 @@ export async function gameRoutes(app: FastifyInstance) {
     if (moneyCost !== null) state.money -= moneyCost;
 
     state.totalActions += 1;
-    state.maxEnergy = calculateMaxEnergy(state);
+    state.maxEnergy = recalcMaxEnergy(state, content);
     state.ratingScore = calculateRating(state);
     saveState(userId, state);
 
@@ -380,7 +386,7 @@ export async function gameRoutes(app: FastifyInstance) {
     const extra = earned.map((a) => `🏆 Достижение: ${a.icon} ${a.name}`).join('\n');
     const message = [followup, extra].filter(Boolean).join('\n') || undefined;
 
-    state.maxEnergy = calculateMaxEnergy(state);
+    state.maxEnergy = recalcMaxEnergy(state, content);
     state.ratingScore = calculateRating(state);
     saveState(userId, state);
 
@@ -390,6 +396,70 @@ export async function gameRoutes(app: FastifyInstance) {
       activeEvent: null,
       achievements: earned,
     };
+  });
+
+  /**
+   * POST /api/game/unlock-perk
+   * Unlock a perk when its requirements are met
+   */
+  app.post('/unlock-perk', async (request, reply) => {
+    const user = (request as any).telegramUser;
+    const userId = String(user.id);
+    const { perkId } = request.body as { perkId?: string };
+
+    const state = loadState(userId) as StoredState | null;
+    if (!state) return reply.status(404).send({ error: 'Game not started' });
+
+    const content = getContent();
+    const perk = (content.perks as any[]).find((p) => p.id === perkId);
+    if (!perk) return reply.status(404).send({ error: 'Перк не найден' });
+    if (state.perks.includes(perk.id)) {
+      return reply.status(400).send({ error: 'Перк уже открыт' });
+    }
+
+    // branchOf map from content so branch requirements work for any branch
+    const branchOf: Record<string, string> = {};
+    for (const skill of content.skills as any[]) {
+      branchOf[skill.id] = skill.branch;
+    }
+
+    if (!canUnlockPerk(state, perk.requires, branchOf)) {
+      return reply.status(400).send({ error: `Не выполнены требования: ${describePerkRequires(perk.requires, content)}` });
+    }
+
+    state.perks = [...state.perks, perk.id];
+    state.maxEnergy = recalcMaxEnergy(state, content);
+    state.ratingScore = calculateRating(state);
+    saveState(userId, state);
+
+    return { state: respondState(state, `✨ Перк открыт: ${perk.name} — ${perk.flavor}`) };
+  });
+
+  /**
+   * POST /api/game/main-skill
+   * Set the skill that study/work actions train
+   */
+  app.post('/main-skill', async (request, reply) => {
+    const user = (request as any).telegramUser;
+    const userId = String(user.id);
+    const { skillId } = request.body as { skillId?: string };
+
+    const state = loadState(userId) as StoredState | null;
+    if (!state) return reply.status(404).send({ error: 'Game not started' });
+
+    const content = getContent();
+    const skill = (content.skills as any[]).find((s) => s.id === skillId);
+    if (!skill) return reply.status(404).send({ error: 'Навык не найден' });
+    if (!canLearnSkill(state, skill)) {
+      const parentReq = Object.entries(skill.unlockAt ?? {})
+        .map(([pid, lvl]) => `${pid} ${lvl}+`)
+        .join(', ');
+      return reply.status(400).send({ error: `Навык «${skill.name}» заблокирован. Нужно: ${parentReq}` });
+    }
+
+    state.mainSkillId = skill.id;
+    saveState(userId, state);
+    return { state: respondState(state, `🎯 Основной навык: ${skill.name}`) };
   });
 
   /**
@@ -403,6 +473,62 @@ export async function gameRoutes(app: FastifyInstance) {
     saveState(userId, state);
     return { state: respondState(state, 'Новая жизнь началась! 💻'), activeEvent: null };
   });
+}
+
+/**
+ * Total energy bonus from owned perks
+ */
+function perkEnergyBonus(state: StoredState, content: any): number {
+  let bonus = 0;
+  for (const perk of content.perks as any[]) {
+    if (state.perks.includes(perk.id)) bonus += perk.effects?.energyBonus ?? 0;
+  }
+  return bonus;
+}
+
+/**
+ * Recalculate max energy including owned perk bonuses
+ */
+function recalcMaxEnergy(state: StoredState, content: any): number {
+  return calculateMaxEnergy(state, perkEnergyBonus(state, content));
+}
+
+/**
+ * Effective motivation for XP gains (learning perks boost it)
+ */
+function xpMotivation(state: StoredState, content: any): number {
+  const learning = perkEffectSum(state, content, 'learningBonus');
+  return state.motivation + Math.round(learning / 0.006); // 0.15 → +25
+}
+
+/**
+ * Human-readable perk requirements (e.g. "Frontend 40+")
+ */
+function describePerkRequires(requires: Record<string, number>, content: any): string {
+  const skillName = (id: string) => (content.skills as any[]).find((s) => s.id === id)?.name ?? id;
+  const softNames: Record<string, string> = {
+    communication: 'Коммуникация',
+    english: 'Английский',
+    time_management: 'Тайм-менеджмент',
+    leadership: 'Лидерство',
+    stress_resistance: 'Стрессоустойчивость',
+    public_speaking: 'Выступления',
+  };
+  const branchNames: Record<string, string> = {
+    frontend: 'Frontend', backend: 'Backend', mobile: 'Mobile', qa: 'QA',
+    devops: 'DevOps', ai_ml: 'AI/ML', cybersec: 'Кибербез',
+    gamedev: 'GameDev', blockchain: 'Blockchain',
+  };
+  return Object.entries(requires)
+    .map(([key, lvl]) => {
+      if (key.endsWith('Branch')) {
+        const branch = key.replace('Branch', '');
+        return `${branchNames[branch] ?? branch}: ${lvl}`;
+      }
+      if (softNames[key]) return `${softNames[key]}: ${lvl}`;
+      return `${skillName(key)}: ${lvl}`;
+    })
+    .join(', ');
 }
 
 /**
@@ -469,6 +595,8 @@ function getActionMoneyCost(actionId: string, params: any, state: PlayerState, c
       return 2000;
     case 'rest_gym':
       return 3000;
+    case 'study_english_course':
+      return 3000;
     case 'buy_item': {
       const item = content.items.find((i: any) => i.id === params?.itemId);
       return item ? item.price : null;
@@ -492,19 +620,31 @@ interface ActionResult {
 function applyAction(state: StoredState, actionId: string, params: any, content: any): ActionResult {
   const delta: Record<string, any> = {};
 
-  // ---- Study actions ----
-  if (actionId.startsWith('study_')) {
+  // ---- Study actions (hard skills from balance.xpSources) ----
+  const isHardSkillStudy = actionId.startsWith('study_') && actionId !== 'study_english' && actionId !== 'study_english_course';
+  if (isHardSkillStudy) {
     const source = content.balance.xpSources?.[actionId];
     if (!source) return { error: 'Неизвестное действие' };
 
     const skillId = params?.skillId || state.mainSkillId || 'javascript';
+
+    // Skill-tree gating: locked skills cannot be trained
+    const skillDef = (content.skills as any[]).find((s) => s.id === skillId);
+    if (!skillDef) return { error: 'Неизвестный навык' };
+    if (!canLearnSkill(state, skillDef)) {
+      const parentReq = Object.entries(skillDef.unlockAt ?? {})
+        .map(([pid, lvl]) => `${pid} ${lvl}+`)
+        .join(', ');
+      return { error: `Навык «${skillDef.name}» заблокирован. Нужно: ${parentReq}` };
+    }
+
     if (source.maxLevel && (state.skills[skillId]?.level ?? 0) >= source.maxLevel) {
       return { error: 'Этот источник знаний больше ничего не даёт — пора переходить на следующий уровень' };
     }
 
     state.mainSkillId = skillId;
     const current = state.skills[skillId] ?? { level: 0, xp: 0 };
-    const next = applyXp(current, source.xp ?? 6, state.motivation);
+    const next = applyXp(current, source.xp ?? 6, xpMotivation(state, content));
     state.skills = { ...state.skills, [skillId]: next };
     delta.skills = { [skillId]: { from: current.level, to: next.level } };
     delta.money = -(source.cost ?? 0);
@@ -514,13 +654,40 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
   }
 
   switch (actionId) {
+    // ---- English (soft skill, gates foreign companies) ----
+    case 'study_english': {
+      const eng = state.softSkills['english'] ?? { level: 0, xp: 0 };
+      state.softSkills = { ...state.softSkills, english: applySoftXp(eng, 10) };
+      delta.softSkills = { english: { from: eng.level, to: state.softSkills['english'].level } };
+      return { message: `🇬🇧 Английский: бесплатные уроки с котиками. Уровень ${state.softSkills['english'].level}`, delta };
+    }
+
+    case 'study_english_course': {
+      const eng = state.softSkills['english'] ?? { level: 0, xp: 0 };
+      state.softSkills = { ...state.softSkills, english: applySoftXp(eng, 25) };
+      delta.softSkills = { english: { from: eng.level, to: state.softSkills['english'].level } };
+      return { message: `🇬🇧 Интенсивный курс английского: уровень ${state.softSkills['english'].level}. Now you can ask for a raise`, delta };
+    }
+
+    // ---- Banked offline days (free time) ----
+    case 'use_banked_day': {
+      if ((state.bankedDays ?? 0) < 1) {
+        return { error: 'Банк офлайн-дней пуст. Он копится, пока тебя нет: 1 день за 3.5 часа' };
+      }
+      state.bankedDays -= 1;
+      state.energy = state.maxEnergy;
+      state.motivation = clamp(state.motivation + 10, 0, 100);
+      delta.energy = state.maxEnergy;
+      delta.motivation = 10;
+      return { message: `⏰ Офлайн-день использован: полная энергия и +10 мотивации. В банке осталось ${state.bankedDays}`, delta };
+    }
     // ---- Work ----
     case 'work_task': {
       if (!state.job) return { error: 'У тебя нет работы. Сначала откликнись на вакансию в разделе «Карьера»' };
       const learningMult = state.job.companyCulture?.learningMult ?? 1;
       const skillId = state.mainSkillId;
       const current = state.skills[skillId] ?? { level: 0, xp: 0 };
-      const next = applyXp(current, Math.round(8 * learningMult), state.motivation);
+      const next = applyXp(current, Math.round(8 * learningMult), xpMotivation(state, content));
       state.skills = { ...state.skills, [skillId]: next };
       state.job.daysWorked += 1;
       state.motivation = clamp(state.motivation - 1, 0, 100);
@@ -532,7 +699,7 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       if (!state.job) return { error: 'У тебя нет работы' };
       const skillId = state.mainSkillId;
       const current = state.skills[skillId] ?? { level: 0, xp: 0 };
-      const next = applyXp(current, 10, state.motivation);
+      const next = applyXp(current, 10, xpMotivation(state, content));
       state.skills = { ...state.skills, [skillId]: next };
       const bonus = Math.round(weeklySalary(state.job.salary) * 0.2);
       state.money += bonus;
@@ -547,7 +714,7 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
     case 'pet_project': {
       const skillId = state.mainSkillId;
       const current = state.skills[skillId] ?? { level: 0, xp: 0 };
-      const next = applyXp(current, 12, state.motivation);
+      const next = applyXp(current, 12, xpMotivation(state, content));
       state.skills = { ...state.skills, [skillId]: next };
       state.reputation = clamp(state.reputation + 0.5, 0, 100);
       delta.reputation = 0.5;
@@ -569,17 +736,19 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       let payment = freelancePayment(level, state.reputation, difficulty);
 
       // Cross-collection bonuses (DESIGN.md 3.3): e.g. SMB Gen2 → +5% freelance
-      const mult = (state.crossBonuses ?? [])
+      const crossMult = (state.crossBonuses ?? [])
         .filter((b) => b.type === 'freelance_mult')
         .reduce((sum, b) => sum + b.value, 0);
-      if (mult > 0) {
-        payment = Math.round(payment * (1 + mult));
+      const perkMult = Math.max(0, perkEffectSum(state, content, 'freelancePaymentMult') - 1);
+      const totalMult = 1 + crossMult + perkMult;
+      if (totalMult !== 1) {
+        payment = Math.round(payment * totalMult);
       }
       state.money += payment;
       state.freelanceDoneToday = true;
       state.lastFreelanceDay = state.currentDay;
       const current = state.skills[skillId] ?? { level: 0, xp: 0 };
-      const next = applyXp(current, 5, state.motivation);
+      const next = applyXp(current, 5, xpMotivation(state, content));
       state.skills = { ...state.skills, [skillId]: next };
       state.reputation = clamp(state.reputation + 0.2, 0, 100);
       delta.money = payment;
@@ -683,7 +852,7 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
         return { error: `Нужен английский ${company.requiresEnglish}+. Твой уровень: ${english}. Качай язык!` };
       }
 
-      const grade = targetGrade(state);
+      const grade = targetGrade(state, content);
       if (!grade) {
         return { error: 'Пока рано откликаться — подтяни навыки (18+ суммарно) и коммуникацию' };
       }
@@ -759,7 +928,7 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       if (!item) return { error: 'Предмет не найден' };
       if (state.items.includes(item.id)) return { error: 'Уже куплено' };
       state.items = [...state.items, item.id];
-      state.maxEnergy = calculateMaxEnergy(state);
+      state.maxEnergy = recalcMaxEnergy(state, content);
       delta.items = [...state.items];
       if (item.nft) {
         // NFT items are minted on purchase (DESIGN.md 3.2) — mock provider
@@ -781,7 +950,7 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       const cost = HOUSING_COSTS[next];
       if (state.money < cost) return { error: 'Не хватает денег на переезд' };
       state.housingLevel = next;
-      state.maxEnergy = calculateMaxEnergy(state);
+      state.maxEnergy = recalcMaxEnergy(state, content);
       delta.housingLevel = next;
       return { message: `🏠 Переезд: новый уровень жилья ${next}. Запах картонных коробок — запах свободы` };
     }
@@ -808,7 +977,12 @@ function advanceDay(state: StoredState, content: any, messages: string[]) {
     state.job !== null,
     culture?.motivationPerDay ?? 0
   );
-  state.motivation = drift.motivation;
+  let newMotivation = drift.motivation;
+  const resistance = Math.min(1, perkEffectSum(state, content, 'motivationResistance'));
+  if (resistance > 0 && newMotivation < state.motivation) {
+    newMotivation = Math.round(state.motivation - (state.motivation - newMotivation) * (1 - resistance));
+  }
+  state.motivation = newMotivation;
   if (state.motivation <= 0) {
     state.burnoutDays += 1;
     if (state.burnoutDays === 3) {
@@ -898,7 +1072,7 @@ function advanceDay(state: StoredState, content: any, messages: string[]) {
   state.sideJobDoneToday = false;
 
   // 10. Recalc
-  state.maxEnergy = calculateMaxEnergy(state);
+  state.maxEnergy = recalcMaxEnergy(state, content);
   state.energy = Math.min(state.maxEnergy, state.energy + Math.floor(state.maxEnergy * 0.5));
   state.ratingScore = calculateRating(state);
 }

@@ -5,6 +5,7 @@ import { SkillsView } from '../screens/SkillsView';
 import { CareerView } from '../screens/CareerView';
 import { ShopView } from '../screens/ShopView';
 import { RoomView } from '../screens/RoomView';
+import { AchievementsView } from '../screens/AchievementsView';
 
 export const GameScreen: React.FC = () => {
   const { currentView, setView, player, advanceDay, loadNft } = useGameStore();
@@ -30,6 +31,8 @@ export const GameScreen: React.FC = () => {
         return <ShopView />;
       case 'room':
         return <RoomView />;
+      case 'achievements':
+        return <AchievementsView />;
       default:
         return <DayView onAdvanceDay={handleAdvanceDay} />;
     }
@@ -49,6 +52,7 @@ export const GameScreen: React.FC = () => {
         <NavButton icon="💼" label="Карьера" active={currentView === 'career'} onClick={() => setView('career')} />
         <NavButton icon="🏠" label="Дом" active={currentView === 'room'} onClick={() => setView('room')} />
         <NavButton icon="🏪" label="Магазин" active={currentView === 'shop'} onClick={() => setView('shop')} />
+        <NavButton icon="🏆" label="Трофеи" active={currentView === 'achievements'} onClick={() => setView('achievements')} />
       </div>
     </div>
   );

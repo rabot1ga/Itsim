@@ -34,8 +34,8 @@ const ITEM_ENERGY_BONUSES: Record<string, number> = {
 
 const MAX_ITEM_ENERGY_BONUS = 4;
 
-export function calculateMaxEnergy(p: PlayerState): number {
-  let e = BASE_ENERGY;
+export function calculateMaxEnergy(p: PlayerState, perkEnergy: number = 0): number {
+  let e = BASE_ENERGY + perkEnergy;
 
   // Health bonuses
   if (p.health > 80) e += HEALTH_HIGH_BONUS;

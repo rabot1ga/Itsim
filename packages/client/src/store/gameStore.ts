@@ -49,6 +49,8 @@ interface GameState {
   loadNft: () => Promise<void>;
   bindWallet: (address: string) => Promise<boolean>;
   setMockCollections: (collections: string[]) => Promise<void>;
+  unlockPerk: (perkId: string) => Promise<boolean>;
+  setMainSkill: (skillId: string) => Promise<boolean>;
 }
 
 export const useGameStore = create<GameState>((set, get) => ({
@@ -243,6 +245,44 @@ export const useGameStore = create<GameState>((set, get) => ({
       }
     } catch (err) {
       console.error('setMockCollections error:', err);
+    }
+  },
+
+  unlockPerk: async (perkId) => {
+    try {
+      const res = await api('/game/unlock-perk', {
+        method: 'POST',
+        body: JSON.stringify({ perkId }),
+      });
+      if (res.data?.state) {
+        set({ player: res.data.state, error: null });
+        return true;
+      }
+      set({ error: res.data?.error || 'Не удалось открыть перк' });
+      return false;
+    } catch (err) {
+      console.error('unlockPerk error:', err);
+      set({ error: 'Сервер недоступен' });
+      return false;
+    }
+  },
+
+  setMainSkill: async (skillId) => {
+    try {
+      const res = await api('/game/main-skill', {
+        method: 'POST',
+        body: JSON.stringify({ skillId }),
+      });
+      if (res.data?.state) {
+        set({ player: res.data.state, error: null });
+        return true;
+      }
+      set({ error: res.data?.error || 'Не удалось выбрать навык' });
+      return false;
+    } catch (err) {
+      console.error('setMainSkill error:', err);
+      set({ error: 'Сервер недоступен' });
+      return false;
     }
   },
 }));

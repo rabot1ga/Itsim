@@ -24,6 +24,8 @@ const ACTIONS = [
   { id: 'study_book', icon: '📖', name: 'Читать книгу', energy: 1, cost: 1500, category: 'study' },
   { id: 'study_stepik', icon: '🎓', name: 'Stepik курс', energy: 2, cost: 2000, category: 'study' },
   { id: 'study_course', icon: '💻', name: 'Платный курс', energy: 3, cost: 15000, category: 'study' },
+  { id: 'study_english', icon: '🇬🇧', name: 'Английский (базово)', energy: 2, cost: 0, category: 'study' },
+  { id: 'study_english_course', icon: '🗣️', name: 'Курс английского', energy: 3, cost: 3000, category: 'study' },
 
   // Work actions
   { id: 'work_task', icon: '💼', name: 'Рабочая задача', energy: 4, cost: 0, category: 'work' },
@@ -196,6 +198,16 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
           </div>
           <p className="text-[10px] text-slate-600 mt-1">Одна подработка в день. Здоровье и мотивация — по курсу.</p>
         </div>
+      )}
+
+      {/* Banked offline days */}
+      {(player.bankedDays ?? 0) > 0 && (
+        <button
+          onClick={() => performAction('use_banked_day')}
+          className="w-full py-2.5 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-600/60 text-slate-200 rounded-xl font-medium transition-all text-sm active:scale-[0.98]"
+        >
+          ⏰ Банк офлайн-дней: {player.bankedDays} — использовать (полная энергия, +10 🔥)
+        </button>
       )}
 
       {/* End day button */}

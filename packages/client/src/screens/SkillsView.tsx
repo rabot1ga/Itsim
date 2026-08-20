@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
-import { xpToNext } from '@itsim/shared';
+import { xpToNext, canUnlockPerk } from '@itsim/shared';
 
 /**
  * Talent tree — rendered from content (skills.json) grouped by branch.
@@ -57,18 +57,49 @@ const SOFT_SKILLS: SoftSkillMeta[] = [
   { key: 'public_speaking', name: 'Выступления', icon: '🎤' },
 ];
 
+interface PerkInfo {
+  id: string;
+  name: string;
+  requires: Record<string, number>;
+  effects: Record<string, number>;
+  flavor: string;
+}
+
+const PERK_EMOJI: Record<string, string> = {
+  perk_fullstack: '⚔️',
+  perk_morning_person: '🌅',
+  perk_speed_reader: '📖',
+  perk_stoic: '🗿',
+  perk_networker: '🤝',
+  perk_pro_gamer: '🎮',
+  perk_gold_rush: '🪙',
+  perk_hustler: '🧳',
+};
+
 export const SkillsView: React.FC = () => {
   const player = useGameStore((s) => s.player);
+  const setMainSkill = useGameStore((s) => s.setMainSkill);
+  const unlockPerk = useGameStore((s) => s.unlockPerk);
+  const error = useGameStore((s) => s.error);
+  const clearError = useGameStore((s) => s.clearError);
   const [skills, setSkills] = useState<SkillInfo[]>([]);
+  const [perks, setPerks] = useState<PerkInfo[]>([]);
 
   useEffect(() => {
     fetch('/api/content/skills')
       .then((r) => r.json())
       .then((data) => setSkills(data.skills ?? []))
       .catch(() => setSkills([]));
+    fetch('/api/content/perks')
+      .then((r) => r.json())
+      .then((data) => setPerks(data.perks ?? []))
+      .catch(() => setPerks([]));
   }, []);
 
   if (!player) return null;
+
+  const branchOf: Record<string, string> = {};
+  for (const s of skills) branchOf[s.id] = s.branch;
 
   const skillLevel = (id: string) => player.skills?.[id]?.level ?? 0;
   const skillXp = (id: string) => player.skills?.[id]?.xp ?? 0;
@@ -83,10 +114,19 @@ export const SkillsView: React.FC = () => {
 
   return (
     <div className="space-y-4 animate-fade-in">
+      {error && (
+        <div className="game-card border-red-500/40 bg-red-500/10 cursor-pointer" onClick={clearError}>
+          <p className="text-sm text-red-300">⚠️ {error}</p>
+        </div>
+      )}
+
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-bold text-white">📚 Навыки</h2>
         <span className="text-xs text-slate-400">Σ {totalLevels} уровней</span>
       </div>
+      <p className="text-[11px] text-slate-500 -mt-2">
+        Тапни по навыку, чтобы сделать его основным — учёба и работа качают именно его 🎯
+      </p>
 
       {/* Soft skills */}
       <div className="game-card">
@@ -127,13 +167,23 @@ export const SkillsView: React.FC = () => {
                   ? Object.entries(s.unlockAt).find(([p, need]) => skillLevel(p) < need)
                   : undefined;
 
+                const isMain = player.mainSkillId === s.id;
                 return (
-                  <div key={s.id} className={`flex items-center gap-2 ${!isUnlocked ? 'opacity-50' : ''}`}>
+                  <button
+                    key={s.id}
+                    onClick={() => isUnlocked && setMainSkill(s.id)}
+                    disabled={!isUnlocked}
+                    title={isUnlocked ? (isMain ? 'Основной навык' : 'Сделать основным') : s.flavor}
+                    className={`w-full flex items-center gap-2 text-left rounded-lg px-1.5 py-1 transition-colors ${
+                      isMain ? 'bg-primary-600/10 border border-primary-500/30' : 'hover:bg-slate-800/60'
+                    } ${!isUnlocked ? 'opacity-50' : ''}`}
+                  >
                     <span className="text-sm">{SKILL_EMOJI[s.id] ?? '📌'}</span>
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between text-xs">
-                        <span className="text-slate-300 truncate" title={s.flavor}>
-                          {s.name} {!isUnlocked && lockedBy ? `🔒 нужен ${lockedBy[0]} ${lockedBy[1]}+` : ''}
+                        <span className="text-slate-300 truncate">
+                          {s.name} {isMain && <span className="text-primary-400">🎯</span>}{' '}
+                          {!isUnlocked && lockedBy ? `🔒 нужен ${lockedBy[0]} ${lockedBy[1]}+` : ''}
                         </span>
                         <span className="text-primary-400">{level}</span>
                       </div>
@@ -144,7 +194,7 @@ export const SkillsView: React.FC = () => {
                         />
                       </div>
                     </div>
-                  </div>
+                  </button>
                 );
               })}
             </div>
@@ -158,6 +208,79 @@ export const SkillsView: React.FC = () => {
           <p className="text-slate-400 text-sm">Загрузка дерева навыков...</p>
         </div>
       )}
+
+      {/* Perks */}
+      <div className="game-card">
+        <h3 className="section-title mb-2">✨ Перки</h3>
+        <div className="space-y-2">
+          {perks.map((perk) => {
+            const owned = (player.perks ?? []).includes(perk.id);
+            const canUnlock = !owned && canUnlockPerk(player, perk.requires, branchOf);
+            return (
+              <div
+                key={perk.id}
+                className={`flex items-center gap-2 p-2 rounded-lg border ${
+                  owned
+                    ? 'border-emerald-500/40 bg-emerald-900/20'
+                    : canUnlock
+                    ? 'border-amber-500/40 bg-amber-900/10'
+                    : 'border-slate-700/60 bg-slate-800/40'
+                }`}
+              >
+                <span className="text-lg">{PERK_EMOJI[perk.id] ?? '✨'}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-medium text-slate-200">{perk.name}</span>
+                    {owned && <span className="chip bg-emerald-900/60 text-emerald-300">открыт</span>}
+                  </div>
+                  <p className="text-[10px] text-slate-500 mt-0.5" title={perk.flavor}>
+                    {perk.flavor}
+                  </p>
+                  <p className="text-[10px] text-slate-600">
+                    Требует: {describeRequires(perk.requires, skills)}
+                  </p>
+                </div>
+                {!owned && (
+                  <button
+                    onClick={() => unlockPerk(perk.id)}
+                    disabled={!canUnlock}
+                    className={`text-[11px] px-2.5 py-1.5 rounded-lg shrink-0 ${
+                      canUnlock
+                        ? 'bg-amber-600 hover:bg-amber-500 text-white'
+                        : 'bg-slate-700/60 text-slate-500 cursor-not-allowed'
+                    }`}
+                  >
+                    Открыть
+                  </button>
+                )}
+              </div>
+            );
+          })}
+          {perks.length === 0 && <p className="text-xs text-slate-500">Загрузка перков...</p>}
+        </div>
+      </div>
     </div>
   );
 };
+
+const SOFT_REQUIRE_NAMES: Record<string, string> = {
+  communication: 'Коммуникация',
+  english: 'Английский',
+  time_management: 'Тайм-менеджмент',
+  leadership: 'Лидерство',
+  stress_resistance: 'Стрессоустойчивость',
+  public_speaking: 'Выступления',
+};
+
+function describeRequires(requires: Record<string, number>, skills: SkillInfo[]): string {
+  return Object.entries(requires)
+    .map(([key, lvl]) => {
+      if (key.endsWith('Branch')) {
+        const branch = key.replace('Branch', '');
+        return `${BRANCH_META[branch]?.name ?? branch}: ${lvl}`;
+      }
+      if (SOFT_REQUIRE_NAMES[key]) return `${SOFT_REQUIRE_NAMES[key]}: ${lvl}`;
+      return `${skills.find((s) => s.id === key)?.name ?? key}: ${lvl}`;
+    })
+    .join(', ');
+}

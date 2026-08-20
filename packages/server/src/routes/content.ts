@@ -89,4 +89,18 @@ export async function contentRoutes(app: FastifyInstance) {
   app.get('/side-jobs', async () => {
     return { sideJobs: getContent().balance.sideJobs ?? {} };
   });
+
+  /**
+   * GET /api/content/perks — perk definitions with requirements
+   */
+  app.get('/perks', async () => {
+    return { perks: getContent().perks };
+  });
+
+  /**
+   * GET /api/content/achievements — achievement definitions
+   */
+  app.get('/achievements', async () => {
+    return { achievements: getContent().achievements };
+  });
 }
