@@ -32,9 +32,9 @@ async function start() {
     credentials: true,
   });
 
-  // Rate limiting
+  // Rate limiting (generous for dev/preview; per-IP)
   await app.register(rateLimit, {
-    max: 100,
+    max: 1000,
     timeWindow: '1 minute',
   });
 

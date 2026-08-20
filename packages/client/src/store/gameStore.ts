@@ -4,13 +4,13 @@ export type Screen = 'menu' | 'game' | 'loading';
 
 const API_BASE = '/api';
 
-// Auth: keep the Telegram initData + session token for subsequent requests
+// Auth: keep the Telegram initData — it is validated on every request
+// (Telegram-canonical pattern; no JWT lifecycle to break the preview)
 let authInitData: string | null = null;
-let sessionToken: string | null = null;
 
 async function api(path: string, init: RequestInit = {}): Promise<{ ok: boolean; status: number; data: any }> {
   const headers: Record<string, string> = {
-    Authorization: sessionToken ? `Bearer ${sessionToken}` : authInitData ? `tma ${authInitData}` : '',
+    Authorization: authInitData ? `tma ${authInitData}` : '',
     ...(init.headers as Record<string, string> | undefined),
   };
   // Only send Content-Type when there is a body (Fastify rejects empty JSON bodies)
@@ -68,7 +68,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     try {
       authInitData = initData;
 
-      // 1. Auth: validate initData, get session token
+      // 1. Auth: validate initData (server-side check + health ping)
       const auth = await api('/auth/telegram', {
         method: 'POST',
         body: JSON.stringify({ initData }),
@@ -76,9 +76,8 @@ export const useGameStore = create<GameState>((set, get) => ({
       if (!auth.ok) {
         throw new Error(auth.data?.error || 'Auth failed');
       }
-      sessionToken = auth.data.token;
 
-      // 2. Load game state
+      // 2. Load game state (auth via tma initData, no token lifecycle)
       const stateRes = await api('/game/state');
       if (!stateRes.ok) {
         throw new Error(stateRes.data?.error || 'Failed to load game state');
