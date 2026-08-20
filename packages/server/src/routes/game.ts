@@ -30,6 +30,9 @@ import {
   preScreenResult,
   generatePlayerSeed,
   getGeneticTraits,
+  miningDailyIncome,
+  hashrateOfItems,
+  electricitySaveOfItems,
   type PlayerState,
   type GameEvent,
   type Grade,
@@ -50,6 +53,7 @@ type StoredState = PlayerState & {
   activeEventId: string | null;
   freelanceDoneToday: boolean;
   lastFreelanceDay: number;
+  sideJobDoneToday: boolean;
   mainSkillId: string;
 };
 
@@ -151,7 +155,7 @@ export async function gameRoutes(app: FastifyInstance) {
     let state = loadState(userId) as StoredState | null;
     const isNew = !state;
     if (!state) {
-      state = { ...createNewPlayer(), telegramId: userId, lastTickAt: Date.now(), ratingScore: 0, activeEventId: null, freelanceDoneToday: false, lastFreelanceDay: 0, mainSkillId: 'javascript' } as StoredState;
+      state = { ...createNewPlayer(), telegramId: userId, lastTickAt: Date.now(), ratingScore: 0, activeEventId: null, freelanceDoneToday: false, lastFreelanceDay: 0, sideJobDoneToday: false, mainSkillId: 'javascript' } as StoredState;
       deriveGenetics(state);
     }
 
@@ -193,6 +197,7 @@ export async function gameRoutes(app: FastifyInstance) {
       isNew,
       offlineDaysEarned: banked,
       activeEvent,
+      mining: miningSummary(state, getContent()),
     };
   });
 
@@ -223,7 +228,7 @@ export async function gameRoutes(app: FastifyInstance) {
     const content = getContent();
 
     // Validate costs BEFORE any mutation (idempotency-safe)
-    const energyCost = getActionEnergyCost(actionId, content);
+    const energyCost = getActionEnergyCost(actionId, params, content);
     if (state.energy < energyCost) {
       return reply.status(400).send({ error: 'Не хватает энергии — заверши день или отдохни', state: respondState(state) });
     }
@@ -255,7 +260,7 @@ export async function gameRoutes(app: FastifyInstance) {
       nft = await getNftProvider().mint(wallet, mintedItem, String(itemType).toUpperCase().slice(0, 10));
     }
 
-    const response = { state: respondState(state, result.message), delta: result.delta ?? {}, activeEvent: null, nft };
+    const response = { state: respondState(state, result.message), delta: result.delta ?? {}, activeEvent: null, nft, mining: miningSummary(state, content) };
     if (idempotencyKey) {
       if (!completedActions.has(userId)) completedActions.set(userId, new Map());
       completedActions.get(userId)!.set(idempotencyKey, { delta: result.delta, message: result.message });
@@ -298,6 +303,7 @@ export async function gameRoutes(app: FastifyInstance) {
       state: respondState(state, messages.length > 0 ? messages.join('\n') : undefined),
       messages,
       activeEvent: event,
+      mining: miningSummary(state, content),
     };
   });
 
@@ -392,23 +398,61 @@ export async function gameRoutes(app: FastifyInstance) {
   app.post('/reset', async (request) => {
     const user = (request as any).telegramUser;
     const userId = String(user.id);
-    const state = { ...createNewPlayer(), telegramId: userId, lastTickAt: Date.now(), ratingScore: 0, activeEventId: null, freelanceDoneToday: false, lastFreelanceDay: 0, mainSkillId: 'javascript' } as StoredState;
+    const state = { ...createNewPlayer(), telegramId: userId, lastTickAt: Date.now(), ratingScore: 0, activeEventId: null, freelanceDoneToday: false, lastFreelanceDay: 0, sideJobDoneToday: false, mainSkillId: 'javascript' } as StoredState;
     deriveGenetics(state);
     saveState(userId, state);
     return { state: respondState(state, 'Новая жизнь началась! 💻'), activeEvent: null };
   });
 }
 
+/**
+ * Sum a numeric perk effect across all owned perks
+ */
+function perkEffectSum(state: StoredState, content: any, effectKey: string): number {
+  let total = 0;
+  for (const perk of content.perks as any[]) {
+    if (state.perks.includes(perk.id) && perk.effects?.[effectKey]) {
+      total += perk.effects[effectKey];
+    }
+  }
+  return total;
+}
+
+/**
+ * Mining summary for the current state (null when no hardware)
+ */
+function miningSummary(state: StoredState, content: any) {
+  const hashrate = hashrateOfItems(state.items, content.items);
+  if (hashrate <= 0) return null;
+
+  const cfg = content.balance.mining ?? { priceBase: 40, volatility: 0.5, electricityPerHashrate: 0.5 };
+  const income = miningDailyIncome(hashrate, state.currentDay, cfg);
+  const mult = 1 + perkEffectSum(state, content, 'miningIncomeMult');
+  const save = electricitySaveOfItems(state.items, content.items);
+  const gross = Math.round(income.gross * mult);
+  const electricity = Math.round(income.electricity * (1 - save));
+  return {
+    hashrate,
+    price: income.price,
+    gross,
+    electricity,
+    net: gross - electricity,
+  };
+}
+
 // ---------------------------------------------------------------------------
 // Action helpers
 // ---------------------------------------------------------------------------
 
-function getActionEnergyCost(actionId: string, content: any): number {
+function getActionEnergyCost(actionId: string, params: any, content: any): number {
   if (actionId.startsWith('study_')) {
     return content.balance.xpSources?.[actionId]?.energy ?? 2;
   }
   if (actionId === 'networking') {
     return content.balance.networking?.energy ?? EXTRA_ENERGY_COSTS.networking;
+  }
+  if (actionId === 'side_job') {
+    return content.balance.sideJobs?.[params?.jobId]?.energy ?? 1;
   }
   return EXTRA_ENERGY_COSTS[actionId] ?? 1;
 }
@@ -540,6 +584,39 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       state.reputation = clamp(state.reputation + 0.2, 0, 100);
       delta.money = payment;
       return { message: `🛠 Фриланс-заказ выполнен: +${fmtMoney(payment)}. Отзыв: «всё ок, но правки уже в личке»`, delta };
+    }
+
+    // ---- Side jobs (non-IT gigs: courier, barista, etc.) ----
+    case 'side_job': {
+      const jobId = params?.jobId;
+      const job = content.balance.sideJobs?.[jobId];
+      if (!job) return { error: 'Неизвестная подработка' };
+      if (state.sideJobDoneToday) return { error: 'Сегодня уже была подработка. Совмещать курьера и баристу нельзя — проверено' };
+      if (state.currentDay < (job.minDay ?? 1)) return { error: 'Эта подработка откроется позже' };
+
+      const level = state.skills[state.mainSkillId]?.level ?? 0;
+      if (level < (job.minSkill ?? 0)) {
+        return { error: `Нужен навык ${job.minSkill}+ в основной специализации` };
+      }
+
+      let payment = job.payment + (job.paymentPerSkill ? Math.round(level * job.paymentPerSkill) : 0);
+      if (job.paymentVar) payment += Math.floor(rng() * job.paymentVar);
+
+      // Perk: sideJobPaymentMult
+      const mult = perkEffectSum(state, content, 'sideJobPaymentMult');
+      payment = Math.round(payment * (1 + mult));
+
+      state.money += payment;
+      state.sideJobDoneToday = true;
+      state.health = clamp(state.health + (job.health ?? 0), 0, 100);
+      state.motivation = clamp(state.motivation + (job.motivation ?? 0), 0, 100);
+      state.reputation = clamp(state.reputation + (job.repGain ?? 0), 0, 100);
+      if (job.commXp) {
+        const comm = state.softSkills['communication'] ?? { level: 0, xp: 0 };
+        state.softSkills = { ...state.softSkills, communication: applySoftXp(comm, job.commXp) };
+      }
+      delta.money = payment;
+      return { message: `${job.icon} ${job.name}: +${fmtMoney(payment)}. «Это временно, я же айтишник» — говоришь ты себе`, delta };
     }
 
     // ---- Rest ----
@@ -800,8 +877,25 @@ function advanceDay(state: StoredState, content: any, messages: string[]) {
     messages.push(`⏳ Оффер${expired.length > 1 ? 'ы' : ''} истек${expired.length > 1 ? 'ли' : ''}: ${expired.map((o) => o.position).join(', ')}`);
   }
 
+  // 8b. Mining farm (passive crypto income)
+  const mining = miningSummary(state, content);
+  if (mining) {
+    if (mining.net >= 0) {
+      state.money += mining.net;
+      state.miningEarned = (state.miningEarned ?? 0) + mining.net;
+      messages.push(`⛏ Ферма намайнила: +${fmtMoney(mining.net)} (электричество −${fmtMoney(mining.electricity)})`);
+    } else if (state.money >= -mining.net) {
+      state.money += mining.net;
+      messages.push(`⛏ Курс упал: ферма ушла в минус на ${fmtMoney(-mining.net)}`);
+    } else {
+      state.money = 0;
+      messages.push('⛏ Не хватило на электричество — ферма стояла весь день');
+    }
+  }
+
   // 9. Daily reset
   state.freelanceDoneToday = false;
+  state.sideJobDoneToday = false;
 
   // 10. Recalc
   state.maxEnergy = calculateMaxEnergy(state);

@@ -37,6 +37,10 @@ export function isAchievementEarned(p: PlayerState, cond: AchievementCondition):
           return (p.burnoutDays ?? 0) >= 5;
         case 'reputation_80':
           return p.reputation >= 80;
+        case 'mining_100k':
+          return (p.miningEarned ?? 0) >= 100000;
+        case 'mining_1m':
+          return (p.miningEarned ?? 0) >= 1000000;
         default:
           return false;
       }

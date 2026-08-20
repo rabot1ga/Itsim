@@ -430,3 +430,66 @@ describe('genetics', () => {
     expect(traitTint('unknownSlot', t, GENETICS_CONFIG)).toBeNull();
   });
 });
+
+// ---- Mining farm ----
+
+import {
+  miningDailyIncome,
+  miningDayNoise,
+  hashrateOfItems,
+  electricitySaveOfItems,
+} from '../../index';
+
+describe('mining', () => {
+  const cfg = { priceBase: 40, volatility: 0.5, electricityPerHashrate: 0.5 };
+
+  it('day noise is deterministic and within -1..1', () => {
+    expect(miningDayNoise(42)).toBe(miningDayNoise(42));
+    for (let d = 1; d <= 100; d++) {
+      const n = miningDayNoise(d);
+      expect(n).toBeGreaterThanOrEqual(-1);
+      expect(n).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it('income math: net = gross - electricity', () => {
+    const inc = miningDailyIncome(100, 50, cfg);
+    expect(inc.net).toBe(inc.gross - inc.electricity);
+    expect(inc.gross).toBeGreaterThan(0);
+    expect(inc.electricity).toBe(50);
+  });
+
+  it('income is deterministic for a fixed day', () => {
+    const a = miningDailyIncome(60, 123, cfg);
+    const b = miningDailyIncome(60, 123, cfg);
+    expect(a).toEqual(b);
+  });
+
+  it('price stays within base ± volatility', () => {
+    for (let d = 1; d <= 200; d++) {
+      const inc = miningDailyIncome(10, d, cfg);
+      expect(inc.price).toBeGreaterThanOrEqual(cfg.priceBase * (1 - cfg.volatility) - 0.001);
+      expect(inc.price).toBeLessThanOrEqual(cfg.priceBase * (1 + cfg.volatility) + 0.001);
+    }
+  });
+
+  it('hashrate sums only owned items', () => {
+    const defs = [
+      { id: 'mining_gpu', effects: { hashrate: 10 } },
+      { id: 'mining_rig', effects: { hashrate: 60 } },
+      { id: 'chair', effects: {} },
+    ];
+    expect(hashrateOfItems(['mining_gpu', 'mining_rig'], defs)).toBe(70);
+    expect(hashrateOfItems(['mining_gpu'], defs)).toBe(10);
+    expect(hashrateOfItems([], defs)).toBe(0);
+  });
+
+  it('electricity savings are summed and capped at 0.9', () => {
+    const defs = [
+      { id: 'solar1', effects: { electricitySave: 0.5 } },
+      { id: 'solar2', effects: { electricitySave: 0.5 } },
+    ];
+    expect(electricitySaveOfItems(['solar1'], defs)).toBe(0.5);
+    expect(electricitySaveOfItems(['solar1', 'solar2'], defs)).toBe(0.9);
+  });
+});

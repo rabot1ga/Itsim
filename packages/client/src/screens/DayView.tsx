@@ -1,8 +1,21 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 
 interface DayViewProps {
   onAdvanceDay: () => void;
+}
+
+interface SideJobInfo {
+  name: string;
+  icon: string;
+  energy: number;
+  payment: number;
+  paymentPerSkill?: number;
+  paymentVar?: number;
+  health?: number;
+  motivation?: number;
+  minSkill?: number;
+  minDay?: number;
 }
 
 const ACTIONS = [
@@ -36,6 +49,15 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
   const clearError = useGameStore((s) => s.clearError);
   const performAction = useGameStore((s) => s.performAction);
   const chooseEvent = useGameStore((s) => s.chooseEvent);
+  const mining = useGameStore((s) => s.mining);
+  const [sideJobs, setSideJobs] = useState<Record<string, SideJobInfo>>({});
+
+  useEffect(() => {
+    fetch('/api/content/side-jobs')
+      .then((r) => r.json())
+      .then((data) => setSideJobs(data.sideJobs ?? {}))
+      .catch(() => setSideJobs({}));
+  }, []);
 
   if (!player) return null;
 
@@ -89,6 +111,24 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
         </div>
       )}
 
+      {/* Mining farm (passive income) */}
+      {mining && (
+        <div className="game-card border-yellow-500/30 bg-yellow-500/5">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-yellow-300">⛏ Майнинг-ферма</span>
+            <span className="text-xs text-slate-400">{mining.hashrate} MH/s</span>
+          </div>
+          <div className="flex gap-2 text-xs text-slate-400 mt-1">
+            <span className="text-emerald-400">+{formatMoney(mining.gross)}</span>
+            <span>−{formatMoney(mining.electricity)} ⚡</span>
+            <span className="font-mono">≈ {mining.net >= 0 ? '+' : ''}{formatMoney(mining.net)}/день</span>
+          </div>
+          <p className="text-[10px] text-slate-500 mt-1">
+            Курс: {mining.price.toFixed(1)} ₽/MH · доход начисляется при завершении дня
+          </p>
+        </div>
+      )}
+
       {/* Actions by category */}
       {categories.map(cat => (
         <div key={cat.id}>
@@ -119,6 +159,44 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
           </div>
         </div>
       ))}
+
+      {/* Side jobs (non-IT gigs) */}
+      {Object.keys(sideJobs).length > 0 && (
+        <div>
+          <h3 className="text-sm font-medium text-slate-400 mb-2">🛵 Подработки (не IT)</h3>
+          <div className="grid grid-cols-2 gap-2">
+            {Object.entries(sideJobs).map(([jobId, job]) => {
+              const enabled = canAct(job.energy) && (player.currentDay ?? 0) >= (job.minDay ?? 1);
+              const minSkillMet = (player.skills?.[player.mainSkillId ?? 'javascript']?.level ?? 0) >= (job.minSkill ?? 0);
+              return (
+                <button
+                  key={jobId}
+                  onClick={() => performAction('side_job', { jobId })}
+                  disabled={!enabled || !minSkillMet}
+                  title={!minSkillMet ? `Нужен навык ${job.minSkill}+` : jobId}
+                  className={`game-card text-left transition-all ${
+                    enabled && minSkillMet ? 'hover:border-amber-500/50 hover:bg-slate-800/80' : 'opacity-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-lg">{job.icon}</span>
+                    <span className="text-sm font-medium text-slate-200">{job.name}</span>
+                  </div>
+                  <div className="flex gap-2 text-xs text-slate-500">
+                    <span>⚡{job.energy}</span>
+                    <span className="text-emerald-400">
+                      +{formatMoney(job.payment + (job.paymentPerSkill ? Math.round((player.skills?.[player.mainSkillId ?? 'javascript']?.level ?? 0) * job.paymentPerSkill) : 0))}
+                      {job.paymentVar ? '±' : ''}
+                    </span>
+                    {!minSkillMet && <span>🔒 навык {job.minSkill}+</span>}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+          <p className="text-[10px] text-slate-600 mt-1">Одна подработка в день. Здоровье и мотивация — по курсу.</p>
+        </div>
+      )}
 
       {/* End day button */}
       <button

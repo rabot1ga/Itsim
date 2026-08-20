@@ -33,6 +33,7 @@ interface GameState {
   activeEvent: any;
   inventory: any[];
   heldCollections: string[];
+  mining: any;
 
   // Actions
   initGame: (initData: string) => Promise<void>;
@@ -59,6 +60,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   activeEvent: null,
   inventory: [],
   heldCollections: [],
+  mining: null,
 
   initGame: async (initData: string) => {
     try {
@@ -84,6 +86,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         initialized: true,
         player: stateRes.data.state,
         activeEvent: stateRes.data.activeEvent ?? null,
+        mining: stateRes.data.mining ?? null,
         screen: stateRes.data.isNew ? 'game' : 'menu',
       });
     } catch (err: any) {
@@ -127,7 +130,12 @@ export const useGameStore = create<GameState>((set, get) => ({
         }),
       });
       if (res.data?.state) {
-        set({ player: res.data.state, activeEvent: res.data.activeEvent ?? null, error: null });
+        set({
+          player: res.data.state,
+          activeEvent: res.data.activeEvent ?? null,
+          mining: res.data.mining ?? null,
+          error: null,
+        });
       }
       if (!res.ok) {
         set({ error: res.data?.error || 'Действие не выполнено' });
@@ -145,7 +153,12 @@ export const useGameStore = create<GameState>((set, get) => ({
     try {
       const res = await api('/game/advance-day', { method: 'POST' });
       if (res.data?.state) {
-        set({ player: res.data.state, activeEvent: res.data.activeEvent ?? null, error: null });
+        set({
+          player: res.data.state,
+          activeEvent: res.data.activeEvent ?? null,
+          mining: res.data.mining ?? null,
+          error: null,
+        });
       }
       if (!res.ok) {
         set({ error: res.data?.error || 'Не удалось завершить день' });

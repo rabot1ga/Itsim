@@ -7,4 +7,5 @@ export * from './events';
 export * from './player';
 export * from './achievements';
 export * from './genetics';
+export * from './mining';
 export * from './utils';

@@ -82,7 +82,7 @@ export const EventsFileSchema = z.array(EventSchema);
 export const SkillSchema = z.object({
   id: z.string().regex(/^[a-z0-9_]+$/),
   name: z.string().min(1),
-  branch: z.enum(['frontend', 'backend', 'mobile', 'qa', 'devops', 'ai_ml', 'cybersec']),
+  branch: z.enum(['frontend', 'backend', 'mobile', 'qa', 'devops', 'ai_ml', 'cybersec', 'gamedev', 'blockchain']),
   parent: z.string().optional(),
   unlockAt: z.record(z.string(), z.number()).optional(),
   icon: z.string(),
@@ -103,6 +103,8 @@ export const PerkSchema = z.object({
     energyBonus: z.number().int().optional(),
     learningBonus: z.number().min(0).max(1).optional(),
     motivationResistance: z.number().min(0).max(1).optional(),
+    miningIncomeMult: z.number().min(0).optional(),
+    sideJobPaymentMult: z.number().min(0).optional(),
   }),
   flavor: z.string(),
 });
@@ -156,6 +158,8 @@ export const ItemEffectsSchema = z.object({
   xpBonus: z.number().optional(),
   energyCostChance: z.number().min(0).max(1).optional(),
   speedBonus: z.number().optional(),
+  hashrate: z.number().positive().optional(),
+  electricitySave: z.number().min(0).max(1).optional(),
 });
 
 export const ItemSchema = z.object({
@@ -248,6 +252,29 @@ export const BalanceSchema = z.object({
     motivationBonus: z.number(),
     reputationBonus: z.number(),
   })),
+
+  // Side jobs (non-IT gigs — courier, barista, etc.)
+  sideJobs: z.record(z.string(), z.object({
+    name: z.string(),
+    icon: z.string().default('💼'),
+    energy: z.number().int().min(0),
+    payment: z.number(),
+    paymentPerSkill: z.number().optional(),
+    paymentVar: z.number().optional(),
+    health: z.number().default(0),
+    motivation: z.number().default(0),
+    commXp: z.number().default(0),
+    repGain: z.number().default(0),
+    minSkill: z.number().default(0),
+    minDay: z.number().int().default(1),
+  })).default({}),
+
+  // Mining farm (passive crypto income)
+  mining: z.object({
+    priceBase: z.number().positive(),
+    volatility: z.number().min(0).max(1),
+    electricityPerHashrate: z.number().min(0),
+  }).default({ priceBase: 40, volatility: 0.5, electricityPerHashrate: 0.5 }),
 });
 
 export type BalanceConfig = z.infer<typeof BalanceSchema>;

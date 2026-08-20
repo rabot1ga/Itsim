@@ -209,5 +209,53 @@
       "xpBonus": 0.0
     },
     "icon": "mentor.png"
+  },
+  {
+    "id": "mining_gpu",
+    "name": "Майнинг-видеокарта",
+    "type": "other",
+    "price": 50000,
+    "description": "Одна карта в старом корпусе. Начало подпольной империи.",
+    "effects": {
+      "hashrate": 10
+    },
+    "icon": "gpu.png"
+  },
+  {
+    "id": "mining_rig",
+    "name": "Майнинг-ферма",
+    "type": "other",
+    "price": 250000,
+    "description": "Риг из 6 карт. Соседи жалуются на шум и счета за свет.",
+    "effects": {
+      "hashrate": 60
+    },
+    "icon": "rig.png",
+    "nft": true,
+    "rarity": "rare"
+  },
+  {
+    "id": "mining_asic",
+    "name": "ASIC-майнер",
+    "type": "other",
+    "price": 800000,
+    "description": "Промышленный ASIC. Только биткоин, только хардкор, только шум вентиляторов.",
+    "effects": {
+      "hashrate": 250
+    },
+    "icon": "asic.png",
+    "nft": true,
+    "rarity": "legendary"
+  },
+  {
+    "id": "solar_panel",
+    "name": "Солнечная панель",
+    "type": "other",
+    "price": 50000,
+    "description": "Электричество для фермы дешевле на 50%. И совесть чище.",
+    "effects": {
+      "electricitySave": 0.5
+    },
+    "icon": "solar.png"
   }
 ]

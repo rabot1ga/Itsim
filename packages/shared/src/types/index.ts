@@ -73,6 +73,9 @@ export interface PlayerState {
   daysSinceRegistration: number;
   lastMotivationDrift: number;
   burnoutDays: number;
+
+  // Passive income (mining farm)
+  miningEarned?: number;
 }
 
 export interface SkillLevel {
@@ -165,7 +168,7 @@ export interface SkillDefinition {
   flavor: string;
 }
 
-export type SkillBranch = 'frontend' | 'backend' | 'mobile' | 'qa' | 'devops' | 'ai_ml' | 'cybersec';
+export type SkillBranch = 'frontend' | 'backend' | 'mobile' | 'qa' | 'devops' | 'ai_ml' | 'cybersec' | 'gamedev' | 'blockchain';
 
 export interface PerkDefinition {
   id: PerkId;
@@ -181,6 +184,8 @@ export interface PerkEffects {
   energyBonus?: number;
   learningBonus?: number;
   motivationResistance?: number;
+  miningIncomeMult?: number;
+  sideJobPaymentMult?: number;
 }
 
 // ---- Companies ----
@@ -317,6 +322,10 @@ export interface ItemEffects {
   xpBonus?: number; // percent
   energyCostChance?: number; // chance to reduce energy cost by 1
   speedBonus?: number;
+  /** Mining hashrate (MH/s) — passive crypto income */
+  hashrate?: number;
+  /** Fraction of electricity cost saved (0..1, summed up to 0.9) */
+  electricitySave?: number;
 }
 
 // ---- Achievements ----
@@ -347,6 +356,7 @@ export type ActionId =
   | 'work_overtime'
   | 'pet_project'
   | 'freelance'
+  | 'side_job'
   | 'rest_sleep'
   | 'rest_walk'
   | 'rest_bar'
@@ -495,4 +505,4 @@ export interface CrossCollectionsConfig {
 // ---- Rating ----
 
 export const MAX_CAREER_LEVEL = 7; // 0-7 grade index
-export const TOTAL_ACHIEVEMENTS = 15;
+export const TOTAL_ACHIEVEMENTS = 17;

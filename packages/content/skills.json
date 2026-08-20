@@ -12,7 +12,9 @@
     "name": "React",
     "branch": "frontend",
     "parent": "javascript",
-    "unlockAt": { "javascript": 25 },
+    "unlockAt": {
+      "javascript": 25
+    },
     "icon": "react.png",
     "maxLevel": 100,
     "flavor": "Библиотека, которая называет себя библиотекой, но ведёт себя как фреймворк."
@@ -22,7 +24,9 @@
     "name": "Next.js",
     "branch": "frontend",
     "parent": "react",
-    "unlockAt": { "react": 30 },
+    "unlockAt": {
+      "react": 30
+    },
     "icon": "nextjs.png",
     "maxLevel": 100,
     "flavor": "React, но с сервером. Теперь у тебя в два раза больше проблем."
@@ -40,7 +44,9 @@
     "name": "TypeScript",
     "branch": "frontend",
     "parent": "javascript",
-    "unlockAt": { "javascript": 30 },
+    "unlockAt": {
+      "javascript": 30
+    },
     "icon": "ts.png",
     "maxLevel": 100,
     "flavor": "JavaScript с характером. Любой ценой."
@@ -66,7 +72,9 @@
     "name": "Spring",
     "branch": "backend",
     "parent": "java",
-    "unlockAt": { "java": 25 },
+    "unlockAt": {
+      "java": 25
+    },
     "icon": "spring.png",
     "maxLevel": 100,
     "flavor": "Фреймворк, который превращает 10 строк кода в 100."
@@ -84,7 +92,9 @@
     "name": "Node.js",
     "branch": "backend",
     "parent": "javascript",
-    "unlockAt": { "javascript": 20 },
+    "unlockAt": {
+      "javascript": 20
+    },
     "icon": "nodejs.png",
     "maxLevel": 100,
     "flavor": "JavaScript на сервере. Да, теперь можно."
@@ -110,7 +120,9 @@
     "name": "Android SDK",
     "branch": "mobile",
     "parent": "kotlin",
-    "unlockAt": { "kotlin": 20 },
+    "unlockAt": {
+      "kotlin": 20
+    },
     "icon": "android.png",
     "maxLevel": 100,
     "flavor": "Эмулятор грузится дольше, чем ты кодишь."
@@ -128,7 +140,9 @@
     "name": "Automation Testing",
     "branch": "qa",
     "parent": "manual_testing",
-    "unlockAt": { "manual_testing": 25 },
+    "unlockAt": {
+      "manual_testing": 25
+    },
     "icon": "auto.png",
     "maxLevel": 100,
     "flavor": "Теперь ты пишешь код, который тестирует код."
@@ -138,7 +152,9 @@
     "name": "Selenium",
     "branch": "qa",
     "parent": "automation_testing",
-    "unlockAt": { "automation_testing": 20 },
+    "unlockAt": {
+      "automation_testing": 20
+    },
     "icon": "selenium.png",
     "maxLevel": 100,
     "flavor": "Браузер, который открывается сам. Жутковато."
@@ -166,5 +182,181 @@
     "icon": "linux.png",
     "maxLevel": 100,
     "flavor": "Графический интерфейс для тех, кто не умеет в терминал."
+  },
+  {
+    "id": "machine_learning",
+    "name": "Machine Learning",
+    "branch": "ai_ml",
+    "parent": "python",
+    "unlockAt": {
+      "python": 30
+    },
+    "icon": "ml.png",
+    "maxLevel": 100,
+    "flavor": "Градиентный спуск — прямо в пропасть, но красиво."
+  },
+  {
+    "id": "neural_networks",
+    "name": "Нейросети",
+    "branch": "ai_ml",
+    "parent": "machine_learning",
+    "unlockAt": {
+      "machine_learning": 30
+    },
+    "icon": "nn.png",
+    "maxLevel": 100,
+    "flavor": "Слои, слои, слои. Как в легаси-коде, только модно."
+  },
+  {
+    "id": "data_science",
+    "name": "Data Science",
+    "branch": "ai_ml",
+    "parent": "python",
+    "unlockAt": {
+      "python": 20
+    },
+    "icon": "ds.png",
+    "maxLevel": 100,
+    "flavor": "Теперь ты умеешь убедительно врать с помощью статистики."
+  },
+  {
+    "id": "prompt_engineering",
+    "name": "Промпт-инжиниринг",
+    "branch": "ai_ml",
+    "parent": "machine_learning",
+    "unlockAt": {
+      "machine_learning": 15
+    },
+    "icon": "prompt.png",
+    "maxLevel": 100,
+    "flavor": "Искусство вежливо просить нейронку не галлюцинировать."
+  },
+  {
+    "id": "network_security",
+    "name": "Сетевая безопасность",
+    "branch": "cybersec",
+    "parent": "linux",
+    "unlockAt": {
+      "linux": 20
+    },
+    "icon": "netsec.png",
+    "maxLevel": 100,
+    "flavor": "Сетка — но не рыбацкая."
+  },
+  {
+    "id": "pentest",
+    "name": "Пентест",
+    "branch": "cybersec",
+    "parent": "network_security",
+    "unlockAt": {
+      "network_security": 25
+    },
+    "icon": "pentest.png",
+    "maxLevel": 100,
+    "flavor": "Взламывать весело. Главное — по контракту."
+  },
+  {
+    "id": "cryptography",
+    "name": "Криптография",
+    "branch": "cybersec",
+    "parent": "python",
+    "unlockAt": {
+      "python": 25
+    },
+    "icon": "crypto.png",
+    "maxLevel": 100,
+    "flavor": "Хеш — это не завтрак. И не валюта."
+  },
+  {
+    "id": "game_design",
+    "name": "Геймдизайн",
+    "branch": "gamedev",
+    "icon": "gd.png",
+    "maxLevel": 100,
+    "flavor": "1% идеи, 99% фичкрипа."
+  },
+  {
+    "id": "unity",
+    "name": "Unity",
+    "branch": "gamedev",
+    "parent": "game_design",
+    "unlockAt": {
+      "game_design": 10
+    },
+    "icon": "unity.png",
+    "maxLevel": 100,
+    "flavor": "C# и тёмная магия билда под веб."
+  },
+  {
+    "id": "godot",
+    "name": "Godot",
+    "branch": "gamedev",
+    "parent": "game_design",
+    "unlockAt": {
+      "game_design": 10
+    },
+    "icon": "godot.png",
+    "maxLevel": 100,
+    "flavor": "Опенсорс и светлая сторона силы."
+  },
+  {
+    "id": "solidity",
+    "name": "Solidity",
+    "branch": "blockchain",
+    "parent": "javascript",
+    "unlockAt": {
+      "javascript": 30
+    },
+    "icon": "sol.png",
+    "maxLevel": 100,
+    "flavor": "Код — это закон. Пока не взломают."
+  },
+  {
+    "id": "web3",
+    "name": "Web3",
+    "branch": "blockchain",
+    "parent": "solidity",
+    "unlockAt": {
+      "solidity": 15
+    },
+    "icon": "web3.png",
+    "maxLevel": 100,
+    "flavor": "Подключаем кошельки, теряем газ."
+  },
+  {
+    "id": "rust_solana",
+    "name": "Rust (Solana)",
+    "branch": "blockchain",
+    "parent": "solidity",
+    "unlockAt": {
+      "solidity": 30
+    },
+    "icon": "rust.png",
+    "maxLevel": 100,
+    "flavor": "Скорость света. Borrow checker в комплекте."
+  },
+  {
+    "id": "defi",
+    "name": "DeFi",
+    "branch": "blockchain",
+    "parent": "web3",
+    "unlockAt": {
+      "web3": 20
+    },
+    "icon": "defi.png",
+    "maxLevel": 100,
+    "flavor": "Фармим проценты, теряем депозиты."
+  },
+  {
+    "id": "go",
+    "name": "Go",
+    "branch": "backend",
+    "parent": "python",
+    "unlockAt": {
+      "python": 25
+    },
+    "icon": "go.png",
+    "maxLevel": 100,
+    "flavor": "Горут ины: тысяча лёгких процессов и одна паника."
   }
 ]

@@ -12,7 +12,7 @@ export async function contentRoutes(app: FastifyInstance) {
       skills: 'skills.json',
       perks: 'perks.json',
       companies: 'companies.json',
-      events: ['events_common.json', 'events_work.json', 'events_chains.json'],
+      events: ['events_common.json', 'events_work.json', 'events_chains.json', 'events_mining.json'],
       items: 'items.json',
       npcs: 'npcs.json',
       achievements: 'achievements.json',
@@ -74,5 +74,19 @@ export async function contentRoutes(app: FastifyInstance) {
    */
   app.get('/cross-collections', async () => {
     return { crossCollections: getContent().crossCollections };
+  });
+
+  /**
+   * GET /api/content/skills — the full talent tree (branches, parents, unlocks)
+   */
+  app.get('/skills', async () => {
+    return { skills: getContent().skills };
+  });
+
+  /**
+   * GET /api/content/side-jobs — non-IT gigs (courier, barista, etc.)
+   */
+  app.get('/side-jobs', async () => {
+    return { sideJobs: getContent().balance.sideJobs ?? {} };
   });
 }

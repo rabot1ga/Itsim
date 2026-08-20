@@ -4,104 +4,169 @@
     "name": "Hello, World!",
     "description": "Получить первый оффер",
     "icon": "first_offer.png",
-    "condition": { "type": "grade_reached", "target": "intern" }
+    "condition": {
+      "type": "grade_reached",
+      "target": "intern"
+    }
   },
   {
     "id": "reached_junior",
     "name": "Уже не стажёр",
     "description": "Стать Junior-разработчиком",
     "icon": "junior.png",
-    "condition": { "type": "grade_reached", "target": "junior" }
+    "condition": {
+      "type": "grade_reached",
+      "target": "junior"
+    }
   },
   {
     "id": "reached_middle",
     "name": "Золотая середина",
     "description": "Стать Middle-разработчиком",
     "icon": "middle.png",
-    "condition": { "type": "grade_reached", "target": "middle" }
+    "condition": {
+      "type": "grade_reached",
+      "target": "middle"
+    }
   },
   {
     "id": "reached_senior",
     "name": "Мастер своего дела",
     "description": "Стать Senior-разработчиком",
     "icon": "senior.png",
-    "condition": { "type": "grade_reached", "target": "senior" }
+    "condition": {
+      "type": "grade_reached",
+      "target": "senior"
+    }
   },
   {
     "id": "reached_teamlead",
     "name": "Лидер мнений",
     "description": "Стать Teamlead",
     "icon": "teamlead.png",
-    "condition": { "type": "grade_reached", "target": "teamlead" }
+    "condition": {
+      "type": "grade_reached",
+      "target": "teamlead"
+    }
   },
   {
     "id": "reached_architect",
     "name": "Вид свысока",
     "description": "Стать Архитектором",
     "icon": "architect.png",
-    "condition": { "type": "grade_reached", "target": "architect" }
+    "condition": {
+      "type": "grade_reached",
+      "target": "architect"
+    }
   },
   {
     "id": "first_million",
     "name": "Миллионер",
     "description": "Накопить 1 000 000 ₽",
     "icon": "million.png",
-    "condition": { "type": "money_made", "target": 1000000 }
+    "condition": {
+      "type": "money_made",
+      "target": 1000000
+    }
   },
   {
     "id": "skill_50",
     "name": "Всё схватываю на лету",
     "description": "Достичь 50 уровня в любом навыке",
     "icon": "skill_50.png",
-    "condition": { "type": "skill_level", "target": "50" }
+    "condition": {
+      "type": "skill_level",
+      "target": "50"
+    }
   },
   {
     "id": "skill_100",
     "name": "Гуру",
     "description": "Достичь 100 уровня в любом навыке",
     "icon": "skill_100.png",
-    "condition": { "type": "skill_level", "target": "100" }
+    "condition": {
+      "type": "skill_level",
+      "target": "100"
+    }
   },
   {
     "id": "fullstack_samurai",
     "name": "Фулстек-самурай",
     "description": "Достичь 40 уровня в Frontend и Backend",
     "icon": "samurai.png",
-    "condition": { "type": "special", "target": "fullstack" }
+    "condition": {
+      "type": "special",
+      "target": "fullstack"
+    }
   },
   {
     "id": "survivor_100",
     "name": "Сто дней в IT",
     "description": "Прожить 100 игровых дней",
     "icon": "survivor.png",
-    "condition": { "type": "days_survived", "target": 100 }
+    "condition": {
+      "type": "days_survived",
+      "target": 100
+    }
   },
   {
     "id": "freelance_star",
     "name": "Фриланс-звезда",
     "description": "Заработать 500 000 ₽ на фрилансе",
     "icon": "freelance.png",
-    "condition": { "type": "money_made", "target": 500000 }
+    "condition": {
+      "type": "money_made",
+      "target": 500000
+    }
   },
   {
     "id": "burnout_ending",
     "name": "Пчеловод",
     "description": "Достичь финала «Выгорание»",
     "icon": "bee.png",
-    "condition": { "type": "special", "target": "burnout" }
+    "condition": {
+      "type": "special",
+      "target": "burnout"
+    }
   },
   {
     "id": "events_50",
     "name": "Жизнь кипит",
     "description": "Пережить 50 игровых событий",
     "icon": "events.png",
-    "condition": { "type": "events_seen", "target": 50 }
+    "condition": {
+      "type": "events_seen",
+      "target": 50
+    }
   },
   {
     "id": "networking_guru",
     "name": "Душа компании",
     "description": "Достичь репутации 80+",
     "icon": "networking.png",
-    "condition": { "type": "special", "target": "reputation_80" }
+    "condition": {
+      "type": "special",
+      "target": "reputation_80"
+    }
+  },
+  {
+    "id": "mining_100k",
+    "name": "Подпольный майнер",
+    "description": "Заработать 100 000 ₽ на майнинге",
+    "icon": "miner.png",
+    "condition": {
+      "type": "special",
+      "target": "mining_100k"
+    }
+  },
+  {
+    "id": "mining_1m",
+    "name": "Криптокит",
+    "description": "Заработать 1 000 000 ₽ на майнинге",
+    "icon": "whale.png",
+    "condition": {
+      "type": "special",
+      "target": "mining_1m"
+    }
   }
 ]
