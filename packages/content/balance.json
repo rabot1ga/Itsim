@@ -1,0 +1,41 @@
+{
+  "version": "2.0.0",
+  "baseEnergy": 10,
+  "maxEnergy": 16,
+  "minEnergy": 3,
+  "offlineHoursPerDay": 3.5,
+  "maxBankedDays": 7,
+  "motivationDailyDrift": -0.5,
+  "motivationHealthCapSlope": 0.6,
+  "motivationHealthCapBase": 40,
+  "foodHealthCook": 1,
+  "foodHealthDelivery": 0,
+  "startingMoney": 10000,
+  "rentGraceDays": 3,
+  "salaryWeeksPerMonth": 4.3,
+  "motivationMultMin": 0.7,
+  "motivationMultMax": 1.3,
+  "motivationMultSlope": 0.006,
+  "xpSources": {
+    "study_youtube": { "xp": 6, "energy": 2, "cost": 0, "maxLevel": 40 },
+    "study_book": { "xp": 10, "energy": 1, "cost": 1500, "maxLevel": 60 },
+    "study_stepik": { "xp": 14, "energy": 2, "cost": 2000, "maxLevel": 70 },
+    "study_course": { "xp": 22, "energy": 3, "cost": 15000, "maxLevel": 82 },
+    "study_advanced_course": { "xp": 30, "energy": 3, "cost": 60000, "maxLevel": 92 },
+    "study_mentor": { "xp": 38, "energy": 3, "cost": 120000, "maxLevel": 100 },
+    "work_task": { "xp": 8, "energy": 4, "cost": 0, "maxLevel": 100 },
+    "pet_project": { "xp": 12, "energy": 3, "cost": 0, "maxLevel": 100 },
+    "freelance_work": { "xp": 5, "energy": 4, "cost": 0, "maxLevel": 100 }
+  },
+  "eventChanceOnboarding": 0.20,
+  "eventChanceEarly": 0.35,
+  "eventChanceMid": 0.28,
+  "eventChanceLate": 0.20,
+  "housing": [
+    { "level": 0, "name": "Общага", "cost": 5000, "energyBonus": 0, "motivationBonus": 0, "reputationBonus": 0 },
+    { "level": 1, "name": "Однушка на окраине", "cost": 25000, "energyBonus": 1, "motivationBonus": 0, "reputationBonus": 0 },
+    { "level": 2, "name": "Квартира в центре", "cost": 50000, "energyBonus": 2, "motivationBonus": 5, "reputationBonus": 0 },
+    { "level": 3, "name": "Своя квартира (ипотека)", "cost": 40000, "energyBonus": 2, "motivationBonus": 10, "reputationBonus": 0 },
+    { "level": 4, "name": "Пентхаус", "cost": 150000, "energyBonus": 3, "motivationBonus": 15, "reputationBonus": 10 }
+  ]
+}

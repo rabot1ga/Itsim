@@ -1,0 +1,140 @@
+[
+  {
+    "id": "layoff_fear",
+    "title": "📉 Слухи о сокращении",
+    "description": "По офису ходят слухи: грядут сокращения. Кого-то уволят. Ты смотришь на свою зарплату и начинаешь волноваться.",
+    "tags": ["work", "crisis", "career"],
+    "weight": 6,
+    "cooldownDays": 45,
+    "maxOccurrences": 3,
+    "minGameDay": 30,
+    "conditions": { "hasJob": true },
+    "choices": [
+      {
+        "text": "Обновить резюме и посмотреть рынок 📝",
+        "effects": { "energy": -1, "motivation": 2 },
+        "followup": "Рынок горячий. Ты успокоился. Но резюме обновил."
+      },
+      {
+        "text": "Работать усерднее, чтобы быть незаменимым 💪",
+        "effects": { "energy": -2, "skill.javascript": 2, "motivation": -2, "health": -1 },
+        "followup": "Ты взял ещё задач. Пусть только попробуют уволить."
+      },
+      {
+        "text": "Написать друзьям — есть ли вакансии 🤝",
+        "effects": { "motivation": 3, "reputation": 1, "relation.uni_friend": 5 },
+        "followup": "Саня сказал, что у них ищут людей. План Б есть."
+      }
+    ]
+  },
+  {
+    "id": "new_technology",
+    "title": "🚀 Новая технология",
+    "description": "Тимлид объявил: «Переходим на новую технологию. Всем изучить до следующего спринта.»",
+    "tags": ["work", "study", "tech"],
+    "weight": 9,
+    "cooldownDays": 30,
+    "minGameDay": 15,
+    "conditions": { "hasJob": true },
+    "choices": [
+      {
+        "text": "С энтузиазмом изучить новое 🔥",
+        "effects": { "energy": -3, "skill.javascript": 2, "skill.python": 2, "motivation": 3 },
+        "followup": "Новая технология оказалась интересной. Ты уже написал POC."
+      },
+      {
+        "text": "Ворчать и делать по-старому 😤",
+        "effects": { "motivation": -3, "reputation": -2 },
+        "followup": "Технология всё равно внедрится. А ты будешь тем, кто ворчал."
+      },
+      {
+        "text": "Предложить мигрировать постепенно 🐢",
+        "requires": { "skill": { "communication": 20 } },
+        "effects": { "reputation": 4, "skill.typescript": 2, "motivation": 1 },
+        "followup": "Твой план миграции приняли. Ты — герой спринта."
+      }
+    ]
+  },
+  {
+    "id": "team_building",
+    "title": "🎯 Тимбилдинг",
+    "description": "HR анонсировала тимбилдинг: верёвочный парк, шашлыки и нетворкинг. В пятницу после работы.",
+    "tags": ["work", "social"],
+    "weight": 7,
+    "cooldownDays": 60,
+    "minGameDay": 20,
+    "conditions": { "hasJob": true },
+    "choices": [
+      {
+        "text": "Пойти — будет весело 🎉",
+        "effects": { "money": -1000, "motivation": 8, "health": 2, "relation.teamlead": 8, "relation.junior_colleague": 10 },
+        "followup": "Тимбилдинг удался. Ты узнал, что тимлид коллекционирует фигурки драконов."
+      },
+      {
+        "text": "Отмазаться — много работы 📋",
+        "effects": { "motivation": 1, "relation.teamlead": -5 },
+        "followup": "Ты остался. В офисе было подозрительно тихо. И грустно."
+      },
+      {
+        "text": "Прийти, но уйти через час 🏃",
+        "effects": { "motivation": 4, "relation.teamlead": 2 },
+        "followup": "Отметился, поел шашлык, ушёл. Все довольны."
+      }
+    ]
+  },
+  {
+    "id": "toxic_standup",
+    "title": "🎤 Стэндап с сеньором",
+    "description": "Дмитрий Борисович на дейлике: «Кто писал этот код? Нет, я просто хочу понять, кто это сделал.»",
+    "tags": ["work", "toxic", "social"],
+    "weight": 6,
+    "cooldownDays": 10,
+    "minGameDay": 15,
+    "conditions": { "hasJob": true, "npcPresent": "toxic_senior" },
+    "choices": [
+      {
+        "text": "Промолчать и кивать 🤐",
+        "effects": { "motivation": -5, "relation.toxic_senior": -5, "reputation": -1 },
+        "followup": "Ты промолчал. Но внутри всё кипит."
+      },
+      {
+        "text": "Признать и предложить рефакторинг 🛠️",
+        "effects": { "reputation": 3, "skill.javascript": 2, "motivation": -2, "relation.toxic_senior": 5 },
+        "followup": "«Да, код неидеален. Вот план рефакторинга.» Сеньор офигел."
+      },
+      {
+        "text": "Пошутить в ответ 😄",
+        "requires": { "skill": { "communication": 25 } },
+        "effects": { "reputation": 5, "motivation": 8, "relation.toxic_senior": -10, "relation.junior_colleague": 15 },
+        "followup": "Ты пошутил. Команда засмеялась. Дмитрий Борисович — нет."
+      }
+    ]
+  },
+  {
+    "id": "mentoring_moment",
+    "title": "👨‍🏫 Стажёр просит помощи",
+    "description": "Маша подходит: «Извините, можете объяснить, как работает этот микросервис? Я уже час сижу.»",
+    "tags": ["work", "social", "mentoring"],
+    "weight": 8,
+    "cooldownDays": 7,
+    "minGameDay": 10,
+    "conditions": { "hasJob": true, "npcPresent": "junior_colleague" },
+    "choices": [
+      {
+        "text": "Сесть и объяснить — час времени 🧑‍🏫",
+        "effects": { "energy": -2, "motivation": 5, "skill.communication": 2, "relation.junior_colleague": 15 },
+        "followup": "Маша всё поняла. Через неделю она закроет тикет быстрее тебя."
+      },
+      {
+        "text": "Скинуть ссылку на документацию 📄",
+        "effects": { "relation.junior_colleague": -5, "motivation": 0 },
+        "followup": "«Почитай документацию.» Маша пошла читать. И читает до сих пор."
+      },
+      {
+        "text": "Объяснить на пальцах за 5 минут 🤏",
+        "effects": { "energy": -1, "motivation": 3, "relation.junior_colleague": 8 },
+        "followup": "Коротко и по делу. Маша вдохновлена. Ты — хороший наставник."
+      }
+    ]
+  }
+]

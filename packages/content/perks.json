@@ -1,0 +1,58 @@
+[
+  {
+    "id": "perk_fullstack",
+    "name": "Фулстек-самурай",
+    "requires": { "frontendBranch": 40, "backendBranch": 40 },
+    "effects": {
+      "jobRequirementDiscount": 0.1,
+      "freelancePaymentMult": 1.15
+    },
+    "flavor": "Умеешь всё. Ни в чём не эксперт. Зато на созвонах киваешь уверенно."
+  },
+  {
+    "id": "perk_morning_person",
+    "name": "Жаворонок",
+    "requires": { "time_management": 25 },
+    "effects": {
+      "energyBonus": 1
+    },
+    "flavor": "Ты встаёшь в 6 утра и успеваю больше, чем весь офис."
+  },
+  {
+    "id": "perk_speed_reader",
+    "name": "Скорочтение",
+    "requires": { "communication": 20, "english": 20 },
+    "effects": {
+      "learningBonus": 0.15
+    },
+    "flavor": "Документация? Проглотил за 5 минут. Да, я так умею."
+  },
+  {
+    "id": "perk_stoic",
+    "name": "Стоик",
+    "requires": { "stress_resistance": 20, "time_management": 15 },
+    "effects": {
+      "motivationResistance": 0.2
+    },
+    "flavor": "Прод упал? Бывает. Кризис? Решаемо. Ты всё видел."
+  },
+  {
+    "id": "perk_networker",
+    "name": "Нетворкер",
+    "requires": { "communication": 35, "public_speaking": 10 },
+    "effects": {
+      "jobRequirementDiscount": 0.05,
+      "freelancePaymentMult": 1.1
+    },
+    "flavor": "Ты знаком со всеми в индустрии. Или хотя бы со всеми, кто платит."
+  },
+  {
+    "id": "perk_pro_gamer",
+    "name": "Киберспортсмен",
+    "requires": { "time_management": 50, "stress_resistance": 15 },
+    "effects": {
+      "energyBonus": 2
+    },
+    "flavor": "Ты успеваешь и кодить, и играть. Как? Секрет."
+  }
+]
