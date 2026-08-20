@@ -1,0 +1,249 @@
+[
+  {
+    "id": "product_launch",
+    "title": "🚀 Релиз продукта",
+    "description": "После трёх месяцев разработки ваш продукт наконец выходит в продакшн. Команда в напряжении — всё может упасть в любую секунду.",
+    "tags": ["work", "milestone", "crisis"],
+    "weight": 5,
+    "cooldownDays": 60,
+    "maxOccurrences": 3,
+    "minGameDay": 30,
+    "conditions": { "hasJob": true, "minGrade": "junior" },
+    "choices": [
+      {
+        "text": "Дежурить ночью — если что, мы на месте 🌙",
+        "effects": { "energy": -4, "motivation": -3, "reputation": 8, "skill.devops": 3, "health": -2 },
+        "followup": "Прод не упал. Но ты не спал до 4 утра. Зато тебя запомнили."
+      },
+      {
+        "text": "Подготовить откат на всякий случай 🔙",
+        "effects": { "energy": -2, "skill.devops": 4, "reputation": 5, "motivation": 2 },
+        "followup": "Откат не пригодился. Но тимлид оценил предусмотрительность."
+      },
+      {
+        "text": "Уйти в 18:00 — всё равно админы следят 🏃",
+        "effects": { "energy": 2, "motivation": 3, "reputation": -5 },
+        "followup": "Утром тебя ждало 20 сообщений. Прод таки падал. Но уже починили."
+      }
+    ]
+  },
+  {
+    "id": "conference_talk",
+    "title": "🎤 Конференция в городе",
+    "description": "В город приезжает большая IT-конференция. Билеты дорогие, но доклады выглядят интересно.",
+    "tags": ["career", "study", "social"],
+    "weight": 6,
+    "cooldownDays": 45,
+    "minGameDay": 20,
+    "choices": [
+      {
+        "text": "Купить билет и пойти (15 000 ₽) 🎫",
+        "effects": { "money": -15000, "motivation": 8, "skill.javascript": 2, "reputation": 3, "energy": -2 },
+        "followup": "Доклады были неровные, но пара идей реально полезны. Нетворкинг удался."
+      },
+      {
+        "text": "Пойти волонтёром — бесплатно 🆓",
+        "effects": { "energy": -3, "motivation": 3, "reputation": 4, "skill.communication": 2, "skill.javascript": 1 },
+        "followup": "Ты помогал на регистрации. Зато послушал половину докладов."
+      },
+      {
+        "text": "Смотреть стрим дома 💻",
+        "effects": { "energy": -1, "skill.javascript": 1, "motivation": 1 },
+        "followup": "Стрим лагал. Ты закрыл на пятой минуте. Пошёл кодить."
+      }
+    ]
+  },
+  {
+    "id": "open_source_found",
+    "title": "🌿 Нашёл баг в опенсорсе",
+    "description": "Ты копался в коде библиотеки, которую используете на проекте, и нашёл баг. Не критичный, но неприятный.",
+    "tags": ["code", "career", "social"],
+    "weight": 7,
+    "cooldownDays": 30,
+    "minGameDay": 20,
+    "choices": [
+      {
+        "text": "Забагать PR с фиксом 🛠️",
+        "effects": { "energy": -2, "skill.javascript": 4, "reputation": 8, "motivation": 5 },
+        "followup": "Через 2 дня PR приняли. Ты — контрибьютор опенсорса. Звучит гордо."
+      },
+      {
+        "text": "Написать issue и забыть 📝",
+        "effects": { "reputation": 2, "motivation": 0 },
+        "followup": "Issue висит. Может, кто-то пофиксит. Может, нет."
+      },
+      {
+        "text": "Закласть костыль в проекте 🤷",
+        "effects": { "skill.javascript": 1 },
+        "followup": "Костыль работает. Но где-то плачет один опенсорс-разработчик."
+      }
+    ]
+  },
+  {
+    "id": "salary_negotiation",
+    "title": "💰 Разговор о зарплате",
+    "description": "Год работы позади. Тимлид намекает, что можно поговорить о повышении. Но сам он тему не поднимает.",
+    "tags": ["career", "work", "social"],
+    "weight": 5,
+    "cooldownDays": 90,
+    "maxOccurrences": 4,
+    "minGameDay": 60,
+    "conditions": { "hasJob": true },
+    "choices": [
+      {
+        "text": "Попросить повышение напрямую 📈",
+        "requires": { "skill": { "communication": 25 } },
+        "effects": { "money": 30000, "reputation": 5, "motivation": 8, "relation.teamlead": 5 },
+        "followup": "Ты получил повышение! Плюс 30к к зарплате. Стоило попросить."
+      },
+      {
+        "text": "Показать результаты и ждать 📊",
+        "effects": { "energy": -2, "skill.javascript": 2, "reputation": 3, "motivation": -2 },
+        "followup": "Ты работал ещё усерднее. Повышение придёт. Когда-нибудь."
+      },
+      {
+        "text": "Найти оффер и торговаться 🎯",
+        "effects": { "energy": -3, "motivation": 3, "reputation": -2, "relation.teamlead": -5 },
+        "followup": "Ты принёс оффер от конкурентов. Тимлид сделал counter-offer. Неловко, но выгодно."
+      }
+    ]
+  },
+  {
+    "id": "hackathon",
+    "title": "🏆 Хакатон выходного дня",
+    "description": "Друг Саня зовёт на хакатон: «2 дня, пицца, призы, будет жарко!»",
+    "tags": ["social", "work", "code"],
+    "weight": 4,
+    "cooldownDays": 60,
+    "minGameDay": 15,
+    "conditions": { "npcPresent": "uni_friend", "minRelation": { "uni_friend": 30 } },
+    "choices": [
+      {
+        "text": "Участвовать — будет опыт и призы 🏅",
+        "effects": { "energy": -4, "motivation": 8, "skill.javascript": 3, "skill.python": 2, "reputation": 5, "relation.uni_friend": 10, "health": -3 },
+        "followup": "Вы не спали двое суток, но сделали MVP. Заняли 3-е место! 30 000 ₽ призовых."
+      },
+      {
+        "text": "Прийти только на открытие и нетворкинг 🤝",
+        "effects": { "energy": -1, "motivation": 4, "reputation": 3, "relation.uni_friend": 5 },
+        "followup": "Обменялся контактами с парой ребят из Яндекса. Полезно."
+      },
+      {
+        "text": "Отказаться — надо отдыхать 😴",
+        "effects": { "health": 2, "motivation": 3, "relation.uni_friend": -5 },
+        "followup": "Ты выспался. В понедельник чувствуешь себя отдохнувшим."
+      }
+    ]
+  },
+  {
+    "id": "relocation_offer",
+    "title": "✈️ Оффер из-за границы",
+    "description": "В LinkedIn написал рекрутер из европейской компании. «Рассматриваете релокацию? У нас отличный стек и виза.»",
+    "tags": ["career", "social"],
+    "weight": 3,
+    "cooldownDays": 90,
+    "maxOccurrences": 2,
+    "minGameDay": 60,
+    "conditions": { "maxGrade": "senior", "minSkill": { "english": 30 } },
+    "choices": [
+      {
+        "text": "Пройти собеседование — почему бы и нет 🌍",
+        "requires": { "skill": { "english": 40 } },
+        "effects": { "energy": -3, "motivation": 8, "reputation": 5, "skill.english": 3 },
+        "followup": "Ты прошёл 2 этапа. Если получишь оффер — будет выбор."
+      },
+      {
+        "text": "Вежливо отказаться — корни здесь 🏠",
+        "effects": { "motivation": 2, "reputation": 1, "relation.uni_friend": 5 },
+        "followup": "«Спасибо, не сейчас». Но приятно, что позвали."
+      },
+      {
+        "text": "Запросить 300к — от нечего делать 😏",
+        "effects": { "energy": -1, "skill.communication": 2, "reputation": 2 },
+        "followup": "Они согласились. Теперь придётся ехать. Или нет?"
+      }
+    ]
+  },
+  {
+    "id": "gym_motivation",
+    "title": "🏋️ Второе дыхание",
+    "description": "Ты купил абонемент в зал месяц назад. Ходил 2 раза. Тренер напоминает, что абонемент сгорает.",
+    "tags": ["health", "daily"],
+    "weight": 8,
+    "cooldownDays": 14,
+    "minGameDay": 5,
+    "conditions": { "hasItem": "gym_subscription" },
+    "choices": [
+      {
+        "text": "Пойти — раз уж заплатил 💪",
+        "effects": { "energy": -2, "health": 5, "motivation": 5, "money": -500 },
+        "followup": "Тренер был рад. Ты тоже. Эндорфины — сила."
+      },
+      {
+        "text": "Продать абонемент и купить подушку 🛏️",
+        "effects": { "money": 1500, "motivation": 2 },
+        "followup": "Ты сдал абонемент. И купил ортопедическую подушку."
+      },
+      {
+        "text": "Пойти, но просто постоять в раздевалке 🚿",
+        "effects": { "money": -300, "motivation": 1 },
+        "followup": "Ты переоделся, посидел в телефоне и ушёл. Главное — пришёл."
+      }
+    ]
+  },
+  {
+    "id": "technical_debt",
+    "title": "🧹 Технический долг",
+    "description": "Тимлид сказал: «Надо бы переписать этот модуль. Когда-нибудь. Может, в следующем спринте.» Этому модулю 5 лет.",
+    "tags": ["work", "code"],
+    "weight": 7,
+    "cooldownDays": 20,
+    "minGameDay": 20,
+    "conditions": { "hasJob": true },
+    "choices": [
+      {
+        "text": "Взять и переписать в фоне 🌙",
+        "effects": { "energy": -4, "skill.javascript": 5, "motivation": 3, "reputation": 6, "health": -2 },
+        "followup": "Ты переписал модуль за 3 ночи. Стало в 2 раза быстрее. Тимлид в шоке."
+      },
+      {
+        "text": "Предложить план рефакторинга на спринт 📋",
+        "effects": { "energy": -2, "skill.javascript": 2, "reputation": 4, "skill.communication": 2, "motivation": 2 },
+        "followup": "План приняли. Рефакторинг включили в бэклог. Через 2 спринта."
+      },
+      {
+        "text": "Не трогать — работает же 🫣",
+        "effects": { "motivation": -2, "karma": -5 },
+        "followup": "Модуль работает. Но ты знаешь. Ты всегда знаешь."
+      }
+    ]
+  },
+  {
+    "id": "corporate_party",
+    "title": "🎄 Корпоратив",
+    "description": "Новый год приближается. HR бронирует ресторан. Тема дресс-кода: «Киберпанк 2077».",
+    "tags": ["work", "social"],
+    "weight": 4,
+    "cooldownDays": 90,
+    "maxOccurrences": 2,
+    "minGameDay": 30,
+    "conditions": { "hasJob": true },
+    "choices": [
+      {
+        "text": "Пойти и оторваться 🕺",
+        "effects": { "money": -3000, "motivation": 12, "health": -3, "relation.teamlead": 8, "relation.junior_colleague": 10, "relation.toxic_senior": 5 },
+        "followup": "Корпоратив удался. Ты танцевал с тимлидом. Завтра будет стыдно. И больно."
+      },
+      {
+        "text": "Прийти на час и уйти 🎭",
+        "effects": { "money": -1000, "motivation": 5, "relation.teamlead": 3 },
+        "followup": "Отметился, выпил сок, ушёл. Все подумали — ты ответственный."
+      },
+      {
+        "text": "Не идти — работа важнее 📈",
+        "effects": { "motivation": -3, "relation.teamlead": -5, "relation.junior_colleague": -5 },
+        "followup": "Ты остался работать. В офисе было пусто и грустно."
+      }
+    ]
+  }
+]

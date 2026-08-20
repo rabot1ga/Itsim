@@ -133,3 +133,15 @@ export function totalSkillXp(p: PlayerState): number {
 export function getSkill(p: PlayerState, skillId: string): SkillLevel {
   return p.skills[skillId] ?? { level: 0, xp: 0 };
 }
+
+/**
+ * Get the highest skill level across all skills
+ * Used for grade requirement comparison
+ */
+export function maxSkillLevel(p: PlayerState): number {
+  let max = 0;
+  for (const skill of Object.values(p.skills)) {
+    if (skill.level > max) max = skill.level;
+  }
+  return max;
+}

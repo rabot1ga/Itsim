@@ -151,5 +151,113 @@
     "description": "Один на один с профи. Дорого, но результат гарантирован.",
     "effects": { "xpBonus": 0.0 },
     "icon": "mentor.png"
+  },
+  {
+    "id": "monitor_4k",
+    "name": "4K монитор 32\"",
+    "type": "other",
+    "price": 55000,
+    "description": "HDR, 144Hz. Код выглядит красиво. Особенно зелёный текст на чёрном.",
+    "effects": { "speedBonus": 0.1, "xpBonus": 0.05, "motivationBonus": 3 },
+    "icon": "monitor.png"
+  },
+  {
+    "id": "smart_watch",
+    "name": "Apple Watch Ultra",
+    "type": "other",
+    "price": 80000,
+    "description": "Здоровье под контролем. И ещё 48 уведомлений в час.",
+    "effects": { "healthBonus": 3, "motivationBonus": 2, "reputationBonus": 2 },
+    "icon": "watch.png"
+  },
+  {
+    "id": "standing_desk",
+    "name": "Складной стол-трансформер",
+    "type": "other",
+    "price": 45000,
+    "description": "Стоя кодить — модно. Спина скажет спасибо.",
+    "effects": { "energyBonus": 1, "healthBonus": 3 },
+    "icon": "desk.png"
+  },
+  {
+    "id": "noise_cancelling_earplugs",
+    "name": "Беруши для сна",
+    "type": "other",
+    "price": 2000,
+    "description": "Сосед играет в CS до утра? Не слышу.",
+    "effects": { "healthBonus": 2, "motivationBonus": 2 },
+    "icon": "earplugs.png"
+  },
+  {
+    "id": "smart_home",
+    "name": "Умный дом (розетки, лампы, датчики)",
+    "type": "other",
+    "price": 30000,
+    "description": "Голосом включать свет во время код-ревью — маст хэв.",
+    "effects": { "motivationBonus": 5, "reputationBonus": 3 },
+    "icon": "smarthome.png"
+  },
+  {
+    "id": "airpods_max",
+    "name": "AirPods Max",
+    "type": "headphones",
+    "price": 60000,
+    "description": "Дорогие. Тяжёлые. Все знают, что у тебя они есть.",
+    "effects": { "xpBonus": 0.2, "motivationBonus": 3, "reputationBonus": 2 },
+    "icon": "airpods_max.png"
+  },
+  {
+    "id": "tesla_cyber_plush",
+    "name": "Киберплюш CyberPlush",
+    "type": "other",
+    "price": 5000,
+    "description": "Плюшевый кибертрак. Стоит на столе. Напоминает, что ты в айти.",
+    "effects": { "motivationBonus": 3 },
+    "icon": "cyberplush.png"
+  },
+  {
+    "id": "electric_kettle",
+    "name": "Умный чайник Xiaomi",
+    "type": "coffee",
+    "price": 3500,
+    "description": "Греется за 3 минуты. Можно с телефона включать. Жиза.",
+    "effects": { "motivationBonus": 2 },
+    "icon": "kettle.png"
+  },
+  {
+    "id": "car_leasing",
+    "name": "Машина в лизинг (Kia Rio)",
+    "type": "other",
+    "price": 250000,
+    "description": "Первоначальный взнос — 250к. Ежемесячный платёж — 25к. Теперь ты настоящий взрослый.",
+    "effects": { "reputationBonus": 10, "motivationBonus": 8, "money": -25000 },
+    "icon": "car.png"
+  },
+  {
+    "id": "trip_to_thailand",
+    "name": "Путёвка в Таиланд на 2 недели",
+    "type": "other",
+    "price": 200000,
+    "description": "Песок, море, ноутбук с open space у бассейна. Дрим.",
+    "effects": { "healthBonus": 15, "motivationBonus": 20, "money": -200000 },
+    "icon": "thailand.png"
+  },
+  {
+    "id": "certificate_aws",
+    "name": "AWS Certified Solutions Architect",
+    "type": "course",
+    "price": 300000,
+    "description": "Подготовка + экзамен. Окупается за 2 месяца. Сертификат на стену.",
+    "effects": { "xpBonus": 0.15, "reputationBonus": 15 },
+    "icon": "aws_cert.png"
+  },
+  {
+    "id": "boat",
+    "name": "Лодка с мотором",
+    "type": "other",
+    "price": 800000,
+    "description": "На ней можно уплыть от всех дейликов. Ultimate money sink.",
+    "effects": { "reputationBonus": 20, "motivationBonus": 15 },
+    "icon": "boat.png"
   }
 ]
