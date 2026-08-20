@@ -82,6 +82,7 @@ export function buildRoomComposition(opts: {
   let atmosphere: string | null = null;
   if (itemLayer('desk_plant')) atmosphere = 'atmo_cactus';
   else if (itemLayer('coffee_maker')) atmosphere = 'atmo_coffee';
+  else if (housingLevel >= 1) atmosphere = 'atmo_rug';
 
   // cross-collection layers
   const crossBySlot: Record<string, string | null> = {};

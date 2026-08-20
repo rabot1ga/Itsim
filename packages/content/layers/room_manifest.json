@@ -1,7 +1,10 @@
 {
   "collection": "room",
   "version": 1,
-  "resolution": { "width": 1000, "height": 1000 },
+  "resolution": {
+    "width": 1000,
+    "height": 1000
+  },
   "slots": [
     {
       "id": "bg",
@@ -9,11 +12,26 @@
       "required": true,
       "tintSlot": "wallColor",
       "entries": [
-        { "id": "bg_0", "file": "room/bg/bg_0.svg" },
-        { "id": "bg_1", "file": "room/bg/bg_1.svg" },
-        { "id": "bg_2", "file": "room/bg/bg_2.svg" },
-        { "id": "bg_3", "file": "room/bg/bg_3.svg" },
-        { "id": "bg_4", "file": "room/bg/bg_4.svg" }
+        {
+          "id": "bg_0",
+          "file": "room/bg/bg_0.svg"
+        },
+        {
+          "id": "bg_1",
+          "file": "room/bg/bg_1.svg"
+        },
+        {
+          "id": "bg_2",
+          "file": "room/bg/bg_2.svg"
+        },
+        {
+          "id": "bg_3",
+          "file": "room/bg/bg_3.svg"
+        },
+        {
+          "id": "bg_4",
+          "file": "room/bg/bg_4.svg"
+        }
       ]
     },
     {
@@ -21,10 +39,27 @@
       "zOrder": 1,
       "required": true,
       "entries": [
-        { "id": "window_square", "file": "room/window/window_square.svg" },
-        { "id": "window_panoramic", "file": "room/window/window_panoramic.svg" },
-        { "id": "window_round", "file": "room/window/window_round.svg", "rarity": "rare" },
-        { "id": "window_arched", "file": "room/window/window_arched.svg" }
+        {
+          "id": "window_square",
+          "file": "room/window/window_square.svg"
+        },
+        {
+          "id": "window_panoramic",
+          "file": "room/window/window_panoramic.svg"
+        },
+        {
+          "id": "window_round",
+          "file": "room/window/window_round.svg",
+          "rarity": "rare"
+        },
+        {
+          "id": "window_arched",
+          "file": "room/window/window_arched.svg"
+        },
+        {
+          "id": "window_blinds",
+          "file": "room/window/window_blinds.svg"
+        }
       ]
     },
     {
@@ -32,13 +67,45 @@
       "zOrder": 2,
       "required": true,
       "entries": [
-        { "id": "decor_poster_js", "file": "room/decor/decor_poster_js.svg" },
-        { "id": "decor_neon", "file": "room/decor/decor_neon.svg" },
-        { "id": "decor_server", "file": "room/decor/decor_server.svg", "rarity": "rare" },
-        { "id": "decor_books", "file": "room/decor/decor_books.svg" },
-        { "id": "decor_whiteboard", "file": "room/decor/decor_whiteboard.svg" },
-        { "id": "decor_madlads_poster", "file": "room/decor/decor_madlads_poster.svg", "rarity": "legendary" },
-        { "id": "decor_pirate_poster", "file": "room/decor/decor_pirate_poster.svg", "rarity": "legendary" }
+        {
+          "id": "decor_poster_js",
+          "file": "room/decor/decor_poster_js.svg"
+        },
+        {
+          "id": "decor_neon",
+          "file": "room/decor/decor_neon.svg"
+        },
+        {
+          "id": "decor_server",
+          "file": "room/decor/decor_server.svg",
+          "rarity": "rare"
+        },
+        {
+          "id": "decor_books",
+          "file": "room/decor/decor_books.svg"
+        },
+        {
+          "id": "decor_whiteboard",
+          "file": "room/decor/decor_whiteboard.svg"
+        },
+        {
+          "id": "decor_madlads_poster",
+          "file": "room/decor/decor_madlads_poster.svg",
+          "rarity": "legendary"
+        },
+        {
+          "id": "decor_pirate_poster",
+          "file": "room/decor/decor_pirate_poster.svg",
+          "rarity": "legendary"
+        },
+        {
+          "id": "decor_clock",
+          "file": "room/decor/decor_clock.svg"
+        },
+        {
+          "id": "decor_poster_python",
+          "file": "room/decor/decor_poster_python.svg"
+        }
       ]
     },
     {
@@ -46,11 +113,27 @@
       "zOrder": 3,
       "required": true,
       "entries": [
-        { "id": "desk_parata", "file": "room/desk/desk_parata.svg" },
-        { "id": "desk_ikea", "file": "room/desk/desk_ikea.svg" },
-        { "id": "desk_office", "file": "room/desk/desk_office.svg" },
-        { "id": "desk_standing", "file": "room/desk/desk_standing.svg" },
-        { "id": "desk_rgb", "file": "room/desk/desk_rgb.svg", "rarity": "rare" }
+        {
+          "id": "desk_parata",
+          "file": "room/desk/desk_parata.svg"
+        },
+        {
+          "id": "desk_ikea",
+          "file": "room/desk/desk_ikea.svg"
+        },
+        {
+          "id": "desk_office",
+          "file": "room/desk/desk_office.svg"
+        },
+        {
+          "id": "desk_standing",
+          "file": "room/desk/desk_standing.svg"
+        },
+        {
+          "id": "desk_rgb",
+          "file": "room/desk/desk_rgb.svg",
+          "rarity": "rare"
+        }
       ]
     },
     {
@@ -58,11 +141,29 @@
       "zOrder": 6,
       "required": true,
       "entries": [
-        { "id": "chair_stool", "file": "room/chair/chair_stool.svg" },
-        { "id": "chair_office", "file": "room/chair/chair_office.svg" },
-        { "id": "chair_gaming", "file": "room/chair/chair_gaming.svg", "rarity": "rare" },
-        { "id": "chair_herman_miller", "file": "room/chair/chair_herman_miller.svg", "rarity": "legendary" },
-        { "id": "chair_throne", "file": "room/chair/chair_throne.svg", "rarity": "legendary" }
+        {
+          "id": "chair_stool",
+          "file": "room/chair/chair_stool.svg"
+        },
+        {
+          "id": "chair_office",
+          "file": "room/chair/chair_office.svg"
+        },
+        {
+          "id": "chair_gaming",
+          "file": "room/chair/chair_gaming.svg",
+          "rarity": "rare"
+        },
+        {
+          "id": "chair_herman_miller",
+          "file": "room/chair/chair_herman_miller.svg",
+          "rarity": "legendary"
+        },
+        {
+          "id": "chair_throne",
+          "file": "room/chair/chair_throne.svg",
+          "rarity": "legendary"
+        }
       ]
     },
     {
@@ -70,11 +171,33 @@
       "zOrder": 5,
       "required": true,
       "entries": [
-        { "id": "setup_laptop", "file": "room/setup/setup_laptop.svg" },
-        { "id": "setup_monitor", "file": "room/setup/setup_monitor.svg" },
-        { "id": "setup_dual", "file": "room/setup/setup_dual.svg", "rarity": "rare" },
-        { "id": "setup_gaming", "file": "room/setup/setup_gaming.svg", "rarity": "rare" },
-        { "id": "setup_macbook", "file": "room/setup/setup_macbook.svg", "rarity": "legendary" }
+        {
+          "id": "setup_laptop",
+          "file": "room/setup/setup_laptop.svg"
+        },
+        {
+          "id": "setup_monitor",
+          "file": "room/setup/setup_monitor.svg"
+        },
+        {
+          "id": "setup_dual",
+          "file": "room/setup/setup_dual.svg",
+          "rarity": "rare"
+        },
+        {
+          "id": "setup_gaming",
+          "file": "room/setup/setup_gaming.svg",
+          "rarity": "rare"
+        },
+        {
+          "id": "setup_macbook",
+          "file": "room/setup/setup_macbook.svg",
+          "rarity": "legendary"
+        },
+        {
+          "id": "setup_ultrawide",
+          "file": "room/setup/setup_ultrawide.svg"
+        }
       ]
     },
     {
@@ -82,10 +205,30 @@
       "zOrder": 4,
       "required": false,
       "entries": [
-        { "id": "atmo_none", "file": null },
-        { "id": "atmo_plant", "file": "room/plant/atmo_plant.svg" },
-        { "id": "atmo_cactus", "file": "room/plant/atmo_cactus.svg" },
-        { "id": "atmo_coffee", "file": "room/plant/atmo_coffee.svg" }
+        {
+          "id": "atmo_none",
+          "file": null
+        },
+        {
+          "id": "atmo_plant",
+          "file": "room/plant/atmo_plant.svg"
+        },
+        {
+          "id": "atmo_cactus",
+          "file": "room/plant/atmo_cactus.svg"
+        },
+        {
+          "id": "atmo_coffee",
+          "file": "room/plant/atmo_coffee.svg"
+        },
+        {
+          "id": "atmo_rug",
+          "file": "room/plant/atmo_rug.svg"
+        },
+        {
+          "id": "atmo_lamp",
+          "file": "room/plant/atmo_lamp.svg"
+        }
       ]
     },
     {
@@ -93,11 +236,34 @@
       "zOrder": 7,
       "required": false,
       "entries": [
-        { "id": "pet_none", "file": null },
-        { "id": "pet_cat", "file": "room/pet/pet_cat.svg" },
-        { "id": "pet_dog", "file": "room/pet/pet_dog.svg" },
-        { "id": "pet_cactus", "file": "room/pet/pet_cactus.svg" },
-        { "id": "pet_robo", "file": "room/pet/pet_robo.svg" }
+        {
+          "id": "pet_none",
+          "file": null
+        },
+        {
+          "id": "pet_cat",
+          "file": "room/pet/pet_cat.svg"
+        },
+        {
+          "id": "pet_dog",
+          "file": "room/pet/pet_dog.svg"
+        },
+        {
+          "id": "pet_cactus",
+          "file": "room/pet/pet_cactus.svg"
+        },
+        {
+          "id": "pet_robo",
+          "file": "room/pet/pet_robo.svg"
+        },
+        {
+          "id": "pet_spider",
+          "file": "room/pet/pet_spider.svg"
+        },
+        {
+          "id": "pet_bulldog",
+          "file": "room/pet/pet_bulldog.svg"
+        }
       ]
     }
   ]

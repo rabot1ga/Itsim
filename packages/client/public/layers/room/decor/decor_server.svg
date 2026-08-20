@@ -1,8 +1,32 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000"><defs>
+  <linearGradient id="skinGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#969696"/><stop offset="1" stop-color="#767676"/>
+  </linearGradient>
+  <linearGradient id="hairGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#5c5c5c"/><stop offset="1" stop-color="#3c3c3c"/>
+  </linearGradient>
+  <linearGradient id="wallGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#a6abb5"/><stop offset="1" stop-color="#898e99"/>
+  </linearGradient>
+  <linearGradient id="floorGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#5f5f5f"/><stop offset="1" stop-color="#424242"/>
+  </linearGradient>
+  <linearGradient id="glassGrad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#ddeaf7"/><stop offset="1" stop-color="#a9c6e0"/>
+  </linearGradient>
+  <linearGradient id="woodGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#b98d60"/><stop offset="1" stop-color="#8a6238"/>
+  </linearGradient>
+  <linearGradient id="steelGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#8b93a3"/><stop offset="1" stop-color="#5d6672"/>
+  </linearGradient>
+</defs><g stroke="#1e2430" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
   <rect x="110" y="210" width="230" height="260" rx="8" fill="#2b2f36"/>
   <rect x="130" y="230" width="190" height="40" rx="4" fill="#3a4049"/>
   <rect x="130" y="290" width="190" height="40" rx="4" fill="#3a4049"/>
   <rect x="130" y="350" width="190" height="40" rx="4" fill="#3a4049"/>
   <rect x="130" y="410" width="190" height="40" rx="4" fill="#3a4049"/>
-  <circle cx="150" cy="250" r="6" fill="#4ade80"/><circle cx="170" cy="310" r="6" fill="#4ade80"/>
-  <circle cx="190" cy="370" r="6" fill="#f87171"/><circle cx="150" cy="430" r="6" fill="#4ade80"/></svg>
+  <circle cx="150" cy="250" r="6" fill="#4ade80" stroke="none"/>
+  <circle cx="170" cy="310" r="6" fill="#4ade80" stroke="none"/>
+  <circle cx="190" cy="370" r="6" fill="#f87171" stroke="none"/>
+  <circle cx="150" cy="430" r="6" fill="#4ade80" stroke="none"/></g></svg>

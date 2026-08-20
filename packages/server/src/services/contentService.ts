@@ -154,6 +154,32 @@ function validateCrossReferences(bundle: ContentBundle) {
     }
   }
 
+  // Validate genetics option ids against the layer manifests (DESIGN.md 1)
+  const avatarEntryIds = new Set<string>();
+  for (const slot of bundle.avatarLayers.slots) {
+    for (const entry of slot.entries) avatarEntryIds.add(entry.id);
+  }
+  const roomEntryIds = new Set<string>();
+  for (const slot of bundle.roomLayers.slots) {
+    for (const entry of slot.entries) roomEntryIds.add(entry.id);
+  }
+  const geneticsCheck: Array<[string, any[], Set<string>]> = [
+    ['eyes', bundle.genetics.eyes, avatarEntryIds],
+    ['hairstyles', bundle.genetics.hairstyles, avatarEntryIds],
+    ['beards', bundle.genetics.beards, avatarEntryIds],
+    ['tops', bundle.genetics.tops, avatarEntryIds],
+    ['accessories', bundle.genetics.accessories, avatarEntryIds],
+    ['windows', bundle.genetics.windows, roomEntryIds],
+    ['decorOptions', bundle.genetics.decorOptions, roomEntryIds],
+  ];
+  for (const [group, options, ids] of geneticsCheck) {
+    for (const opt of options) {
+      if (!ids.has(opt.id)) {
+        console.warn(`⚠ Genetics.${group}: option "${opt.id}" not found in layer manifests`);
+      }
+    }
+  }
+
   console.log('✓ Cross-reference validation complete');
 }
 
