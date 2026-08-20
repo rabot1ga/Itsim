@@ -164,7 +164,7 @@ export const ShareCard: React.FC<{
 
   return (
     <div className="game-card">
-      <h3 className="text-sm font-medium text-slate-400 mb-2">📸 Карточка для шеринга</h3>
+      <h3 className="section-title mb-2">📸 Карточка для шеринга</h3>
       <canvas ref={canvasRef} width={W} height={H} style={{ display: 'none' }} />
       {dataUrl && <img src={dataUrl} alt="Шар-карточка" className="rounded-lg border border-slate-700 mb-2" />}
       {error && <p className="text-xs text-red-300 mb-2">⚠️ {error}</p>}

@@ -93,7 +93,7 @@ export const RoomView: React.FC = () => {
 
       {/* Wallet */}
       <div className="game-card">
-        <h3 className="text-sm font-medium text-slate-400 mb-2">👛 Кошелёк Solana</h3>
+        <h3 className="section-title mb-2">👛 Кошелёк Solana</h3>
         {player.walletAddress ? (
           <p className="text-xs font-mono text-emerald-400 break-all">{player.walletAddress}</p>
         ) : (
@@ -120,7 +120,7 @@ export const RoomView: React.FC = () => {
 
       {/* NFT inventory */}
       <div className="game-card">
-        <h3 className="text-sm font-medium text-slate-400 mb-2">🔗 NFT-предметы (мок)</h3>
+        <h3 className="section-title mb-2">🔗 NFT-предметы (мок)</h3>
         {(inventory ?? []).length === 0 ? (
           <p className="text-xs text-slate-500">
             Пока пусто. Купи NFT-предмет в магазине (Herman Miller, MacBook…) — он смонтится в кошелёк.
@@ -144,7 +144,7 @@ export const RoomView: React.FC = () => {
 
       {/* Cross-collection synergies */}
       <div className="game-card">
-        <h3 className="text-sm font-medium text-slate-400 mb-2">🌐 Cross-collection (мок-детект)</h3>
+        <h3 className="section-title mb-2">🌐 Cross-collection (мок-детект)</h3>
         <div className="space-y-2">
           {crossCollections.map((c: any) => {
             const held = (heldCollections ?? []).includes(c.collectionId);

@@ -87,8 +87,8 @@ export const CareerView: React.FC = () => {
 
       {/* Job offers */}
       {offers.length > 0 && (
-        <div className="game-card border-l-4 border-emerald-500">
-          <h3 className="text-sm font-medium text-slate-400 mb-2">📩 Офферы</h3>
+        <div className="game-card border-l-4 border-emerald-500 animate-pop-in">
+          <h3 className="section-title mb-2">📩 Офферы</h3>
           <div className="space-y-2">
             {offers.map((o: any) => (
               <div key={o.companyId} className="bg-slate-800/50 rounded-lg p-2.5">
@@ -122,7 +122,7 @@ export const CareerView: React.FC = () => {
       {/* Application status */}
       {application && (
         <div className="game-card border-l-4 border-sky-500">
-          <h3 className="text-sm font-medium text-slate-400 mb-2">📄 Твой отклик</h3>
+          <h3 className="section-title mb-2">📄 Твой отклик</h3>
           {application.status === 'interview_scheduled' && (
             <p className="text-sm text-slate-300">
               {application.position} — собеседование на {application.interviewDay} день. Готовься, скрести пальцы.
@@ -143,7 +143,7 @@ export const CareerView: React.FC = () => {
 
       {/* Grade progress */}
       <div className="game-card">
-        <h3 className="text-sm font-medium text-slate-400 mb-2">📈 Грейды</h3>
+        <h3 className="section-title mb-2">📈 Грейды</h3>
         <div className="space-y-1.5">
           {GRADES.map((g) => {
             const order = GRADES.map(x => x.grade);
@@ -165,7 +165,7 @@ export const CareerView: React.FC = () => {
 
       {/* Companies */}
       <div className="game-card">
-        <h3 className="text-sm font-medium text-slate-400 mb-2">🏢 Компании</h3>
+        <h3 className="section-title mb-2">🏢 Компании</h3>
         {companies.length === 0 && (
           <p className="text-xs text-slate-500">Загрузка компаний...</p>
         )}

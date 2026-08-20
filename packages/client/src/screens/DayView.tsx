@@ -79,7 +79,7 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
     <div className="space-y-4 animate-fade-in">
       {/* Active event */}
       {activeEvent && (
-        <div className="game-card border-amber-500/40 bg-amber-500/5">
+        <div className="game-card border-amber-500/40 bg-amber-500/5 animate-pop-in">
           <p className="text-sm font-bold text-amber-300 mb-1">{activeEvent.title}</p>
           <p className="text-sm text-slate-300 mb-3">{activeEvent.description}</p>
           <div className="space-y-2">
@@ -113,7 +113,7 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
 
       {/* Mining farm (passive income) */}
       {mining && (
-        <div className="game-card border-yellow-500/30 bg-yellow-500/5">
+        <div className="game-card border-yellow-500/30 bg-yellow-500/5 animate-pop-in">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-yellow-300">⛏ Майнинг-ферма</span>
             <span className="text-xs text-slate-400">{mining.hashrate} MH/s</span>
@@ -132,7 +132,7 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
       {/* Actions by category */}
       {categories.map(cat => (
         <div key={cat.id}>
-          <h3 className="text-sm font-medium text-slate-400 mb-2">{cat.label}</h3>
+          <h3 className="section-title mb-2">{cat.label}</h3>
           <div className="grid grid-cols-2 gap-2">
             {cat.actions.map(action => {
               const enabled = canAct(action.energy) && canAfford(action.cost);
@@ -163,7 +163,7 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
       {/* Side jobs (non-IT gigs) */}
       {Object.keys(sideJobs).length > 0 && (
         <div>
-          <h3 className="text-sm font-medium text-slate-400 mb-2">🛵 Подработки (не IT)</h3>
+          <h3 className="section-title mb-2">🛵 Подработки (не IT)</h3>
           <div className="grid grid-cols-2 gap-2">
             {Object.entries(sideJobs).map(([jobId, job]) => {
               const enabled = canAct(job.energy) && (player.currentDay ?? 0) >= (job.minDay ?? 1);
@@ -201,7 +201,7 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
       {/* End day button */}
       <button
         onClick={onAdvanceDay}
-        className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-colors text-lg mt-4"
+        className="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white rounded-2xl font-bold transition-all text-lg mt-4 shadow-lg shadow-indigo-900/40 active:scale-[0.98]"
       >
         ➡️ Завершить день {player.currentDay ?? 1} →
       </button>

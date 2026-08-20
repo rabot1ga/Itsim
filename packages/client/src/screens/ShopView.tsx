@@ -93,7 +93,7 @@ export const ShopView: React.FC = () => {
 
       {/* Housing section */}
       <div className="game-card mt-4">
-        <h3 className="text-sm font-medium text-slate-400 mb-2">🏠 Жильё</h3>
+        <h3 className="section-title mb-2">🏠 Жильё</h3>
         <div className="space-y-2">
           {HOUSING.map((h) => {
             const current = player.housingLevel === h.level;

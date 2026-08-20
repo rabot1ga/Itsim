@@ -90,7 +90,7 @@ export const SkillsView: React.FC = () => {
 
       {/* Soft skills */}
       <div className="game-card">
-        <h3 className="text-sm font-medium text-slate-400 mb-2">Soft Skills</h3>
+        <h3 className="section-title mb-2">Soft Skills</h3>
         <div className="grid grid-cols-3 gap-2">
           {SOFT_SKILLS.map((s) => {
             const lvl = player.softSkills?.[s.key]?.level ?? 0;
@@ -113,7 +113,7 @@ export const SkillsView: React.FC = () => {
 
         return (
           <div key={branchId} className={`game-card border-l-4 ${meta.color}`}>
-            <h3 className="text-sm font-medium text-slate-400 mb-2">
+            <h3 className="section-title mb-2">
               {meta.icon} {meta.name}
               <span className="text-slate-600 ml-1">({learned.length}/{branchSkills.length})</span>
             </h3>
