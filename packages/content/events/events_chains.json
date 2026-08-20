@@ -1,0 +1,149 @@
+[
+  {
+    "id": "toxic_chain_01",
+    "title": "😤 Первое унижение на код-ревью",
+    "description": "Ты открываешь PR. Через 10 минут приходит ревью от Дмитрия Борисовича: 37 комментариев. Половина — «это ужасно», «переписать», «ты чему учился?».",
+    "tags": ["work", "chain", "toxic"],
+    "weight": 8,
+    "cooldownDays": 30,
+    "maxOccurrences": 1,
+    "minGameDay": 20,
+    "conditions": { "hasJob": true, "minGrade": "junior" },
+    "choices": [
+      {
+        "text": "Вежливо исправить все замечания 📝",
+        "effects": { "energy": -2, "motivation": -8, "skill.javascript": 3, "reputation": 2, "relation.toxic_senior": 5 },
+        "followup": "Ты исправил все 37. Три из них действительно были полезны.",
+        "chain": { "eventId": "toxic_chain_02", "afterDays": 10, "chance": 0.8 }
+      },
+      {
+        "text": "Ответить на каждый комментарий аргументированно 🗣️",
+        "requires": { "skill": { "communication": 20 } },
+        "effects": { "energy": -3, "motivation": 3, "reputation": 5, "skill.communication": 3, "relation.toxic_senior": -10 },
+        "followup": "Дискуссия заняла 2 часа. Но ты отстоял свой код.",
+        "chain": { "eventId": "toxic_chain_02b", "afterDays": 10, "chance": 0.9 }
+      },
+      {
+        "text": "Пожаловаться тимлиду 🤫",
+        "effects": { "motivation": 2, "reputation": -3, "relation.toxic_senior": -20, "relation.teamlead": -5 },
+        "followup": "Тимлид сказал «разберёмся». Ничего не изменилось.",
+        "chain": { "eventId": "toxic_chain_03", "afterDays": 5, "chance": 0.6 }
+      }
+    ]
+  },
+  {
+    "id": "toxic_chain_02",
+    "title": "😤 Он снова придирается",
+    "description": "Прошло 10 дней. Новый PR. Дмитрий Борисович снова нашёл, к чему придраться. Но на этот раз его комментарии выглядят… конструктивными?",
+    "tags": ["work", "chain", "toxic"],
+    "weight": 100,
+    "cooldownDays": 0,
+    "maxOccurrences": 1,
+    "conditions": { "hasJob": true },
+    "choices": [
+      {
+        "text": "Снова исправить — он явно знает, о чём говорит 📚",
+        "effects": { "energy": -2, "motivation": -3, "skill.javascript": 4, "relation.toxic_senior": 15 },
+        "followup": "Комментарии были по делу. Код стал лучше. Ты начинаешь уважать его.",
+        "chain": { "eventId": "toxic_chain_final_good", "afterDays": 15, "chance": 0.7 }
+      },
+      {
+        "text": "Позвать его на парное программирование 👥",
+        "effects": { "energy": -3, "skill.javascript": 5, "skill.communication": 3, "relation.toxic_senior": 20, "motivation": 2 },
+        "followup": "Вы сели вместе. Он объясняет, ты пишешь. Оказывается, он просто староват для конфликтов.",
+        "chain": { "eventId": "toxic_chain_final_good", "afterDays": 10, "chance": 0.8 }
+      }
+    ]
+  },
+  {
+    "id": "toxic_chain_02b",
+    "title": "😤 Открытый конфликт",
+    "description": "После той дискуссии в офисе напряжённая тишина. Дмитрий Борисович проходит мимо и демонстративно не здоровается. Команда разделилась.",
+    "tags": ["work", "chain", "toxic"],
+    "weight": 100,
+    "cooldownDays": 0,
+    "maxOccurrences": 1,
+    "conditions": { "hasJob": true },
+    "choices": [
+      {
+        "text": "Игнорировать — работаем 🤝",
+        "effects": { "motivation": -5, "reputation": 2, "skill.communication": 1, "relation.toxic_senior": -5 },
+        "followup": "Ты просто делаешь свою работу. Дмитрий Борисович тоже.",
+        "chain": { "eventId": "toxic_chain_final_neutral", "afterDays": 20, "chance": 0.6 }
+      },
+      {
+        "text": "Попробовать помириться через кофе ☕",
+        "effects": { "money": -500, "motivation": 3, "relation.toxic_senior": 20, "health": 1 },
+        "followup": "Ты купил ему кофе. «Слушай, давай начнём заново?» Он улыбнулся. Впервые.",
+        "chain": { "eventId": "toxic_chain_final_good", "afterDays": 10, "chance": 0.9 }
+      },
+      {
+        "text": "Обратиться к HR 📋",
+        "effects": { "reputation": -5, "relation.toxic_senior": -30, "relation.junior_colleague": 10, "motivation": 3 },
+        "followup": "HR провела беседу. Дмитрий Борисович теперь пишет комментарии повежливее.",
+        "chain": { "eventId": "toxic_chain_final_neutral", "afterDays": 15, "chance": 0.7 }
+      }
+    ]
+  },
+  {
+    "id": "toxic_chain_03",
+    "title": "😤 HR-разбирательство",
+    "description": "Тимлид всё-таки поговорил с Дмитрием Борисовичем. Тот в ярости. Теперь вся команда чувствует напряжение.",
+    "tags": ["work", "chain", "toxic"],
+    "weight": 100,
+    "cooldownDays": 0,
+    "maxOccurrences": 1,
+    "conditions": { "hasJob": true },
+    "choices": [
+      {
+        "text": "Предложить перевестись в другой проект 🔄",
+        "effects": { "energy": -2, "motivation": 5, "reputation": -2, "relation.toxic_senior": 0 },
+        "followup": "Ты перевёлся. Новый проект, новый тимлид. Спокойствие.",
+        "chain": { "eventId": "toxic_chain_final_neutral", "afterDays": 5, "chance": 1.0 }
+      },
+      {
+        "text": "Остаться и дожать 💪",
+        "effects": { "motivation": -5, "reputation": 5, "skill.communication": 3, "health": -2 },
+        "followup": "Ты остался. Через месяц Дмитрий Борисович уволился. Ты выиграл.",
+        "chain": { "eventId": "toxic_chain_final_good", "afterDays": 25, "chance": 0.5 }
+      }
+    ]
+  },
+  {
+    "id": "toxic_chain_final_good",
+    "title": "🎉 Неожиданный союзник",
+    "description": "Дмитрий Борисович подходит к тебе после стендапа: «Слушай, я тут подумал… Ты нормально работаешь. Хочешь, вместе подокументируем нашу архитектуру?»",
+    "tags": ["work", "chain", "toxic", "reward"],
+    "weight": 100,
+    "cooldownDays": 0,
+    "maxOccurrences": 1,
+    "choices": [
+      {
+        "text": "Согласиться — будет полезно 🤝",
+        "effects": { "energy": -2, "skill.javascript": 5, "skill.python": 3, "relation.toxic_senior": 40, "motivation": 8, "reputation": 10 },
+        "followup": "Вы стали отличной командой. Его опыт + твоя энергия. Баланс."
+      },
+      {
+        "text": "Вежливо отказаться — у тебя свои планы 📋",
+        "effects": { "relation.toxic_senior": -10, "motivation": 2 },
+        "followup": "Ты отказался. Но теперь у тебя есть уважение коллеги."
+      }
+    ]
+  },
+  {
+    "id": "toxic_chain_final_neutral",
+    "title": "⚖️ Статус-кво восстановлен",
+    "description": "Конфликт исчерпан. Никто не победил, никто не проиграл. Просто рабочие будни.",
+    "tags": ["work", "chain", "toxic"],
+    "weight": 100,
+    "cooldownDays": 0,
+    "maxOccurrences": 1,
+    "choices": [
+      {
+        "text": "Хорошо. Работаем дальше.",
+        "effects": { "motivation": 3, "health": 2, "skill.communication": 2 },
+        "followup": "Напряжение спало. Ты сделал выводы. Дмитрий Борисович тоже."
+      }
+    ]
+  }
+]

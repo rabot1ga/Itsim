@@ -1,0 +1,25 @@
+{
+  "name": "it-life-simulator",
+  "version": "2.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/shared",
+    "packages/content",
+    "packages/server",
+    "packages/client",
+    "packages/bot",
+    "packages/sim"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev -w packages/server\" \"npm run dev -w packages/client\"",
+    "build": "npm run build -w packages/shared && npm run build -w packages/server && npm run build -w packages/client",
+    "test": "npm run test -w packages/shared",
+    "simulate": "tsx packages/sim/src/simulate.ts",
+    "lint": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "tsx": "^4.7.0",
+    "typescript": "^5.4.0"
+  }
+}

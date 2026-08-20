@@ -1,0 +1,170 @@
+[
+  {
+    "id": "javascript",
+    "name": "JavaScript",
+    "branch": "frontend",
+    "icon": "js.png",
+    "maxLevel": 100,
+    "flavor": "Язык, который ты ненавидишь, пока не поймёшь, что без него никуда."
+  },
+  {
+    "id": "react",
+    "name": "React",
+    "branch": "frontend",
+    "parent": "javascript",
+    "unlockAt": { "javascript": 25 },
+    "icon": "react.png",
+    "maxLevel": 100,
+    "flavor": "Библиотека, которая называет себя библиотекой, но ведёт себя как фреймворк."
+  },
+  {
+    "id": "nextjs",
+    "name": "Next.js",
+    "branch": "frontend",
+    "parent": "react",
+    "unlockAt": { "react": 30 },
+    "icon": "nextjs.png",
+    "maxLevel": 100,
+    "flavor": "React, но с сервером. Теперь у тебя в два раза больше проблем."
+  },
+  {
+    "id": "css",
+    "name": "CSS",
+    "branch": "frontend",
+    "icon": "css.png",
+    "maxLevel": 100,
+    "flavor": "Простой язык, пока не надо центрировать div."
+  },
+  {
+    "id": "typescript",
+    "name": "TypeScript",
+    "branch": "frontend",
+    "parent": "javascript",
+    "unlockAt": { "javascript": 30 },
+    "icon": "ts.png",
+    "maxLevel": 100,
+    "flavor": "JavaScript с характером. Любой ценой."
+  },
+  {
+    "id": "python",
+    "name": "Python",
+    "branch": "backend",
+    "icon": "python.png",
+    "maxLevel": 100,
+    "flavor": "Язык для тех, кто хочет писать код, а не воевать с компилятором."
+  },
+  {
+    "id": "java",
+    "name": "Java",
+    "branch": "backend",
+    "icon": "java.png",
+    "maxLevel": 100,
+    "flavor": "Напиши раз — таскай везде. Особенно легаси."
+  },
+  {
+    "id": "spring",
+    "name": "Spring",
+    "branch": "backend",
+    "parent": "java",
+    "unlockAt": { "java": 25 },
+    "icon": "spring.png",
+    "maxLevel": 100,
+    "flavor": "Фреймворк, который превращает 10 строк кода в 100."
+  },
+  {
+    "id": "sql",
+    "name": "SQL",
+    "branch": "backend",
+    "icon": "sql.png",
+    "maxLevel": 100,
+    "flavor": "SELECT * FROM developers WHERE skill > 0"
+  },
+  {
+    "id": "nodejs",
+    "name": "Node.js",
+    "branch": "backend",
+    "parent": "javascript",
+    "unlockAt": { "javascript": 20 },
+    "icon": "nodejs.png",
+    "maxLevel": 100,
+    "flavor": "JavaScript на сервере. Да, теперь можно."
+  },
+  {
+    "id": "swift",
+    "name": "Swift",
+    "branch": "mobile",
+    "icon": "swift.png",
+    "maxLevel": 100,
+    "flavor": "Apple-экосистема. Дорого, сердито, но красиво."
+  },
+  {
+    "id": "kotlin",
+    "name": "Kotlin",
+    "branch": "mobile",
+    "icon": "kotlin.png",
+    "maxLevel": 100,
+    "flavor": "Java, которая сходила в спортзал и похудела."
+  },
+  {
+    "id": "android",
+    "name": "Android SDK",
+    "branch": "mobile",
+    "parent": "kotlin",
+    "unlockAt": { "kotlin": 20 },
+    "icon": "android.png",
+    "maxLevel": 100,
+    "flavor": "Эмулятор грузится дольше, чем ты кодишь."
+  },
+  {
+    "id": "manual_testing",
+    "name": "Manual Testing",
+    "branch": "qa",
+    "icon": "manual.png",
+    "maxLevel": 100,
+    "flavor": "Клик-клик-клик. Баг. Клик-клик. Баг."
+  },
+  {
+    "id": "automation_testing",
+    "name": "Automation Testing",
+    "branch": "qa",
+    "parent": "manual_testing",
+    "unlockAt": { "manual_testing": 25 },
+    "icon": "auto.png",
+    "maxLevel": 100,
+    "flavor": "Теперь ты пишешь код, который тестирует код."
+  },
+  {
+    "id": "selenium",
+    "name": "Selenium",
+    "branch": "qa",
+    "parent": "automation_testing",
+    "unlockAt": { "automation_testing": 20 },
+    "icon": "selenium.png",
+    "maxLevel": 100,
+    "flavor": "Браузер, который открывается сам. Жутковато."
+  },
+  {
+    "id": "git",
+    "name": "Git",
+    "branch": "backend",
+    "icon": "git.png",
+    "maxLevel": 100,
+    "flavor": "Инструмент, который ты проклинаешь до первого merge conflict."
+  },
+  {
+    "id": "docker",
+    "name": "Docker",
+    "branch": "devops",
+    "icon": "docker.png",
+    "maxLevel": 100,
+    "flavor": "It works on my machine! — Теперь работает и на других."
+  },
+  {
+    "id": "linux",
+    "name": "Linux",
+    "branch": "devops",
+    "icon": "linux.png",
+    "maxLevel": 100,
+    "flavor": "Графический интерфейс для тех, кто не умеет в терминал."
+  }
+]

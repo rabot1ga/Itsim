@@ -1,0 +1,34 @@
+[
+  {
+    "id": "teamlead",
+    "name": "Алексей Петрович",
+    "role": "teamlead",
+    "description": "Твой тимлид. 35 лет, седина в бороду, архитектурное видение в голову. Цитирует Мартина, пишет код по выходным.",
+    "avatar": "teamlead.png",
+    "initialRelation": 0
+  },
+  {
+    "id": "junior_colleague",
+    "name": "Маша",
+    "role": "junior",
+    "description": "Джун, которую ты наставляешь. Быстрая, любознательная, задаёт по 100 вопросов в день. Напоминает тебя год назад.",
+    "avatar": "junior.png",
+    "initialRelation": 10
+  },
+  {
+    "id": "toxic_senior",
+    "name": "Дмитрий Борисович",
+    "role": "senior_toxic",
+    "description": "Сеньор, который всё знает лучше всех. Код-ревью — часовая лекция. Но если подружиться — кладезь знаний.",
+    "avatar": "toxic.png",
+    "initialRelation": -10
+  },
+  {
+    "id": "uni_friend",
+    "name": "Саня",
+    "role": "friend",
+    "description": "Друг из универа. Работает в другой конторе, но вы всё ещё вместе ходите в бар по пятницам.",
+    "avatar": "friend.png",
+    "initialRelation": 40
+  }
+]

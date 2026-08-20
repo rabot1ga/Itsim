@@ -1,0 +1,155 @@
+[
+  {
+    "id": "dorm",
+    "name": "Общага",
+    "type": "housing",
+    "price": 5000,
+    "description": "Комната на троих. Сосед играет в CS до утра.",
+    "effects": {},
+    "icon": "dorm.png"
+  },
+  {
+    "id": "cheap_pc",
+    "name": "Бюджетный ПК",
+    "type": "pc",
+    "price": 30000,
+    "description": "Ноутбук за 30к. Excel открывает, но IDE — уже на пределе.",
+    "effects": { "speedBonus": 0.1, "xpBonus": 0.0 },
+    "icon": "cheap_pc.png"
+  },
+  {
+    "id": "gaming_pc",
+    "name": "Игровой ПК",
+    "type": "pc",
+    "price": 80000,
+    "description": "RTX 4060. Для работы, конечно.",
+    "effects": { "speedBonus": 0.2, "xpBonus": 0.05 },
+    "icon": "gaming_pc.png"
+  },
+  {
+    "id": "macbook",
+    "name": "MacBook Pro",
+    "type": "pc",
+    "price": 200000,
+    "description": "Статусный символ айтишника. В кофейнях узнают.",
+    "effects": { "speedBonus": 0.3, "xpBonus": 0.1 },
+    "icon": "macbook.png"
+  },
+  {
+    "id": "office_chair",
+    "name": "Офисное кресло",
+    "type": "chair",
+    "price": 5000,
+    "description": "Купил на Авито. Скрипит, но терпимо.",
+    "effects": { "energyBonus": 0 },
+    "icon": "office_chair.png"
+  },
+  {
+    "id": "gaming_chair",
+    "name": "Кресло для гейминга",
+    "type": "chair",
+    "price": 15000,
+    "description": "Гоночное кресло. В нём удобно кодить и страдать.",
+    "effects": { "energyBonus": 1 },
+    "icon": "gaming_chair.png"
+  },
+  {
+    "id": "herman_miller",
+    "name": "Herman Miller Aeron",
+    "type": "chair",
+    "price": 120000,
+    "description": "Ты купил это кресло. Спина сказала спасибо. Кошелёк — нет.",
+    "effects": { "energyBonus": 2 },
+    "icon": "herman_miller.png"
+  },
+  {
+    "id": "cheap_headphones",
+    "name": "Дешёвые наушники",
+    "type": "headphones",
+    "price": 2000,
+    "description": "Звук есть. Качество — как повезёт.",
+    "effects": { "xpBonus": 0.05 },
+    "icon": "cheap_headphones.png"
+  },
+  {
+    "id": "sony_headphones",
+    "name": "Sony WH-1000XM5",
+    "type": "headphones",
+    "price": 30000,
+    "description": "Шумоподавление. Ты и код — больше ничего не существует.",
+    "effects": { "xpBonus": 0.15 },
+    "icon": "sony_headphones.png"
+  },
+  {
+    "id": "coffee_maker",
+    "name": "Кофемашина",
+    "type": "coffee",
+    "price": 25000,
+    "description": "Эспрессо, американо, латте. Кодить можно без перерыва.",
+    "effects": { "energyBonus": 2, "motivationBonus": 3 },
+    "icon": "coffee_maker.png"
+  },
+  {
+    "id": "gym_subscription",
+    "name": "Абонемент в зал",
+    "type": "other",
+    "price": 3000,
+    "description": "Теперь ты не только в коде качаешься.",
+    "effects": { "energyBonus": 1, "healthBonus": 2 },
+    "icon": "gym.png"
+  },
+  {
+    "id": "desk_plant",
+    "name": "Кактус на стол",
+    "type": "other",
+    "price": 500,
+    "description": "Поливать раз в месяц. Переживёт твой код-ревью.",
+    "effects": { "motivationBonus": 2 },
+    "icon": "cactus.png"
+  },
+  {
+    "id": "mechanical_keyboard",
+    "name": "Механическая клавиатура",
+    "type": "other",
+    "price": 8000,
+    "description": "CLICK CLACK CLICK. Соседи знают, что ты кодишь.",
+    "effects": { "xpBonus": 0.05 },
+    "icon": "keyboard.png"
+  },
+  {
+    "id": "study_stepik",
+    "name": "Stepik / Coursera курс",
+    "type": "course",
+    "price": 2000,
+    "description": "Онлайн-курс с сертификатом. В компаниях любят.",
+    "effects": { "xpBonus": 0.0 },
+    "icon": "stepik.png"
+  },
+  {
+    "id": "study_course",
+    "name": "Платный курс",
+    "type": "course",
+    "price": 15000,
+    "description": "Полноценный курс с ментором. Дорого, но эффективно.",
+    "effects": { "xpBonus": 0.0 },
+    "icon": "course.png"
+  },
+  {
+    "id": "study_advanced_course",
+    "name": "Продвинутый курс",
+    "type": "course",
+    "price": 60000,
+    "description": "Для тех, кто хочет стать сеньором вчера.",
+    "effects": { "xpBonus": 0.0 },
+    "icon": "advanced_course.png"
+  },
+  {
+    "id": "study_mentor",
+    "name": "Личный ментор",
+    "type": "course",
+    "price": 120000,
+    "description": "Один на один с профи. Дорого, но результат гарантирован.",
+    "effects": { "xpBonus": 0.0 },
+    "icon": "mentor.png"
+  }
+]

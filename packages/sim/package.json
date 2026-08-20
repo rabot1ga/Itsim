@@ -1,0 +1,17 @@
+{
+  "name": "@itsim/sim",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "simulate": "tsx src/simulate.ts",
+    "test": "tsx src/simulate.ts --check"
+  },
+  "dependencies": {
+    "@itsim/shared": "*"
+  },
+  "devDependencies": {
+    "tsx": "^4.7.0",
+    "typescript": "^5.4.0"
+  }
+}
