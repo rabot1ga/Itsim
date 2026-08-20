@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000">
+  <rect x="110" y="170" width="230" height="270" rx="8" fill="#f8fafc"/>
+  <rect x="110" y="170" width="230" height="270" rx="8" fill="none" stroke="#cbd5e1" stroke-width="8"/>
+  <path d="M140 230 L200 210 L240 250 L300 200" stroke="#2563eb" stroke-width="6" fill="none"/>
+  <path d="M150 330 L190 300 L240 350 L300 300" stroke="#dc2626" stroke-width="6" fill="none"/>
+  <text x="150" y="290" font-family="monospace" font-size="24" fill="#64748b">legacy == pain</text></svg>

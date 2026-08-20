@@ -14,8 +14,12 @@
     "type": "pc",
     "price": 30000,
     "description": "Ноутбук за 30к. Excel открывает, но IDE — уже на пределе.",
-    "effects": { "speedBonus": 0.1, "xpBonus": 0.0 },
-    "icon": "cheap_pc.png"
+    "effects": {
+      "speedBonus": 0.1,
+      "xpBonus": 0.0
+    },
+    "icon": "cheap_pc.png",
+    "layerId": "setup_laptop"
   },
   {
     "id": "gaming_pc",
@@ -23,8 +27,14 @@
     "type": "pc",
     "price": 80000,
     "description": "RTX 4060. Для работы, конечно.",
-    "effects": { "speedBonus": 0.2, "xpBonus": 0.05 },
-    "icon": "gaming_pc.png"
+    "effects": {
+      "speedBonus": 0.2,
+      "xpBonus": 0.05
+    },
+    "icon": "gaming_pc.png",
+    "layerId": "setup_gaming",
+    "nft": true,
+    "rarity": "rare"
   },
   {
     "id": "macbook",
@@ -32,8 +42,14 @@
     "type": "pc",
     "price": 200000,
     "description": "Статусный символ айтишника. В кофейнях узнают.",
-    "effects": { "speedBonus": 0.3, "xpBonus": 0.1 },
-    "icon": "macbook.png"
+    "effects": {
+      "speedBonus": 0.3,
+      "xpBonus": 0.1
+    },
+    "icon": "macbook.png",
+    "layerId": "setup_macbook",
+    "nft": true,
+    "rarity": "legendary"
   },
   {
     "id": "office_chair",
@@ -41,8 +57,11 @@
     "type": "chair",
     "price": 5000,
     "description": "Купил на Авито. Скрипит, но терпимо.",
-    "effects": { "energyBonus": 0 },
-    "icon": "office_chair.png"
+    "effects": {
+      "energyBonus": 0
+    },
+    "icon": "office_chair.png",
+    "layerId": "chair_office"
   },
   {
     "id": "gaming_chair",
@@ -50,8 +69,13 @@
     "type": "chair",
     "price": 15000,
     "description": "Гоночное кресло. В нём удобно кодить и страдать.",
-    "effects": { "energyBonus": 1 },
-    "icon": "gaming_chair.png"
+    "effects": {
+      "energyBonus": 1
+    },
+    "icon": "gaming_chair.png",
+    "layerId": "chair_gaming",
+    "nft": true,
+    "rarity": "rare"
   },
   {
     "id": "herman_miller",
@@ -59,8 +83,13 @@
     "type": "chair",
     "price": 120000,
     "description": "Ты купил это кресло. Спина сказала спасибо. Кошелёк — нет.",
-    "effects": { "energyBonus": 2 },
-    "icon": "herman_miller.png"
+    "effects": {
+      "energyBonus": 2
+    },
+    "icon": "herman_miller.png",
+    "layerId": "chair_herman_miller",
+    "nft": true,
+    "rarity": "legendary"
   },
   {
     "id": "cheap_headphones",
@@ -68,8 +97,11 @@
     "type": "headphones",
     "price": 2000,
     "description": "Звук есть. Качество — как повезёт.",
-    "effects": { "xpBonus": 0.05 },
-    "icon": "cheap_headphones.png"
+    "effects": {
+      "xpBonus": 0.05
+    },
+    "icon": "cheap_headphones.png",
+    "layerId": "acc_headphones"
   },
   {
     "id": "sony_headphones",
@@ -77,8 +109,13 @@
     "type": "headphones",
     "price": 30000,
     "description": "Шумоподавление. Ты и код — больше ничего не существует.",
-    "effects": { "xpBonus": 0.15 },
-    "icon": "sony_headphones.png"
+    "effects": {
+      "xpBonus": 0.15
+    },
+    "icon": "sony_headphones.png",
+    "layerId": "acc_headphones",
+    "nft": true,
+    "rarity": "rare"
   },
   {
     "id": "coffee_maker",
@@ -86,8 +123,12 @@
     "type": "coffee",
     "price": 25000,
     "description": "Эспрессо, американо, латте. Кодить можно без перерыва.",
-    "effects": { "energyBonus": 2, "motivationBonus": 3 },
-    "icon": "coffee_maker.png"
+    "effects": {
+      "energyBonus": 2,
+      "motivationBonus": 3
+    },
+    "icon": "coffee_maker.png",
+    "layerId": "atmo_coffee"
   },
   {
     "id": "gym_subscription",
@@ -95,7 +136,10 @@
     "type": "other",
     "price": 3000,
     "description": "Теперь ты не только в коде качаешься.",
-    "effects": { "energyBonus": 1, "healthBonus": 2 },
+    "effects": {
+      "energyBonus": 1,
+      "healthBonus": 2
+    },
     "icon": "gym.png"
   },
   {
@@ -104,8 +148,11 @@
     "type": "other",
     "price": 500,
     "description": "Поливать раз в месяц. Переживёт твой код-ревью.",
-    "effects": { "motivationBonus": 2 },
-    "icon": "cactus.png"
+    "effects": {
+      "motivationBonus": 2
+    },
+    "icon": "cactus.png",
+    "layerId": "atmo_cactus"
   },
   {
     "id": "mechanical_keyboard",
@@ -113,8 +160,11 @@
     "type": "other",
     "price": 8000,
     "description": "CLICK CLACK CLICK. Соседи знают, что ты кодишь.",
-    "effects": { "xpBonus": 0.05 },
-    "icon": "keyboard.png"
+    "effects": {
+      "xpBonus": 0.05
+    },
+    "icon": "keyboard.png",
+    "layerId": "setup_laptop"
   },
   {
     "id": "study_stepik",
@@ -122,7 +172,9 @@
     "type": "course",
     "price": 2000,
     "description": "Онлайн-курс с сертификатом. В компаниях любят.",
-    "effects": { "xpBonus": 0.0 },
+    "effects": {
+      "xpBonus": 0.0
+    },
     "icon": "stepik.png"
   },
   {
@@ -131,7 +183,9 @@
     "type": "course",
     "price": 15000,
     "description": "Полноценный курс с ментором. Дорого, но эффективно.",
-    "effects": { "xpBonus": 0.0 },
+    "effects": {
+      "xpBonus": 0.0
+    },
     "icon": "course.png"
   },
   {
@@ -140,7 +194,9 @@
     "type": "course",
     "price": 60000,
     "description": "Для тех, кто хочет стать сеньором вчера.",
-    "effects": { "xpBonus": 0.0 },
+    "effects": {
+      "xpBonus": 0.0
+    },
     "icon": "advanced_course.png"
   },
   {
@@ -149,7 +205,9 @@
     "type": "course",
     "price": 120000,
     "description": "Один на один с профи. Дорого, но результат гарантирован.",
-    "effects": { "xpBonus": 0.0 },
+    "effects": {
+      "xpBonus": 0.0
+    },
     "icon": "mentor.png"
   }
 ]

@@ -1,16 +1,22 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { DayView } from '../screens/DayView';
 import { SkillsView } from '../screens/SkillsView';
 import { CareerView } from '../screens/CareerView';
 import { ShopView } from '../screens/ShopView';
+import { RoomView } from '../screens/RoomView';
 
 export const GameScreen: React.FC = () => {
-  const { currentView, setView, player, advanceDay } = useGameStore();
+  const { currentView, setView, player, advanceDay, loadNft } = useGameStore();
 
   const handleAdvanceDay = async () => {
     await advanceDay();
   };
+
+  // Preload NFT info when opening the room
+  useEffect(() => {
+    if (currentView === 'room') loadNft();
+  }, [currentView, loadNft]);
 
   const renderView = () => {
     switch (currentView) {
@@ -22,6 +28,8 @@ export const GameScreen: React.FC = () => {
         return <CareerView />;
       case 'shop':
         return <ShopView />;
+      case 'room':
+        return <RoomView />;
       default:
         return <DayView onAdvanceDay={handleAdvanceDay} />;
     }
@@ -39,6 +47,7 @@ export const GameScreen: React.FC = () => {
         <NavButton icon="📋" label="День" active={currentView === 'main'} onClick={() => setView('main')} />
         <NavButton icon="📚" label="Навыки" active={currentView === 'skills'} onClick={() => setView('skills')} />
         <NavButton icon="💼" label="Карьера" active={currentView === 'career'} onClick={() => setView('career')} />
+        <NavButton icon="🏠" label="Дом" active={currentView === 'room'} onClick={() => setView('room')} />
         <NavButton icon="🏪" label="Магазин" active={currentView === 'shop'} onClick={() => setView('shop')} />
       </div>
     </div>

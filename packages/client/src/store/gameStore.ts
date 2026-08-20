@@ -31,6 +31,8 @@ interface GameState {
   currentView: string;
   error: string | null;
   activeEvent: any;
+  inventory: any[];
+  heldCollections: string[];
 
   // Actions
   initGame: (initData: string) => Promise<void>;
@@ -43,6 +45,9 @@ interface GameState {
   acceptOffer: (companyId: string) => Promise<boolean>;
   declineOffer: (companyId: string) => Promise<boolean>;
   clearError: () => void;
+  loadNft: () => Promise<void>;
+  bindWallet: (address: string) => Promise<boolean>;
+  setMockCollections: (collections: string[]) => Promise<void>;
 }
 
 export const useGameStore = create<GameState>((set, get) => ({
@@ -52,6 +57,8 @@ export const useGameStore = create<GameState>((set, get) => ({
   currentView: 'main',
   error: null,
   activeEvent: null,
+  inventory: [],
+  heldCollections: [],
 
   initGame: async (initData: string) => {
     try {
@@ -177,5 +184,52 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   declineOffer: async (companyId) => {
     return await get().performAction('decline_offer', { companyId });
+  },
+
+  loadNft: async () => {
+    try {
+      const [invRes, ccRes] = await Promise.all([
+        api('/nft/inventory'),
+        api('/nft/cross-collections'),
+      ]);
+      if (invRes.ok) set({ inventory: invRes.data?.nfts ?? [] });
+      if (ccRes.ok) set({ heldCollections: ccRes.data?.held ?? [] });
+    } catch (err) {
+      console.error('loadNft error:', err);
+    }
+  },
+
+  bindWallet: async (address) => {
+    try {
+      const res = await api('/nft/bind-wallet', {
+        method: 'POST',
+        body: JSON.stringify({ address }),
+      });
+      if (res.ok && res.data?.state) {
+        set({ player: res.data.state, error: null });
+        await get().loadNft();
+        return true;
+      }
+      set({ error: res.data?.error || 'Не удалось привязать кошелёк' });
+      return false;
+    } catch (err) {
+      console.error('bindWallet error:', err);
+      set({ error: 'Сервер недоступен' });
+      return false;
+    }
+  },
+
+  setMockCollections: async (collections) => {
+    try {
+      const res = await api('/nft/mock-collections', {
+        method: 'POST',
+        body: JSON.stringify({ collections }),
+      });
+      if (res.ok) {
+        set({ heldCollections: res.data?.held ?? [], player: res.data?.state ?? get().player });
+      }
+    } catch (err) {
+      console.error('setMockCollections error:', err);
+    }
   },
 }));

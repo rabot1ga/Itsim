@@ -306,3 +306,127 @@ describe('player', () => {
     expect(totalSkillLevels(p)).toBe(0);
   });
 });
+
+// ---- Procedural genetics (DESIGN.md) ----
+
+import {
+  generatePlayerSeed,
+  seededRng,
+  seededWeightedPick,
+  getGeneticTraits,
+  tintFilter,
+  traitTint,
+  type GeneticsConfig,
+} from '../../index';
+
+const GENETICS_CONFIG: GeneticsConfig = {
+  eyes: [
+    { id: 'eye_normal', name: 'Обычные', weight: 50 },
+    { id: 'eye_tired', name: 'Уставшие', weight: 25 },
+    { id: 'eye_legendary', name: 'Глаза Сеньора', weight: 5, rarity: 'legendary' },
+  ],
+  hairstyles: [
+    { id: 'hair_bald', name: 'Лысый', weight: 10 },
+    { id: 'hair_messy', name: 'Взъерошенные', weight: 40 },
+    { id: 'hair_manbun', name: 'Пучок', weight: 15 },
+  ],
+  hairPalette: [
+    { id: 'hair_black', name: 'Чёрный', hue: 20, sat: 0.6, light: 0.55 },
+    { id: 'hair_blond', name: 'Блонд', hue: 48, sat: 2.0, light: 1.25 },
+  ],
+  skinTones: [
+    { id: 'skin_pale', name: 'Бледный', hue: 25, sat: 1.4, light: 1.1 },
+    { id: 'skin_dark', name: 'Тёмный', hue: 15, sat: 2.2, light: 0.6 },
+  ],
+  beards: [
+    { id: 'beard_none', name: 'Без бороды', weight: 45 },
+    { id: 'beard_full', name: 'Борода', weight: 20 },
+  ],
+  tops: [
+    { id: 'top_hoddie', name: 'Худи', weight: 50 },
+    { id: 'top_tshirt', name: 'Футболка', weight: 30 },
+  ],
+  accessories: [
+    { id: 'acc_none', name: 'Без аксессуаров', weight: 40 },
+    { id: 'acc_headphones', name: 'Наушники', weight: 20 },
+  ],
+  windows: [
+    { id: 'window_square', name: 'Квадратное', weight: 40 },
+    { id: 'window_round', name: 'Круглое', weight: 10 },
+  ],
+  wallPalette: [
+    { id: 'wall_gray', name: 'Серый', hue: 0, sat: 0.2, light: 0.9 },
+    { id: 'wall_blue', name: 'Синий', hue: 210, sat: 1.6, light: 0.95 },
+  ],
+  decorOptions: [
+    { id: 'decor_poster_js', name: 'Постер JS', weight: 30 },
+    { id: 'decor_neon', name: 'Неон', weight: 10 },
+  ],
+};
+
+describe('genetics', () => {
+  it('generates a 64-hex-char sha256 seed', () => {
+    const seed = generatePlayerSeed('wallet123', 'game-1');
+    expect(seed).toMatch(/^[0-9a-f]{64}$/);
+  });
+
+  it('different wallets produce different seeds', () => {
+    expect(generatePlayerSeed('walletA')).not.toBe(generatePlayerSeed('walletB'));
+  });
+
+  it('seededRng is deterministic for the same seed', () => {
+    const r1 = seededRng('seed-1');
+    const r2 = seededRng('seed-1');
+    for (let i = 0; i < 20; i++) {
+      expect(r1()).toBe(r2());
+    }
+  });
+
+  it('seededWeightedPick respects weights (deterministic)', () => {
+    const items = [
+      { id: 'a', weight: 1 },
+      { id: 'b', weight: 99 },
+    ];
+    let picks = 0;
+    for (const s of ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8']) {
+      if (seededWeightedPick(items, s, 'x').id === 'b') picks++;
+    }
+    expect(picks).toBeGreaterThan(5); // statistical sanity, deterministic
+  });
+
+  it('getGeneticTraits is deterministic for a fixed seed', () => {
+    const seed = generatePlayerSeed('wallet-determinism');
+    const t1 = getGeneticTraits(seed, GENETICS_CONFIG);
+    const t2 = getGeneticTraits(seed, GENETICS_CONFIG);
+    expect(t1).toEqual(t2);
+    expect(t1.seed).toBe(seed);
+  });
+
+  it('traits always reference existing options', () => {
+    const seed = generatePlayerSeed('wallet-validity');
+    const t = getGeneticTraits(seed, GENETICS_CONFIG);
+    const ids = (opts: { id: string }[]) => new Set(opts.map((o) => o.id));
+    expect(ids(GENETICS_CONFIG.eyes).has(t.eyeShape)).toBe(true);
+    expect(ids(GENETICS_CONFIG.hairstyles).has(t.hairStyle)).toBe(true);
+    expect(ids(GENETICS_CONFIG.hairPalette).has(t.hairColor)).toBe(true);
+    expect(ids(GENETICS_CONFIG.skinTones).has(t.skinTone)).toBe(true);
+    expect(ids(GENETICS_CONFIG.windows).has(t.windowShape)).toBe(true);
+    expect(ids(GENETICS_CONFIG.wallPalette).has(t.wallColor)).toBe(true);
+    expect(ids(GENETICS_CONFIG.decorOptions).has(t.decor)).toBe(true);
+  });
+
+  it('tintFilter produces a CSS filter string with the hue', () => {
+    const filter = tintFilter({ id: 'x', name: 'x', hue: 210, sat: 1.5, light: 1.2 });
+    expect(filter).toContain('hue-rotate(210deg)');
+    expect(filter).toContain('saturate(1.5)');
+    expect(filter).toContain('brightness(1.2)');
+  });
+
+  it('traitTint resolves palettes per slot', () => {
+    const seed = generatePlayerSeed('wallet-tint');
+    const t = getGeneticTraits(seed, GENETICS_CONFIG);
+    expect(traitTint('skinTone', t, GENETICS_CONFIG)?.id).toBe(t.skinTone);
+    expect(traitTint('wallColor', t, GENETICS_CONFIG)?.id).toBe(t.wallColor);
+    expect(traitTint('unknownSlot', t, GENETICS_CONFIG)).toBeNull();
+  });
+});

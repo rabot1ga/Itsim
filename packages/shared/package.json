@@ -16,10 +16,11 @@
     "build": "tsc"
   },
   "dependencies": {
+    "@noble/hashes": "^1.8.0",
     "zod": "^3.22.0"
   },
   "devDependencies": {
-    "vitest": "^1.6.0",
-    "typescript": "^5.4.0"
+    "typescript": "^5.4.0",
+    "vitest": "^1.6.0"
   }
 }

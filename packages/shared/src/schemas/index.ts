@@ -166,6 +166,9 @@ export const ItemSchema = z.object({
   description: z.string(),
   effects: ItemEffectsSchema,
   icon: z.string(),
+  nft: z.boolean().default(false),
+  rarity: z.enum(['common', 'rare', 'legendary']).optional(),
+  layerId: z.string().optional(),
 });
 
 export const ItemsFileSchema = z.array(ItemSchema);
@@ -273,3 +276,96 @@ export const ContentManifestSchema = z.object({
   actions: z.string(),
   balance: z.string(),
 });
+// ---- Procedural generation & Solana (DESIGN.md) ----
+
+export const TraitOptionSchema = z.object({
+  id: z.string().regex(/^[a-z0-9_]+$/),
+  name: z.string().min(1),
+  weight: z.number().positive(),
+  rarity: z.enum(['common', 'rare', 'legendary']).optional(),
+});
+
+export const TintPaletteEntrySchema = z.object({
+  id: z.string().regex(/^[a-z0-9_]+$/),
+  name: z.string().min(1),
+  hue: z.number().min(0).max(360),
+  sat: z.number().min(0).max(10).optional(),
+  light: z.number().min(0).max(3).optional(),
+  weight: z.number().positive().optional(),
+});
+
+export const GeneticsConfigSchema = z.object({
+  version: z.string().default('1.0'),
+  eyes: z.array(TraitOptionSchema).min(1),
+  hairstyles: z.array(TraitOptionSchema).min(1),
+  hairPalette: z.array(TintPaletteEntrySchema).min(1),
+  skinTones: z.array(TintPaletteEntrySchema).min(1),
+  beards: z.array(TraitOptionSchema).min(1),
+  tops: z.array(TraitOptionSchema).min(1),
+  accessories: z.array(TraitOptionSchema).min(1),
+  windows: z.array(TraitOptionSchema).min(1),
+  wallPalette: z.array(TintPaletteEntrySchema).min(1),
+  decorOptions: z.array(TraitOptionSchema).min(1),
+});
+
+export const LayerEntrySchema = z.object({
+  id: z.string().regex(/^[a-z0-9_]+$/),
+  file: z.string().nullable(),
+  weight: z.number().positive().optional(),
+  rarity: z.enum(['common', 'rare', 'legendary']).optional(),
+  excludeWith: z.array(z.string()).optional(),
+});
+
+export const LayerSlotSchema = z.object({
+  id: z.string().regex(/^[a-z0-9_]+$/),
+  zOrder: z.number().int(),
+  required: z.boolean().default(false),
+  tintSlot: z.string().optional(),
+  entries: z.array(LayerEntrySchema),
+});
+
+export const LayerManifestSchema = z.object({
+  collection: z.enum(['avatar', 'room']),
+  version: z.number().int().positive(),
+  resolution: z.object({ width: z.number().int().positive(), height: z.number().int().positive() }),
+  slots: z.array(LayerSlotSchema).min(1),
+});
+
+export const ActiveCrossBonusSchema = z.object({
+  type: z.enum(['freelance_mult', 'energy', 'motivation']),
+  value: z.number(),
+});
+
+export const CrossCollectionBonusSchema = z.object({
+  collectionId: z.string().regex(/^[a-z0-9_]+$/),
+  collectionName: z.string().min(1),
+  nftType: z.enum(['skin', 'decor', 'pet']),
+  layerId: z.string().regex(/^[a-z0-9_]+$/),
+  bonuses: z.array(ActiveCrossBonusSchema),
+});
+
+export const CrossCollectionsSchema = z.object({
+  version: z.string().default('1.0'),
+  collections: z.array(CrossCollectionBonusSchema),
+});
+
+export const NftAttributeSchema = z.object({
+  trait_type: z.string().min(1),
+  value: z.union([z.string(), z.number()]),
+});
+
+export const NftMetadataSchema = z.object({
+  name: z.string().min(1),
+  symbol: z.string().min(1),
+  description: z.string(),
+  image: z.string(),
+  attributes: z.array(NftAttributeSchema),
+  properties: z.object({
+    files: z.array(z.object({ uri: z.string(), type: z.string() })),
+  }),
+});
+
+/** Solana base58 public key */
+export const WalletAddressSchema = z
+  .string()
+  .regex(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/, 'Некорректный адрес кошелька Solana (base58)');

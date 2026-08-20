@@ -11,6 +11,9 @@ import {
   ItemSchema, ItemsFileSchema,
   AchievementSchema, AchievementsFileSchema,
   BalanceSchema,
+  GeneticsConfigSchema,
+  LayerManifestSchema,
+  CrossCollectionsSchema,
 } from '@itsim/shared';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -28,6 +31,10 @@ export interface ContentBundle {
   items: any[];
   achievements: any[];
   balance: any;
+  genetics: any;
+  avatarLayers: any;
+  roomLayers: any;
+  crossCollections: any;
 }
 
 /**
@@ -43,6 +50,10 @@ export function loadContent(): ContentBundle {
     items: loadAndValidate('items.json', ItemsFileSchema),
     achievements: loadAndValidate('achievements.json', AchievementsFileSchema),
     balance: loadAndValidate('balance.json', BalanceSchema),
+    genetics: loadAndValidate('genetics.json', GeneticsConfigSchema),
+    avatarLayers: loadAndValidate('layers/avatar_manifest.json', LayerManifestSchema),
+    roomLayers: loadAndValidate('layers/room_manifest.json', LayerManifestSchema),
+    crossCollections: loadAndValidate('cross_collections.json', CrossCollectionsSchema),
   };
 
   // Run cross-file validation
@@ -94,6 +105,16 @@ function validateCrossReferences(bundle: ContentBundle) {
     'public_speaking',
   ]);
 
+  // Layer ids across both manifests
+  const layerIds = new Set<string>();
+  for (const manifest of [bundle.avatarLayers, bundle.roomLayers]) {
+    for (const slot of manifest.slots) {
+      for (const entry of slot.entries) {
+        layerIds.add(entry.id);
+      }
+    }
+  }
+
   // Validate skill references in events
   for (const event of bundle.events) {
     for (const choice of event.choices) {
@@ -116,6 +137,20 @@ function validateCrossReferences(bundle: ContentBundle) {
           console.warn(`⚠ Event ${event.id}: chain references unknown event "${choice.chain.eventId}"`);
         }
       }
+    }
+  }
+
+  // Validate item layer references (DESIGN.md 3.2)
+  for (const item of bundle.items) {
+    if (item.layerId && !layerIds.has(item.layerId)) {
+      console.warn(`⚠ Item ${item.id}: layerId "${item.layerId}" not found in layer manifests`);
+    }
+  }
+
+  // Validate cross-collection layer references (DESIGN.md 3.3)
+  for (const col of bundle.crossCollections.collections) {
+    if (!layerIds.has(col.layerId)) {
+      console.warn(`⚠ Cross-collection ${col.collectionId}: layerId "${col.layerId}" not found in layer manifests`);
     }
   }
 

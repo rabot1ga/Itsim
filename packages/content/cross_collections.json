@@ -1,0 +1,30 @@
+{
+  "version": "1.0",
+  "collections": [
+    {
+      "collectionId": "smb_gen2",
+      "collectionName": "SMB Gen2",
+      "nftType": "skin",
+      "layerId": "decor_pirate_poster",
+      "bonuses": [
+        { "type": "freelance_mult", "value": 0.05 }
+      ]
+    },
+    {
+      "collectionId": "mad_lads",
+      "collectionName": "Mad Lads",
+      "nftType": "decor",
+      "layerId": "decor_madlads_poster",
+      "bonuses": []
+    },
+    {
+      "collectionId": "degods",
+      "collectionName": "DeGods",
+      "nftType": "pet",
+      "layerId": "pet_dog",
+      "bonuses": [
+        { "type": "motivation", "value": 2 }
+      ]
+    }
+  ]
+}

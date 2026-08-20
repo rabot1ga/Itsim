@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000">
+  <rect x="110" y="170" width="220" height="280" rx="8" fill="#111827"/>
+  <rect x="110" y="170" width="220" height="280" rx="8" fill="none" stroke="#f59e0b" stroke-width="8"/>
+  <circle cx="220" cy="280" r="70" fill="#f59e0b"/>
+  <circle cx="196" cy="266" r="10" fill="#111827"/><circle cx="244" cy="266" r="10" fill="#111827"/>
+  <path d="M196 320 Q220 340 244 320" stroke="#111827" stroke-width="8" fill="none"/>
+  <text x="220" y="410" font-family="monospace" font-size="30" fill="#f59e0b" text-anchor="middle">MAD LAD</text></svg>

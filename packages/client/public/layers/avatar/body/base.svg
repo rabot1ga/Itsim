@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500">
+  <!-- neck -->
+  <rect x="227" y="215" width="46" height="45" fill="#6f6f6f" rx="10"/>
+  <!-- head -->
+  <circle cx="250" cy="160" r="70" fill="#8a8a8a"/>
+  <!-- ears -->
+  <circle cx="180" cy="162" r="14" fill="#8a8a8a"/>
+  <circle cx="320" cy="162" r="14" fill="#8a8a8a"/>
+  <!-- torso -->
+  <rect x="165" y="252" width="170" height="218" rx="42" fill="#8a8a8a"/>
+  <!-- arms -->
+  <rect x="120" y="262" width="52" height="190" rx="26" fill="#6f6f6f"/>
+  <rect x="328" y="262" width="52" height="190" rx="26" fill="#6f6f6f"/>
+  <!-- hands -->
+  <circle cx="146" cy="460" r="20" fill="#8a8a8a"/>
+  <circle cx="354" cy="460" r="20" fill="#8a8a8a"/></svg>

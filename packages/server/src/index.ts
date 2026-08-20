@@ -7,6 +7,7 @@ import { gameRoutes } from './routes/game.js';
 import { leaderboardRoutes } from './routes/leaderboard.js';
 import { paymentRoutes } from './routes/payments.js';
 import { contentRoutes } from './routes/content.js';
+import { nftRoutes } from './routes/nft.js';
 import { loadContent } from './services/contentService.js';
 
 const PORT = parseInt(process.env.PORT || '3001', 10);
@@ -46,6 +47,7 @@ async function start() {
   await app.register(leaderboardRoutes, { prefix: '/api/leaderboard' });
   await app.register(paymentRoutes, { prefix: '/api/payments' });
   await app.register(contentRoutes, { prefix: '/api/content' });
+  await app.register(nftRoutes, { prefix: '/api/nft' });
 
   // Start
   try {

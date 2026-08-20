@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000">
+  <rect x="110" y="170" width="220" height="280" rx="8" fill="#0c1a2b"/>
+  <rect x="110" y="170" width="220" height="280" rx="8" fill="none" stroke="#e8b923" stroke-width="8"/>
+  <circle cx="220" cy="260" r="52" fill="#f5c542"/>
+  <path d="M170 250 Q220 210 270 250 L258 220 L240 232 L220 200 L200 232 L182 220 Z" fill="#20242a"/>
+  <circle cx="204" cy="256" r="7" fill="#20242a"/><circle cx="236" cy="256" r="7" fill="#20242a"/>
+  <rect x="204" y="290" width="32" height="60" fill="#e8b923"/>
+  <text x="220" y="410" font-family="monospace" font-size="30" fill="#e8b923" text-anchor="middle">SMB Gen2</text></svg>

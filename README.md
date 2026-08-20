@@ -56,6 +56,20 @@ it-life-simulator/
 - **Античит:** rate limiting, серверный RNG, идемпотентные действия
 - **Персистентность:** состояние игрока хранится в `packages/server/data/` (JSON, атомарная запись) — переживает рестарты. В проде заменяется на PostgreSQL + Prisma (см. SPEC)
 
+## 🎨 Процедурная генерация и Solana
+
+Дополнение к ТЗ: [DESIGN.md](DESIGN.md) — стратегия визуала (комбинаторика слоёв + тинтинг)
+и интеграция с Solana (on-chain seed, NFT-предметы, cross-collection синергия).
+
+- **Генетика:** детерминированный `sha256`-seed от кошелька → трейты (глаза, причёска, стены…)
+- **Слоистый аватар и комната:** HashLips-style манифесты + тинтинг через CSS filter
+  (экран «Дом»; слои-плейсхолдеры генерируются `tools/generate_layer_assets.py`)
+- **NFT-предметы (мок):** покупка Herman Miller/MacBook → минт Metaplex-style metadata
+  в локальный реестр (`packages/server/data/nft_registry.json`), инвентарь в кошельке
+- **Cross-collection (мок):** SMB Gen2 → +5% к фрилансу, Mad Lads → постер, DeGods → пёс
+- **Шар-карточка:** Canvas-рендер комнаты + статистики → PNG → шеринг в Telegram
+- **Прод:** заменить `MockNftProvider` на Helius RPC (интерфейс уже готов)
+
 ## 📊 Баланс
 
 Баланс получен прогоном симулятора (40 прогонов × 365 игровых дней).

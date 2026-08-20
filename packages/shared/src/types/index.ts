@@ -35,6 +35,11 @@ export interface PlayerState {
   reputation: number;
   bankedDays: number;
 
+  // Procedural generation (DESIGN.md) — optional for backward compatibility
+  walletAddress?: string;
+  genetics?: GeneticTraits;
+  crossBonuses?: ActiveCrossBonus[];
+
   // Skills
   skills: Record<SkillId, SkillLevel>;
   perks: PerkId[];
@@ -297,6 +302,11 @@ export interface ItemDefinition {
   description: string;
   effects: ItemEffects;
   icon: string;
+  /** Minted as cNFT/pNFT on purchase (DESIGN.md 3.2) */
+  nft?: boolean;
+  rarity?: TraitRarity;
+  /** Layer id in the room/avatar manifest rendered when owned */
+  layerId?: string;
 }
 
 export interface ItemEffects {
@@ -363,6 +373,123 @@ export interface InterviewInput {
   reputation: number;
   companyBar: number;
   answerScore: number;
+}
+
+// ---- Procedural generation (DESIGN.md) ----
+
+export type TraitRarity = 'common' | 'rare' | 'legendary';
+
+export interface TraitOption {
+  id: string;
+  name: string;
+  weight: number;
+  rarity?: TraitRarity;
+}
+
+/** Tint entry for grayscale assets: hue (deg) + saturation + lightness */
+export interface TintPaletteEntry {
+  id: string;
+  name: string;
+  hue: number;
+  sat?: number;
+  light?: number;
+  /** Optional weight for deterministic palette picking (default 1) */
+  weight?: number;
+}
+
+export interface GeneticsConfig {
+  version?: string;
+  eyes: TraitOption[];
+  hairstyles: TraitOption[];
+  hairPalette: TintPaletteEntry[];
+  skinTones: TintPaletteEntry[];
+  beards: TraitOption[];
+  tops: TraitOption[];
+  accessories: TraitOption[];
+  windows: TraitOption[];
+  wallPalette: TintPaletteEntry[];
+  decorOptions: TraitOption[];
+}
+
+/** Deterministic "genotype" derived from the player seed */
+export interface GeneticTraits {
+  seed: string;
+  skinTone: string;
+  eyeShape: string;
+  hairStyle: string;
+  hairColor: string;
+  beard: string;
+  top: string;
+  accessory: string;
+  windowShape: string;
+  wallColor: string;
+  decor: string;
+}
+
+// ---- Layer manifests (HashLips-style) ----
+
+export interface LayerEntry {
+  id: string;
+  file: string | null; // null = "no layer" option
+  weight?: number;
+  rarity?: TraitRarity;
+  /** Exclusions: "slotId.optionId" pairs that this entry must not be combined with */
+  excludeWith?: string[];
+}
+
+export interface LayerSlot {
+  id: string;
+  zOrder: number;
+  required: boolean;
+  /** Slot id of the palette used to tint this layer (e.g. "wallColor") */
+  tintSlot?: string;
+  entries: LayerEntry[];
+}
+
+export interface LayerManifest {
+  collection: 'avatar' | 'room';
+  version: number;
+  resolution: { width: number; height: number };
+  slots: LayerSlot[];
+}
+
+// ---- Solana / NFT (DESIGN.md section 3) ----
+
+export interface NftAttribute {
+  trait_type: string;
+  value: string | number;
+}
+
+export interface NftFile {
+  uri: string;
+  type: string;
+}
+
+/** Metaplex-style item metadata */
+export interface NftMetadata {
+  name: string;
+  symbol: string;
+  description: string;
+  image: string;
+  attributes: NftAttribute[];
+  properties: { files: NftFile[] };
+}
+
+export interface CrossCollectionBonus {
+  collectionId: string;
+  collectionName: string;
+  nftType: 'skin' | 'decor' | 'pet';
+  layerId: string;
+  bonuses: ActiveCrossBonus[];
+}
+
+export interface ActiveCrossBonus {
+  type: 'freelance_mult' | 'energy' | 'motivation';
+  value: number;
+}
+
+export interface CrossCollectionsConfig {
+  collections: CrossCollectionBonus[];
 }
 
 // ---- Rating ----

@@ -6,4 +6,5 @@ export * from './rating';
 export * from './events';
 export * from './player';
 export * from './achievements';
+export * from './genetics';
 export * from './utils';

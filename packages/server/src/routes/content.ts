@@ -53,4 +53,26 @@ export async function contentRoutes(app: FastifyInstance) {
       items: items.filter((i: any) => !['housing', 'course'].includes(i.type)),
     };
   });
+
+  /**
+   * GET /api/content/genetics — trait options + palettes (DESIGN.md 3.1)
+   */
+  app.get('/genetics', async () => {
+    return { genetics: getContent().genetics };
+  });
+
+  /**
+   * GET /api/content/layers — avatar/room layer manifests (DESIGN.md 2)
+   */
+  app.get('/layers', async () => {
+    const { avatarLayers, roomLayers } = getContent();
+    return { avatar: avatarLayers, room: roomLayers };
+  });
+
+  /**
+   * GET /api/content/cross-collections — third-party NFT synergies (DESIGN.md 3.3)
+   */
+  app.get('/cross-collections', async () => {
+    return { crossCollections: getContent().crossCollections };
+  });
 }

@@ -28,12 +28,15 @@ import {
   rollInterview,
   preScreenMatch,
   preScreenResult,
+  generatePlayerSeed,
+  getGeneticTraits,
   type PlayerState,
   type GameEvent,
   type Grade,
   type Offer,
   type Application,
 } from '@itsim/shared';
+import { getNftProvider } from '../services/nftProvider.js';
 
 /**
  * Game routes — server-authoritative game loop.
@@ -102,6 +105,16 @@ function fmtMoney(amount: number): string {
 }
 
 /**
+ * Derive the deterministic "genotype" (DESIGN.md 3.1).
+ * Wallet-bound if a wallet is bound, otherwise telegram-id fallback.
+ */
+function deriveGenetics(state: StoredState): void {
+  const source = state.walletAddress ?? `tg:${state.telegramId}`;
+  const seed = generatePlayerSeed(source);
+  state.genetics = getGeneticTraits(seed, getContent().genetics);
+}
+
+/**
  * Attach the UI message to the response state (client shows state._lastEvent)
  */
 function respondState(state: StoredState, message?: string) {
@@ -139,6 +152,13 @@ export async function gameRoutes(app: FastifyInstance) {
     const isNew = !state;
     if (!state) {
       state = { ...createNewPlayer(), telegramId: userId, lastTickAt: Date.now(), ratingScore: 0, activeEventId: null, freelanceDoneToday: false, lastFreelanceDay: 0, mainSkillId: 'javascript' } as StoredState;
+      deriveGenetics(state);
+    }
+
+    // Refresh cross-collection bonuses (DESIGN.md 3.3)
+    state.crossBonuses = [];
+    for (const col of await getNftProvider().getActiveBonuses(state.walletAddress ?? `local:${userId}`)) {
+      state.crossBonuses.push(...col.bonuses);
     }
 
     // Offline energy banking (1 game day / 3.5 real hours, max 7 in bank)
@@ -226,7 +246,16 @@ export async function gameRoutes(app: FastifyInstance) {
     state.ratingScore = calculateRating(state);
     saveState(userId, state);
 
-    const response = { state: respondState(state, result.message), delta: result.delta, activeEvent: null };
+    // Mint NFT if the purchased item is on-chain (mock provider, DESIGN.md 3.2)
+    let nft = null;
+    const mintedItem = result.delta?.mintedItem;
+    if (mintedItem) {
+      const wallet = state.walletAddress ?? `local:${userId}`;
+      const itemType = (content.items as any[]).find((i: any) => i.id === mintedItem.id)?.type ?? 'item';
+      nft = await getNftProvider().mint(wallet, mintedItem, String(itemType).toUpperCase().slice(0, 10));
+    }
+
+    const response = { state: respondState(state, result.message), delta: result.delta ?? {}, activeEvent: null, nft };
     if (idempotencyKey) {
       if (!completedActions.has(userId)) completedActions.set(userId, new Map());
       completedActions.get(userId)!.set(idempotencyKey, { delta: result.delta, message: result.message });
@@ -364,6 +393,7 @@ export async function gameRoutes(app: FastifyInstance) {
     const user = (request as any).telegramUser;
     const userId = String(user.id);
     const state = { ...createNewPlayer(), telegramId: userId, lastTickAt: Date.now(), ratingScore: 0, activeEventId: null, freelanceDoneToday: false, lastFreelanceDay: 0, mainSkillId: 'javascript' } as StoredState;
+    deriveGenetics(state);
     saveState(userId, state);
     return { state: respondState(state, 'Новая жизнь началась! 💻'), activeEvent: null };
   });
@@ -492,7 +522,15 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       if (state.lastFreelanceDay !== undefined && state.currentDay - state.lastFreelanceDay < cooldown) {
         return { error: 'Заказчики пока не вернулись с новыми проектами. Попробуй позже' };
       }
-      const payment = freelancePayment(level, state.reputation, difficulty);
+      let payment = freelancePayment(level, state.reputation, difficulty);
+
+      // Cross-collection bonuses (DESIGN.md 3.3): e.g. SMB Gen2 → +5% freelance
+      const mult = (state.crossBonuses ?? [])
+        .filter((b) => b.type === 'freelance_mult')
+        .reduce((sum, b) => sum + b.value, 0);
+      if (mult > 0) {
+        payment = Math.round(payment * (1 + mult));
+      }
       state.money += payment;
       state.freelanceDoneToday = true;
       state.lastFreelanceDay = state.currentDay;
@@ -501,7 +539,7 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       state.skills = { ...state.skills, [skillId]: next };
       state.reputation = clamp(state.reputation + 0.2, 0, 100);
       delta.money = payment;
-      return { message: `🛠 Фриланс-заказ выполнен: +${fmtMoney(payment)}. Отзыв: «всё ок, но правки уже в личке»` };
+      return { message: `🛠 Фриланс-заказ выполнен: +${fmtMoney(payment)}. Отзыв: «всё ок, но правки уже в личке»`, delta };
     }
 
     // ---- Rest ----
@@ -646,6 +684,17 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       state.items = [...state.items, item.id];
       state.maxEnergy = calculateMaxEnergy(state);
       delta.items = [...state.items];
+      if (item.nft) {
+        // NFT items are minted on purchase (DESIGN.md 3.2) — mock provider
+        delta.mintedItem = {
+          id: item.id,
+          name: item.name,
+          description: item.description,
+          rarity: item.rarity,
+          layerId: item.layerId,
+        };
+        return { message: `🛒 Куплено: ${item.name}. NFT смонтирован (мок) 🔗`, delta };
+      }
       return { message: `🛒 Куплено: ${item.name}` };
     }
 
