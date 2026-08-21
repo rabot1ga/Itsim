@@ -226,7 +226,19 @@ export interface GameEvent {
   minGameDay?: number;
   conditions?: EventConditions;
   chainOnly?: boolean;
+  /** Triggered by a player action with a probability (never in the day pool) */
+  actionTrigger?: ActionEventTrigger;
   choices: EventChoice[];
+}
+
+export interface ActionEventTrigger {
+  action: string;
+  /** For side_job triggers: which gig (courier, barista, ...) */
+  jobId?: string;
+  /** Probability 0..1 per action */
+  chance: number;
+  /** Days before the same follow-up can fire again */
+  cooldownDays?: number;
 }
 
 export interface EventConditions {

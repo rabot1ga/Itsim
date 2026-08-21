@@ -12,6 +12,7 @@ import {
   applyMotivationDrift,
   applyEventEffects,
   pickEvent,
+  maybeTriggerActionEvent,
   calculateRating,
   checkAchievements,
   totalSkillLevels,
@@ -266,7 +267,17 @@ export async function gameRoutes(app: FastifyInstance) {
       nft = await getNftProvider().mint(wallet, mintedItem, String(itemType).toUpperCase().slice(0, 10));
     }
 
-    const response = { state: respondState(state, result.message), delta: result.delta ?? {}, activeEvent: null, nft, mining: miningSummary(state, content) };
+    // Action-triggered follow-up events (bar -> HR, freelance -> ghost client, ...)
+    let triggeredEvent: GameEvent | null = null;
+    if (!state.activeEventId) {
+      triggeredEvent = maybeTriggerActionEvent(state, content.events, actionId, params?.jobId, rng);
+      if (triggeredEvent) {
+        state.activeEventId = triggeredEvent.id;
+        saveState(userId, state);
+      }
+    }
+
+    const response = { state: respondState(state, result.message), delta: result.delta ?? {}, activeEvent: triggeredEvent, nft, mining: miningSummary(state, content) };
     if (idempotencyKey) {
       if (!completedActions.has(userId)) completedActions.set(userId, new Map());
       completedActions.get(userId)!.set(idempotencyKey, { delta: result.delta, message: result.message });
@@ -1149,6 +1160,9 @@ function resolveInterview(state: StoredState, app: Application, content: any, me
 // ---------------------------------------------------------------------------
 
 function maybeTriggerEvent(state: StoredState, content: any): GameEvent | null {
+  // An unresolved event (action-triggered or chain) stays until resolved
+  if (state.activeEventId) return null;
+
   // Pending chain events have absolute priority
   const dueIndex = state.pendingEvents.findIndex((e) => e.triggerDay <= state.currentDay);
   if (dueIndex >= 0) {

@@ -548,3 +548,83 @@ describe('skill-gated events', () => {
     expect(checkConditions({ minSkill: { web3: 1 } }, p)).toBe(false);
   });
 });
+
+// ---- Action-triggered events (section 9.6) ----
+
+import { maybeTriggerActionEvent } from '../../index';
+
+const ACTION_POOL: any[] = [
+  {
+    id: 'bar_hr_meeting', title: '', description: '', tags: ['bar'], weight: 100,
+    cooldownDays: 30, actionTrigger: { action: 'rest_bar', chance: 0.25, cooldownDays: 30 },
+    choices: [{ text: 'a', effects: {} }, { text: 'b', effects: {} }],
+  },
+  {
+    id: 'courier_dog', title: '', description: '', tags: ['sidejob'], weight: 100,
+    cooldownDays: 15, actionTrigger: { action: 'side_job', jobId: 'courier', chance: 0.2 },
+    choices: [{ text: 'a', effects: {} }, { text: 'b', effects: {} }],
+  },
+  {
+    id: 'barista_tiktok', title: '', description: '', tags: ['sidejob'], weight: 100,
+    cooldownDays: 30, actionTrigger: { action: 'side_job', jobId: 'barista', chance: 0.2 },
+    choices: [{ text: 'a', effects: {} }, { text: 'b', effects: {} }],
+  },
+];
+
+describe('action-triggered events', () => {
+  it('pickEvent never picks action-triggered events from the day pool', () => {
+    const p: PlayerState = { ...createNewPlayer(), currentDay: 10 };
+    for (let i = 0; i < 20; i++) {
+      const picked = pickEvent(p, ACTION_POOL, () => 0.5);
+      expect(picked).toBeNull();
+    }
+  });
+
+  it('maybeTriggerActionEvent matches the action id', () => {
+    const p: PlayerState = { ...createNewPlayer(), currentDay: 10 };
+    const ev = maybeTriggerActionEvent(p, ACTION_POOL, 'rest_bar', undefined, () => 0);
+    expect(ev?.id).toBe('bar_hr_meeting');
+    // Wrong action -> nothing
+    expect(maybeTriggerActionEvent(p, ACTION_POOL, 'rest_gym', undefined, () => 0)).toBeNull();
+  });
+
+  it('side_job triggers match the jobId', () => {
+    const p: PlayerState = { ...createNewPlayer(), currentDay: 10 };
+    expect(maybeTriggerActionEvent(p, ACTION_POOL, 'side_job', 'courier', () => 0)?.id).toBe('courier_dog');
+    expect(maybeTriggerActionEvent(p, ACTION_POOL, 'side_job', 'barista', () => 0)?.id).toBe('barista_tiktok');
+    // No jobId -> side_job events do not fire
+    expect(maybeTriggerActionEvent(p, ACTION_POOL, 'side_job', undefined, () => 0)).toBeNull();
+  });
+
+  it('chance is rolled: rng=0 fires, rng=0.999 does not', () => {
+    const p: PlayerState = { ...createNewPlayer(), currentDay: 10 };
+    expect(maybeTriggerActionEvent(p, ACTION_POOL, 'rest_bar', undefined, () => 0)).not.toBeNull();
+    expect(maybeTriggerActionEvent(p, ACTION_POOL, 'rest_bar', undefined, () => 0.999)).toBeNull();
+  });
+
+  it('cooldown via eventHistory blocks re-triggering', () => {
+    const p: PlayerState = { ...createNewPlayer(), currentDay: 10 };
+    p.eventHistory = { bar_hr_meeting: { lastDay: 9, count: 1 } };
+    // lastDay 9, cooldown 30 -> blocked
+    expect(maybeTriggerActionEvent(p, ACTION_POOL, 'rest_bar', undefined, () => 0)).toBeNull();
+    // after the cooldown window passes
+    p.eventHistory = { bar_hr_meeting: { lastDay: 1, count: 1 } };
+    p.currentDay = 40;
+    expect(maybeTriggerActionEvent(p, ACTION_POOL, 'rest_bar', undefined, () => 0)?.id).toBe('bar_hr_meeting');
+  });
+
+  it('minGameDay gates action events', () => {
+    const p: PlayerState = { ...createNewPlayer(), currentDay: 1 };
+    // bar_hr_meeting has minGameDay 3 via content, but this pool entry has none;
+    // test with a gated variant
+    const gated: any[] = [{
+      ...ACTION_POOL[0],
+      id: 'gated_evt',
+      minGameDay: 20,
+      actionTrigger: { action: 'rest_bar', chance: 1 },
+    }];
+    expect(maybeTriggerActionEvent(p, gated, 'rest_bar', undefined, () => 0)).toBeNull();
+    p.currentDay = 25;
+    expect(maybeTriggerActionEvent(p, gated, 'rest_bar', undefined, () => 0)?.id).toBe('gated_evt');
+  });
+});

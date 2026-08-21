@@ -60,6 +60,13 @@ export const EventConditionsSchema = z.object({
   notEventRecently: z.array(z.string()).optional(),
 });
 
+export const ActionEventTriggerSchema = z.object({
+  action: z.string().min(1),
+  jobId: z.string().optional(),
+  chance: z.number().min(0).max(1),
+  cooldownDays: z.number().int().min(0).optional(),
+});
+
 export const EventSchema = z.object({
   id: z.string().regex(/^[a-z0-9_]+$/),
   title: z.string().min(1).max(80),
@@ -73,6 +80,9 @@ export const EventSchema = z.object({
   // Chain-only events never enter the random pool — they trigger
   // exclusively through `chain` references of other events
   chainOnly: z.boolean().default(false),
+  // Action-triggered events never enter the random pool either —
+  // they roll after the matching player action
+  actionTrigger: ActionEventTriggerSchema.optional(),
   choices: z.array(EventChoiceSchema).min(2).max(4),
 });
 
