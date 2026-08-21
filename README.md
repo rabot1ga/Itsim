@@ -102,8 +102,8 @@ npm run simulate
 ## 📝 Контент
 
 Весь контент лежит в `packages/content/` в формате JSON:
-- `events/` — игровые события (42 шт: daily, work, health, family, startup-цепочка,
-  mining, курьерские будни — в 5 файлах)
+- `events/` — игровые события (60 шт: daily, work, health, family, startup-цепочка,
+  mining, курьерские будни + **по 2 события на каждую ветку навыков** — в 6 файлах)
 - `companies.json` — 10 компаний
 - `skills.json` — 19 навыков в 5 ветках
 - `items.json` — предметы и курсы

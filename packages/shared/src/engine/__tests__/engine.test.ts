@@ -525,3 +525,26 @@ describe('perks', () => {
     expect(canUnlockPerk(p, { communication: 25 })).toBe(false);
   });
 });
+
+// ---- Skill-branch event gating ----
+
+describe('skill-gated events', () => {
+  const p = createNewPlayer();
+  p.skills = { network_security: { level: 10, xp: 0 } };
+
+  it('checkConditions.minSkill gates events on branch skills', () => {
+    expect(checkConditions({ minSkill: { network_security: 10 } }, p)).toBe(true);
+    expect(checkConditions({ minSkill: { network_security: 11 } }, p)).toBe(false);
+    expect(checkConditions({ minSkill: { solidity: 5 } }, p)).toBe(false);
+  });
+
+  it('branch events only appear for players who invested in the branch', () => {
+    // A player with zero skill in the branch never gets its events
+    const fresh = createNewPlayer();
+    expect(checkConditions({ minSkill: { network_security: 1 } }, fresh)).toBe(false);
+    expect(checkConditions({ minSkill: { machine_learning: 1 } }, fresh)).toBe(false);
+    // A cybersec player gets cybersec events but not blockchain ones
+    expect(checkConditions({ minSkill: { network_security: 10 } }, p)).toBe(true);
+    expect(checkConditions({ minSkill: { web3: 1 } }, p)).toBe(false);
+  });
+});

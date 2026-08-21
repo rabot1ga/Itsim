@@ -1,0 +1,498 @@
+[
+  {
+    "id": "server_hacked",
+    "title": "🚨 Утром твой сервер взломали",
+    "description": "Открываешь логи — а там чужие сессии. Кто-то всю ночь ходил по твоему серверу, как по своей квартире.",
+    "tags": ["cybersec", "crisis"],
+    "weight": 8,
+    "cooldownDays": 45,
+    "minGameDay": 15,
+    "conditions": { "minSkill": { "network_security": 10 } },
+    "choices": [
+      {
+        "text": "Провести форензику по логам 🕵️",
+        "requires": { "energy": 2 },
+        "effects": { "skill": { "network_security": 20 }, "motivation": -2, "reputation": 1 },
+        "followup": "Нашёл точку входа: старый дев-порт. Закрыл. Выдохнул. Написал постмортем."
+      },
+      {
+        "text": "Отключить всё и звать экспертов 🚨",
+        "effects": { "money": -5000, "motivation": -1, "reputation": 1 },
+        "followup": "Инцидент-команда приехала за час. Всё починили. Счёт пришёл за два часа работы."
+      },
+      {
+        "text": "Поменять пароль на «password123» 🤦",
+        "effects": { "karma": -1, "reputation": -2, "motivation": 1 },
+        "followup": "Сервер взломали снова. На этот раз — за 40 секунд."
+      }
+    ]
+  },
+  {
+    "id": "phishing_email",
+    "title": "🎣 Фишинговая рассылка пришла на офис",
+    "description": "«Ваш корпоративный аккаунт заблокирован, перейдите по ссылке». Ссылка ведёт на сайт, который даже не пытается выглядеть легитимно.",
+    "tags": ["cybersec", "work", "social"],
+    "weight": 8,
+    "cooldownDays": 40,
+    "minGameDay": 20,
+    "conditions": { "minSkill": { "network_security": 15 } },
+    "choices": [
+      {
+        "text": "Обучить коллег на живом примере 🎓",
+        "effects": { "skill": { "network_security": 15 }, "reputation": 2, "motivation": 2 },
+        "followup": "Провёл ликбез. Двое признались, что уже кликнули. Лучше поздно."
+      },
+      {
+        "text": "Написать гайд по распознаванию фишинга 📖",
+        "effects": { "skill": { "communication": 10 }, "reputation": 1 },
+        "followup": "Гайд разошёлся по всем чатам. Тебя назвали «кибер-пастухом»."
+      },
+      {
+        "text": "Открыть вложение в песочнице — для науки 🧪",
+        "effects": { "money": -2000, "karma": -1, "motivation": 3 },
+        "followup": "Песочница не помогла — макросы сработали на хосте. Зато ты узнал много нового."
+      }
+    ]
+  },
+  {
+    "id": "model_overfit",
+    "title": "📉 Модель идеальна на трейне — и бесполезна на проде",
+    "description": "На тренировочных данных — 99.9% точности. На реальных — модель угадывает с точностью подбрасывания монетки.",
+    "tags": ["ai_ml", "crisis", "study"],
+    "weight": 8,
+    "cooldownDays": 45,
+    "minGameDay": 25,
+    "conditions": { "minSkill": { "machine_learning": 15 } },
+    "choices": [
+      {
+        "text": "Добавить регуляризацию и свежие данные 📊",
+        "effects": { "skill": { "machine_learning": 25 }, "motivation": -2 },
+        "followup": "Оверфит побеждён. Теперь модель ошибается скромно и предсказуемо."
+      },
+      {
+        "text": "Сказать, что «так и было задумано» 🤷",
+        "effects": { "reputation": -2, "karma": -1 },
+        "followup": "Коллеги сделали вид, что поверили. Ты сделал вид, что не заметил."
+      },
+      {
+        "text": "Переобучить на свежих данных 🔄",
+        "requires": { "money": 2000 },
+        "effects": { "skill": { "data_science": 15 }, "energy": -1 },
+        "followup": "Данные собраны, обучение запущено. Бюджет на GPU — снова минус."
+      }
+    ]
+  },
+  {
+    "id": "gpu_burn",
+    "title": "🔥 GPU-инстанс сжёг месячный бюджет",
+    "description": "Ты забыл выключить инстанс с четырьмя A100 после экспериментов. Он крутился три недели. Счёт пришёл с шестью нулями.",
+    "tags": ["ai_ml", "money", "crisis"],
+    "weight": 8,
+    "cooldownDays": 50,
+    "minGameDay": 30,
+    "conditions": { "minSkill": { "neural_networks": 10 } },
+    "choices": [
+      {
+        "text": "Оптимизировать пайплайн обучения 🛠",
+        "effects": { "skill": { "neural_networks": 20 } },
+        "followup": "Теперь обучение втрое дешевле. Счёт, правда, всё равно оплачен."
+      },
+      {
+        "text": "Выбить бюджет у руководства 💼",
+        "effects": { "money": 10000, "motivation": 2 },
+        "followup": "«Это инвестиции в будущее компании». Не поверили, но деньги дали."
+      },
+      {
+        "text": "Заморозить эксперименты до лучших времён ⏸",
+        "effects": { "motivation": -3 },
+        "followup": "Серверы выключены. В офисе наконец тихо. И грустно."
+      }
+    ]
+  },
+  {
+    "id": "css_hell",
+    "title": "🌀 Вёрстка разъехалась в старом браузере",
+    "description": "Клиент прислал скриншот: твой лендинг выглядит как абстрактная живопись. Оказалось, у клиента Internet Explorer 11.",
+    "tags": ["frontend", "crisis"],
+    "weight": 8,
+    "cooldownDays": 40,
+    "minGameDay": 10,
+    "conditions": { "minSkill": { "css": 10 } },
+    "choices": [
+      {
+        "text": "Хаки для всех браузеров 🧙",
+        "effects": { "skill": { "css": 25 }, "motivation": -2 },
+        "followup": "Четыре полифилла, два conditional comment и одна молитва. Заработало."
+      },
+      {
+        "text": "Забить на старые браузеры 🚫",
+        "effects": { "reputation": 1, "motivation": 2 },
+        "followup": "Написал клиенту «обновите браузер». Клиент обновил... заявку в поддержку."
+      },
+      {
+        "text": "Свалить на дизайнера 🎨",
+        "effects": { "karma": -1, "motivation": 1 },
+        "followup": "Дизайнер обиделся и поменял макет. Стало только хуже."
+      }
+    ]
+  },
+  {
+    "id": "browser_wars",
+    "title": "⚔️ Твой код работает только в Chrome",
+    "description": "Firefox рендерит твоё приложение как пустой экран. Safari — как чёрный. Тестеры уже делают ставки.",
+    "tags": ["frontend", "tech", "crisis"],
+    "weight": 7,
+    "cooldownDays": 45,
+    "minGameDay": 30,
+    "conditions": { "minSkill": { "react": 20 } },
+    "choices": [
+      {
+        "text": "Написать полифиллы и feature detection 🧩",
+        "requires": { "energy": 2 },
+        "effects": { "skill": { "react": 20 }, "motivation": -1 },
+        "followup": "Три вечера полифиллов — и всё работает везде. Даже в Safari. Почти."
+      },
+      {
+        "text": "Объявить поддержку только Chrome 📢",
+        "effects": { "reputation": 1, "motivation": 2 },
+        "followup": "«Лучший UX в лучшем браузере». Маркетинг оценил. Пользователи Safari — нет."
+      },
+      {
+        "text": "Убедить команду пересесть на Chromium 🤝",
+        "effects": { "skill": { "communication": 10 }, "motivation": 2 },
+        "followup": "Теперь у всех Chromium. Проблема решена радикально."
+      }
+    ]
+  },
+  {
+    "id": "db_emergency",
+    "title": "🗄 Прод упал в три часа ночи",
+    "description": "Телефон разрывается: «Всё лежит». Ты смотришь на графики — база данных отвечает с таймаутами. Кофе ещё не заварен.",
+    "tags": ["backend", "crisis", "work"],
+    "weight": 8,
+    "cooldownDays": 50,
+    "minGameDay": 20,
+    "conditions": { "hasJob": true, "minSkill": { "sql": 15 } },
+    "choices": [
+      {
+        "text": "Чинить вслепую по логам 🕵️",
+        "requires": { "energy": 3 },
+        "effects": { "skill": { "sql": 25 }, "health": -1, "motivation": -2, "reputation": 2 },
+        "followup": "Мёртвый лок нашёл к утру. Герой дня. Точнее, ночи."
+      },
+      {
+        "text": "Разбудить старшего 👴",
+        "effects": { "relation": { "teamlead": 2 }, "motivation": 2 },
+        "followup": "Тимлид приехал в тапках. Починили вдвоём за час. Уважение выросло."
+      },
+      {
+        "text": "Перезапустить и молиться 🙏",
+        "effects": { "motivation": 1, "reputation": -1 },
+        "followup": "Перезапуск помог. Ненадолго. Через час упало снова."
+      }
+    ]
+  },
+  {
+    "id": "n_plus_one",
+    "title": "🐌 N+1 запрос нашёлся в твоём коде",
+    "description": "Страница грузится 12 секунд. В ревью коллега нашёл цикл, который ходит в базу 400 раз на каждый рендер.",
+    "tags": ["backend", "code", "work"],
+    "weight": 8,
+    "cooldownDays": 40,
+    "minGameDay": 15,
+    "conditions": { "hasJob": true, "minSkill": { "nodejs": 15 } },
+    "choices": [
+      {
+        "text": "Переписать на один запрос с join 🔧",
+        "effects": { "skill": { "nodejs": 20 }, "motivation": -1 },
+        "followup": "Страница стала грузиться за 200 мс. Коллега поставил апрув со слезой на глазу."
+      },
+      {
+        "text": "Сказать «работает же» 🤷",
+        "effects": { "karma": -1, "reputation": -1 },
+        "followup": "Работает. Медленно. Но работает. Пока пользователей мало."
+      },
+      {
+        "text": "Завернуть всё в кэш и забыть 🧠",
+        "effects": { "skill": { "nodejs": 10 }, "motivation": 2 },
+        "followup": "Кэш спас. До первого инвалидации. Потом станет хуже, но это потом."
+      }
+    ]
+  },
+  {
+    "id": "app_store_reject",
+    "title": "📱 App Store отклонил сборку",
+    "description": "«Guideline 4.2 — Minimum Functionality». Твоё приложение назвали «недостаточно функциональным». Ты вложил в него полгода.",
+    "tags": ["mobile", "crisis"],
+    "weight": 8,
+    "cooldownDays": 50,
+    "minGameDay": 30,
+    "conditions": { "minSkill": { "swift": 15 } },
+    "choices": [
+      {
+        "text": "Подать апелляцию 📄",
+        "effects": { "skill": { "swift": 10 }, "reputation": 1 },
+        "followup": "Апелляцию рассмотрели. Ответ: «Мы пересмотрели и... отклонили снова»."
+      },
+      {
+        "text": "Пофиксить замечания ревьюера 🔨",
+        "requires": { "energy": 3 },
+        "effects": { "skill": { "swift": 20 }, "motivation": -1 },
+        "followup": "Добавил 14 экранов и тёмную тему. Прошло со второго раза."
+      },
+      {
+        "text": "Уйти в Android-лагерь 🤖",
+        "effects": { "skill": { "kotlin": 15 }, "motivation": 1 },
+        "followup": "В Google Play сборку одобрили за 20 минут. Обида на яблоко осталась."
+      }
+    ]
+  },
+  {
+    "id": "battery_drain",
+    "title": "🔋 Твоё приложение жрёт батарею",
+    "description": "Отзыв на 1 звезду: «За час съело 40% батареи». Ты смотришь в профайлер — фоновые сервисы живут своей жизнью.",
+    "tags": ["mobile", "tech"],
+    "weight": 8,
+    "cooldownDays": 40,
+    "minGameDay": 20,
+    "conditions": { "minSkill": { "android": 15 } },
+    "choices": [
+      {
+        "text": "Профилировать и оптимизировать 🔋",
+        "requires": { "energy": 2 },
+        "effects": { "skill": { "android": 25 }, "motivation": -1 },
+        "followup": "Убрал лишние вейклоки и фоновые трекеры. Теперь ест всего 12%."
+      },
+      {
+        "text": "Свалить на вендора 📱",
+        "effects": { "reputation": -1, "motivation": 1 },
+        "followup": "«Это особенности прошивки». Пользователи не оценили глубину мысли."
+      },
+      {
+        "text": "Добавить тёмную тему 🌙",
+        "effects": { "skill": { "android": 10 }, "motivation": 2 },
+        "followup": "На AMOLED-экранах стало лучше. На остальных — как было."
+      }
+    ]
+  },
+  {
+    "id": "prod_bug_escape",
+    "title": "🐛 Баг ушёл в прод мимо тестов",
+    "description": "Пользователи нашли кнопку, которая удаляет все данные. Твои автотесты этого не заметили. Пользователи заметили.",
+    "tags": ["qa", "crisis", "work"],
+    "weight": 8,
+    "cooldownDays": 45,
+    "minGameDay": 25,
+    "conditions": { "hasJob": true, "minSkill": { "automation_testing": 15 } },
+    "choices": [
+      {
+        "text": "Написать e2e-тесты на этот сценарий 🧪",
+        "requires": { "energy": 2 },
+        "effects": { "skill": { "automation_testing": 25 }, "motivation": -1 },
+        "followup": "Теперь «кнопка смерти» покрыта 40 тестами. Спишь спокойно."
+      },
+      {
+        "text": "Провести ретроспективу 🕯",
+        "effects": { "skill": { "communication": 10 }, "motivation": 1 },
+        "followup": "Поговорили. Вывод: «нужно больше тестов». Удивительно."
+      },
+      {
+        "text": "Найти виноватого 😈",
+        "effects": { "karma": -2, "reputation": -2, "motivation": 2 },
+        "followup": "Виноватый найден. Это был ты. В прошлом спринте."
+      }
+    ]
+  },
+  {
+    "id": "flaky_tests",
+    "title": "🎲 Флейки-тесты сошли с ума",
+    "description": "Один и тот же тест падает через раз. Зелёный, красный, зелёный, красный — CI превратился в рулетку.",
+    "tags": ["qa", "tech"],
+    "weight": 8,
+    "cooldownDays": 40,
+    "minGameDay": 15,
+    "conditions": { "minSkill": { "selenium": 10 } },
+    "choices": [
+      {
+        "text": "Стабилизировать тесты 🔧",
+        "effects": { "skill": { "selenium": 25 }, "motivation": -2 },
+        "followup": "Убрал гонки и таймауты. CI снова скучно-зелёный."
+      },
+      {
+        "text": "Пометить skip 😅",
+        "effects": { "skill": { "selenium": 5 }, "karma": -1 },
+        "followup": "Тестов меньше, но зелёных больше. Всем хорошо. Пока."
+      },
+      {
+        "text": "Удалить тесты: нет тестов — нет проблем 🗑",
+        "effects": { "karma": -2, "motivation": 3 },
+        "followup": "CI зелёный как никогда. Регрессии не будет. Наверное."
+      }
+    ]
+  },
+  {
+    "id": "docker_cleanup",
+    "title": "💾 Диск забит образами Docker",
+    "description": "Сборка падает: «no space left on device». Смотришь — 800 гигабайт образов с тегами `<none>`.",
+    "tags": ["devops", "tech"],
+    "weight": 8,
+    "cooldownDays": 40,
+    "minGameDay": 15,
+    "conditions": { "minSkill": { "docker": 10 } },
+    "choices": [
+      {
+        "text": "docker system prune -af 🧹",
+        "effects": { "skill": { "docker": 20 }, "motivation": 1 },
+        "followup": "Освободил 700 гигов. Ощущение чистоты — как после генеральной уборки."
+      },
+      {
+        "text": "Купить ещё диск 💾",
+        "effects": { "money": -5000, "motivation": 2 },
+        "followup": "Диск куплен. Через месяц снова забит. Круг замкнулся."
+      },
+      {
+        "text": "Удалить «наверняка ненужное» 🎲",
+        "effects": { "karma": -1, "motivation": 3 },
+        "followup": "Удалил образ, который использовал прод. Пришлось откатывать всё."
+      }
+    ]
+  },
+  {
+    "id": "prod_outage",
+    "title": "📉 Прод лежит, мониторинг молчит",
+    "description": "Клиенты пишут в поддержку, а графики показывают «всё отлично». Классика: мониторинг умер раньше прода.",
+    "tags": ["devops", "crisis", "work"],
+    "weight": 7,
+    "cooldownDays": 55,
+    "minGameDay": 40,
+    "conditions": { "hasJob": true, "minSkill": { "linux": 20 } },
+    "choices": [
+      {
+        "text": "Откатиться на бэкап 🔄",
+        "effects": { "skill": { "linux": 20 }, "motivation": -2, "reputation": 2 },
+        "followup": "Бэкап поднял прод за 10 минут. Ты — спокойствие, только спокойствие."
+      },
+      {
+        "text": "Созвать всю команду в 4 утра 📞",
+        "effects": { "relation": { "teamlead": -1 }, "motivation": 1 },
+        "followup": "Все пришли, все злые. Починили. Тебя запомнили."
+      },
+      {
+        "text": "Починить героически в одиночку 🦸",
+        "requires": { "energy": 3 },
+        "effects": { "skill": { "linux": 30 }, "health": -2, "burnoutDays": 1, "reputation": 3 },
+        "followup": "Починил к утру. Герой. Спина и нервная система с тобой не согласны."
+      }
+    ]
+  },
+  {
+    "id": "crunch_time",
+    "title": "⏰ За неделю до релиза всё горит",
+    "description": "Издатель не сдвинет дату. Осталось 7 дней, а в трекере 60 багов и пара «мелких» фич от продюсера.",
+    "tags": ["gamedev", "crisis"],
+    "weight": 8,
+    "cooldownDays": 50,
+    "minGameDay": 25,
+    "conditions": { "minSkill": { "game_design": 15 } },
+    "choices": [
+      {
+        "text": "Кранч неделю 🔥",
+        "effects": { "skill": { "game_design": 25 }, "health": -3, "burnoutDays": 1 },
+        "followup": "Релиз состоялся. Ты проспал 16 часов и забыл своё имя."
+      },
+      {
+        "text": "Сдвинуть релиз 🗓",
+        "effects": { "reputation": -1, "motivation": 2 },
+        "followup": "Издатель поворчал, но согласился. Команда выдохнула."
+      },
+      {
+        "text": "Вырезать половину фич ✂️",
+        "effects": { "skill": { "game_design": 15 }, "motivation": 1 },
+        "followup": "Вырезали «всё лишнее». Игроки спросили: «а где остальное?»"
+      }
+    ]
+  },
+  {
+    "id": "engine_bug",
+    "title": "🧨 Движок падает при сборке",
+    "description": "Билд падает с непонятной ошибкой. На форуме пишут: «баг известен с 2021 года, фикс будет в следующем мажоре».",
+    "tags": ["gamedev", "tech", "crisis"],
+    "weight": 8,
+    "cooldownDays": 45,
+    "minGameDay": 20,
+    "conditions": { "minSkill": { "game_design": 10 } },
+    "choices": [
+      {
+        "text": "Найти обходной путь 🛠",
+        "requires": { "energy": 2 },
+        "effects": { "skill": { "game_design": 20 }, "motivation": -1 },
+        "followup": "Обходной путь найден: не использовать ту самую фичу. Гениально."
+      },
+      {
+        "text": "Ждать фикса движка ⏳",
+        "effects": { "motivation": -2 },
+        "followup": "Фикс вышел через полгода. Вместе с новым багом."
+      },
+      {
+        "text": "Сменить движок 🎲",
+        "requires": { "energy": 2 },
+        "effects": { "skill": { "godot": 20 }, "motivation": 1 },
+        "followup": "Перенёс проект. Половина сломалась, но зато опенсорс."
+      }
+    ]
+  },
+  {
+    "id": "contract_audit",
+    "title": "🔐 Аудитор нашёл critical в твоём контракте",
+    "description": "Отчёт на 40 страниц. Ключевое: «злоумышленник может вывести все средства». Твой смарт-контракт держит чужие деньги.",
+    "tags": ["blockchain", "crisis", "crypto"],
+    "weight": 8,
+    "cooldownDays": 55,
+    "minGameDay": 30,
+    "conditions": { "minSkill": { "solidity": 15 } },
+    "choices": [
+      {
+        "text": "Починить контракт и заказать повторный аудит 🔒",
+        "effects": { "skill": { "solidity": 25 }, "money": -10000, "motivation": -1 },
+        "followup": "Исправлено, проверено, задеплоено. Спишь спокойно. Аудитор — тоже."
+      },
+      {
+        "text": "Положиться на мультисиг 🙈",
+        "effects": { "karma": -1, "motivation": 1 },
+        "followup": "«Мультисиг спасёт». Ключи от мультисига лежат в одном ноутбуке."
+      },
+      {
+        "text": "Нанять второго аудитора для перепроверки 🕵️",
+        "effects": { "money": -15000, "reputation": 2 },
+        "followup": "Второй аудитор нашёл то же самое и ещё пару мелочей. Зато теперь ты уверен."
+      }
+    ]
+  },
+  {
+    "id": "gas_war",
+    "title": "⛽ Газ вырос в 10 раз перед дропом",
+    "description": "Твой дроп должен был быть дешёвым и весёлым. Но сеть перегружена, и каждая транзакция стоит как ужин в ресторане.",
+    "tags": ["blockchain", "crisis", "crypto"],
+    "weight": 8,
+    "cooldownDays": 45,
+    "minGameDay": 20,
+    "conditions": { "minSkill": { "web3": 15 } },
+    "choices": [
+      {
+        "text": "Переехать на L2 🌉",
+        "effects": { "skill": { "web3": 25 }, "money": -2000, "motivation": 1 },
+        "followup": "Мост настроен, комиссии копеечные. Пользователи довольны. Почти все."
+      },
+      {
+        "text": "Подождать спада газа ⏳",
+        "effects": { "motivation": -2 },
+        "followup": "Газ упал через неделю. Дроп прошёл тихо и без хайпа."
+      },
+      {
+        "text": "Заплатить и войти в историю 💸",
+        "effects": { "money": -5000, "reputation": 1, "motivation": 2 },
+        "followup": "Транзакция прошла. Скриншот комиссии стал мемом в твиттере."
+      }
+    ]
+  }
+]
