@@ -24,5 +24,7 @@ export {
   WalletAddressSchema,
   DailyChallengeSchema,
   DailyChallengesFileSchema,
+  InterviewQuestionSchema,
+  InterviewQuestionsFileSchema,
 } from './schemas/index';
 export type { BalanceConfig } from './schemas/index';

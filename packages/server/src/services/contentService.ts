@@ -15,6 +15,7 @@ import {
   LayerManifestSchema,
   CrossCollectionsSchema,
   DailyChallengesFileSchema,
+  InterviewQuestionsFileSchema,
 } from '@itsim/shared';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -37,6 +38,7 @@ export interface ContentBundle {
   roomLayers: any;
   crossCollections: any;
   challenges: any[];
+  interviewQuestions: any[];
 }
 
 /**
@@ -57,6 +59,7 @@ export function loadContent(): ContentBundle {
     roomLayers: loadAndValidate('layers/room_manifest.json', LayerManifestSchema),
     crossCollections: loadAndValidate('cross_collections.json', CrossCollectionsSchema),
     challenges: loadAndValidate('challenges.json', DailyChallengesFileSchema),
+    interviewQuestions: loadAndValidate('interview_questions.json', InterviewQuestionsFileSchema),
   };
 
   // Run cross-file validation
@@ -154,6 +157,14 @@ function validateCrossReferences(bundle: ContentBundle) {
   for (const col of bundle.crossCollections.collections) {
     if (!layerIds.has(col.layerId)) {
       console.warn(`⚠ Cross-collection ${col.collectionId}: layerId "${col.layerId}" not found in layer manifests`);
+    }
+  }
+
+  // Validate interview question skill references
+  const questionSkillIds = new Set(bundle.interviewQuestions.map((q: any) => q.skillId));
+  for (const skillId of questionSkillIds) {
+    if (skillId !== 'general' && !skillIds.has(skillId)) {
+      console.warn(`⚠ Interview question references unknown skill "${skillId}"`);
     }
   }
 

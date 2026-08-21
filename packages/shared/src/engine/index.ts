@@ -9,4 +9,5 @@ export * from './achievements';
 export * from './genetics';
 export * from './mining';
 export * from './items';
+export * from './interviewQuestions';
 export * from './utils';

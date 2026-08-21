@@ -425,3 +425,17 @@ export const DailyChallengeSchema = z.object({
 });
 
 export const DailyChallengesFileSchema = z.array(DailyChallengeSchema).min(1);
+
+// ---- Interview questions (gamified learning) ----
+
+export const InterviewQuestionSchema = z.object({
+  id: z.string().regex(/^[a-z0-9_]+$/),
+  skillId: z.string().regex(/^[a-z0-9_]+$/),
+  tier: z.enum(['junior', 'middle', 'senior']),
+  text: z.string().min(5).max(200),
+  options: z.array(z.string().min(1)).min(2).max(4),
+  correctIndex: z.number().int().min(0).max(3),
+  explanation: z.string().min(5).max(300),
+});
+
+export const InterviewQuestionsFileSchema = z.array(InterviewQuestionSchema).min(3);

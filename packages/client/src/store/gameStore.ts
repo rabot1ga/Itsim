@@ -51,6 +51,9 @@ interface GameState {
   setMockCollections: (collections: string[]) => Promise<void>;
   unlockPerk: (perkId: string) => Promise<boolean>;
   setMainSkill: (skillId: string) => Promise<boolean>;
+  startInterview: () => Promise<any>;
+  answerInterview: (questionId: string, choiceIndex: number) => Promise<any>;
+  finishInterview: () => Promise<any>;
 }
 
 export const useGameStore = create<GameState>((set, get) => ({
@@ -282,6 +285,47 @@ export const useGameStore = create<GameState>((set, get) => ({
       console.error('setMainSkill error:', err);
       set({ error: 'Сервер недоступен' });
       return false;
+    }
+  },
+
+  startInterview: async () => {
+    try {
+      const res = await api('/game/interview/start', { method: 'POST', body: JSON.stringify({}) });
+      if (res.data?.state) set({ player: res.data.state, error: null });
+      if (!res.ok) set({ error: res.data?.error || 'Не удалось начать собеседование' });
+      return res.data;
+    } catch (err) {
+      console.error('startInterview error:', err);
+      set({ error: 'Сервер недоступен' });
+      return null;
+    }
+  },
+
+  answerInterview: async (questionId, choiceIndex) => {
+    try {
+      const res = await api('/game/interview/answer', {
+        method: 'POST',
+        body: JSON.stringify({ questionId, choiceIndex }),
+      });
+      if (res.data?.state) set({ player: res.data.state, error: null });
+      return res.data;
+    } catch (err) {
+      console.error('answerInterview error:', err);
+      set({ error: 'Сервер недоступен' });
+      return null;
+    }
+  },
+
+  finishInterview: async () => {
+    try {
+      const res = await api('/game/interview/finish', { method: 'POST', body: JSON.stringify({}) });
+      if (res.data?.state) set({ player: res.data.state, error: null });
+      if (!res.ok) set({ error: res.data?.error || 'Не удалось завершить собеседование' });
+      return res.data;
+    } catch (err) {
+      console.error('finishInterview error:', err);
+      set({ error: 'Сервер недоступен' });
+      return null;
     }
   },
 }));

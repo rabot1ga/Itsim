@@ -677,3 +677,70 @@ describe('item effects', () => {
     expect(calculateMaxEnergy(p, 0, ITEM_DEFS)).toBe(11);
   });
 });
+
+// ---- Interview quiz (gamified learning) ----
+
+import {
+  pickInterviewQuestions,
+  interviewAnswerScore,
+  interviewXpForQuestion,
+  gradeTier,
+} from '../../index';
+
+const QUESTIONS = [
+  { id: 'js_1', skillId: 'javascript', tier: 'junior', text: 't', options: ['a', 'b'], correctIndex: 0, explanation: 'e' },
+  { id: 'js_2', skillId: 'javascript', tier: 'middle', text: 't', options: ['a', 'b'], correctIndex: 0, explanation: 'e' },
+  { id: 'js_3', skillId: 'javascript', tier: 'senior', text: 't', options: ['a', 'b'], correctIndex: 0, explanation: 'e' },
+  { id: 'gen_1', skillId: 'general', tier: 'junior', text: 't', options: ['a', 'b'], correctIndex: 0, explanation: 'e' },
+  { id: 'py_1', skillId: 'python', tier: 'junior', text: 't', options: ['a', 'b'], correctIndex: 0, explanation: 'e' },
+  { id: 'py_2', skillId: 'python', tier: 'senior', text: 't', options: ['a', 'b'], correctIndex: 0, explanation: 'e' },
+];
+
+describe('interview questions', () => {
+  it('gradeTier maps grades to question tiers', () => {
+    expect(gradeTier('intern')).toBe('junior');
+    expect(gradeTier('junior')).toBe('junior');
+    expect(gradeTier('middle')).toBe('middle');
+    expect(gradeTier('senior')).toBe('senior');
+    expect(gradeTier('architect')).toBe('senior');
+  });
+
+  it('pickInterviewQuestions puts the main skill first, respects tier', () => {
+    const rng = (() => { let s = 7; return () => ((s = (s * 1103515245 + 12345) & 0x7fffffff), s / 0x7fffffff); })();
+    const picked = pickInterviewQuestions(QUESTIONS as any, {
+      mainSkillId: 'javascript',
+      grade: 'junior',
+      count: 3,
+      rng,
+    });
+    expect(picked).toHaveLength(3);
+    // topic-first: the first question is from the main skill
+    expect(picked[0].skillId).toBe('javascript');
+    // junior tier: middle/senior questions must never appear
+    expect(picked.some((q) => q.id === 'js_2' || q.id === 'js_3' || q.id === 'py_2')).toBe(false);
+  });
+
+  it('pickInterviewQuestions fills from the wider tier pool when the branch is thin', () => {
+    const rng = (() => { let s = 3; return () => ((s = (s * 1103515245 + 12345) & 0x7fffffff), s / 0x7fffffff); })();
+    const picked = pickInterviewQuestions(QUESTIONS as any, {
+      mainSkillId: 'python',
+      grade: 'junior',
+      count: 3,
+      rng,
+    });
+    expect(picked).toHaveLength(3);
+    expect(picked[0].skillId).toBe('python');
+    expect(picked.every((q) => ['python', 'general', 'javascript'].includes(q.skillId))).toBe(true);
+  });
+
+  it('interviewAnswerScore spans 0.4..1.0', () => {
+    expect(interviewAnswerScore(0, 3)).toBeCloseTo(0.4, 5);
+    expect(interviewAnswerScore(3, 3)).toBeCloseTo(1.0, 5);
+    expect(interviewAnswerScore(1, 3)).toBeCloseTo(0.6, 5);
+  });
+
+  it('correct answers give more XP than mistakes, both teach', () => {
+    expect(interviewXpForQuestion(true)).toBeGreaterThan(interviewXpForQuestion(false));
+    expect(interviewXpForQuestion(false)).toBeGreaterThan(0);
+  });
+});

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
+import { InterviewPanel } from '../components/InterviewPanel';
 
 const GRADES = [
   { grade: 'intern', name: 'Стажёр', skill: 18, salary: '35 000 ₽' },
@@ -118,6 +119,9 @@ export const CareerView: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Interview quiz */}
+      {application?.status === 'interview_scheduled' && <InterviewPanel />}
 
       {/* Application status */}
       {application && (
