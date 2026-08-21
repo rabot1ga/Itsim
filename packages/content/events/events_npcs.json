@@ -1,0 +1,218 @@
+[
+  {
+    "id": "mentor_day",
+    "title": "🧑‍🏫 Тимлид позвал на обед",
+    "description": "«Есть разговор», — сказал тимлид. Обычно это значит либо повышение, либо «нам нужно поговорить о твоих оценках». Обед за его счёт.",
+    "tags": ["work", "social", "mentoring"],
+    "weight": 7,
+    "cooldownDays": 35,
+    "minGameDay": 20,
+    "conditions": { "hasJob": true, "minRelation": { "teamlead": 15 } },
+    "choices": [
+      {
+        "text": "Принять приглашение 🍜",
+        "effects": { "relation": { "teamlead": 3 }, "motivation": 2 },
+        "followup": "Говорили о карьере и твоих сильных сторонах. Приятно, когда тебя видят."
+      },
+      {
+        "text": "Отказаться: «много задач» 💼",
+        "effects": { "skill": { "javascript": 10 }, "relation": { "teamlead": -1 } },
+        "followup": "Ты выбрал задачи. Тимлид понял. Но что-то в его взгляде изменилось."
+      },
+      {
+        "text": "Пойти и заплатить за обоих 💳",
+        "effects": { "money": -3000, "relation": { "teamlead": 2 } },
+        "followup": "Тимлид удивился и оценил. Теперь ты «человек, который угощает»."
+      }
+    ]
+  },
+  {
+    "id": "toxic_praise",
+    "title": "😼 Токсичный сеньор похвалил твой код",
+    "description": "«Ну, в этот раз не позор», — сказал токсичный сеньор. Это лучший комплимент, который от него слышали за год.",
+    "tags": ["work", "toxic", "social"],
+    "weight": 6,
+    "cooldownDays": 40,
+    "minGameDay": 20,
+    "conditions": { "hasJob": true, "npcPresent": "toxic_senior" },
+    "choices": [
+      {
+        "text": "Поблагодарить с достоинством 🙏",
+        "effects": { "relation": { "toxic_senior": 2 }, "motivation": 1 },
+        "followup": "Он хмыкнул. Лёд тронулся. На миллиметр."
+      },
+      {
+        "text": "Спросить: «а что не так?» 🤨",
+        "effects": { "relation": { "toxic_senior": -1 }, "motivation": -1 },
+        "followup": "Он нашёл, что не так. Три часа объяснял. Ты сам напросился."
+      },
+      {
+        "text": "Записать в дневник достижений 📓",
+        "effects": { "motivation": 2 },
+        "followup": "«Похвала от токсика — редкий ачивмент». Сохранено."
+      }
+    ]
+  },
+  {
+    "id": "junior_help",
+    "title": "🐣 Джун пришёл за помощью",
+    "description": "Джун стоит у твоего стола с ноутбуком и взглядом «я всё сломал». Код сломан, но дух не сломлен.",
+    "tags": ["work", "mentoring", "social"],
+    "weight": 7,
+    "cooldownDays": 25,
+    "minGameDay": 15,
+    "conditions": { "hasJob": true, "npcPresent": "junior_colleague" },
+    "choices": [
+      {
+        "text": "Помочь и объяснить 🧑‍🏫",
+        "effects": { "relation": { "junior_colleague": 3 }, "reputation": 1, "skill": { "communication": 8 } },
+        "followup": "Джун всё понял и записал. Ты — легенда онбординга."
+      },
+      {
+        "text": "Скинуть ссылку на документацию 🔗",
+        "effects": { "skill": { "javascript": 5 }, "motivation": 1 },
+        "followup": "Джун ушёл читать. Вернулся с ещё большим количеством вопросов."
+      },
+      {
+        "text": "«Сам разберёшься, это закаляет» 🗿",
+        "effects": { "relation": { "junior_colleague": -2 }, "karma": -1 },
+        "followup": "Джун разобрался. Через три дня. И запомнил, к кому не подходить."
+      }
+    ]
+  },
+  {
+    "id": "uni_friend_wedding",
+    "title": "💒 Друг из универа женится",
+    "description": "«Ты свидетель!» — сообщил друг. Времени на подготовку — две недели. Костюм у тебя один, и тот с выпускного.",
+    "tags": ["friend", "social"],
+    "weight": 6,
+    "cooldownDays": 90,
+    "minGameDay": 30,
+    "conditions": { "npcPresent": "uni_friend", "minRelation": { "uni_friend": 10 } },
+    "choices": [
+      {
+        "text": "Согласиться быть свидетелем 🎩",
+        "effects": { "money": -5000, "relation": { "uni_friend": 4 }, "motivation": 3 },
+        "followup": "Свадьба удалась. Тост был лучшим — все плакали. Даже ты."
+      },
+      {
+        "text": "Прийти гостем с подарком 🎁",
+        "effects": { "money": -3000, "relation": { "uni_friend": 2 }, "motivation": 2 },
+        "followup": "Подарили с женой миксер. Друг был рад и без твоего тоста."
+      },
+      {
+        "text": "Отказаться: «дедлайн» 💻",
+        "effects": { "relation": { "uni_friend": -3 }, "motivation": -2 },
+        "followup": "Друг понял. Но осадочек остался. Свадьба прошла без тебя."
+      }
+    ]
+  },
+  {
+    "id": "hr_anna_message",
+    "title": "📩 Анна из HR написала первой",
+    "description": "«Привет! Помнишь меня? В баре? Так вот, у нас открылась вакансия, и я сразу подумала о тебе».",
+    "tags": ["career", "social"],
+    "weight": 8,
+    "cooldownDays": 25,
+    "minGameDay": 5,
+    "conditions": { "npcPresent": "hr_anna", "minRelation": { "hr_anna": 5 } },
+    "choices": [
+      {
+        "text": "Спросить детали вакансии 💼",
+        "effects": { "reputation": 1, "relation": { "hr_anna": 2 }, "motivation": 2 },
+        "followup": "Позиция интересная. Анна обещала «замолвить словечко»."
+      },
+      {
+        "text": "Предложить встретиться за кофе ☕",
+        "effects": { "money": -1000, "relation": { "hr_anna": 3 } },
+        "followup": "Встретились в кофейне. Говорили о рынке, зарплатах и твоём будущем."
+      },
+      {
+        "text": "Отложить: «сейчас не время» ⏳",
+        "effects": { "relation": { "hr_anna": -1 } },
+        "followup": "Анна не обиделась, но рекрутеры всё записывают. Даже «не время»."
+      }
+    ]
+  },
+  {
+    "id": "teamlead_stress",
+    "title": "😰 Тимлид на грани выгорания",
+    "description": "Тимлид третий день сидит с пустым взглядом. Созвоны, отчёты, заказчик — всё на нём. Ты видишь, что он не справляется.",
+    "tags": ["work", "mental"],
+    "weight": 6,
+    "cooldownDays": 45,
+    "minGameDay": 60,
+    "conditions": { "hasJob": true, "minGrade": "senior", "minRelation": { "teamlead": 20 } },
+    "choices": [
+      {
+        "text": "Взять часть его задач 💪",
+        "effects": { "relation": { "teamlead": 3 }, "reputation": 2, "energy": -2 },
+        "followup": "Разгрузил тимлида. Он выдохнул и впервые за неделю пошутил."
+      },
+      {
+        "text": "Посоветовать взять отпуск 🏖",
+        "effects": { "skill": { "communication": 8 }, "relation": { "teamlead": 2 } },
+        "followup": "Тимлид ушёл в отпуск. Вернулся человеком. Все выдохнули."
+      },
+      {
+        "text": "Не вмешиваться 🤐",
+        "effects": { "motivation": -1 },
+        "followup": "Ты прошёл мимо. Через неделю тимлид ушёл на больничный."
+      }
+    ]
+  },
+  {
+    "id": "toxic_argument",
+    "title": "🔥 Ссора с токсиком на дейлике",
+    "description": "Токсичный сеньор опять публично раскритиковал твоё решение. Все смотрят на тебя. Момент истины.",
+    "tags": ["work", "toxic", "crisis"],
+    "weight": 6,
+    "cooldownDays": 40,
+    "minGameDay": 20,
+    "conditions": { "hasJob": true, "npcPresent": "toxic_senior", "minSkill": { "javascript": 40 } },
+    "choices": [
+      {
+        "text": "Аргументированно отстоять решение 📊",
+        "effects": { "reputation": 2, "relation": { "toxic_senior": -1 }, "motivation": 2 },
+        "followup": "Ты привёл метрики. Команда на твоей стороне. Токсик замолчал."
+      },
+      {
+        "text": "Перевести в шутку 😄",
+        "effects": { "skill": { "communication": 10 }, "motivation": 1 },
+        "followup": "Все посмеялись, конфликт растворился. Токсик скривился, но отстал."
+      },
+      {
+        "text": "Промолчать и злиться весь день 😤",
+        "effects": { "motivation": -3 },
+        "followup": "Промолчал. Вечером переписывал всё под его требования. И злился."
+      }
+    ]
+  },
+  {
+    "id": "friend_game_night",
+    "title": "🎮 Друг зовёт на вечер настолок",
+    "description": "«Будет кот, пицца и Диксит. Ты обязан прийти», — пишет друг. В трекере — дедлайн, но друг настойчив.",
+    "tags": ["friend", "social"],
+    "weight": 7,
+    "cooldownDays": 20,
+    "minGameDay": 3,
+    "conditions": { "npcPresent": "uni_friend" },
+    "choices": [
+      {
+        "text": "Пойти и отдохнуть 🎲",
+        "effects": { "relation": { "uni_friend": 3 }, "motivation": 4 },
+        "followup": "Вечер настолок. Ты победил в Диксите и проиграл в «Колонизаторов». Лучший вечер месяца."
+      },
+      {
+        "text": "Остаться и закрыть задачи 💻",
+        "effects": { "skill": { "javascript": 15 }, "relation": { "uni_friend": -1 } },
+        "followup": "Дедлайн закрыт. Друг прислал фото: «ты многое упустил». Кот был великолепен."
+      },
+      {
+        "text": "Предложить собраться у тебя 🏠",
+        "effects": { "money": -2000, "relation": { "uni_friend": 2 }, "motivation": 2 },
+        "followup": "Собрались у тебя. Кот гостей оценил, пиццу — особенно."
+      }
+    ]
+  }
+]

@@ -1,0 +1,213 @@
+[
+  {
+    "id": "loader_muscle",
+    "title": "💪 Сегодня ты — кран",
+    "description": "На смене привезли рояль. Буквально рояль. Клиент на четвёртом этаже, лифт не работает.",
+    "tags": ["sidejob", "crisis"],
+    "weight": 100,
+    "cooldownDays": 15,
+    "actionTrigger": { "action": "side_job", "jobId": "loader", "chance": 0.2, "cooldownDays": 15 },
+    "minGameDay": 1,
+    "choices": [
+      {
+        "text": "Взяться за рояль 🎹",
+        "effects": { "money": 2500, "health": -3, "motivation": -1 },
+        "followup": "Рояль поднят. Спина — нет. Клиент дал чаевые и посоветовал массажиста."
+      },
+      {
+        "text": "Работать в своём темпе 🐢",
+        "effects": { "money": 1200, "health": -1 },
+        "followup": "Медленно, но без травм. Бригадир поворчал, но принял."
+      },
+      {
+        "text": "Позвать напарников 🤝",
+        "effects": { "money": 800, "motivation": 1 },
+        "followup": "Разделили вес и деньги. Зато спина в порядке."
+      }
+    ]
+  },
+  {
+    "id": "taxi_investor",
+    "title": "🚗 Пассажир оказался инвестором",
+    "description": "Ты вёз человека в костюме. Разговорились. Оказалось, он инвестирует в IT-стартапы и ищет «интересных людей».",
+    "tags": ["sidejob", "career"],
+    "weight": 100,
+    "cooldownDays": 30,
+    "actionTrigger": { "action": "side_job", "jobId": "taxi", "chance": 0.15, "cooldownDays": 30 },
+    "minGameDay": 1,
+    "choices": [
+      {
+        "text": "Рассказать про свой проект 🚀",
+        "effects": { "reputation": 2, "motivation": 2 },
+        "followup": "Инвестор слушал внимательно и оставил визитку. «Позвоните, когда будет демо»."
+      },
+      {
+        "text": "Просто хорошо довезти 😌",
+        "effects": { "money": 1500, "motivation": 1 },
+        "followup": "Пассажир оставил щедрые чаевые и хороший рейтинг."
+      }
+    ]
+  },
+  {
+    "id": "guard_reading",
+    "title": "🌙 Ночная смена у серверной",
+    "description": "Охраняешь офис, где гудит серверная. Вокруг тишина. Времени — целая ночь. В кармане — книга по архитектуре.",
+    "tags": ["sidejob", "study"],
+    "weight": 100,
+    "cooldownDays": 15,
+    "actionTrigger": { "action": "side_job", "jobId": "night_guard", "chance": 0.25, "cooldownDays": 15 },
+    "minGameDay": 1,
+    "choices": [
+      {
+        "text": "Читать книгу всю смену 📖",
+        "effects": { "skill": { "javascript": 10 }, "money": 2000 },
+        "followup": "Ночь на чтение. Охранял серверы и качал архитектуру. Двойная польза."
+      },
+      {
+        "text": "Обойти территорию трижды 🔦",
+        "effects": { "health": 2, "reputation": 1 },
+        "followup": "Идеальная дисциплина. Камеры зафиксировали. Начальство довольно."
+      },
+      {
+        "text": "Подремать на посту 💤",
+        "effects": { "money": -500, "health": 1 },
+        "followup": "Вздремнул. Камера заметила. Штраф, но ты выспался."
+      }
+    ]
+  },
+  {
+    "id": "book_previous_owner",
+    "title": "📖 В книге — пометки прошлого владельца",
+    "description": "На полях — заметки карандашом: формулы, стрелки, «вот тут автор врёт». Похоже, до тебя её читал кто-то гениальный.",
+    "tags": ["study", "reward"],
+    "weight": 100,
+    "cooldownDays": 20,
+    "actionTrigger": { "action": "study_book", "chance": 0.15, "cooldownDays": 20 },
+    "minGameDay": 1,
+    "choices": [
+      {
+        "text": "Следовать пометкам 🧭",
+        "effects": { "skill": { "javascript": 15 }, "motivation": 1 },
+        "followup": "Пометки срезали путь. Сложные места стали понятнее."
+      },
+      {
+        "text": "Игнорировать: свой путь лучше 🚶",
+        "effects": { "skill": { "javascript": 10 }, "motivation": 2 },
+        "followup": "Шёл своим путём. Дольше, но зато по-своему."
+      },
+      {
+        "text": "Проверить, не вложены ли деньги 💵",
+        "effects": { "money": 1000, "motivation": 1 },
+        "followup": "В книге оказалась старая закладка-купюра. Приятный бонус."
+      }
+    ]
+  },
+  {
+    "id": "stepik_certificate",
+    "title": "🏅 Сертификат Stepik получен",
+    "description": "Курс пройден, тесты сданы. На почте — сертификат. Осталось решить, что с ним делать.",
+    "tags": ["study", "reward"],
+    "weight": 100,
+    "cooldownDays": 20,
+    "actionTrigger": { "action": "study_stepik", "chance": 0.15, "cooldownDays": 20 },
+    "minGameDay": 1,
+    "choices": [
+      {
+        "text": "Добавить в LinkedIn 📄",
+        "effects": { "reputation": 1, "motivation": 1 },
+        "followup": "Профиль стал чуть весомее. Рекрутёры заметили."
+      },
+      {
+        "text": "Похвастаться в рабочем чате 🎉",
+        "effects": { "relation": { "junior_colleague": 1 }, "motivation": 2 },
+        "followup": "Команда поставила огонёчки. Джун спросил, где записаться."
+      },
+      {
+        "text": "Сохранить в папку «на будущее» 📁",
+        "effects": { "motivation": 1 },
+        "followup": "Папка растёт. Когда-нибудь ты всё это покажешь."
+      }
+    ]
+  },
+  {
+    "id": "course_live_mentor",
+    "title": "🎓 Курс оказался с живым ментором",
+    "description": "Оказывается, в курс входят живые код-ревью от ментора. Ты думал, будет просто видео.",
+    "tags": ["study", "reward"],
+    "weight": 100,
+    "cooldownDays": 25,
+    "actionTrigger": { "action": "study_course", "chance": 0.2, "cooldownDays": 25 },
+    "minGameDay": 5,
+    "choices": [
+      {
+        "text": "Задать все накопившиеся вопросы ❓",
+        "effects": { "skill": { "javascript": 15 }, "motivation": 2 },
+        "followup": "Ментор ответил на всё. Два вопроса оказались «гениальными»."
+      },
+      {
+        "text": "Попросить ревью пет-проекта 🔍",
+        "effects": { "skill": { "javascript": 10 }, "reputation": 1 },
+        "followup": "Ревью на 40 комментариев. Половина — полезные, половина — «подумай ещё»."
+      },
+      {
+        "text": "Промолчать и смотреть лекции 🙈",
+        "effects": { "motivation": -1 },
+        "followup": "Деньги за ментора уплачены. Ментор ждал. Зря."
+      }
+    ]
+  },
+  {
+    "id": "networking_devrel",
+    "title": "🧑‍💼 Познакомился с Developer Advocate",
+    "description": "На митапе ты разговорился с Developer Advocate крупной платформы. У него полные карманы стикеров и желание слушать.",
+    "tags": ["social", "career"],
+    "weight": 100,
+    "cooldownDays": 30,
+    "actionTrigger": { "action": "networking", "chance": 0.12, "cooldownDays": 30 },
+    "minGameDay": 10,
+    "choices": [
+      {
+        "text": "Взять контакт и договориться о коллабе 🤝",
+        "effects": { "reputation": 2, "motivation": 2 },
+        "followup": "Коллаб намечен. Твой пет-проект может попасть в их блог."
+      },
+      {
+        "text": "Выпросить побольше стикеров 🎁",
+        "effects": { "motivation": 2 },
+        "followup": "Тридцать стикеров. Ноутбук заклеен. Счастье."
+      },
+      {
+        "text": "Показать свой проект прямо с телефона 📱",
+        "effects": { "relation": { "hr_anna": 1 }, "reputation": 1 },
+        "followup": "Он скинул проект их команде. Кто-то поставил звезду."
+      }
+    ]
+  },
+  {
+    "id": "gym_personal_record",
+    "title": "🏆 Личный рекорд в жиме",
+    "description": "Ты выжал вес, о котором мечтал полгода. Штанга поднялась. Зал обернулся.",
+    "tags": ["health", "reward"],
+    "weight": 100,
+    "cooldownDays": 25,
+    "actionTrigger": { "action": "rest_gym", "chance": 0.15, "cooldownDays": 25 },
+    "minGameDay": 3,
+    "choices": [
+      {
+        "text": "Сфоткать вес для истории 📸",
+        "effects": { "motivation": 3, "reputation": 1 },
+        "followup": "Сторис собрал лайки. Друзья пишут «красава»."
+      },
+      {
+        "text": "Скромно продолжить тренировку 😌",
+        "effects": { "health": 2, "motivation": 2 },
+        "followup": "Рекорд есть рекорд. Ты просто делаешь свою работу."
+      },
+      {
+        "text": "Позвать всех посмотреть на следующий подход 👀",
+        "effects": { "motivation": 2, "health": -1 },
+        "followup": "На публике не выжал. Зато стало весело."
+      }
+    ]
+  }
+]

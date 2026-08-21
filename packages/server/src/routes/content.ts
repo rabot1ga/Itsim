@@ -12,7 +12,7 @@ export async function contentRoutes(app: FastifyInstance) {
       skills: 'skills.json',
       perks: 'perks.json',
       companies: 'companies.json',
-      events: ['events_common.json', 'events_work.json', 'events_chains.json', 'events_mining.json', 'events_life.json', 'events_skills.json', 'events_action.json', 'events_daily.json'],
+      events: ['events_common.json', 'events_work.json', 'events_chains.json', 'events_mining.json', 'events_life.json', 'events_skills.json', 'events_action.json', 'events_daily.json', 'events_daily2.json', 'events_npcs.json', 'events_more_action.json'],
       items: 'items.json',
       npcs: 'npcs.json',
       achievements: 'achievements.json',
