@@ -628,3 +628,52 @@ describe('action-triggered events', () => {
     expect(maybeTriggerActionEvent(p, gated, 'rest_bar', undefined, () => 0)?.id).toBe('gated_evt');
   });
 });
+
+// ---- Item effects (content-driven) ----
+
+import { itemBonusSum, itemXpMult, itemEnergyCostChance, itemDailyBonuses } from '../../index';
+
+const ITEM_DEFS = [
+  { id: 'sony_headphones', effects: { xpBonus: 0.15 } },
+  { id: 'coffee_maker', effects: { energyBonus: 2, motivationBonus: 3 } },
+  { id: 'desk_plant', effects: { motivationBonus: 2 } },
+  { id: 'gym_subscription', effects: { energyBonus: 1, healthBonus: 2 } },
+  { id: 'macbook', effects: { xpBonus: 0.1 } },
+  { id: 'mechanical_keyboard', effects: { energyCostChance: 0.2 } },
+];
+
+describe('item effects', () => {
+  it('itemBonusSum sums only owned items', () => {
+    expect(itemBonusSum(['desk_plant'], ITEM_DEFS, 'motivationBonus')).toBe(2);
+    expect(itemBonusSum(['coffee_maker', 'desk_plant'], ITEM_DEFS, 'motivationBonus')).toBe(5);
+    expect(itemBonusSum([], ITEM_DEFS, 'motivationBonus')).toBe(0);
+  });
+
+  it('itemXpMult converts percent to multiplier', () => {
+    expect(itemXpMult([], ITEM_DEFS)).toBe(1);
+    expect(itemXpMult(['sony_headphones'], ITEM_DEFS)).toBeCloseTo(1.15, 5);
+    expect(itemXpMult(['sony_headphones', 'macbook'], ITEM_DEFS)).toBeCloseTo(1.25, 5);
+  });
+
+  it('itemEnergyCostChance is capped at 0.8', () => {
+    expect(itemEnergyCostChance([], ITEM_DEFS)).toBe(0);
+    expect(itemEnergyCostChance(['mechanical_keyboard'], ITEM_DEFS)).toBeCloseTo(0.2, 5);
+  });
+
+  it('itemDailyBonuses returns motivation and health drips', () => {
+    expect(itemDailyBonuses(['desk_plant'], ITEM_DEFS)).toEqual({ motivation: 2, health: 0 });
+    expect(itemDailyBonuses(['gym_subscription'], ITEM_DEFS)).toEqual({ motivation: 0, health: 2 });
+  });
+
+  it('calculateMaxEnergy uses content defs (fixes legacy id typos)', () => {
+    const p = createNewPlayer();
+    // content-driven: coffee_maker gives +2
+    p.items = ['coffee_maker'];
+    expect(calculateMaxEnergy(p, 0, ITEM_DEFS)).toBe(12);
+    // legacy fallback also works with corrected ids
+    expect(calculateMaxEnergy(p)).toBe(12);
+    // gym_subscription +1
+    p.items = ['gym_subscription'];
+    expect(calculateMaxEnergy(p, 0, ITEM_DEFS)).toBe(11);
+  });
+});

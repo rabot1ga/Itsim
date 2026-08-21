@@ -24,17 +24,22 @@ const HOUSING_BONUS: Record<HousingLevel, number> = {
   5: 0,
 };
 
-// Item energy bonuses
-const ITEM_ENERGY_BONUSES: Record<string, number> = {
+// Item energy bonuses — legacy fallback when no content defs are passed
+// (production passes content; ids here fixed to match items.json)
+const LEGACY_ITEM_ENERGY_BONUSES: Record<string, number> = {
   'herman_miller': 2,
   'gaming_chair': 1,
-  'coffee_machine': 2,
-  'gym_membership': 1,
+  'coffee_maker': 2,
+  'gym_subscription': 1,
 };
 
 const MAX_ITEM_ENERGY_BONUS = 4;
 
-export function calculateMaxEnergy(p: PlayerState, perkEnergy: number = 0): number {
+export function calculateMaxEnergy(
+  p: PlayerState,
+  perkEnergy: number = 0,
+  itemDefs?: Array<{ id: string; effects?: { energyBonus?: number } }>
+): number {
   let e = BASE_ENERGY + perkEnergy;
 
   // Health bonuses
@@ -48,11 +53,17 @@ export function calculateMaxEnergy(p: PlayerState, perkEnergy: number = 0): numb
   // Housing bonus
   e += HOUSING_BONUS[p.housingLevel] ?? 0;
 
-  // Item bonuses (capped at +4 total)
+  // Item bonuses (capped at +4 total) — content-driven when defs provided
   let itemBonus = 0;
-  for (const itemId of p.items) {
-    const bonus = ITEM_ENERGY_BONUSES[itemId] ?? 0;
-    itemBonus += bonus;
+  if (itemDefs) {
+    const owned = new Set(p.items);
+    for (const def of itemDefs) {
+      if (owned.has(def.id)) itemBonus += def.effects?.energyBonus ?? 0;
+    }
+  } else {
+    for (const itemId of p.items) {
+      itemBonus += LEGACY_ITEM_ENERGY_BONUSES[itemId] ?? 0;
+    }
   }
   e += Math.min(itemBonus, MAX_ITEM_ENERGY_BONUS);
 
@@ -91,12 +102,12 @@ export function advanceLastTick(lastTickAt: number, earnedDays: number): number 
 }
 
 /**
- * Calculate max energy from item bonuses
+ * Calculate max energy from item bonuses (legacy fallback)
  */
 export function itemEnergyBonus(items: string[]): number {
   let total = 0;
   for (const itemId of items) {
-    total += ITEM_ENERGY_BONUSES[itemId] ?? 0;
+    total += LEGACY_ITEM_ENERGY_BONUSES[itemId] ?? 0;
   }
   return Math.min(total, MAX_ITEM_ENERGY_BONUS);
 }

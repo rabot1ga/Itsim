@@ -200,6 +200,67 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
         </div>
       )}
 
+      {/* Daily challenge */}
+      {player.dailyChallenge && (
+        <div
+          className={`game-card border-sky-500/30 bg-sky-500/5 ${
+            player.dailyChallenge.done ? 'border-emerald-500/40 bg-emerald-500/5' : ''
+          }`}
+        >
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-xs font-bold text-sky-300">🎯 Задание дня</span>
+            {player.dailyChallenge.done ? (
+              <span className="chip bg-emerald-900/60 text-emerald-300">выполнено ✓</span>
+            ) : (
+              <span className="text-[10px] text-slate-400 tabular-nums">
+                {player.dailyChallenge.progress}/{player.dailyChallenge.count}
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-slate-300">
+            {(() => {
+              const id = player.dailyChallenge.id;
+              const map: Record<string, string> = {
+                ch_study_3: 'Выполни 3 учебных действия',
+                ch_work_3: 'Закрой 3 рабочие задачи',
+                ch_freelance_1: 'Выполни 1 фриланс-заказ',
+                ch_networking_1: 'Сходи на нетворкинг',
+                ch_rest_2: 'Отдохни 2 раза',
+                ch_sidejob_1: 'Возьми любую подработку',
+                ch_petproject_1: 'Поработай над пет-проектом',
+                ch_english_1: 'Позанимайся английским',
+                ch_bar_1: 'Сходи в бар',
+                ch_shop_1: 'Купи что-нибудь в магазине',
+                ch_gym_1: 'Сходи в зал',
+                ch_walk_2: 'Погуляй 2 раза',
+                ch_feed_pet_1: 'Покорми питомца',
+              };
+              return map[id] ?? 'Выполни задание';
+            })()}
+          </p>
+          {!player.dailyChallenge.done && (
+            <div className="h-1 bg-slate-700 rounded-full overflow-hidden mt-2">
+              <div
+                className="h-full bg-sky-500 rounded-full transition-all"
+                style={{
+                  width: `${Math.min(100, (player.dailyChallenge.progress / Math.max(1, player.dailyChallenge.count)) * 100)}%`,
+                }}
+              />
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Feed pet */}
+      {(player.items ?? []).some((id: string) => id.startsWith('pet_')) && (
+        <button
+          onClick={() => performAction('feed_pet')}
+          className="w-full py-2.5 bg-amber-900/40 hover:bg-amber-900/60 border border-amber-600/50 text-amber-200 rounded-xl font-medium transition-all text-sm active:scale-[0.98]"
+        >
+          🍖 Покормить питомца (500 ₽, +3 🔥)
+        </button>
+      )}
+
       {/* Banked offline days */}
       {(player.bankedDays ?? 0) > 0 && (
         <button

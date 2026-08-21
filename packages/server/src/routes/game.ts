@@ -36,6 +36,11 @@ import {
   miningDailyIncome,
   hashrateOfItems,
   electricitySaveOfItems,
+  itemBonusSum,
+  itemXpMult,
+  itemEnergyCostChance,
+  itemDailyBonuses,
+  seededRng,
   type PlayerState,
   type GameEvent,
   type Grade,
@@ -58,6 +63,8 @@ type StoredState = PlayerState & {
   lastFreelanceDay: number;
   sideJobDoneToday: boolean;
   mainSkillId: string;
+  petFedToday: boolean;
+  firstName: string;
 };
 
 // Idempotent action cache: userId -> idempotencyKey -> response
@@ -84,6 +91,7 @@ const EXTRA_ENERGY_COSTS: Record<string, number> = {
   study_english: 2,
   study_english_course: 3,
   use_banked_day: 0,
+  feed_pet: 1,
 };
 
 const GRADE_POSITIONS: Record<Grade, string> = {
@@ -162,8 +170,9 @@ export async function gameRoutes(app: FastifyInstance) {
     let state = loadState(userId) as StoredState | null;
     const isNew = !state;
     if (!state) {
-      state = { ...createNewPlayer(), telegramId: userId, lastTickAt: Date.now(), ratingScore: 0, activeEventId: null, freelanceDoneToday: false, lastFreelanceDay: 0, sideJobDoneToday: false, mainSkillId: 'javascript' } as StoredState;
+      state = { ...createNewPlayer(), telegramId: userId, lastTickAt: Date.now(), ratingScore: 0, activeEventId: null, freelanceDoneToday: false, lastFreelanceDay: 0, sideJobDoneToday: false, petFedToday: false, firstName: user.first_name || 'Игрок', mainSkillId: 'javascript' } as StoredState;
       deriveGenetics(state);
+      resetDailyChallenge(state, getContent());
     }
 
     // Refresh cross-collection bonuses (DESIGN.md 3.3)
@@ -235,7 +244,11 @@ export async function gameRoutes(app: FastifyInstance) {
     const content = getContent();
 
     // Validate costs BEFORE any mutation (idempotency-safe)
-    const energyCost = getActionEnergyCost(actionId, params, content);
+    let energyCost = getActionEnergyCost(actionId, params, content);
+    const costChance = itemEnergyCostChance(state.items, content.items);
+    if (costChance > 0 && rng() < costChance) {
+      energyCost = Math.max(0, energyCost - 1);
+    }
     if (state.energy < energyCost) {
       return reply.status(400).send({ error: 'Не хватает энергии — заверши день или отдохни', state: respondState(state) });
     }
@@ -252,6 +265,10 @@ export async function gameRoutes(app: FastifyInstance) {
 
     state.energy -= energyCost;
     if (moneyCost !== null) state.money -= moneyCost;
+
+    // Daily challenge progress (BEFORE persisting — rewards land in state)
+    const challengeMsg = bumpChallenge(state, content, actionId);
+    const finalMessage = challengeMsg ? `${result.message}\n${challengeMsg}` : result.message;
 
     state.totalActions += 1;
     state.maxEnergy = recalcMaxEnergy(state, content);
@@ -277,7 +294,7 @@ export async function gameRoutes(app: FastifyInstance) {
       }
     }
 
-    const response = { state: respondState(state, result.message), delta: result.delta ?? {}, activeEvent: triggeredEvent, nft, mining: miningSummary(state, content) };
+    const response = { state: respondState(state, finalMessage), delta: result.delta ?? {}, activeEvent: triggeredEvent, nft, mining: miningSummary(state, content) };
     if (idempotencyKey) {
       if (!completedActions.has(userId)) completedActions.set(userId, new Map());
       completedActions.get(userId)!.set(idempotencyKey, { delta: result.delta, message: result.message });
@@ -479,8 +496,9 @@ export async function gameRoutes(app: FastifyInstance) {
   app.post('/reset', async (request) => {
     const user = (request as any).telegramUser;
     const userId = String(user.id);
-    const state = { ...createNewPlayer(), telegramId: userId, lastTickAt: Date.now(), ratingScore: 0, activeEventId: null, freelanceDoneToday: false, lastFreelanceDay: 0, sideJobDoneToday: false, mainSkillId: 'javascript' } as StoredState;
+    const state = { ...createNewPlayer(), telegramId: userId, lastTickAt: Date.now(), ratingScore: 0, activeEventId: null, freelanceDoneToday: false, lastFreelanceDay: 0, sideJobDoneToday: false, petFedToday: false, firstName: user.first_name || 'Игрок', mainSkillId: 'javascript' } as StoredState;
     deriveGenetics(state);
+    resetDailyChallenge(state, getContent());
     saveState(userId, state);
     return { state: respondState(state, 'Новая жизнь началась! 💻'), activeEvent: null };
   });
@@ -501,7 +519,7 @@ function perkEnergyBonus(state: StoredState, content: any): number {
  * Recalculate max energy including owned perk bonuses
  */
 function recalcMaxEnergy(state: StoredState, content: any): number {
-  return calculateMaxEnergy(state, perkEnergyBonus(state, content));
+  return calculateMaxEnergy(state, perkEnergyBonus(state, content), content.items);
 }
 
 /**
@@ -510,6 +528,13 @@ function recalcMaxEnergy(state: StoredState, content: any): number {
 function xpMotivation(state: StoredState, content: any): number {
   const learning = perkEffectSum(state, content, 'learningBonus');
   return state.motivation + Math.round(learning / 0.006); // 0.15 → +25
+}
+
+/**
+ * Raw XP multiplied by owned item bonuses (headphones, macbook, ...)
+ */
+function xpGain(state: StoredState, content: any, base: number): number {
+  return Math.round(base * itemXpMult(state.items, content.items));
 }
 
 /**
@@ -540,6 +565,45 @@ function describePerkRequires(requires: Record<string, number>, content: any): s
       return `${skillName(key)}: ${lvl}`;
     })
     .join(', ');
+}
+
+/**
+ * Deterministic daily challenge for a player + day
+ */
+function resetDailyChallenge(state: StoredState, content: any): void {
+  const list = content.challenges as any[];
+  if (!list || list.length === 0) return;
+  const rng = seededRng(`${state.telegramId}:challenge:${state.currentDay}`);
+  const def = list[Math.floor(rng() * list.length)];
+  state.dailyChallenge = { day: state.currentDay, id: def.id, progress: 0, count: def.count, done: false };
+}
+
+/**
+ * Bump challenge progress after a successful action; returns a message
+ * when the challenge completes (rewards are granted here).
+ */
+function bumpChallenge(state: StoredState, content: any, actionId: string): string | null {
+  const ch = state.dailyChallenge;
+  if (!ch || ch.done) return null;
+  const def = (content.challenges as any[]).find((c) => c.id === ch.id);
+  if (!def) return null;
+  const hit = def.match === 'prefix' ? actionId.startsWith(def.action) : actionId === def.action;
+  if (!hit) return null;
+
+  ch.progress = Math.min(ch.count, ch.progress + 1);
+  if (ch.progress < ch.count) return null;
+
+  ch.done = true;
+  const reward = def.reward ?? {};
+  if (reward.money) state.money += reward.money;
+  if (reward.motivation) state.motivation = clamp(state.motivation + reward.motivation, 0, 100);
+  if (reward.reputation) state.reputation = clamp(state.reputation + reward.reputation, 0, 100);
+
+  const parts: string[] = [];
+  if (reward.money) parts.push(`+${fmtMoney(reward.money)}`);
+  if (reward.motivation) parts.push(`+${reward.motivation} 🔥`);
+  if (reward.reputation) parts.push(`+${reward.reputation} ⭐`);
+  return `🎯 Задание дня выполнено: ${parts.join(', ')}`;
 }
 
 /**
@@ -608,6 +672,8 @@ function getActionMoneyCost(actionId: string, params: any, state: PlayerState, c
       return 3000;
     case 'study_english_course':
       return 3000;
+    case 'feed_pet':
+      return 500;
     case 'buy_item': {
       const item = content.items.find((i: any) => i.id === params?.itemId);
       return item ? item.price : null;
@@ -655,7 +721,7 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
 
     state.mainSkillId = skillId;
     const current = state.skills[skillId] ?? { level: 0, xp: 0 };
-    const next = applyXp(current, source.xp ?? 6, xpMotivation(state, content));
+    const next = applyXp(current, xpGain(state, content, source.xp ?? 6), xpMotivation(state, content));
     state.skills = { ...state.skills, [skillId]: next };
     delta.skills = { [skillId]: { from: current.level, to: next.level } };
     delta.money = -(source.cost ?? 0);
@@ -698,7 +764,7 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       const learningMult = state.job.companyCulture?.learningMult ?? 1;
       const skillId = state.mainSkillId;
       const current = state.skills[skillId] ?? { level: 0, xp: 0 };
-      const next = applyXp(current, Math.round(8 * learningMult), xpMotivation(state, content));
+      const next = applyXp(current, xpGain(state, content, Math.round(8 * learningMult)), xpMotivation(state, content));
       state.skills = { ...state.skills, [skillId]: next };
       state.job.daysWorked += 1;
       state.motivation = clamp(state.motivation - 1, 0, 100);
@@ -710,7 +776,7 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       if (!state.job) return { error: 'У тебя нет работы' };
       const skillId = state.mainSkillId;
       const current = state.skills[skillId] ?? { level: 0, xp: 0 };
-      const next = applyXp(current, 10, xpMotivation(state, content));
+      const next = applyXp(current, xpGain(state, content, 10), xpMotivation(state, content));
       state.skills = { ...state.skills, [skillId]: next };
       const bonus = Math.round(weeklySalary(state.job.salary) * 0.2);
       state.money += bonus;
@@ -725,7 +791,7 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
     case 'pet_project': {
       const skillId = state.mainSkillId;
       const current = state.skills[skillId] ?? { level: 0, xp: 0 };
-      const next = applyXp(current, 12, xpMotivation(state, content));
+      const next = applyXp(current, xpGain(state, content, 12), xpMotivation(state, content));
       state.skills = { ...state.skills, [skillId]: next };
       state.reputation = clamp(state.reputation + 0.5, 0, 100);
       delta.reputation = 0.5;
@@ -759,7 +825,7 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       state.freelanceDoneToday = true;
       state.lastFreelanceDay = state.currentDay;
       const current = state.skills[skillId] ?? { level: 0, xp: 0 };
-      const next = applyXp(current, 5, xpMotivation(state, content));
+      const next = applyXp(current, xpGain(state, content, 5), xpMotivation(state, content));
       state.skills = { ...state.skills, [skillId]: next };
       state.reputation = clamp(state.reputation + 0.2, 0, 100);
       delta.money = payment;
@@ -797,6 +863,17 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       }
       delta.money = payment;
       return { message: `${job.icon} ${job.name}: +${fmtMoney(payment)}. «Это временно, я же айтишник» — говоришь ты себе`, delta };
+    }
+
+    // ---- Pets ----
+    case 'feed_pet': {
+      const hasPet = (content.items as any[]).some((i) => i.type === 'pet' && state.items.includes(i.id));
+      if (!hasPet) return { error: 'У тебя нет питомца. Купи его в магазине' };
+      if (state.petFedToday) return { error: 'Питомец уже сыт. Хватит на сегодня' };
+      state.petFedToday = true;
+      state.motivation = clamp(state.motivation + 3, 0, 100);
+      delta.motivation = 3;
+      return { message: '🍖 Питомец сыт и счастлив. Урчит, мурчит, виляет (+3 🔥)', delta };
     }
 
     // ---- Rest ----
@@ -1078,9 +1155,24 @@ function advanceDay(state: StoredState, content: any, messages: string[]) {
     }
   }
 
+  // 8c. Daily item bonuses (pets, plants, coffee maker...)
+  const dailyBonuses = itemDailyBonuses(state.items, content.items);
+  if (dailyBonuses.motivation > 0) {
+    state.motivation = clamp(state.motivation + dailyBonuses.motivation, 0, 100);
+  }
+  if (dailyBonuses.health > 0) {
+    state.health = clamp(state.health + dailyBonuses.health, 0, 100);
+  }
+
   // 9. Daily reset
   state.freelanceDoneToday = false;
   state.sideJobDoneToday = false;
+  state.petFedToday = false;
+
+  // Daily challenge: new assignment for the new day
+  if (!state.dailyChallenge || state.dailyChallenge.day !== state.currentDay) {
+    resetDailyChallenge(state, content);
+  }
 
   // 10. Recalc
   state.maxEnergy = recalcMaxEnergy(state, content);

@@ -90,6 +90,18 @@ export function buildRoomComposition(opts: {
     crossBySlot[slotId] = crossBySlot[slotId] ?? layerId;
   }
 
+  // owned pets (cross-collection skins take priority)
+  let pet = crossBySlot.pet ?? null;
+  if (!pet) {
+    const petIds = ['pet_bulldog', 'pet_cat', 'pet_dog', 'pet_cactus', 'pet_robo', 'pet_spider'];
+    for (const pid of petIds) {
+      if (items.includes(pid)) {
+        pet = pid;
+        break;
+      }
+    }
+  }
+
   const composition: Composition = {
     bg: `bg_${Math.min(4, Math.max(0, housingLevel))}`,
     window: traits.windowShape,
@@ -98,7 +110,7 @@ export function buildRoomComposition(opts: {
     chair,
     setup,
     atmosphere,
-    pet: crossBySlot.pet ?? null,
+    pet,
   };
 
   // Avatar accessory override from owned headphones

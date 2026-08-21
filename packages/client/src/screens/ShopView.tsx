@@ -14,6 +14,7 @@ const TYPE_ICONS: Record<string, string> = {
   chair: '🪑',
   headphones: '🎧',
   coffee: '☕',
+  pet: '🐾',
   other: '📦',
 };
 

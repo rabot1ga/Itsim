@@ -175,7 +175,7 @@ export const ItemEffectsSchema = z.object({
 export const ItemSchema = z.object({
   id: z.string().regex(/^[a-z0-9_]+$/),
   name: z.string().min(1),
-  type: z.enum(['housing', 'pc', 'chair', 'headphones', 'coffee', 'course', 'other']),
+  type: z.enum(['housing', 'pc', 'chair', 'headphones', 'coffee', 'course', 'pet', 'other']),
   price: z.number().int().min(0),
   description: z.string(),
   effects: ItemEffectsSchema,
@@ -406,3 +406,22 @@ export const NftMetadataSchema = z.object({
 export const WalletAddressSchema = z
   .string()
   .regex(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/, 'Некорректный адрес кошелька Solana (base58)');
+
+// ---- Daily challenges ----
+
+export const DailyChallengeRewardSchema = z.object({
+  money: z.number().optional(),
+  motivation: z.number().optional(),
+  reputation: z.number().optional(),
+});
+
+export const DailyChallengeSchema = z.object({
+  id: z.string().regex(/^[a-z0-9_]+$/),
+  action: z.string().min(1),
+  match: z.enum(['prefix', 'exact']).default('exact'),
+  count: z.number().int().positive().default(1),
+  description: z.string().min(1).max(120),
+  reward: DailyChallengeRewardSchema,
+});
+
+export const DailyChallengesFileSchema = z.array(DailyChallengeSchema).min(1);

@@ -76,6 +76,9 @@ export interface PlayerState {
 
   // Passive income (mining farm)
   miningEarned?: number;
+
+  // Daily challenge progress
+  dailyChallenge?: DailyChallengeState;
 }
 
 export interface SkillLevel {
@@ -314,7 +317,7 @@ export type NPCRole = 'teamlead' | 'junior' | 'senior_toxic' | 'pm' | 'friend' |
 export interface ItemDefinition {
   id: ItemId;
   name: string;
-  type: 'housing' | 'pc' | 'chair' | 'headphones' | 'coffee' | 'course' | 'other';
+  type: 'housing' | 'pc' | 'chair' | 'headphones' | 'coffee' | 'course' | 'pet' | 'other';
   price: number;
   description: string;
   effects: ItemEffects;
@@ -512,6 +515,33 @@ export interface ActiveCrossBonus {
 
 export interface CrossCollectionsConfig {
   collections: CrossCollectionBonus[];
+}
+
+// ---- Daily challenge ----
+
+export interface DailyChallengeReward {
+  money?: number;
+  motivation?: number;
+  reputation?: number;
+}
+
+export interface DailyChallengeDefinition {
+  id: string;
+  /** Action id, or a prefix with match: 'prefix' (e.g. 'study_' matches all study) */
+  action: string;
+  match?: 'prefix' | 'exact';
+  count: number;
+  description: string;
+  reward: DailyChallengeReward;
+}
+
+/** Per-player progress of the current day's challenge */
+export interface DailyChallengeState {
+  day: number;
+  id: string;
+  progress: number;
+  count: number;
+  done: boolean;
 }
 
 // ---- Rating ----

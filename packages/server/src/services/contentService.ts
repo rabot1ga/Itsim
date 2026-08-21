@@ -14,6 +14,7 @@ import {
   GeneticsConfigSchema,
   LayerManifestSchema,
   CrossCollectionsSchema,
+  DailyChallengesFileSchema,
 } from '@itsim/shared';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -35,6 +36,7 @@ export interface ContentBundle {
   avatarLayers: any;
   roomLayers: any;
   crossCollections: any;
+  challenges: any[];
 }
 
 /**
@@ -54,6 +56,7 @@ export function loadContent(): ContentBundle {
     avatarLayers: loadAndValidate('layers/avatar_manifest.json', LayerManifestSchema),
     roomLayers: loadAndValidate('layers/room_manifest.json', LayerManifestSchema),
     crossCollections: loadAndValidate('cross_collections.json', CrossCollectionsSchema),
+    challenges: loadAndValidate('challenges.json', DailyChallengesFileSchema),
   };
 
   // Run cross-file validation

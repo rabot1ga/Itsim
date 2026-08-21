@@ -257,5 +257,78 @@
       "electricitySave": 0.5
     },
     "icon": "solar.png"
+  },
+  {
+    "id": "pet_cat",
+    "name": "Кот Барсик",
+    "type": "pet",
+    "price": 20000,
+    "description": "Мурчит на клавиатуре и сбрасывает кружки. +2 мотивации в день.",
+    "effects": {
+      "motivationBonus": 2
+    },
+    "icon": "pet_cat.png",
+    "layerId": "pet_cat"
+  },
+  {
+    "id": "pet_dog",
+    "name": "Корги",
+    "type": "pet",
+    "price": 25000,
+    "description": "Вечный оптимист с короткими лапами. +2 мотивации, +1 здоровье в день.",
+    "effects": {
+      "motivationBonus": 2,
+      "healthBonus": 1
+    },
+    "icon": "pet_dog.png",
+    "layerId": "pet_dog"
+  },
+  {
+    "id": "pet_cactus",
+    "name": "Кактус Пикачу",
+    "type": "pet",
+    "price": 5000,
+    "description": "Не требует ничего. Иногда колется. +1 мотивации в день.",
+    "effects": {
+      "motivationBonus": 1
+    },
+    "icon": "pet_cactus.png",
+    "layerId": "pet_cactus"
+  },
+  {
+    "id": "pet_robo",
+    "name": "Робот-пылесос",
+    "type": "pet",
+    "price": 15000,
+    "description": "Убирает крошки и боится ковра. +1 мотивации в день.",
+    "effects": {
+      "motivationBonus": 1
+    },
+    "icon": "pet_robo.png",
+    "layerId": "pet_robo"
+  },
+  {
+    "id": "pet_spider",
+    "name": "Паук Пафнутий",
+    "type": "pet",
+    "price": 8000,
+    "description": "Живёт в углу. Ловит мух. Не платит аренду. +1 мотивации в день.",
+    "effects": {
+      "motivationBonus": 1
+    },
+    "icon": "pet_spider.png",
+    "layerId": "pet_spider"
+  },
+  {
+    "id": "pet_bulldog",
+    "name": "Бульдог в костюме",
+    "type": "pet",
+    "price": 40000,
+    "description": "Солидный пёс. Уважает тебя и гостей. +3 мотивации в день.",
+    "effects": {
+      "motivationBonus": 3
+    },
+    "icon": "pet_bulldog.png",
+    "layerId": "pet_bulldog"
   }
 ]

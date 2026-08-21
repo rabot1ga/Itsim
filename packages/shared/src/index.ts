@@ -22,5 +22,7 @@ export {
   CrossCollectionsSchema,
   NftMetadataSchema,
   WalletAddressSchema,
+  DailyChallengeSchema,
+  DailyChallengesFileSchema,
 } from './schemas/index';
 export type { BalanceConfig } from './schemas/index';

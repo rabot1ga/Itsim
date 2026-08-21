@@ -2,7 +2,7 @@ import React from 'react';
 import { useGameStore } from '../store/gameStore';
 
 export const MainMenu: React.FC = () => {
-  const { setScreen, player } = useGameStore();
+  const { setScreen, setView, player } = useGameStore();
 
   const hasProgress = player && (player.currentDay ?? 1) > 1;
 
@@ -41,8 +41,22 @@ export const MainMenu: React.FC = () => {
           </button>
 
           <div className="grid grid-cols-3 gap-2">
-            <MenuTile icon="📊" label="Лидерборд" />
-            <MenuTile icon="🏠" label="Мой дом" onClick={() => setScreen('game')} />
+            <MenuTile
+              icon="📊"
+              label="Лидерборд"
+              onClick={() => {
+                setView('leaderboard');
+                setScreen('game');
+              }}
+            />
+            <MenuTile
+              icon="🏠"
+              label="Мой дом"
+              onClick={() => {
+                setView('room');
+                setScreen('game');
+              }}
+            />
             <MenuTile icon="⚙️" label="Настройки" />
           </div>
         </div>

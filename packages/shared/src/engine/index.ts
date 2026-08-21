@@ -8,4 +8,5 @@ export * from './player';
 export * from './achievements';
 export * from './genetics';
 export * from './mining';
+export * from './items';
 export * from './utils';
