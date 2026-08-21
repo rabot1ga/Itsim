@@ -1,0 +1,391 @@
+[
+  {
+    "id": "tech_hackathon_invite",
+    "title": "🏁 Тебя зовут на хакатон",
+    "description": "Друг собирает команду на 48-часовой хакатон: «нужен кодер, будет пицца и слава». Регистрация закрывается через час.",
+    "tags": ["tech", "social", "chain"],
+    "weight": 7,
+    "cooldownDays": 50,
+    "minGameDay": 20,
+    "choices": [
+      {
+        "text": "Согласиться не раздумывая 🔥",
+        "effects": { "motivation": 3, "energy": -1 },
+        "chain": { "eventId": "tech_hackathon_night", "afterDays": 1, "chance": 1 },
+        "followup": "Ты в команде. Роль: «тот, кто всё починит к утру»."
+      },
+      {
+        "text": "Отказаться: «у меня спринт» 💼",
+        "effects": { "motivation": -1 },
+        "followup": "Команда ушла без тебя. Они победили. Ты видел фото."
+      },
+      {
+        "text": "Участвовать онлайн из дома 🏠",
+        "effects": { "skill": { "javascript": 10 }, "motivation": 1 },
+        "followup": "Онлайн-участник: половина пиццы, вся ответственность."
+      }
+    ]
+  },
+  {
+    "id": "tech_hackathon_night",
+    "title": "🌙 Ночь хакатона",
+    "description": "Три часа ночи. Демо через 9 часов, а ваш прототип умеет показывать чёрный экран. Кофе закончился.",
+    "tags": ["tech", "chain"],
+    "weight": 100,
+    "cooldownDays": 0,
+    "chainOnly": true,
+    "choices": [
+      {
+        "text": "Переписать ядро за ночь 💪",
+        "effects": { "skill": { "javascript": 25 }, "health": -2, "burnoutDays": 1 },
+        "chain": { "eventId": "tech_hackathon_after", "afterDays": 1, "chance": 1 },
+        "followup": "К рассвету всё заработало. Ты не помнишь, как. Но работает."
+      },
+      {
+        "text": "Срезать скоуп до минимума ✂️",
+        "effects": { "motivation": 2, "skill": { "game_design": 10 } },
+        "chain": { "eventId": "tech_hackathon_after", "afterDays": 1, "chance": 1 },
+        "followup": "Демо — одна кнопка. Зато кнопка работает идеально."
+      }
+    ]
+  },
+  {
+    "id": "tech_hackathon_after",
+    "title": "🏆 Итоги хакатона",
+    "description": "Жюри объявляет результаты. Вы с командой держитесь за руки. Ну, почти.",
+    "tags": ["tech", "chain"],
+    "weight": 100,
+    "cooldownDays": 0,
+    "chainOnly": true,
+    "choices": [
+      {
+        "text": "Принять победу и приз 🎉",
+        "effects": { "money": 15000, "reputation": 3, "motivation": 3 },
+        "followup": "Первое место! Призовой фонд разделили. Славу — тоже."
+      },
+      {
+        "text": "Забрать спецприз «за упорство» 🏅",
+        "effects": { "money": 5000, "reputation": 1, "motivation": 2 },
+        "followup": "Спецприз за «самый отважный фикс в 4 утра». Заслуженно."
+      }
+    ]
+  },
+  {
+    "id": "tech_new_framework",
+    "title": "🆕 Вышел новый фреймворк",
+    "description": "Весь твиттер пишет о новом фреймворке. Коллеги уже спрашивают: «а мы будем мигрировать?»",
+    "tags": ["tech", "study"],
+    "weight": 8,
+    "cooldownDays": 35,
+    "minGameDay": 15,
+    "choices": [
+      {
+        "text": "Изучить на выходных 🧪",
+        "effects": { "skill": { "javascript": 20 }, "motivation": 1 },
+        "followup": "Разобрался. Теперь ты «тот, кто шарит в новом»."
+      },
+      {
+        "text": "Подождать, пока станет стабильным ⏳",
+        "effects": { "motivation": 1 },
+        "followup": "Терпение окупилось: через месяц вышла вторая бета."
+      },
+      {
+        "text": "Написать пост «хватит хайповать» ✍️",
+        "effects": { "reputation": 1, "motivation": 2 },
+        "followup": "Пост собрал споры. Ты — голос скепсиса."
+      }
+    ]
+  },
+  {
+    "id": "tech_legacy_rewrite",
+    "title": "🏚 Тебя просят переписать легаси",
+    "description": "Модуль, который написан десять лет назад, назначили тебе. «Там не так уж всё плохо», — сказал тимлид и отвёл глаза.",
+    "tags": ["tech", "work", "crisis"],
+    "weight": 7,
+    "cooldownDays": 50,
+    "minGameDay": 40,
+    "conditions": { "hasJob": true, "minSkill": { "java": 20 } },
+    "choices": [
+      {
+        "text": "Взяться и победить 🦾",
+        "effects": { "skill": { "java": 25 }, "motivation": -2, "reputation": 2 },
+        "followup": "Переписал. Тестов стало вдвое больше. Модуль ожил."
+      },
+      {
+        "text": "Отказаться вежливо 🙅",
+        "effects": { "relation": { "teamlead": -1 }, "motivation": 1 },
+        "followup": "Легаси достался джуну. Джун не разговаривает с тобой неделю."
+      },
+      {
+        "text": "Предложить «стратегию удушения» 📉",
+        "effects": { "skill": { "communication": 10 }, "motivation": 1 },
+        "followup": "Никто не понял, что это значит. Задачу всё равно дали тебе."
+      }
+    ]
+  },
+  {
+    "id": "tech_api_deprecated",
+    "title": "⚠️ API, на котором всё держится, deprecated",
+    "description": "Вендор объявил: «через 60 дней API отключим». На нём построена половина вашего продукта.",
+    "tags": ["tech", "work", "crisis"],
+    "weight": 7,
+    "cooldownDays": 55,
+    "minGameDay": 50,
+    "conditions": { "hasJob": true },
+    "choices": [
+      {
+        "text": "Написать план миграции 📋",
+        "effects": { "skill": { "javascript": 15 }, "reputation": 2 },
+        "followup": "План на 40 задач. Мигрировали за месяц. Ты — герой."
+      },
+      {
+        "text": "Свалить на вендора 😤",
+        "effects": { "motivation": -2, "reputation": -1 },
+        "followup": "Вендор извинился и... отключил API на 5 дней раньше."
+      },
+      {
+        "text": "Искать альтернативу 🕵️",
+        "effects": { "skill": { "javascript": 20 }, "motivation": 1 },
+        "followup": "Нашёл замену с лучшими условиями. Миграция — это потом."
+      }
+    ]
+  },
+  {
+    "id": "tech_stack_news",
+    "title": "📰 Твой стек попал в новости",
+    "description": "Крупная компания перешла на твой стек. Все пишут статьи. Ты чувствуешь гордость, как за свою команду в чемпионате.",
+    "tags": ["tech", "reward"],
+    "weight": 6,
+    "cooldownDays": 40,
+    "minGameDay": 10,
+    "choices": [
+      {
+        "text": "Написать статью о плюсах стека ✍️",
+        "effects": { "reputation": 2, "motivation": 2 },
+        "followup": "Статья набрала 12k просмотров. Тебя зовут на подкаст."
+      },
+      {
+        "text": "Молча порадоваться 😌",
+        "effects": { "motivation": 2 },
+        "followup": "Тихое удовлетворение. Ты всегда знал, что стек — топ."
+      },
+      {
+        "text": "Поспорить в комментариях 🥊",
+        "effects": { "karma": -1, "motivation": -1 },
+        "followup": "Час жизни ушёл на спор с анонимом. Счёт 1:1."
+      }
+    ]
+  },
+  {
+    "id": "tech_maintainer_help",
+    "title": "🙏 Мейнтейнер просит помощи",
+    "description": "Автор библиотеки, которой ты пользуешься каждый день, написал в issue: «нужна помощь с документацией».",
+    "tags": ["tech", "study", "reward"],
+    "weight": 6,
+    "cooldownDays": 45,
+    "minGameDay": 25,
+    "choices": [
+      {
+        "text": "Написать раздел документации 📝",
+        "effects": { "reputation": 2, "skill": { "javascript": 15 } },
+        "followup": "Твой PR влили. Теперь твоё имя в списке контрибьюторов."
+      },
+      {
+        "text": "Перевести часть доков на русский 🇷🇺",
+        "effects": { "skill": { "english": 10 }, "reputation": 1 },
+        "followup": "Русскоязычное комьюнити благодарно. Мейнтейнер — удивлён."
+      },
+      {
+        "text": "Закрыть вкладку 🙈",
+        "effects": { "karma": -1 },
+        "followup": "Кто-то другой помог. Библиотека жива. Совесть — чуть-чуть нет."
+      }
+    ]
+  },
+  {
+    "id": "tech_machine_broke",
+    "title": "💥 Рабочая машина умерла",
+    "description": "Ноутбук издал звук, как чайник, и погас. Все твои задачи остались внутри. И дедлайн тоже.",
+    "tags": ["tech", "work", "crisis"],
+    "weight": 6,
+    "cooldownDays": 60,
+    "minGameDay": 30,
+    "conditions": { "hasJob": true },
+    "choices": [
+      {
+        "text": "Чинить своими руками 🔧",
+        "effects": { "skill": { "linux": 15 }, "money": -3000 },
+        "followup": "Полдня и новый SSD — машина ожила. Руки помнят."
+      },
+      {
+        "text": "Взять корпоративную замену 💻",
+        "effects": { "money": -15000, "motivation": 1 },
+        "followup": "Новая машина летает. Старая — в ящике, как ветеран."
+      },
+      {
+        "text": "Работать со старого домашнего ноутбука 🐢",
+        "effects": { "motivation": -3, "health": -1 },
+        "followup": "Домашний ноут открывает IDE три минуты. Ты медитируешь."
+      }
+    ]
+  },
+  {
+    "id": "tech_awkward_standup",
+    "title": "🎤 Неловкий момент на стендапе",
+    "description": "Ты начал говорить и понял, что рассказываешь не о том проекте. Все смотрят. Тишина звенит.",
+    "tags": ["tech", "work", "memes"],
+    "weight": 6,
+    "cooldownDays": 30,
+    "minGameDay": 15,
+    "conditions": { "hasJob": true },
+    "choices": [
+      {
+        "text": "Пошутить: «проверяю, слушаете ли вы» 😄",
+        "effects": { "skill": { "communication": 10 }, "motivation": 2 },
+        "followup": "Смех снял неловкость. Тимлид оценил находчивость."
+      },
+      {
+        "text": "Замолчать и передать слово 🙈",
+        "effects": { "motivation": -2 },
+        "followup": "Весь день прокручивал этот момент. Бывает. Но неприятно."
+      },
+      {
+        "text": "Признаться: «прод отвлёк» 🤷",
+        "effects": { "reputation": 1 },
+        "followup": "Честность сработала. У всех бывает прод, который отвлекает."
+      }
+    ]
+  },
+  {
+    "id": "tech_license_issue",
+    "title": "⚖️ Библиотека без лицензии в проде",
+    "description": "Юристы нашли в вашем бандле библиотеку с неясной лицензией. Спрашивают: «откуда это?»",
+    "tags": ["tech", "work", "crisis"],
+    "weight": 6,
+    "cooldownDays": 50,
+    "minGameDay": 40,
+    "conditions": { "hasJob": true },
+    "choices": [
+      {
+        "text": "Заменить на MIT-аналог 🔄",
+        "effects": { "skill": { "javascript": 15 }, "motivation": -1 },
+        "followup": "Замена прошла за вечер. Юристы довольны. Ты — тоже."
+      },
+      {
+        "text": "Написать автору письмо 📩",
+        "effects": { "skill": { "communication": 8 }, "karma": 1 },
+        "followup": "Автор ответил и добавил MIT-лицензию. Мир стал чуть добрее."
+      },
+      {
+        "text": "Надеяться, что никто не заметит 🙈",
+        "effects": { "karma": -1, "reputation": -1 },
+        "followup": "Заметили. Пришлось разбираться в аврале."
+      }
+    ]
+  },
+  {
+    "id": "tech_ai_tool",
+    "title": "🤖 Новый AI-инструмент делает твою работу",
+    "description": "Коллега показал инструмент, который пишет код, тесты и ревью. Половина твоих задач — одной кнопкой.",
+    "tags": ["tech", "study"],
+    "weight": 7,
+    "cooldownDays": 35,
+    "minGameDay": 30,
+    "choices": [
+      {
+        "text": "Освоить и автоматизировать рутину ⚡",
+        "effects": { "skill": { "prompt_engineering": 20 }, "motivation": 2 },
+        "followup": "Рутина ушла. Освободилось время на интересное."
+      },
+      {
+        "text": "Относиться скептически 🧐",
+        "effects": { "motivation": 1 },
+        "followup": "Скепсис оправдан: инструмент галлюцинирует в пятницу."
+      },
+      {
+        "text": "Испугаться за профессию 😰",
+        "effects": { "motivation": -3 },
+        "followup": "Страх не помог. Профессия жива. Пока что."
+      }
+    ]
+  },
+  {
+    "id": "tech_online_conf",
+    "title": "🖥 Онлайн-конференция: смотришь в пижаме",
+    "description": "Три дня докладов из дома. Снизу — пижама, сверху — худи. Никто не узнает.",
+    "tags": ["tech", "study", "reward"],
+    "weight": 6,
+    "cooldownDays": 45,
+    "minGameDay": 60,
+    "choices": [
+      {
+        "text": "Посетить все ключевые доклады 🎓",
+        "effects": { "skill": { "javascript": 20 }, "motivation": 2 },
+        "followup": "Записал 14 идей. Внедришь... когда-нибудь."
+      },
+      {
+        "text": "Посмотреть только записи ⏩",
+        "effects": { "skill": { "javascript": 10 } },
+        "followup": "Записи на скорости 1.5 — тайм-менеджмент уровня бог."
+      },
+      {
+        "text": "Участвовать в чате активнее всех 💬",
+        "effects": { "reputation": 1, "skill": { "communication": 8 } },
+        "followup": "Тебя запомнили по вопросам. Спикер даже сослался на тебя."
+      }
+    ]
+  },
+  {
+    "id": "tech_old_code",
+    "title": "🕰 Нашёл свой код трёхлетней давности",
+    "description": "Открыл старый репозиторий. Код ужасен. Автор — ты. Хочется написать ему гневный ревью.",
+    "tags": ["tech", "memes"],
+    "weight": 6,
+    "cooldownDays": 40,
+    "minGameDay": 60,
+    "choices": [
+      {
+        "text": "Порадоваться прогрессу 📈",
+        "effects": { "motivation": 3 },
+        "followup": "Три года назад ты был хуже. Значит, рост есть. Это мотивирует."
+      },
+      {
+        "text": "Отрефакторить на коленке 🔧",
+        "effects": { "skill": { "javascript": 15 } },
+        "followup": "Переписал за вечер. Проект никому не нужен, но совесть чиста."
+      },
+      {
+        "text": "Удалить репозиторий 🗑",
+        "effects": { "karma": -1, "motivation": 1 },
+        "followup": "Улики уничтожены. История не знает твоего позора."
+      }
+    ]
+  },
+  {
+    "id": "tech_coworker_quits",
+    "title": "👋 Коллега уходит из компании",
+    "description": "Тот самый коллега, который знал всё, написал «ухожу в другое место». Теперь его задачи... понятно, чьи.",
+    "tags": ["tech", "work", "social"],
+    "weight": 6,
+    "cooldownDays": 60,
+    "minGameDay": 45,
+    "conditions": { "hasJob": true },
+    "choices": [
+      {
+        "text": "Устроить прощальный обед 🍕",
+        "effects": { "relation": { "teamlead": 1 }, "motivation": 2 },
+        "followup": "Попрощались тепло. Коллега обещал звать в новую компанию."
+      },
+      {
+        "text": "Взять его задачи на себя 💪",
+        "effects": { "skill": { "javascript": 20 }, "burnoutDays": 1, "reputation": 2 },
+        "followup": "Ты — герой. Но герои спят по четыре часа."
+      },
+      {
+        "text": "Тихо завидовать его смелости 😶",
+        "effects": { "motivation": -2 },
+        "followup": "Зависть — плохой двигатель. Но двигатель."
+      }
+    ]
+  }
+]

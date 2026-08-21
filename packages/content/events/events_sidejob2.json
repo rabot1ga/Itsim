@@ -1,0 +1,263 @@
+[
+  {
+    "id": "side2_tutor_graduate",
+    "title": "🎓 Твой ученик сдал экзамен",
+    "description": "Ученик, которого ты готовил, написал: «Сдал на отлично! Спасибо, это всё ты».",
+    "tags": ["sidejob", "reward"],
+    "weight": 100,
+    "cooldownDays": 25,
+    "actionTrigger": { "action": "side_job", "jobId": "tutor", "chance": 0.25, "cooldownDays": 25 },
+    "minGameDay": 1,
+    "choices": [
+      {
+        "text": "Порадоваться и взять нового ученика 📚",
+        "effects": { "money": 2000, "motivation": 3, "reputation": 1 },
+        "followup": "Сарафанное радио сработало: новый ученик уже нашёлся."
+      },
+      {
+        "text": "Отпраздновать с чаем и пирогом 🍰",
+        "effects": { "money": -500, "motivation": 2 },
+        "followup": "Маленький праздник. Заслуженный."
+      },
+      {
+        "text": "Скромно: «это его заслуга» 🙇",
+        "effects": { "reputation": 1, "motivation": 2 },
+        "followup": "Скромность оценили. Особенно родители ученика."
+      }
+    ]
+  },
+  {
+    "id": "side2_tutor_problem",
+    "title": "😤 Трудный ученик",
+    "description": "Ученик не делает домашку, смотрит в окно и на вопрос «что непонятно» отвечает «всё». Классика репетиторства.",
+    "tags": ["sidejob", "crisis"],
+    "weight": 100,
+    "cooldownDays": 20,
+    "actionTrigger": { "action": "side_job", "jobId": "tutor", "chance": 0.15, "cooldownDays": 20 },
+    "minGameDay": 1,
+    "choices": [
+      {
+        "text": "Найти подход через примеры из игр 🎮",
+        "effects": { "skill": { "communication": 10 }, "motivation": 2 },
+        "followup": "Примеры из игр сработали! Ученик заинтересовался."
+      },
+      {
+        "text": "Ужесточить дисциплину 📋",
+        "effects": { "money": 1500, "motivation": -1 },
+        "followup": "Дисциплина помогла. Всем, кроме настроения."
+      },
+      {
+        "text": "Отказаться от ученика 🚪",
+        "effects": { "money": -1000, "karma": -1 },
+        "followup": "Отказался. Стало легче. И чуть стыдно."
+      }
+    ]
+  },
+  {
+    "id": "side2_barista_tip",
+    "title": "💰 Постоянник оставил щедрые чаевые",
+    "description": "Тот самый завсегдатай, «как обычно», оставил в банке купюру. «За лучший капучино в городе».",
+    "tags": ["sidejob", "reward"],
+    "weight": 100,
+    "cooldownDays": 15,
+    "actionTrigger": { "action": "side_job", "jobId": "barista", "chance": 0.2, "cooldownDays": 15 },
+    "minGameDay": 1,
+    "choices": [
+      {
+        "text": "Взять и сказать спасибо 😊",
+        "effects": { "money": 1500, "motivation": 2 },
+        "followup": "Чаевые греют. Особенно в утреннюю смену."
+      },
+      {
+        "text": "Разделить с коллегами 🤝",
+        "effects": { "money": 800, "karma": 1 },
+        "followup": "Разделил. Коллеги — в восторге. Командный дух — крепче."
+      }
+    ]
+  },
+  {
+    "id": "side2_streamer_subathon",
+    "title": "⏱ Зрители запустили субатон",
+    "description": "Чат скинулся и запустил субатон: стрим продлевается с каждой подпиской. Ты уже 4 часа в эфире.",
+    "tags": ["sidejob", "reward"],
+    "weight": 100,
+    "cooldownDays": 30,
+    "actionTrigger": { "action": "side_job", "jobId": "streamer", "chance": 0.12, "cooldownDays": 30 },
+    "minGameDay": 1,
+    "choices": [
+      {
+        "text": "Стримить до последнего зрителя 🎥",
+        "effects": { "money": 2500, "health": -2, "motivation": 2 },
+        "followup": "Семь часов эфира. Голос сел, донаты — нет."
+      },
+      {
+        "text": "Красиво завершить на пике 🎬",
+        "effects": { "money": 1500, "motivation": 2 },
+        "followup": "Ушёл на пике. Зрители просят «ещё». Это успех."
+      },
+      {
+        "text": "Передать эфир гостю 🤝",
+        "effects": { "money": 800, "reputation": 1 },
+        "followup": "Гость вытянул эфир. Ты — режиссёр, а не звезда. Пока."
+      }
+    ]
+  },
+  {
+    "id": "side2_taxi_phone",
+    "title": "📱 Пассажир забыл телефон",
+    "description": "После смены ты нашёл на заднем сиденье чужой телефон. Экран горит: 14 пропущенных «Мама».",
+    "tags": ["sidejob", "karma"],
+    "weight": 100,
+    "cooldownDays": 25,
+    "actionTrigger": { "action": "side_job", "jobId": "taxi", "chance": 0.15, "cooldownDays": 25 },
+    "minGameDay": 1,
+    "choices": [
+      {
+        "text": "Вернуть хозяину ❤️",
+        "effects": { "karma": 2, "money": 1000, "reputation": 1 },
+        "followup": "Хозяин нашёлся и заплатил за доставку. Мир восстановлен."
+      },
+      {
+        "text": "Отвезти в офис такси 🚕",
+        "effects": { "karma": 1, "motivation": 1 },
+        "followup": "Сдал в бюро находок. Совесть чиста."
+      },
+      {
+        "text": "Оставить себе 🙈",
+        "effects": { "karma": -2, "motivation": 1 },
+        "followup": "Телефон заблокирован и бесполезен. Карма — тоже."
+      }
+    ]
+  },
+  {
+    "id": "side2_loader_gym",
+    "title": "🏋️ Бригадир подарил абонемент в зал",
+    "description": "Бригадир сказал: «С такой спиной тебе в зал надо». И протянул гостевой абонемент на месяц.",
+    "tags": ["sidejob", "health"],
+    "weight": 100,
+    "cooldownDays": 20,
+    "actionTrigger": { "action": "side_job", "jobId": "loader", "chance": 0.15, "cooldownDays": 20 },
+    "minGameDay": 1,
+    "choices": [
+      {
+        "text": "Начать ходить в зал 💪",
+        "effects": { "health": 3, "motivation": 2 },
+        "followup": "Месяц в зале. Спина сказала спасибо."
+      },
+      {
+        "text": "Поблагодарить и отложить 🙈",
+        "effects": { "karma": -1 },
+        "followup": "Абонемент пылится. Бригадир понимающе кивает."
+      }
+    ]
+  },
+  {
+    "id": "side2_guard_dog",
+    "title": "🐕 Бродячий пёс у ворот",
+    "description": "Всю ночь у ворот сидел пёс. Смотрел на тебя, вилял хвостом, не уходил. Смена вдвоём прошла быстрее.",
+    "tags": ["sidejob", "pets"],
+    "weight": 100,
+    "cooldownDays": 15,
+    "actionTrigger": { "action": "side_job", "jobId": "night_guard", "chance": 0.2, "cooldownDays": 15 },
+    "minGameDay": 1,
+    "choices": [
+      {
+        "text": "Покормить пса 🍖",
+        "effects": { "karma": 2, "motivation": 2 },
+        "followup": "Пёс стал приходить каждую смену. У тебя появился напарник."
+      },
+      {
+        "text": "Прогнать: «территория охраняемая» 🚫",
+        "effects": { "karma": -1, "motivation": -1 },
+        "followup": "Пёс ушёл. Ночь стала длиннее."
+      },
+      {
+        "text": "Сфоткать и отправить друзьям 📸",
+        "effects": { "motivation": 2, "reputation": 1 },
+        "followup": "Друзья назвали пса «вторым охранником»."
+      }
+    ]
+  },
+  {
+    "id": "side2_english_group",
+    "title": "🗣 В группе курса появился speaking-клуб",
+    "description": "Куратор курса запустил разговорный клуб: 20 минут живого английского после занятия. Всем страшно, но полезно.",
+    "tags": ["study", "social"],
+    "weight": 100,
+    "cooldownDays": 15,
+    "actionTrigger": { "action": "study_english_course", "chance": 0.25, "cooldownDays": 15 },
+    "minGameDay": 1,
+    "choices": [
+      {
+        "text": "Участвовать в speaking-клубе 🎤",
+        "effects": { "skill": { "english": 15 }, "motivation": 2 },
+        "followup": "Первые фразы дались тяжело. Потом — легче. Работает."
+      },
+      {
+        "text": "Слушать, но молчать 👂",
+        "effects": { "skill": { "english": 8 } },
+        "followup": "Слушать — тоже практика. Но говорить всё же надо."
+      },
+      {
+        "text": "Пропускать клуб 🙈",
+        "effects": { "motivation": -1 },
+        "followup": "Клуб без тебя. Уровень — без роста."
+      }
+    ]
+  },
+  {
+    "id": "side2_hobby_community",
+    "title": "🎨 Твоё хобби нашло комьюнити",
+    "description": "Оказалось, в городе есть целое комьюнити твоего хобби. Встречи, выставки, свои шутки. Ты — не один.",
+    "tags": ["social", "reward"],
+    "weight": 100,
+    "cooldownDays": 25,
+    "actionTrigger": { "action": "rest_hobby", "chance": 0.15, "cooldownDays": 25 },
+    "minGameDay": 5,
+    "choices": [
+      {
+        "text": "Вступить в комьюнити 🤝",
+        "effects": { "motivation": 3, "reputation": 1 },
+        "followup": "Новые знакомства, общие интересы. Хобби заиграло."
+      },
+      {
+        "text": "Остаться в одиночном режиме 🐺",
+        "effects": { "motivation": 1 },
+        "followup": "Соло — тоже ок. Хобби — только твоё."
+      },
+      {
+        "text": "Показать свои работы на выставке 🖼",
+        "effects": { "reputation": 2, "motivation": 2 },
+        "followup": "Твои работы увидели люди. Отзывы — тёплые."
+      }
+    ]
+  },
+  {
+    "id": "side2_overtime_snack",
+    "title": "🌙 Ночной перекус после переработки",
+    "description": "После долгой переработки ты обнаружил, что в офисе остались снеки из кухни. И холодильник с газировкой.",
+    "tags": ["work", "reward"],
+    "weight": 100,
+    "cooldownDays": 15,
+    "actionTrigger": { "action": "work_overtime", "chance": 0.2, "cooldownDays": 15 },
+    "minGameDay": 10,
+    "conditions": { "hasJob": true },
+    "choices": [
+      {
+        "text": "Съесть снеки с чистой совестью 🍫",
+        "effects": { "motivation": 2, "health": -1 },
+        "followup": "Снеки — топливо героев. Ночных и голодных."
+      },
+      {
+        "text": "Сделать чай и уйти спать 🍵",
+        "effects": { "health": 1, "motivation": 1 },
+        "followup": "Чай, сон, восстановление. Мудрый выбор."
+      },
+      {
+        "text": "Заказать нормальный ужин 🍜",
+        "effects": { "money": -1200, "health": 1, "motivation": 2 },
+        "followup": "Горячий ужин после переработки — маленькая победа."
+      }
+    ]
+  }
+]
