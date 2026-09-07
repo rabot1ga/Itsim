@@ -211,6 +211,12 @@ export type AvatarSlotId = 'hair' | 'beard' | 'top' | 'bottom' | 'accessory';
  */
 export interface AvatarCustomization {
   hair?: string | null;
+  /** isometric recolour choices (hex from the shared palettes) */
+  skin?: string | null;
+  hairColor?: string | null;
+  topColor?: string | null;
+  bottomColor?: string | null;
+  shoeColor?: string | null;
   beard?: string | null;
   top?: string | null;
   /** trousers/shorts — the avatar is drawn full-body (docs/ui.md §9) */

@@ -12,6 +12,9 @@ import {
   avatarEntryStatus,
   avatarChangeCost,
   geneticTraitForSlot,
+  LOOK_SLOTS,
+  LOOK_SLOT_NAMES,
+  lookPalette,
 } from '@itsim/shared';
 import { useGameStore } from '../../store/gameStore';
 import { haptic } from '../../lib/telegram';
@@ -69,6 +72,40 @@ export const Wardrobe: React.FC<{
       <p className="text-[11px] text-ink-500 -mb-1">
         Глаза не меняются — это родословная. Всё остальное решают барбер, шкаф и шляпная лавка.
       </p>
+
+      {/* Colours: the figure in the room is recoloured live, and a mirror is free. */}
+      <div className="well space-y-3">
+        <p className="eyebrow">Цвета — бесплатно</p>
+        {LOOK_SLOTS.map((slotId) => {
+          const current = overrides[slotId] ?? null;
+          return (
+            <div key={slotId}>
+              <p className="text-2xs text-ink-400 mb-1.5">{LOOK_SLOT_NAMES[slotId]}</p>
+              <div className="flex gap-1.5 overflow-x-auto pb-0.5">
+                <button
+                  onClick={() => apply(slotId, null)}
+                  className={`shrink-0 h-8 px-2 rounded-md border text-2xs ${
+                    current ? 'border-ink-700 bg-ink-800 text-ink-400' : 'border-gold-300 bg-gold-300/10 text-gold-200'
+                  }`}
+                >
+                  Авто
+                </button>
+                {lookPalette(slotId).map((colour) => (
+                  <button
+                    key={colour}
+                    onClick={() => apply(slotId, colour)}
+                    aria-label={colour}
+                    className={`shrink-0 h-8 w-8 rounded-md border-2 transition-transform active:scale-95 ${
+                      current === colour ? 'border-gold-300 scale-105' : 'border-ink-700'
+                    }`}
+                    style={{ background: colour }}
+                  />
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
       {AVATAR_EDITABLE_SLOTS.map((slotId) => {
         const slot = avatarManifest.slots.find((s) => s.id === slotId);
         if (!slot) return null;

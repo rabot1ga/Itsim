@@ -273,16 +273,7 @@ export const RoomView: React.FC = () => {
       </div>
 
       {/* Share card */}
-      {ready && composition && (
-        <ShareCard
-          roomManifest={roomManifest}
-          avatarManifest={avatarManifest}
-          traits={displayTraits}
-          geneticsConfig={geneticsConfig}
-          composition={composition}
-          player={player}
-        />
-      )}
+      {ready && <ShareCard traits={displayTraits} player={player} />}
     </div>
   );
 };

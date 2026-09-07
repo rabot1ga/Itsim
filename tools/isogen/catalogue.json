@@ -795,6 +795,94 @@
         1
       ],
       "scale": 0.75
+    },
+    {
+      "slice": "pets2_00",
+      "id": "pet_cat_sleep",
+      "tiles": [
+        1,
+        1
+      ],
+      "scale": 0.6,
+      "roles": true
+    },
+    {
+      "slice": "pets2_01",
+      "id": "pet_dog_sleep",
+      "tiles": [
+        2,
+        1
+      ],
+      "scale": 0.55,
+      "roles": true
+    },
+    {
+      "slice": "pets2_02",
+      "id": "pet_bulldog_sleep",
+      "tiles": [
+        2,
+        1
+      ],
+      "scale": 0.55,
+      "roles": true
+    },
+    {
+      "slice": "pets2_03",
+      "id": "pet_cat_eat",
+      "tiles": [
+        1,
+        1
+      ],
+      "scale": 0.62,
+      "roles": true
+    },
+    {
+      "slice": "pets2_04",
+      "id": "pet_dog_eat",
+      "tiles": [
+        1,
+        1
+      ],
+      "scale": 0.66,
+      "roles": true
+    },
+    {
+      "slice": "pets2_07",
+      "id": "pet_cat_play",
+      "tiles": [
+        1,
+        1
+      ],
+      "scale": 0.62,
+      "roles": true
+    },
+    {
+      "slice": "pets2_08",
+      "id": "pet_dog_play",
+      "tiles": [
+        1,
+        1
+      ],
+      "scale": 0.66,
+      "roles": true
+    },
+    {
+      "slice": "pets2_05",
+      "id": "pet_bowl",
+      "tiles": [
+        1,
+        1
+      ],
+      "scale": 0.4
+    },
+    {
+      "slice": "pets2_06",
+      "id": "pet_bowl_full",
+      "tiles": [
+        1,
+        1
+      ],
+      "scale": 0.4
     }
   ]
 }

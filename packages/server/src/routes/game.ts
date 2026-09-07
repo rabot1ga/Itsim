@@ -68,6 +68,9 @@ import {
   geneticTraitForSlot,
   paintAllowed,
   floorAllowed,
+  isLookSlot,
+  lookColourAllowed,
+  LOOK_SLOT_NAMES,
   wallPaint,
   floorStyle,
   type PlayerState,
@@ -1093,7 +1096,8 @@ function getActionMoneyCost(actionId: string, params: any, state: PlayerState, c
       // Barbers and hat stands charge; the closet is free.
       const slot = params?.slot as string | undefined;
       const entryId = (params?.entryId as string | null | undefined) ?? null;
-      if (!slot || !isAvatarSlotId(slot) || entryId === null) return null;
+      if (!slot || isLookSlot(slot)) return null; // recolouring is free
+      if (!isAvatarSlotId(slot) || entryId === null) return null;
       const current = (state.avatar as any)?.[slot] ?? geneticTraitForSlot(state.genetics, slot);
       const cost = avatarChangeCost(slot, entryId, current);
       return cost > 0 ? cost : null;
@@ -1589,7 +1593,7 @@ function applyAction(
     case 'customize_avatar': {
       const slot = params?.slot as string | undefined;
       const entryId = (params?.entryId as string | null | undefined) ?? null;
-      if (!slot || !isAvatarSlotId(slot)) {
+      if (!slot || (!isAvatarSlotId(slot) && !isLookSlot(slot))) {
         return { error: 'Неизвестный слот внешности' };
       }
       if (!state.avatar) state.avatar = {};
@@ -1598,6 +1602,14 @@ function applyAction(
         delete (state.avatar as any)[slot];
         delta.avatar = state.avatar;
         return { message: '🧍 Вернули как было от природы', delta };
+      }
+
+      // Colours: a mirror is free, but only palette colours are accepted.
+      if (isLookSlot(slot)) {
+        if (!lookColourAllowed(slot, entryId)) return { error: 'Такого цвета нет в палитре' };
+        (state.avatar as any)[slot] = entryId.toLowerCase();
+        delta.avatar = state.avatar;
+        return { message: `🎨 ${LOOK_SLOT_NAMES[slot]}: обновлено`, delta };
       }
 
       const manifestSlot = (content.avatarLayers?.slots ?? []).find((s: any) => s.id === slot);

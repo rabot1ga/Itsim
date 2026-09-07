@@ -47,6 +47,7 @@ const CASES: ScenePlayer[] = Array.from({ length: 8 }, (_, i) => ({
   items: ITEMS[i % ITEMS.length],
   skills: { a: { level: 8 + i * 4 }, b: { level: 6 + i * 3 } },
   genetics: { seed: `seed-${i * 7 + 3}` },
+  petFedToday: i % 2 === 0,
 }));
 
 async function spriteBuffer(sprite: string, colours: Record<string, string> | undefined, flip: boolean) {
@@ -76,8 +77,8 @@ ${polys
 
   const items: PlacedItem[] = [
     ...scene.items.map((item) =>
-      item.kind !== 'wall' && item.sprite.startsWith('pet_') && item.sprite !== 'pet_bed'
-        ? { ...item, colours: petLook(seed, item.sprite) }
+      item.kind !== 'wall' && /^pet_(cat|dog|bulldog|cactus|robo|spider)(_|$)/.test(item.sprite)
+        ? { ...item, colours: petLook(seed, item.sprite.replace(/_(sleep|eat|play)$/, '')) }
         : item
     ),
     {

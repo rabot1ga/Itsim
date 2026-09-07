@@ -1,3 +1,14 @@
+import {
+  SKIN_TONES,
+  HAIR_COLOURS,
+  CLOTH_COLOURS,
+  TROUSER_COLOURS,
+  SHOE_COLOURS,
+  lookColourAllowed,
+} from '@itsim/shared';
+
+export { SKIN_TONES, HAIR_COLOURS, CLOTH_COLOURS, TROUSER_COLOURS, SHOE_COLOURS };
+
 /**
  * Palettes and looks.
  *
@@ -8,56 +19,6 @@
  * 5 shoes is over half a million combinations; a player's own look is picked
  * deterministically from their genetic seed, so it never changes under them.
  */
-
-export const SKIN_TONES = [
-  '#f5c6a0',
-  '#e8b088',
-  '#d29a70',
-  '#b57a52',
-  '#8d5a3c',
-  '#5f3a26',
-] as const;
-
-export const HAIR_COLOURS = [
-  '#2b2320',
-  '#4a3327',
-  '#6f4a2c',
-  '#a06a33',
-  '#d7a94b',
-  '#e6d3a3',
-  '#8e8e96',
-  '#cfd4dc',
-  '#a8443b',
-  '#5b6f9c',
-] as const;
-
-export const CLOTH_COLOURS = [
-  '#3a4456',
-  '#2a3240',
-  '#5b6f9c',
-  '#a9c6e0',
-  '#7fae7a',
-  '#4b7a58',
-  '#c2565a',
-  '#d99a4e',
-  '#f4d35e',
-  '#8a6238',
-  '#b98d60',
-  '#e9edf4',
-] as const;
-
-export const TROUSER_COLOURS = [
-  '#2a3240',
-  '#3a4456',
-  '#4a5568',
-  '#5b6f9c',
-  '#6b5a46',
-  '#8a6238',
-  '#37414f',
-  '#767c88',
-] as const;
-
-export const SHOE_COLOURS = ['#1e2430', '#2a3240', '#e9edf4', '#8a6238', '#c2565a'] as const;
 
 /**
  * Coat colours per species. A ginger cat and a black cat are both cats; a
@@ -159,7 +120,17 @@ export interface CharacterLook {
 
 export interface LookInput {
   genetics?: { seed?: string; hairStyle?: string; hairColor?: string; skinTone?: string; top?: string };
-  avatar?: { hair?: string | null; top?: string | null; bottom?: string | null } | null;
+  avatar?: {
+    hair?: string | null;
+    top?: string | null;
+    bottom?: string | null;
+    /** explicit colour choices from the wardrobe */
+    skin?: string | null;
+    hairColor?: string | null;
+    topColor?: string | null;
+    bottomColor?: string | null;
+    shoeColor?: string | null;
+  } | null;
   /** anything stable and unique when there is no genetic seed yet */
   fallbackSeed?: string;
 }
@@ -181,21 +152,27 @@ export function characterLook(input: LookInput): CharacterLook {
   const pool = byBoth.length ? byBoth : byHair.length ? byHair : ids;
   const base = pool[hashSeed(seed + ':base') % pool.length];
 
+  // The seed proposes, the wardrobe disposes: an explicit choice always wins.
+  const av = input.avatar;
+  const chosen = (slot: string, value: string | null | undefined, fallback: string) =>
+    value && lookColourAllowed(slot, value) ? value : fallback;
+
   return {
     base,
     colours: {
-      skin: SKIN_TONES[pick(SKIN_TONES.length)],
-      hair: HAIR_COLOURS[pick(HAIR_COLOURS.length)],
-      top: CLOTH_COLOURS[pick(CLOTH_COLOURS.length)],
-      bottom: TROUSER_COLOURS[pick(TROUSER_COLOURS.length)],
-      shoes: SHOE_COLOURS[pick(SHOE_COLOURS.length)],
+      skin: chosen('skin', av?.skin, SKIN_TONES[pick(SKIN_TONES.length)]),
+      hair: chosen('hairColor', av?.hairColor, HAIR_COLOURS[pick(HAIR_COLOURS.length)]),
+      top: chosen('topColor', av?.topColor, CLOTH_COLOURS[pick(CLOTH_COLOURS.length)]),
+      bottom: chosen('bottomColor', av?.bottomColor, TROUSER_COLOURS[pick(TROUSER_COLOURS.length)]),
+      shoes: chosen('shoeColor', av?.shoeColor, SHOE_COLOURS[pick(SHOE_COLOURS.length)]),
     },
   };
 }
 
 /** A pet's coat, stable per player and per animal. */
 export function petLook(seed: string, petId: string): Record<string, string> {
-  const pick = rolls(`${seed}:${petId}`);
-  const pool = COAT_COLOURS[petId] ?? DEFAULT_COAT;
+  const species = petId.replace(/_(sleep|eat|play)$/, '');
+  const pick = rolls(`${seed}:${species}`);
+  const pool = COAT_COLOURS[species] ?? DEFAULT_COAT;
   return { coat: pool[pick(pool.length)] };
 }

@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
-import { LayerManifest, GeneticTraits, GeneticsConfig } from '@itsim/shared';
+import { GeneticTraits } from '@itsim/shared';
 import { haptic } from '../../lib/telegram';
-import { Composition, buildLayerStack } from './layers';
+import { drawIsoRoom } from '../iso/canvas';
 
 /**
  * Share card — DESIGN.md section 5.
@@ -73,70 +73,27 @@ function drawFrame(ctx: CanvasRenderingContext2D, frame: ShareFrame, player: any
   }
 }
 
-function loadImage(src: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error(`Failed to load ${src}`));
-    img.src = src;
-  });
-}
-
 async function renderCanvas(
   canvas: HTMLCanvasElement,
-  roomManifest: LayerManifest,
-  avatarManifest: LayerManifest,
   traits: GeneticTraits,
-  geneticsConfig: GeneticsConfig,
-  composition: Composition,
   player: any,
   frame: ShareFrame
 ): Promise<void> {
+  canvas.width = W;
+  canvas.height = H;
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('Canvas 2D unavailable');
 
-  const roomLayers = buildLayerStack(roomManifest, composition, traits, geneticsConfig);
-  const avatarLayers = buildLayerStack(
-    avatarManifest,
-    {
-      body: 'body_base',
-      eyes: traits.eyeShape,
-      hair: player?.avatar?.hair ?? traits.hairStyle,
-      beard: player?.avatar?.beard ?? traits.beard,
-      top: player?.avatar?.top ?? traits.top,
-      bottom: player?.avatar?.bottom ?? 'bottom_jeans',
-      accessory: player?.avatar?.accessory ?? composition.avatarAccessory ?? traits.accessory,
-    },
-    traits,
-    geneticsConfig
-  );
+  // 1. Backdrop — the app's ink, so the card reads as the same product
+  ctx.fillStyle = '#11151c';
+  ctx.fillRect(0, 0, W, H);
 
-  // 1. Room layers
-  for (const layer of roomLayers) {
-    const img = await loadImage(layer.file);
-    ctx.filter = layer.filter ?? 'none';
-    ctx.drawImage(img, 0, 0, W, H);
-  }
-  ctx.filter = 'none';
-
-  // 2. The player stands on the floor (full-body art: 500×760)
-  const avatarRatio =
-    (avatarManifest.resolution?.height ?? 760) / (avatarManifest.resolution?.width ?? 500);
-  const avatarW = Math.round(W * 0.38);
-  const avatarH = Math.round(avatarW * avatarRatio);
-  const avatarX = Math.round(W * 0.06);
-  const avatarY = Math.round(H * 0.95) - avatarH;
-  for (const layer of avatarLayers) {
-    const img = await loadImage(layer.file);
-    ctx.filter = layer.filter ?? 'none';
-    ctx.drawImage(img, avatarX, avatarY, avatarW, avatarH);
-  }
-  ctx.filter = 'none';
+  // 2. The player's actual room, drawn by the same engine as the app
+  await drawIsoRoom(ctx, player, { x: 40, y: 40, w: W - 80, h: Math.round(H * 0.62) });
 
   // 3. Stats card
   ctx.fillStyle = 'rgba(10, 14, 24, 0.88)';
-  const cardW = Math.round(W * 0.62);
+  const cardW = Math.round(W * 0.72);
   const cardH = 330;
   const cardX = Math.round((W - cardW) / 2);
   const cardY = H - cardH - 40;
@@ -163,7 +120,7 @@ async function renderCanvas(
 
   ctx.fillStyle = '#38bdf8';
   ctx.font = '22px monospace';
-  ctx.fillText(`генетика: ${traits.seed.slice(0, 12)}…`, W / 2, cardY + 172);
+  ctx.fillText(`генетика: ${(traits?.seed ?? '').slice(0, 12)}…`, W / 2, cardY + 172);
 
   ctx.fillStyle = '#64748b';
   ctx.font = '30px sans-serif';
@@ -180,13 +137,9 @@ function formatMoney(amount: number): string {
 }
 
 export const ShareCard: React.FC<{
-  roomManifest: LayerManifest;
-  avatarManifest: LayerManifest;
   traits: GeneticTraits;
-  geneticsConfig: GeneticsConfig;
-  composition: Composition;
   player: any;
-}> = ({ roomManifest, avatarManifest, traits, geneticsConfig, composition, player }) => {
+}> = ({ traits, player }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [dataUrl, setDataUrl] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -199,7 +152,7 @@ export const ShareCard: React.FC<{
     haptic('tap');
     try {
       const canvas = canvasRef.current!;
-      await renderCanvas(canvas, roomManifest, avatarManifest, traits, geneticsConfig, composition, player, useFrame);
+      await renderCanvas(canvas, traits, player, useFrame);
       setDataUrl(canvas.toDataURL('image/png'));
       haptic('success');
     } catch (err: any) {

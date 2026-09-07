@@ -202,8 +202,29 @@ export function buildRoomScene(player: ScenePlayer): RoomScene {
   };
   const petId = [...items].find((id) => PET_SPRITES[id]);
   if (petId) {
+    // The animal shows how it is doing: unfed it waits by an empty bowl, fed it
+    // eats, naps or plays. Only cats and dogs have those extra poses drawn.
+    const base = PET_SPRITES[petId];
+    const posed = (suffix: string) => `${base}_${suffix}`;
+    const hasPoses = base === 'pet_cat' || base === 'pet_dog' || base === 'pet_bulldog';
+    let sprite = base;
+    if (player.petFedToday && hasPoses) {
+      const mood = pick(3);
+      if (base === 'pet_bulldog') sprite = mood === 0 ? posed('sleep') : base;
+      else sprite = mood === 0 ? posed('sleep') : mood === 1 ? posed('eat') : posed('play');
+    }
+    const tiles: [number, number] = sprite.endsWith('_sleep') && base !== 'pet_cat' ? [2, 1] : [1, 1];
+
     place(a, 'pet_bed', [1, 1], [[2, d - 2], [1, d - 2], [3, d - 2]]);
-    place(a, PET_SPRITES[petId], [1, 1], [[3, d - 2], [2, d - 1], [4, d - 2], [1, d - 1]]);
+    place(a, sprite, tiles, [[3, d - 2], [2, d - 1], [4, d - 2], [1, d - 1]]);
+    // a bowl only where the pose does not already come with one
+    if (!sprite.endsWith('_eat')) {
+      place(a, player.petFedToday ? 'pet_bowl_full' : 'pet_bowl', [1, 1], [
+        [4, d - 1],
+        [3, d - 1],
+        [2, d - 2],
+      ]);
+    }
     if (petId === 'pet_cat') place(a, 'cat_tower', [1, 1], [[0, d - 2], [w - 1, d - 3]]);
   }
   if (level === 0 && !petId) place(a, 'box_open', [1, 1], [[2, d - 2], [3, d - 2]]);

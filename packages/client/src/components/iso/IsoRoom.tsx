@@ -17,6 +17,10 @@ import { recolourSprite, variantKey } from './recolor';
  * canvas first, so one drawing covers thousands of different looks.
  */
 
+
+/** Which sprites are the animal itself (and so get a coat colour). */
+const CREATURE = /^pet_(cat|dog|bulldog|cactus|robo|spider|parrot|fish|hamster)(_|$)/;
+
 export interface IsoManifest {
   tile: { w: number; h: number; wallH: number };
   sprites: Record<string, SpriteMeta>;
@@ -124,8 +128,8 @@ export const IsoRoom: React.FC<{
 
     const items: PlacedItem[] = [
       ...scene.items.map((item) =>
-        item.kind !== 'wall' && item.sprite.startsWith('pet_')
-          ? { ...item, colours: petLook(seed, item.sprite) }
+        item.kind !== 'wall' && CREATURE.test(item.sprite)
+          ? { ...item, colours: petLook(seed, item.sprite.replace(/_(sleep|eat|play)$/, '')) }
           : item
       ),
       ...(extras ?? []),

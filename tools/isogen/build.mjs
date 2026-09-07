@@ -74,25 +74,34 @@ async function colourRoles(buf, kind) {
   const raw = await img.raw().toBuffer();
   const stats = new Map();
 
+  // Four bands down the sprite: head, torso, legs, feet. A colour belongs to a
+  // role only if most of its pixels live in one band — colours smeared across
+  // the whole figure are outlines and shadows, and repainting those ruins the
+  // drawing.
+  const bandOf = (t) => (t < 0.35 ? 0 : t < 0.66 ? 1 : t < 0.88 ? 2 : 3);
+
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
       const i = (y * width + x) * 4;
       if (raw[i + 3] < 200) continue;
       const r = raw[i], g = raw[i + 1], b = raw[i + 2];
       const lum = 0.299 * r + 0.587 * g + 0.114 * b;
-      if (lum < 40) continue; // outline, never recoloured
+      if (lum < 24) continue; // the black outline itself, never recoloured
       const hex = '#' + [r, g, b].map((v) => v.toString(16).padStart(2, '0')).join('');
-      const st = stats.get(hex) ?? { n: 0, sy: 0, ymax: 0, r, g, b, lum };
+      const st = stats.get(hex) ?? { n: 0, sy: 0, bands: [0, 0, 0, 0], r, g, b, lum };
       st.n++;
       st.sy += y / height;
-      st.ymax = Math.max(st.ymax, y / height);
+      st.bands[bandOf(y / height)]++;
       stats.set(hex, st);
     }
   }
 
   const total = [...stats.values()].reduce((a, s) => a + s.n, 0) || 1;
   const colours = [...stats.entries()]
-    .map(([hex, s]) => ({ hex, share: s.n / total, y: s.sy / s.n, ...s }))
+    .map(([hex, s]) => {
+      const top = s.bands.indexOf(Math.max(...s.bands));
+      return { hex, share: s.n / total, band: top, focus: s.bands[top] / s.n, y: s.sy / s.n, ...s };
+    })
     .filter((c) => c.share > 0.004);
 
   const isSkin = (c) => {
@@ -100,33 +109,45 @@ async function colourRoles(buf, kind) {
     if (max < 90 || max - min < 12) return false;
     if (!(c.r > c.g && c.g >= c.b)) return false;
     const hue = (60 * (c.g - c.b)) / (max - min);
-    return hue >= 8 && hue <= 48 && c.r - c.b > 18 && c.r - c.b < 130 && c.y < 0.45;
+    return hue >= 8 && hue <= 48 && c.r - c.b > 18 && c.r - c.b < 130;
   };
 
   const roles = {};
   const push = (role, c) => (roles[role] ??= []).push(c);
+  const BY_BAND = ['hair', 'top', 'bottom', 'shoes'];
 
   if (kind === 'char') {
+    // Brown hair shares a hue with skin. Tell them apart by where they sit:
+    // hair caps the head and is darker than the face it frames.
+    const skinLike = colours.filter(isSkin);
+    const brightestSkin = Math.max(0, ...skinLike.map((c) => c.lum));
+    const isHairNotSkin = (c) => c.y < 0.22 && c.lum < brightestSkin * 0.72;
+
+    // A beige jumper is also "skin-coloured". Hands are small, so a skin hue
+    // that owns a chunk of the torso is cloth.
+    const isClothNotSkin = (c) => c.band === 1 && c.share > 0.055;
+
     for (const c of colours) {
-      // A hood or a collar also sits high on the sprite, so height alone is not
-      // enough: anything that covers a lot of the figure is clothing, not hair.
-      // These sprites are ~3 heads tall, so the head owns the top 40% of the
-      // frame. Only what sits below it can be clothing; the band in between is
-      // left alone (faces, beards, glasses keep their own colours).
-      if (isSkin(c)) push('skin', c);
-      else if (c.y < 0.22 && c.ymax < 0.36 && c.share < 0.2) push('hair', c);
-      else if (c.y >= 0.4 && c.y < 0.66) push('top', c);
-      else if (c.y >= 0.66 && c.y < 0.88) push('bottom', c);
-      else if (c.y >= 0.88) push('shoes', c);
+      if (isSkin(c) && !isHairNotSkin(c) && !isClothNotSkin(c)) {
+        push('skin', c);
+        continue;
+      }
+      if (isSkin(c) && isClothNotSkin(c)) {
+        push('top', c);
+        continue;
+      }
+      if (isSkin(c)) {
+        push('hair', c);
+        continue;
+      }
+      // structural colours (outline shading, dither) span bands: leave them
+      if (c.focus < 0.6) continue;
+      push(BY_BAND[c.band], c);
     }
   } else {
     // creatures: every lit colour is coat, so one recolour swaps the whole animal
     for (const c of colours) push('coat', c);
   }
-
-  // A one-colour "hair" ramp is almost always a rim light picked up around a
-  // dark hairstyle — recolouring it paints the head. Leave those alone.
-  if (kind === 'char' && (roles.hair?.length ?? 0) < 2) delete roles.hair;
 
   for (const role of Object.keys(roles)) {
     roles[role] = roles[role].sort((a, b) => a.lum - b.lum).map((c) => c.hex);
