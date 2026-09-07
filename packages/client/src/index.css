@@ -2,10 +2,43 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   IT Life Simulator — interface system
+   Colours come from the game's own sprites (see tailwind.config.js).
+   Rules of the house:
+     · flat surfaces, one hairline border, no glass/blur/glow/gradients;
+     · one warm accent (gold) for "act on this", everything else is quiet;
+     · numbers are tabular and monospaced-by-feature, never jump while ticking;
+     · radii: 10px panels · 8px controls · 3px meters — nothing else;
+     · 12px pixel icons instead of emoji, so every device draws the same screen.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
 :root {
   --tg-viewport-stable-height: 100vh;
-  --bg-glow-1: rgba(56, 189, 248, 0.07);
-  --bg-glow-2: rgba(217, 70, 239, 0.05);
+
+  --bg: #11151c;
+  --bg-raise: #161b24;
+  --surface: #1e2430;
+  --surface-2: #232a37;
+  --well: #131820;
+  --line: #2a3240;
+  --line-strong: #3a4456;
+
+  --text: #e9edf4;
+  --text-dim: #a3acbc;
+  --text-mute: #7b8494;
+  --text-faint: #5c6575;
+
+  --gold: #f4d35e;
+  --gold-deep: #c2932f;
+  --sky: #a9c6e0;
+  --moss: #7fae7a;
+  --ochre: #d99a4e;
+  --clay: #c2565a;
+
+  --radius-panel: 10px;
+  --radius-control: 8px;
+  --tap: 44px;
 }
 
 * {
@@ -15,36 +48,52 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-html, body, #root {
+html,
+body,
+#root {
   height: var(--tg-viewport-stable-height, 100vh);
   overflow: hidden;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: #060b16;
-  color: #e2e8f0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+    Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.4;
+  background: var(--bg);
+  color: var(--text);
   -webkit-font-smoothing: antialiased;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   overscroll-behavior: none;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
 }
 
-/* Touch: kill the 300ms tap delay + callout menu on controls.
-   Text in cards stays selectable; buttons/nav never select. */
-button, [role='button'] {
+button,
+[role='button'] {
   touch-action: manipulation;
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
+  font: inherit;
+  color: inherit;
 }
 
-/* iOS zooms the whole viewport when focusing inputs < 16px — never do that. */
-input, textarea, select {
+/* iOS zooms the viewport when focusing inputs < 16px — never do that. */
+input,
+textarea,
+select {
   font-size: 16px;
 }
 
-/* Ambient background glow (subtle, GPU-friendly) */
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+/* ── App frame ───────────────────────────────────────────────────────────── */
+
 .app-container {
   height: 100%;
   width: 100%;
@@ -53,192 +102,423 @@ input, textarea, select {
   padding-bottom: env(safe-area-inset-bottom, 0px);
   display: flex;
   flex-direction: column;
-  background:
-    radial-gradient(1100px 500px at 85% -10%, var(--bg-glow-1), transparent 60%),
-    radial-gradient(900px 500px at -10% 110%, var(--bg-glow-2), transparent 60%),
-    #0b1220;
+  background: var(--bg);
   position: relative;
 }
 
-/* Desktop/tablet: phone-like frame centered on a darker backdrop */
 @media (min-width: 560px) {
   .app-container {
-    border-left: 1px solid rgba(51, 65, 85, 0.6);
-    border-right: 1px solid rgba(51, 65, 85, 0.6);
-    box-shadow: 0 0 80px rgba(2, 6, 23, 0.8);
+    border-left: 1px solid var(--line);
+    border-right: 1px solid var(--line);
   }
 }
 
-/* Safe-area helpers (notch / home indicator) */
-.safe-area-pt { padding-top: env(safe-area-inset-top, 0px); }
-.safe-area-pb { padding-bottom: env(safe-area-inset-bottom, 0px); }
+.safe-area-pt {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
 
-/* Main scroll area: smooth momentum scroll, no scroll-chaining to the body
-   (so pull-to-refresh / swipe-to-close never hijack the game). */
 #game-scroll {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
   scrollbar-width: thin;
-  scrollbar-color: #334155 transparent;
+  scrollbar-color: var(--line-strong) transparent;
 }
 
-/* Sticky bottom CTA inside the scroll area (used when Telegram MainButton
-   is unavailable, e.g. desktop browser dev). */
 .sticky-cta {
   position: sticky;
   bottom: 0;
-  padding-top: 12px;
+  padding-top: 10px;
   padding-bottom: 4px;
-  background: linear-gradient(to bottom, transparent, #0b1220 35%);
+  background: linear-gradient(to bottom, rgba(17, 21, 28, 0), var(--bg) 40%);
 }
 
-/* Minimum comfortable touch target (Apple HIG: 44pt) */
-.touch-target { min-height: 44px; }
-
-/* Horizontal snap carousels (room editor): no visible scrollbar */
-.scroll-row { scrollbar-width: none; -ms-overflow-style: none; }
-.scroll-row::-webkit-scrollbar { display: none; }
-
-/* Accordion (skills branches): smooth height animation without JS measuring */
-.accordion-body {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 0.25s ease-out;
-}
-.accordion-body.open { grid-template-rows: 1fr; }
-.accordion-inner { overflow: hidden; min-height: 0; }
-.accordion-chevron { transition: transform 0.25s ease; }
-.accordion-chevron.open { transform: rotate(180deg); }
-
-/* Respect users who asked for less motion */
-@media (prefers-reduced-motion: reduce) {
-  .animate-fade-in, .animate-pop-in, .animate-slide-up,
-  .animate-float, .animate-gradient, .animate-pulse-soft {
-    animation: none;
-  }
-  .accordion-body { transition: none; }
+.touch-target {
+  min-height: var(--tap);
 }
 
-/* Resource bar styling */
-.resource-bar {
-  transition: width 0.3s ease;
+.scroll-row {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scroll-row::-webkit-scrollbar {
+  display: none;
 }
 
-/* Game card style */
-.game-card {
-  background: linear-gradient(150deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.9) 100%);
-  border: 1px solid rgba(51, 65, 85, 0.7);
-  border-radius: 16px;
-  padding: 16px;
-  backdrop-filter: blur(8px);
-  box-shadow: 0 4px 16px rgba(2, 6, 23, 0.35);
+/* ── Surfaces ────────────────────────────────────────────────────────────── */
+
+.game-card,
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-panel);
+  padding: 12px;
 }
 
-/* Button base */
-.btn {
-  @apply px-4 py-2.5 rounded-xl font-medium transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.97];
-  min-height: 44px;
-  display: inline-flex;
+/* Interactive panel (action tiles, list rows) */
+.tile {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-panel);
+  padding: 10px;
+  text-align: left;
+  transition:
+    border-color 0.12s ease,
+    background-color 0.12s ease,
+    transform 0.06s ease;
+}
+.tile:not(:disabled):hover {
+  border-color: var(--line-strong);
+  background: var(--surface-2);
+}
+.tile:not(:disabled):active {
+  transform: translateY(1px);
+  border-color: var(--gold-deep);
+}
+.tile:disabled {
+  opacity: 0.4;
+}
+
+/* Attention panel: a 2px left rule instead of a coloured glow */
+.panel-note {
+  border-left: 2px solid var(--line-strong);
+}
+.panel-note-gold {
+  border-left-color: var(--gold);
+}
+.panel-note-sky {
+  border-left-color: var(--sky);
+}
+.panel-note-moss {
+  border-left-color: var(--moss);
+}
+.panel-note-clay {
+  border-left-color: var(--clay);
+}
+.panel-note-ochre {
+  border-left-color: var(--ochre);
+}
+
+.well {
+  background: var(--well);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-control);
+}
+
+.divider {
+  height: 1px;
+  background: var(--line);
+}
+
+/* ── Type ────────────────────────────────────────────────────────────────── */
+
+.eyebrow {
+  display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-mute);
 }
-.btn.w-full { display: flex; }
-
-.btn-primary {
-  @apply bg-primary-600 hover:bg-primary-700 text-white shadow-lg shadow-primary-900/30;
-}
-
-.btn-secondary {
-  @apply bg-slate-700/80 hover:bg-slate-600 text-white border border-slate-600/50;
-}
-
-.btn-danger {
-  @apply bg-red-600 hover:bg-red-700 text-white;
-}
-
-.btn-success {
-  @apply bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-900/30;
+.eyebrow::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+  margin-left: 2px;
 }
 
-/* Section title with divider */
+/* Legacy name kept so old markup keeps working, now the same quiet eyebrow. */
 .section-title {
-  @apply flex items-center gap-2 text-sm font-semibold text-slate-300;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-mute);
 }
 .section-title::after {
   content: '';
-  @apply flex-1 h-px bg-slate-700/60 ml-1;
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+  margin-left: 2px;
 }
 
-/* Chips & badges */
+.num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+/* Was an animated sky→fuchsia gradient. Now: just confident, readable type. */
+.text-gradient {
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+/* ── Controls ────────────────────────────────────────────────────────────── */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: var(--tap);
+  padding: 0 16px;
+  border-radius: var(--radius-control);
+  border: 1px solid transparent;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition:
+    background-color 0.12s ease,
+    border-color 0.12s ease,
+    transform 0.06s ease,
+    opacity 0.12s ease;
+}
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.btn:not(:disabled):active {
+  transform: translateY(1px);
+}
+.btn.w-full {
+  display: flex;
+}
+
+/* The one loud thing on screen: the accent CTA. Dark text on lamp-gold. */
+.btn-primary {
+  background: var(--gold);
+  color: #171c25;
+  border-color: var(--gold);
+}
+.btn-primary:not(:disabled):hover {
+  background: #ffe07a;
+  border-color: #ffe07a;
+}
+
+.btn-secondary {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--line-strong);
+}
+.btn-secondary:not(:disabled):hover {
+  background: var(--surface-2);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-dim);
+  border-color: var(--line);
+}
+.btn-ghost:not(:disabled):hover {
+  color: var(--text);
+  border-color: var(--line-strong);
+}
+
+.btn-success {
+  background: var(--moss);
+  color: #16211a;
+  border-color: var(--moss);
+}
+
+.btn-danger {
+  background: var(--clay);
+  color: #1a1112;
+  border-color: var(--clay);
+}
+
+/* ── Chips, badges, meters ───────────────────────────────────────────────── */
+
 .chip {
-  @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 5px;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--text-dim);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+  white-space: nowrap;
 }
 
 .stat-pill {
-  @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
 }
 
-/* Gradient text */
-.text-gradient {
-  background: linear-gradient(120deg, #38bdf8 0%, #a78bfa 55%, #e879f9 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+.meter {
+  height: 3px;
+  background: var(--well);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.meter > span {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.25s ease;
 }
 
-/* Animations */
+/* Legacy hook used by the old resource bar. */
+.resource-bar {
+  transition: width 0.25s ease;
+}
+
+/* ── Bottom navigation ───────────────────────────────────────────────────── */
+
+.tabbar {
+  display: flex;
+  background: var(--bg-raise);
+  border-top: 1px solid var(--line);
+}
+.tabbar-item {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  min-height: 50px;
+  padding: 7px 0 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-faint);
+  transition: color 0.12s ease;
+}
+.tabbar-item[data-active='true'] {
+  color: var(--gold);
+}
+.tabbar-item[data-active='true']::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 18px;
+  height: 2px;
+  background: var(--gold);
+}
+.tabbar-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+/* ── Accordion (skill branches) ──────────────────────────────────────────── */
+
+.accordion-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.22s ease-out;
+}
+.accordion-body.open {
+  grid-template-rows: 1fr;
+}
+.accordion-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+.accordion-chevron {
+  transition: transform 0.22s ease;
+}
+.accordion-chevron.open {
+  transform: rotate(180deg);
+}
+
+/* ── Motion: short, functional, never decorative ─────────────────────────── */
+
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-.animate-fade-in { animation: fadeIn 0.3s ease-out; }
-
-@keyframes slideUp {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
+.animate-fade-in {
+  animation: fadeIn 0.18s ease-out;
 }
-.animate-slide-up { animation: slideUp 0.3s ease-out; }
 
 @keyframes popIn {
-  0% { opacity: 0; transform: scale(0.85); }
-  70% { transform: scale(1.03); }
-  100% { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
-.animate-pop-in { animation: popIn 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.2); }
+.animate-pop-in {
+  animation: popIn 0.16s ease-out;
+}
 
-@keyframes pulseSoft {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.45; }
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
 }
-.animate-pulse-soft { animation: pulseSoft 1.6s ease-in-out infinite; }
+.animate-slide-up {
+  animation: slideUp 0.22s ease-out;
+}
 
-@keyframes floatSlow {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
 }
-.animate-float { animation: floatSlow 3.2s ease-in-out infinite; }
+.animate-pulse-soft {
+  animation: breathe 1.8s ease-in-out infinite;
+}
 
-/* Pet idle: gentle bobbing so the room feels alive (docs/design.md pet 2.0) */
-@keyframes petBob {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-7px); }
-}
-.animate-pet-bob { animation: petBob 2.4s ease-in-out infinite; }
-
-@keyframes gradientShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
+/* Kept as no-ops: the floating emoji and the animated gradient are gone. */
+.animate-float,
 .animate-gradient {
-  background-size: 200% 200%;
-  animation: gradientShift 6s ease infinite;
+  animation: none;
 }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #334155; border-radius: 2px; }
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-pop-in,
+  .animate-slide-up,
+  .animate-pulse-soft {
+    animation: none;
+  }
+  .accordion-body {
+    transition: none;
+  }
+  .tile,
+  .btn {
+    transition: none;
+  }
+}
 
-/* Number formatting stability */
-.tabular-nums { font-variant-numeric: tabular-nums; }
+/* Pixel art must never be smoothed by the browser. */
+.pixelated {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}

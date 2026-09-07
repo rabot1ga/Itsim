@@ -53,6 +53,9 @@ jobs:
       - name: Unit tests — bot
         run: npm run test -w packages/bot
 
+      - name: Unit tests — client (pixel icon set)
+        run: npm run test -w packages/client
+
       - name: Balance simulator (40 agents × 365 days, corridor check)
         run: npm run test -w packages/sim
 

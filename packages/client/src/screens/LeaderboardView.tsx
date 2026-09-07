@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useGameStore, apiRequest } from '../store/gameStore';
 import { Spinner, EmptyState } from '../components/ui';
+import { PixelIcon } from '../components/pixel/PixelIcon';
 
 /**
  * Leaderboard — real ratings from persisted player states.
@@ -32,28 +33,36 @@ const GRADE_LABELS: Record<string, string> = {
   cto: 'CTO',
 };
 
-const MEDALS = ['🥇', '🥈', '🥉'];
+/** Top three get a gilded rank plate; everybody else gets a quiet number. */
+const RANK_TONE = ['text-gold-300 border-gold-700', 'text-ink-100 border-ink-600', 'text-wood-300 border-wood-700'];
 
 const Row: React.FC<{ row: LeaderRow }> = ({ row }) => (
   <div
-    className={`game-card !p-3 flex items-center gap-3 ${
-      row.isYou ? 'border-amber-500/50 bg-amber-900/10' : ''
+    className={`panel !py-2.5 !px-3 flex items-center gap-3 ${
+      row.isYou ? 'panel-note panel-note-gold' : ''
     }`}
   >
-    <span className="w-8 text-center text-lg shrink-0">
-      {row.rank <= 3 ? MEDALS[row.rank - 1] : <span className="text-slate-500 text-sm">{row.rank}</span>}
+    <span
+      className={`num w-7 h-7 shrink-0 grid place-items-center rounded-md border text-xs font-semibold ${
+        RANK_TONE[row.rank - 1] ?? 'text-ink-500 border-ink-700'
+      }`}
+    >
+      {row.rank}
     </span>
     <div className="flex-1 min-w-0">
-      <div className="flex items-center gap-2">
-        <span className={`text-xs font-medium truncate ${row.isYou ? 'text-amber-300' : 'text-slate-200'}`}>
-          {row.name} {row.isYou && <span className="text-[10px] text-amber-400">(ты)</span>}
+      <div className="flex items-baseline gap-1.5 min-w-0">
+        <span
+          className={`text-sm font-medium truncate ${row.isYou ? 'text-gold-300' : 'text-ink-100'}`}
+        >
+          {row.name}
         </span>
+        {row.isYou && <span className="text-2xs text-ink-500 shrink-0">ты</span>}
       </div>
-      <span className="text-[10px] text-slate-500">
-        {GRADE_LABELS[row.grade] ?? row.grade} · день {row.day}
+      <span className="text-2xs text-ink-500">
+        {GRADE_LABELS[row.grade] ?? row.grade} · <span className="num">день {row.day}</span>
       </span>
     </div>
-    <span className="text-sm font-bold text-amber-300 tabular-nums shrink-0">{row.rating}</span>
+    <span className="num text-sm font-semibold text-white shrink-0">{row.rating}</span>
   </div>
 );
 
@@ -87,35 +96,43 @@ export const LeaderboardView: React.FC = () => {
   return (
     <div className="space-y-4 animate-fade-in">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold text-white">🏅 Лидерборд</h2>
+        <h2 className="flex items-center gap-2 text-base font-semibold text-white">
+          <PixelIcon name="chart" size={14} className="text-gold-300" />
+          Лидерборд
+        </h2>
         {player?.ratingScore !== undefined && (
-          <span className="chip bg-slate-800 text-amber-300 border border-slate-700">
-            🏆 ты: {player.ratingScore}
+          <span className="chip">
+            <PixelIcon name="star" size={10} className="text-gold-300" />
+            <span className="num">{player.ratingScore}</span>
           </span>
         )}
       </div>
-      <p className="text-[11px] text-slate-500 -mt-2">
+      <p className="text-xs text-ink-500 -mt-2 leading-relaxed">
         Рейтинг считается по карьере, навыкам, деньгам, репутации, ачивкам и жилью
       </p>
 
       <div className="flex gap-1.5">
         {[
-          { id: false, label: '🌍 Все' },
-          { id: true, label: '🤍 Честные' },
+          { id: false, label: 'Все' },
+          { id: true, label: 'Без бустеров' },
         ].map((tab) => (
           <button
             key={String(tab.id)}
             onClick={() => setHonestOnly(tab.id)}
-            className={`chip border ${
+            className={`chip touch-target !px-3 ${
               honestOnly === tab.id
-                ? 'bg-sky-900/40 text-sky-200 border-sky-700'
-                : 'bg-slate-800 text-slate-400 border-slate-700'
+                ? '!bg-ink-700 !text-white !border-ink-600'
+                : '!text-ink-400'
             }`}
           >
             {tab.label}
           </button>
         ))}
-        {total > 0 && <span className="chip bg-slate-800 text-slate-500 border border-slate-700">игроков: {total}</span>}
+        {total > 0 && (
+          <span className="chip !bg-transparent !border-transparent !text-ink-600 ml-auto">
+            игроков: <span className="num">{total}</span>
+          </span>
+        )}
       </div>
 
       <div className="space-y-1.5">
@@ -125,12 +142,16 @@ export const LeaderboardView: React.FC = () => {
         ))}
         {youOutsidePage && (
           <>
-            <div className="text-center text-slate-600 text-xs">···</div>
+            <div className="text-center text-ink-700 text-xs tracking-[0.3em]">···</div>
             <Row row={you!} />
           </>
         )}
         {loaded && rows.length === 0 && (
-          <EmptyState icon="🏜" title="Пока пусто" hint="Сыграй первый день — и попадёшь в топ!" />
+          <EmptyState
+            icon="chart"
+            title="Пока пусто"
+            hint="Сыграй первый день — и попадёшь в топ."
+          />
         )}
       </div>
     </div>

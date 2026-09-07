@@ -12,11 +12,11 @@ import { PixelAvatarData } from './pixelAvatar';
 export type OfficeMood = 'normal' | 'deadline' | 'friday' | 'night' | 'retro';
 
 export const OFFICE_MOOD_META: Record<OfficeMood, { label: string; entry: string }> = {
-  normal: { label: '☀️ Обычный день', entry: 'omood_none' },
-  deadline: { label: '🔥 Дедлайн!', entry: 'omood_deadline' },
-  friday: { label: '🎉 Пятница', entry: 'omood_friday' },
-  night: { label: '🌙 Ночной деплой', entry: 'omood_night' },
-  retro: { label: '🧘 Ретро', entry: 'omood_retro' },
+  normal: { label: 'Обычный день', entry: 'omood_none' },
+  deadline: { label: 'Дедлайн', entry: 'omood_deadline' },
+  friday: { label: 'Пятница', entry: 'omood_friday' },
+  night: { label: 'Ночной деплой', entry: 'omood_night' },
+  retro: { label: 'Ретро', entry: 'omood_retro' },
 };
 
 export interface OfficeCompositionInput {
@@ -106,7 +106,7 @@ export const OfficeRenderer: React.FC<{
   const layers = buildLayerStack(officeManifest, composition, null, null);
 
   return (
-    <div className="relative w-full aspect-square overflow-hidden rounded-2xl border border-slate-700 bg-slate-800">
+    <div className="relative w-full aspect-square overflow-hidden rounded-2xl border border-ink-700 bg-ink-800">
       {layers.map((layer) => (
         <img
           key={layer.slotId}
@@ -129,7 +129,7 @@ export const OfficeRenderer: React.FC<{
       )}
 
       {/* Mood badge */}
-      <div className="absolute top-2 left-2 px-2 py-1 rounded-lg bg-black/50 text-[10px] text-slate-200 font-medium">
+      <div className="absolute top-2 left-2 px-2 py-1 rounded-lg bg-black/50 text-[10px] text-ink-200 font-medium">
         {OFFICE_MOOD_META[mood].label}
       </div>
     </div>

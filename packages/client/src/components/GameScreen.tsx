@@ -9,6 +9,17 @@ import { ShopView } from '../screens/ShopView';
 import { RoomView } from '../screens/RoomView';
 import { AchievementsView } from '../screens/AchievementsView';
 import { LeaderboardView } from '../screens/LeaderboardView';
+import { PixelIcon } from './pixel/PixelIcon';
+
+const TABS = [
+  { view: 'main', icon: 'calendar', label: 'День' },
+  { view: 'skills', icon: 'book', label: 'Навыки' },
+  { view: 'career', icon: 'briefcase', label: 'Карьера' },
+  { view: 'room', icon: 'house', label: 'Дом' },
+  { view: 'shop', icon: 'bag', label: 'Магазин' },
+  { view: 'achievements', icon: 'trophy', label: 'Трофеи' },
+  { view: 'leaderboard', icon: 'chart', label: 'Топ' },
+] as const;
 
 export const GameScreen: React.FC = () => {
   const { currentView, setView, advanceDay, loadNft } = useGameStore();
@@ -59,15 +70,17 @@ export const GameScreen: React.FC = () => {
       </div>
 
       {/* Bottom navigation */}
-      <div className="bg-slate-900/95 backdrop-blur-md border-t border-slate-700/70 flex px-1 pt-1 safe-area-pb">
-        <NavButton icon="📋" label="День" active={currentView === 'main'} onClick={() => nav('main')} />
-        <NavButton icon="📚" label="Навыки" active={currentView === 'skills'} onClick={() => nav('skills')} />
-        <NavButton icon="💼" label="Карьера" active={currentView === 'career'} onClick={() => nav('career')} />
-        <NavButton icon="🏠" label="Дом" active={currentView === 'room'} onClick={() => nav('room')} />
-        <NavButton icon="🏪" label="Магазин" active={currentView === 'shop'} onClick={() => nav('shop')} />
-        <NavButton icon="🏆" label="Трофеи" active={currentView === 'achievements'} onClick={() => nav('achievements')} />
-        <NavButton icon="📊" label="Топ" active={currentView === 'leaderboard'} onClick={() => nav('leaderboard')} />
-      </div>
+      <nav className="tabbar safe-area-pb">
+        {TABS.map((tab) => (
+          <NavButton
+            key={tab.view}
+            icon={tab.icon}
+            label={tab.label}
+            active={currentView === tab.view}
+            onClick={() => nav(tab.view)}
+          />
+        ))}
+      </nav>
     </div>
   );
 };
@@ -78,14 +91,8 @@ const NavButton: React.FC<{
   active: boolean;
   onClick: () => void;
 }> = ({ icon, label, active, onClick }) => (
-  <button
-    onClick={onClick}
-    className={`relative flex-1 flex flex-col items-center justify-center py-1.5 mx-0.5 my-1 rounded-xl transition-all touch-target active:scale-95 ${
-      active ? 'bg-primary-600/15 text-primary-300' : 'text-slate-500 hover:text-slate-300'
-    }`}
-  >
-    <span className={`text-xl leading-none ${active ? '' : 'opacity-80'}`}>{icon}</span>
-    <span className="text-[10px] font-medium mt-1 leading-none">{label}</span>
-    {active && <span className="absolute bottom-0.5 w-6 h-0.5 rounded-full bg-primary-400" />}
+  <button onClick={onClick} className="tabbar-item" data-active={active} aria-current={active}>
+    <PixelIcon name={icon} size={18} />
+    <span className="tabbar-label">{label}</span>
   </button>
 );

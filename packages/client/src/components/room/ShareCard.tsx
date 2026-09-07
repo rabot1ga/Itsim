@@ -27,10 +27,10 @@ const GRADE_LABELS: Record<string, string> = {
 export type ShareFrame = 'minimal' | 'neon' | 'gold' | 'meme';
 
 const FRAMES: { id: ShareFrame; name: string; need?: { ach: string; label: string } }[] = [
-  { id: 'minimal', name: '⬜ Минимализм' },
-  { id: 'neon', name: '🌈 Неон' },
-  { id: 'gold', name: '🥇 Золото', need: { ach: 'first_million', label: 'Первый миллион' } },
-  { id: 'meme', name: '🐸 Мем', need: { ach: 'events_50', label: '50 событий' } },
+  { id: 'minimal', name: 'Минимализм' },
+  { id: 'neon', name: 'Неон' },
+  { id: 'gold', name: 'Золото', need: { ach: 'first_million', label: 'Первый миллион' } },
+  { id: 'meme', name: 'Мем', need: { ach: 'events_50', label: '50 событий' } },
 ];
 
 function loadFrame(): ShareFrame {
@@ -243,10 +243,10 @@ export const ShareCard: React.FC<{
 
   return (
     <div className="game-card">
-      <h3 className="section-title mb-2">📸 Карточка для шеринга</h3>
+      <h3 className="section-title mb-2">Карточка для шеринга</h3>
       <canvas ref={canvasRef} width={W} height={H} style={{ display: 'none' }} />
-      {dataUrl && <img src={dataUrl} alt="Шар-карточка" className="rounded-lg border border-slate-700 mb-2" />}
-      {error && <p className="text-xs text-red-300 mb-2">⚠️ {error}</p>}
+      {dataUrl && <img src={dataUrl} alt="Шар-карточка" className="rounded-lg border border-ink-700 mb-2" />}
+      {error && <p className="text-xs text-clay-300 mb-2">⚠️ {error}</p>}
       <div className="grid grid-cols-4 gap-1.5 mb-2">
         {FRAMES.map((f) => {
           const locked = f.need && !achs.includes(f.need.ach);
@@ -258,8 +258,8 @@ export const ShareCard: React.FC<{
               title={locked ? `🔒 ${f.need!.label}` : f.name}
               className={`px-1 py-2 text-[11px] leading-tight rounded-lg border transition-all ${
                 frame === f.id
-                  ? 'bg-primary-600/30 border-primary-400 text-slate-100'
-                  : 'bg-slate-800/60 border-slate-700 text-slate-300'
+                  ? 'bg-sky-600/30 border-sky-400 text-ink-100'
+                  : 'bg-ink-800/60 border-ink-700 text-ink-300'
               } ${locked ? 'opacity-50' : ''}`}
             >
               {locked ? `🔒 ${f.name}` : f.name}
@@ -271,14 +271,14 @@ export const ShareCard: React.FC<{
         <button
           onClick={() => generate()}
           disabled={busy}
-          className="flex-1 px-3 py-2.5 text-sm bg-primary-600 hover:bg-primary-700 active:scale-[0.98] disabled:opacity-50 text-white rounded-xl touch-target font-medium transition-all"
+          className="flex-1 px-3 py-2.5 text-sm bg-sky-600 hover:bg-sky-700 active:scale-[0.98] disabled:opacity-50 text-white rounded-xl touch-target font-medium transition-all"
         >
           {busy ? 'Рендерим…' : 'Сгенерировать'}
         </button>
         <button
           onClick={share}
           disabled={!dataUrl}
-          className="flex-1 px-3 py-2.5 text-sm bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] disabled:opacity-50 text-white rounded-xl touch-target font-medium transition-all"
+          className="flex-1 px-3 py-2.5 text-sm bg-moss-600 hover:bg-moss-700 active:scale-[0.98] disabled:opacity-50 text-white rounded-xl touch-target font-medium transition-all"
         >
           Поделиться в Telegram
         </button>

@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { CareerPressureCard } from '../components/CareerPressureCard';
+import { PixelIcon } from '../components/pixel/PixelIcon';
 import {
   hideMainButton,
   isMainButtonSupported,
@@ -29,30 +30,73 @@ interface SideJobInfo {
 const REAL_PETS = ['pet_cat', 'pet_dog', 'pet_cactus', 'pet_robo', 'pet_spider', 'pet_bulldog'];
 
 const ACTIONS = [
-  // Study actions
-  { id: 'study_youtube', icon: '📺', name: 'YouTube туториалы', energy: 2, cost: 0, category: 'study' },
-  { id: 'study_book', icon: '📖', name: 'Читать книгу', energy: 1, cost: 1500, category: 'study' },
-  { id: 'study_stepik', icon: '🎓', name: 'Stepik курс', energy: 2, cost: 2000, category: 'study' },
-  { id: 'study_course', icon: '💻', name: 'Платный курс', energy: 3, cost: 15000, category: 'study' },
-  { id: 'study_english', icon: '🇬🇧', name: 'Английский (базово)', energy: 2, cost: 0, category: 'study' },
-  { id: 'study_english_course', icon: '🗣️', name: 'Курс английского', energy: 3, cost: 3000, category: 'study' },
+  // Study
+  { id: 'study_youtube', icon: 'screen', name: 'YouTube туториалы', energy: 2, cost: 0, category: 'study' },
+  { id: 'study_book', icon: 'book', name: 'Читать книгу', energy: 1, cost: 1500, category: 'study' },
+  { id: 'study_stepik', icon: 'cap', name: 'Stepik курс', energy: 2, cost: 2000, category: 'study' },
+  { id: 'study_course', icon: 'laptop', name: 'Платный курс', energy: 3, cost: 15000, category: 'study' },
+  { id: 'study_english', icon: 'globe', name: 'Английский', energy: 2, cost: 0, category: 'study' },
+  { id: 'study_english_course', icon: 'chat', name: 'Курс английского', energy: 3, cost: 3000, category: 'study' },
 
-  // Work actions
-  { id: 'work_task', icon: '💼', name: 'Рабочая задача', energy: 4, cost: 0, category: 'work' },
-  { id: 'work_overtime', icon: '🌙', name: 'Переработка', energy: 5, cost: 0, category: 'work' },
-  { id: 'pet_project', icon: '🚀', name: 'Пет-проект', energy: 3, cost: 0, category: 'work' },
-  { id: 'freelance', icon: '🛠', name: 'Фриланс-заказ', energy: 4, cost: 0, category: 'work' },
+  // Work
+  { id: 'work_task', icon: 'briefcase', name: 'Рабочая задача', energy: 4, cost: 0, category: 'work' },
+  { id: 'work_overtime', icon: 'moon', name: 'Переработка', energy: 5, cost: 0, category: 'work' },
+  { id: 'pet_project', icon: 'rocket', name: 'Пет-проект', energy: 3, cost: 0, category: 'work' },
+  { id: 'freelance', icon: 'code', name: 'Фриланс-заказ', energy: 4, cost: 0, category: 'work' },
 
-  // Rest actions
-  { id: 'rest_sleep', icon: '😴', name: 'Поспать', energy: 0, cost: 0, category: 'rest' },
-  { id: 'rest_walk', icon: '🚶', name: 'Прогулка', energy: 1, cost: 0, category: 'rest' },
-  { id: 'rest_bar', icon: '🍺', name: 'Бар с друзьями', energy: 2, cost: 2000, category: 'rest' },
-  { id: 'rest_hobby', icon: '🎮', name: 'Хобби', energy: 1, cost: 0, category: 'rest' },
-  { id: 'rest_gym', icon: '🏋️', name: 'Качалка', energy: 2, cost: 3000, category: 'rest' },
+  // Rest
+  { id: 'rest_sleep', icon: 'sleep', name: 'Поспать', energy: 0, cost: 0, category: 'rest' },
+  { id: 'rest_walk', icon: 'walk', name: 'Прогулка', energy: 1, cost: 0, category: 'rest' },
+  { id: 'rest_bar', icon: 'mug', name: 'Бар с друзьями', energy: 2, cost: 2000, category: 'rest' },
+  { id: 'rest_hobby', icon: 'dice', name: 'Хобби', energy: 1, cost: 0, category: 'rest' },
+  { id: 'rest_gym', icon: 'dumbbell', name: 'Качалка', energy: 2, cost: 3000, category: 'rest' },
 
   // Social
-  { id: 'networking', icon: '🤝', name: 'Нетворкинг', energy: 2, cost: 0, category: 'social' },
+  { id: 'networking', icon: 'people', name: 'Нетворкинг', energy: 2, cost: 0, category: 'social' },
 ];
+
+/** Content ships emoji for side jobs; the interface speaks pixels. */
+const SIDE_JOB_ICONS: Record<string, string> = {
+  courier: 'box',
+  barista: 'mug',
+  loader: 'box',
+  night_guard: 'moon',
+  taxi: 'car',
+  tutor: 'cap',
+  streamer: 'screen',
+};
+
+const CHALLENGE_TEXT: Record<string, string> = {
+  ch_study_3: 'Выполни 3 учебных действия',
+  ch_work_3: 'Закрой 3 рабочие задачи',
+  ch_freelance_1: 'Выполни 1 фриланс-заказ',
+  ch_networking_1: 'Сходи на нетворкинг',
+  ch_rest_2: 'Отдохни 2 раза',
+  ch_sidejob_1: 'Возьми любую подработку',
+  ch_petproject_1: 'Поработай над пет-проектом',
+  ch_english_1: 'Позанимайся английским',
+  ch_bar_1: 'Сходи в бар',
+  ch_shop_1: 'Купи что-нибудь в магазине',
+  ch_gym_1: 'Сходи в зал',
+  ch_walk_2: 'Погуляй 2 раза',
+  ch_feed_pet_1: 'Покорми питомца',
+};
+
+/** Cost line under an action: energy always, money only when it bites. */
+const CostRow: React.FC<{ energy: number; cost?: number; children?: React.ReactNode }> = ({
+  energy,
+  cost,
+  children,
+}) => (
+  <div className="flex items-center gap-2.5 text-2xs text-ink-500">
+    <span className="flex items-center gap-1">
+      <PixelIcon name="bolt" size={9} className="text-sky-300/70" />
+      <span className="num">{energy}</span>
+    </span>
+    {!!cost && <span className="num">{formatMoney(cost)} ₽</span>}
+    {children}
+  </div>
+);
 
 export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
   const player = useGameStore((s) => s.player);
@@ -95,7 +139,7 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
     const handler = () => {
       void finishDay();
     };
-    showMainButton(`Завершить день ${currentDay} →`, handler);
+    showMainButton(`Завершить день ${currentDay}`, handler);
     return () => hideMainButton(handler);
   }, [useNativeCta, finishDay, currentDay]);
 
@@ -109,191 +153,202 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
   const canAfford = (cost: number) => (player.money ?? 0) >= cost;
 
   const categories = [
-    { id: 'study', label: '📚 Учёба', actions: ACTIONS.filter(a => a.category === 'study') },
-    { id: 'work', label: '💼 Работа и проекты', actions: ACTIONS.filter(a => a.category === 'work') },
-    { id: 'rest', label: '😌 Отдых', actions: ACTIONS.filter(a => a.category === 'rest') },
-    { id: 'social', label: '🤝 Социальное', actions: ACTIONS.filter(a => a.category === 'social') },
+    { id: 'study', label: 'Учёба', actions: ACTIONS.filter((a) => a.category === 'study') },
+    { id: 'work', label: 'Работа и проекты', actions: ACTIONS.filter((a) => a.category === 'work') },
+    { id: 'rest', label: 'Отдых', actions: ACTIONS.filter((a) => a.category === 'rest') },
+    { id: 'social', label: 'Социальное', actions: ACTIONS.filter((a) => a.category === 'social') },
   ];
 
   return (
     <div className="space-y-4 animate-fade-in">
       {/* Active event */}
       {activeEvent && (
-        <div className="game-card border-amber-500/40 bg-amber-500/5 animate-pop-in">
-          <p className="text-sm font-bold text-amber-300 mb-1">{activeEvent.title}</p>
-          <p className="text-sm text-slate-300 mb-3">{activeEvent.description}</p>
-          <div className="space-y-2">
-            {activeEvent.choices.map((choice: any, i: number) => (
+        <section className="panel panel-note panel-note-gold animate-pop-in">
+          <p className="text-sm font-semibold text-white mb-1">{activeEvent.title}</p>
+          <p className="text-sm text-ink-300 leading-relaxed mb-3">{activeEvent.description}</p>
+          <div className="space-y-1.5">
+            {activeEvent.choices.map((choice: { text: string }, i: number) => (
               <button
                 key={i}
                 onClick={() => chooseEvent(activeEvent.id, i)}
-                className="w-full text-left px-3 py-3 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 hover:border-amber-500/50 rounded-xl text-sm text-slate-200 transition-all touch-target active:scale-[0.98]"
+                className="tile w-full flex items-center gap-2 text-sm text-ink-100 touch-target"
               >
-                {choice.text}
+                <PixelIcon name="arrow" size={11} className="text-ink-600" />
+                <span className="min-w-0">{choice.text}</span>
               </button>
             ))}
           </div>
-        </div>
+        </section>
       )}
 
-      {/* Error toast */}
+      {/* Error */}
       {error && (
-        <div className="game-card border-red-500/40 bg-red-500/10 cursor-pointer" onClick={clearError}>
-          <p className="text-sm text-red-300">⚠️ {error}</p>
-          <p className="text-xs text-slate-500 mt-0.5">Нажми, чтобы скрыть</p>
-        </div>
+        <button
+          onClick={clearError}
+          className="panel panel-note panel-note-clay w-full text-left animate-pop-in"
+        >
+          <p className="flex items-start gap-2 text-sm text-clay-300">
+            <PixelIcon name="warn" size={12} className="mt-0.5" />
+            <span>{error}</span>
+          </p>
+          <p className="text-2xs text-ink-500 mt-1 pl-5">Нажми, чтобы скрыть</p>
+        </button>
       )}
 
-      {/* Event notification area */}
+      {/* Yesterday's log */}
       {player._lastEvent && (
-        <div className="game-card border-primary-500/30 bg-primary-500/5 whitespace-pre-line">
-          <p className="text-sm text-slate-300">{player._lastEvent}</p>
-        </div>
+        <section className="panel panel-note whitespace-pre-line">
+          <p className="text-sm text-ink-300 leading-relaxed">{player._lastEvent}</p>
+        </section>
       )}
 
       {/* Mining farm (passive income) */}
       {mining && (
-        <div className="game-card border-yellow-500/30 bg-yellow-500/5 animate-pop-in">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-yellow-300">⛏ Майнинг-ферма</span>
-            <span className="text-xs text-slate-400">{mining.hashrate} MH/s</span>
+        <section className="panel animate-pop-in">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="flex items-center gap-1.5 text-sm font-semibold text-ink-100">
+              <PixelIcon name="chip" size={12} className="text-ink-400" />
+              Майнинг-ферма
+            </span>
+            <span className="num text-2xs text-ink-500">{mining.hashrate} MH/s</span>
           </div>
-          <div className="flex gap-2 text-xs text-slate-400 mt-1">
-            <span className="text-emerald-400">+{formatMoney(mining.gross)}</span>
-            <span>−{formatMoney(mining.electricity)} ⚡</span>
-            <span className="font-mono">≈ {mining.net >= 0 ? '+' : ''}{formatMoney(mining.net)}/день</span>
+          <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs">
+            <span className="num text-moss-300">+{formatMoney(mining.gross)} ₽</span>
+            <span className="num text-ink-500">−{formatMoney(mining.electricity)} ₽ свет</span>
+            <span className="num text-white font-semibold">
+              {mining.net >= 0 ? '+' : ''}
+              {formatMoney(mining.net)} ₽/день
+            </span>
           </div>
-          <p className="text-[10px] text-slate-500 mt-1">
-            Курс: {mining.price.toFixed(1)} ₽/MH · доход начисляется при завершении дня
+          <p className="text-2xs text-ink-600 mt-1.5">
+            Курс {mining.price.toFixed(1)} ₽/MH · доход начисляется в конце дня
           </p>
-        </div>
+        </section>
       )}
 
       {/* Career pressure: living costs + what the next gate really needs */}
       <CareerPressureCard />
 
       {/* Actions by category */}
-      {categories.map(cat => (
-        <div key={cat.id}>
-          <h3 className="section-title mb-2">{cat.label}</h3>
+      {categories.map((cat) => (
+        <section key={cat.id}>
+          <h3 className="eyebrow mb-2">{cat.label}</h3>
           <div className="grid grid-cols-2 gap-2">
-            {cat.actions.map(action => {
+            {cat.actions.map((action) => {
               const enabled = canAct(action.energy) && canAfford(action.cost);
               return (
                 <button
                   key={action.id}
                   onClick={() => handleAction(action.id)}
                   disabled={!enabled}
-                  className={`game-card text-left transition-all ${
-                    enabled
-                      ? 'hover:border-primary-500/50 hover:bg-slate-800/80 active:scale-[0.96]'
-                      : 'opacity-50'
-                  }`}
+                  className="tile"
                 >
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-lg">{action.icon}</span>
-                    <span className="text-sm font-medium text-slate-200">{action.name}</span>
+                  <div className="flex items-start gap-2 mb-1.5">
+                    <PixelIcon name={action.icon} size={14} className="text-ink-300 mt-0.5" />
+                    <span className="text-sm font-medium text-ink-100 leading-tight">
+                      {action.name}
+                    </span>
                   </div>
-                  <div className="flex gap-2 text-xs text-slate-500">
-                    <span>⚡{action.energy}</span>
-                    {action.cost > 0 && <span>💰{formatMoney(action.cost)}</span>}
-                  </div>
+                  <CostRow energy={action.energy} cost={action.cost} />
                 </button>
               );
             })}
           </div>
-        </div>
+        </section>
       ))}
 
       {/* Side jobs (non-IT gigs) */}
       {Object.keys(sideJobs).length > 0 && (
-        <div>
-          <h3 className="section-title mb-2">🛵 Подработки (не IT)</h3>
+        <section>
+          <h3 className="eyebrow mb-2">Подработки не в IT</h3>
           <div className="grid grid-cols-2 gap-2">
             {Object.entries(sideJobs).map(([jobId, job]) => {
+              const skillLevel = player.skills?.[player.mainSkillId ?? 'javascript']?.level ?? 0;
               const enabled = canAct(job.energy) && (player.currentDay ?? 0) >= (job.minDay ?? 1);
-              const minSkillMet = (player.skills?.[player.mainSkillId ?? 'javascript']?.level ?? 0) >= (job.minSkill ?? 0);
+              const minSkillMet = skillLevel >= (job.minSkill ?? 0);
+              const payout =
+                job.payment +
+                (job.paymentPerSkill ? Math.round(skillLevel * job.paymentPerSkill) : 0);
               return (
                 <button
                   key={jobId}
                   onClick={() => performAction('side_job', { jobId })}
                   disabled={!enabled || !minSkillMet}
-                  title={!minSkillMet ? `Нужен навык ${job.minSkill}+` : jobId}
-                  className={`game-card text-left transition-all ${
-                    enabled && minSkillMet
-                      ? 'hover:border-amber-500/50 hover:bg-slate-800/80 active:scale-[0.96]'
-                      : 'opacity-50'
-                  }`}
+                  title={!minSkillMet ? `Нужен навык ${job.minSkill}+` : job.name}
+                  className="tile"
                 >
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-lg">{job.icon}</span>
-                    <span className="text-sm font-medium text-slate-200">{job.name}</span>
-                  </div>
-                  <div className="flex gap-2 text-xs text-slate-500">
-                    <span>⚡{job.energy}</span>
-                    <span className="text-emerald-400">
-                      +{formatMoney(job.payment + (job.paymentPerSkill ? Math.round((player.skills?.[player.mainSkillId ?? 'javascript']?.level ?? 0) * job.paymentPerSkill) : 0))}
-                      {job.paymentVar ? '±' : ''}
+                  <div className="flex items-start gap-2 mb-1.5">
+                    <PixelIcon
+                      name={SIDE_JOB_ICONS[jobId] ?? 'box'}
+                      size={14}
+                      className="text-ink-300 mt-0.5"
+                    />
+                    <span className="text-sm font-medium text-ink-100 leading-tight">
+                      {job.name}
                     </span>
-                    {!minSkillMet && <span>🔒 навык {job.minSkill}+</span>}
                   </div>
+                  <CostRow energy={job.energy}>
+                    <span className="num text-moss-300">
+                      +{formatMoney(payout)}
+                      {job.paymentVar ? '±' : ''} ₽
+                    </span>
+                    {!minSkillMet && (
+                      <span className="flex items-center gap-1 text-ink-600">
+                        <PixelIcon name="lock" size={9} />
+                        <span className="num">{job.minSkill}+</span>
+                      </span>
+                    )}
+                  </CostRow>
                 </button>
               );
             })}
           </div>
-          <p className="text-[10px] text-slate-600 mt-1">Одна подработка в день. Здоровье и мотивация — по курсу.</p>
-        </div>
+          <p className="text-2xs text-ink-600 mt-1.5">
+            Одна подработка в день. Здоровье и мотивация — по курсу.
+          </p>
+        </section>
       )}
 
       {/* Daily challenge */}
       {player.dailyChallenge && (
-        <div
-          className={`game-card border-sky-500/30 bg-sky-500/5 ${
-            player.dailyChallenge.done ? 'border-emerald-500/40 bg-emerald-500/5' : ''
+        <section
+          className={`panel panel-note ${
+            player.dailyChallenge.done ? 'panel-note-moss' : 'panel-note-sky'
           }`}
         >
           <div className="flex items-center justify-between mb-1.5">
-            <span className="text-xs font-bold text-sky-300">🎯 Задание дня</span>
+            <span className="flex items-center gap-1.5 text-2xs font-semibold uppercase tracking-[0.09em] text-ink-400">
+              <PixelIcon name="target" size={11} />
+              Задание дня
+            </span>
             {player.dailyChallenge.done ? (
-              <span className="chip bg-emerald-900/60 text-emerald-300">выполнено ✓</span>
+              <span className="flex items-center gap-1 text-2xs font-semibold text-moss-300">
+                <PixelIcon name="check" size={10} />
+                выполнено
+              </span>
             ) : (
-              <span className="text-[10px] text-slate-400 tabular-nums">
+              <span className="num text-2xs text-ink-500">
                 {player.dailyChallenge.progress}/{player.dailyChallenge.count}
               </span>
             )}
           </div>
-          <p className="text-xs text-slate-300">
-            {(() => {
-              const id = player.dailyChallenge.id;
-              const map: Record<string, string> = {
-                ch_study_3: 'Выполни 3 учебных действия',
-                ch_work_3: 'Закрой 3 рабочие задачи',
-                ch_freelance_1: 'Выполни 1 фриланс-заказ',
-                ch_networking_1: 'Сходи на нетворкинг',
-                ch_rest_2: 'Отдохни 2 раза',
-                ch_sidejob_1: 'Возьми любую подработку',
-                ch_petproject_1: 'Поработай над пет-проектом',
-                ch_english_1: 'Позанимайся английским',
-                ch_bar_1: 'Сходи в бар',
-                ch_shop_1: 'Купи что-нибудь в магазине',
-                ch_gym_1: 'Сходи в зал',
-                ch_walk_2: 'Погуляй 2 раза',
-                ch_feed_pet_1: 'Покорми питомца',
-              };
-              return map[id] ?? 'Выполни задание';
-            })()}
+          <p className="text-sm text-ink-200">
+            {CHALLENGE_TEXT[player.dailyChallenge.id] ?? 'Выполни задание'}
           </p>
           {!player.dailyChallenge.done && (
-            <div className="h-1 bg-slate-700 rounded-full overflow-hidden mt-2">
-              <div
-                className="h-full bg-sky-500 rounded-full transition-all"
+            <div className="meter mt-2">
+              <span
                 style={{
-                  width: `${Math.min(100, (player.dailyChallenge.progress / Math.max(1, player.dailyChallenge.count)) * 100)}%`,
+                  width: `${Math.min(
+                    100,
+                    (player.dailyChallenge.progress / Math.max(1, player.dailyChallenge.count)) * 100
+                  )}%`,
+                  background: 'var(--sky)',
                 }}
               />
             </div>
           )}
-        </div>
+        </section>
       )}
 
       {/* Feed pet (real pets only — bows don't eat) */}
@@ -301,13 +356,10 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
         <button
           onClick={() => performAction('feed_pet')}
           disabled={!!player.petFedToday}
-          className={`w-full py-2.5 border rounded-xl font-medium transition-all text-sm active:scale-[0.98] touch-target ${
-            player.petFedToday
-              ? 'bg-emerald-900/30 border-emerald-600/40 text-emerald-300'
-              : 'bg-amber-900/40 hover:bg-amber-900/60 border-amber-600/50 text-amber-200'
-          }`}
+          className="btn btn-secondary w-full text-sm"
         >
-          {player.petFedToday ? '😋 Питомец сыт до завтра' : '🍖 Покормить питомца (500 ₽, +3 🔥)'}
+          <PixelIcon name="bone" size={12} className={player.petFedToday ? 'text-moss-400' : ''} />
+          {player.petFedToday ? 'Питомец сыт до завтра' : 'Покормить питомца · 500 ₽'}
         </button>
       )}
 
@@ -315,22 +367,32 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
       {(player.bankedDays ?? 0) > 0 && (
         <button
           onClick={() => performAction('use_banked_day')}
-          className="w-full py-2.5 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-600/60 text-slate-200 rounded-xl font-medium transition-all text-sm active:scale-[0.98]"
+          className="btn btn-secondary w-full text-sm"
         >
-          ⏰ Банк офлайн-дней: {player.bankedDays} — использовать (полная энергия, +10 🔥)
+          <PixelIcon name="clock" size={12} className="text-gold-300" />
+          <span>
+            Банк офлайн-дней: <span className="num">{player.bankedDays}</span> — использовать
+          </span>
         </button>
       )}
 
-      {/* End day button — sticky fallback for non-Telegram browsers
+      {/* End day — sticky fallback for non-Telegram browsers
           (inside Telegram the native MainButton is used, see the effect above) */}
       {!useNativeCta && (
         <div className="sticky-cta">
           <button
             onClick={() => void finishDay()}
             disabled={finishing}
-            className="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 disabled:opacity-70 text-white rounded-2xl font-bold transition-all text-lg mt-4 shadow-lg shadow-indigo-900/40 active:scale-[0.98] touch-target"
+            className="btn btn-primary w-full text-base mt-2"
           >
-            {finishing ? 'Считаем день…' : `➡️ Завершить день ${player.currentDay ?? 1} →`}
+            {finishing ? (
+              'Считаем день…'
+            ) : (
+              <>
+                Завершить день <span className="num">{player.currentDay ?? 1}</span>
+                <PixelIcon name="arrow" size={12} />
+              </>
+            )}
           </button>
         </div>
       )}
@@ -339,7 +401,7 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
 };
 
 function formatMoney(amount: number): string {
-  if (amount >= 1000000) return `${(amount / 1000000).toFixed(1)}м`;
-  if (amount >= 1000) return `${(amount / 1000).toFixed(0)}к`;
-  return `${amount}`;
+  if (amount >= 1_000_000) return `${(amount / 1_000_000).toFixed(1)} млн`;
+  if (amount >= 10_000) return `${Math.round(amount / 1000)} тыс`;
+  return amount.toLocaleString('ru-RU');
 }

@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
-import { Spinner, EmptyState } from '../components/ui';
+import { Spinner, EmptyState, EmojiToken } from '../components/ui';
 import { StarsShop } from '../components/StarsShop';
+import { PixelIcon } from '../components/pixel/PixelIcon';
 
 const HOUSING = [
   { level: 0, name: 'Общага', cost: 5000, bonus: 'базовое' },
-  { level: 1, name: 'Однушка на окраине', cost: 25000, bonus: '+1 ⚡' },
-  { level: 2, name: 'Квартира в центре', cost: 50000, bonus: '+2 ⚡, +5 🔥' },
-  { level: 3, name: 'Ипотека', cost: 40000, bonus: '+2 ⚡, +10 🔥' },
-  { level: 4, name: 'Пентхаус', cost: 150000, bonus: '+3 ⚡, +15 🔥, +10 ⭐' },
+  { level: 1, name: 'Однушка на окраине', cost: 25000, bonus: '+1 энергия' },
+  { level: 2, name: 'Квартира в центре', cost: 50000, bonus: '+2 энергия, +5 мотивация' },
+  { level: 3, name: 'Ипотека', cost: 40000, bonus: '+2 энергия, +10 мотивация' },
+  { level: 4, name: 'Пентхаус', cost: 150000, bonus: '+3 энергия, +15 мотивация, +10 репутация' },
 ];
 
 const TYPE_ICONS: Record<string, string> = {
@@ -82,8 +83,13 @@ export const ShopView: React.FC = () => {
   return (
     <div className="space-y-4 animate-fade-in">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold text-white">🏪 Магазин</h2>
-        <span className="text-sm text-emerald-400">{formatMoney(player.money ?? 0)}</span>
+        <h2 className="flex items-center gap-2 text-base font-semibold text-white">
+          <PixelIcon name="bag" size={14} className="text-gold-300" />
+          Магазин
+        </h2>
+        <span className="num text-sm font-semibold text-moss-300">
+          {formatMoney(player.money ?? 0)}
+        </span>
       </div>
 
       <StarsShop />
@@ -91,7 +97,7 @@ export const ShopView: React.FC = () => {
       {!loaded && <Spinner label="Открываем магазин…" />}
       {loaded && items.length === 0 && (
         <EmptyState
-          icon="🏚"
+          icon="bag"
           title="Полки пустые"
           hint="Не удалось загрузить товары. Проверь соединение и зайди позже."
         />
@@ -105,8 +111,8 @@ export const ShopView: React.FC = () => {
           return (
             <div
               key={item.id}
-              className={`game-card flex items-center gap-3 ${
-                owned ? 'border-emerald-500/30' : affordable ? 'border-slate-600' : 'border-slate-700/50 opacity-60'
+              className={`panel flex items-center gap-3 ${
+                owned ? 'panel-note panel-note-moss' : affordable ? '' : 'opacity-55'
               }`}
             >
               {visual ? (
@@ -114,42 +120,42 @@ export const ShopView: React.FC = () => {
                   src={`/layers/${visual.file}`}
                   alt=""
                   draggable={false}
-                  className="w-14 h-14 rounded-xl border border-slate-700 bg-slate-800 object-cover shrink-0 select-none"
+                  className="w-14 h-14 rounded-lg border border-ink-700 bg-ink-900 object-cover shrink-0 select-none pixelated"
                 />
               ) : (
-                <span className="text-2xl w-14 text-center shrink-0">{TYPE_ICONS[item.type] ?? '📦'}</span>
+                <span className="w-14 shrink-0 flex justify-center">
+                  <EmojiToken className="!w-11 !h-11 !text-[18px]">
+                    {TYPE_ICONS[item.type] ?? '📦'}
+                  </EmojiToken>
+                </span>
               )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-sm font-medium text-slate-200">{item.name}</span>
-                  {owned && <span className="text-xs text-emerald-400">✅</span>}
+                  <span className="text-sm font-medium text-ink-100">{item.name}</span>
+                  {owned && <PixelIcon name="check" size={10} className="text-moss-400" />}
                 </div>
-                <p className="text-xs text-slate-500">{item.description}</p>
+                <p className="text-xs text-ink-500 leading-relaxed">{item.description}</p>
                 {(visual || item.nft) && (
                   <div className="flex gap-1 mt-1 flex-wrap">
                     {visual && (
-                      <span className="chip bg-primary-900/50 text-primary-300 border border-primary-700/40">
-                        {visual.where === 'room' ? '🎨 в комнату' : '🧍 на персонажа'}
+                      <span className="chip">
+                        {visual.where === 'room' ? 'в комнату' : 'на персонажа'}
                       </span>
                     )}
                     {item.nft && (
-                      <span className="chip bg-amber-900/40 text-amber-300 border border-amber-700/40">
-                        🔗 NFT
-                      </span>
+                      <span className="chip !text-gold-300 !border-gold-700">NFT</span>
                     )}
                   </div>
                 )}
               </div>
               <div className="text-right">
-                <div className="text-sm text-emerald-400 font-mono">{formatMoney(item.price)}</div>
+                <div className="num text-sm font-semibold text-ink-100">{formatMoney(item.price)}</div>
                 {!owned && (
                   <button
                     disabled={!affordable}
                     onClick={() => performAction('buy_item', { itemId: item.id })}
-                    className={`mt-1.5 text-sm px-4 py-2 rounded-xl touch-target font-medium transition-all ${
-                      affordable
-                        ? 'bg-primary-600 text-white hover:bg-primary-700 active:scale-95'
-                        : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                    className={`btn mt-1.5 !min-h-[36px] !px-4 text-sm ${
+                      affordable ? 'btn-primary' : 'btn-secondary'
                     }`}
                   >
                     Купить
@@ -163,7 +169,7 @@ export const ShopView: React.FC = () => {
 
       {/* Housing section */}
       <div className="game-card mt-4">
-        <h3 className="section-title mb-2">🏠 Жильё</h3>
+        <h3 className="section-title mb-2">Жильё</h3>
         <div className="space-y-2">
           {HOUSING.map((h) => {
             const current = player.housingLevel === h.level;
@@ -175,8 +181,8 @@ export const ShopView: React.FC = () => {
             return (
               <div
                 key={h.level}
-                className={`flex items-center justify-between p-2 rounded-lg ${
-                  current ? 'bg-emerald-800/20 border border-emerald-500/30' : 'bg-slate-800/50'
+                className={`flex items-center justify-between gap-2 p-2 rounded-lg border ${
+                  current ? 'border-moss-700 bg-moss-900/25' : 'border-ink-700 bg-ink-900'
                 }`}
               >
                 <div className="flex items-center gap-2 min-w-0">
@@ -185,29 +191,29 @@ export const ShopView: React.FC = () => {
                       src={`/layers/${bgEntry.file}`}
                       alt=""
                       draggable={false}
-                      className="w-10 h-10 rounded-lg border border-slate-700 bg-slate-800 object-cover shrink-0 select-none"
+                      className="w-10 h-10 rounded-md border border-ink-700 bg-ink-900 object-cover shrink-0 select-none pixelated"
                     />
                   )}
                   <div className="min-w-0">
-                    <span className={`text-sm ${current ? 'text-emerald-300' : 'text-slate-300'}`}>
-                      {current ? '📍 ' : ''}{h.name}
+                    <span
+                      className={`text-sm ${current ? 'text-moss-300 font-medium' : 'text-ink-200'}`}
+                    >
+                      {h.name}
                     </span>
-                    <span className="text-xs text-slate-500 ml-2">{h.bonus}</span>
+                    <span className="text-xs text-ink-500 ml-2">{h.bonus}</span>
                     {!current && (
-                      <span className="block text-[10px] text-primary-400 mt-0.5">🎨 меняет фон комнаты</span>
+                      <span className="block text-2xs text-ink-600 mt-0.5">меняет фон комнаты</span>
                     )}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-slate-400">{formatMoney(h.cost)}/мес</span>
+                  <span className="num text-xs text-ink-400">{formatMoney(h.cost)}/мес</span>
                   {isNext && !current && (
                     <button
                       disabled={!affordable}
                       onClick={() => performAction('upgrade_housing')}
-                      className={`text-xs px-4 py-2 rounded-xl touch-target font-medium transition-all ${
-                        affordable
-                          ? 'bg-primary-600 text-white hover:bg-primary-700 active:scale-95'
-                          : 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                      className={`btn !min-h-[34px] !px-3 text-xs ${
+                        affordable ? 'btn-primary' : 'btn-secondary'
                       }`}
                     >
                       Переехать

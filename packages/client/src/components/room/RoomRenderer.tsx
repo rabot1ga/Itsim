@@ -4,6 +4,7 @@ import { Composition, buildLayerStack } from './layers';
 import { ProceduralAvatar } from './ProceduralAvatar';
 import { PixelAvatar } from './PixelAvatar';
 import { PixelAvatarData } from './pixelAvatar';
+import { PixelIcon } from '../pixel/PixelIcon';
 
 /**
  * Layered procedural room — DESIGN.md sections 1-2.
@@ -47,7 +48,7 @@ export const RoomRenderer: React.FC<{
   if (accessory) avatarOverrides.accessory = accessory;
 
   return (
-    <div className="relative w-full aspect-square overflow-hidden rounded-2xl border border-slate-700 bg-slate-800">
+    <div className="relative w-full aspect-square overflow-hidden rounded-2xl border border-ink-700 bg-ink-800">
       {layers.map((layer) => (
         <img
           key={layer.slotId}
@@ -63,12 +64,17 @@ export const RoomRenderer: React.FC<{
       {composition.pet && composition.pet !== 'pet_none' && (
         <>
           {petAccessory(petWear) && (
-            <span className="absolute left-[79%] top-[53%] text-3xl select-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+            <span className="absolute left-[79%] top-[53%] text-2xl select-none">
               {petAccessory(petWear)}
             </span>
           )}
           {petFed && (
-            <span className="absolute left-[87%] top-[60%] text-xl select-none animate-float">😋</span>
+            <PixelIcon
+              name="heart"
+              size={10}
+              title="Питомец сыт"
+              className="absolute left-[88%] top-[61%] text-moss-300"
+            />
           )}
         </>
       )}
@@ -88,7 +94,7 @@ export const RoomRenderer: React.FC<{
       </div>
 
       {/* Housing level badge */}
-      <div className="absolute top-2 right-2 px-2 py-1 rounded-lg bg-black/50 text-[10px] text-slate-300 font-mono">
+      <div className="absolute top-2 right-2 px-2 py-1 rounded-lg bg-black/50 text-[10px] text-ink-300 font-mono">
         жильё {housingLevel}/4
       </div>
     </div>

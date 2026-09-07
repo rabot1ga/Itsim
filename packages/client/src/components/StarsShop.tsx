@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useGameStore, apiRequest } from '../store/gameStore';
 import { haptic, openInvoice } from '../lib/telegram';
+import { PixelIcon } from './pixel/PixelIcon';
 
 /**
  * Telegram Stars section of the shop (`content/monetization.json`).
@@ -73,7 +74,7 @@ export const StarsShop: React.FC = () => {
       setBusy(null);
       if (res.ok) {
         haptic('success');
-        setNote(`✅ (dev) ${res.data.applied?.join(', ') || 'куплено'}`);
+        setNote(`(dev) ${res.data.applied?.join(', ') || 'куплено'}`);
         await Promise.all([load(), refreshState()]);
       } else {
         haptic('error');
@@ -104,12 +105,15 @@ export const StarsShop: React.FC = () => {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-bold text-amber-300">⭐ За Telegram Stars</h3>
-        {mock && <span className="chip bg-slate-800 text-slate-500 border border-slate-700">dev-режим</span>}
+        <h3 className="eyebrow !text-ink-300">
+          <PixelIcon name="star" size={11} className="text-gold-300" />
+          За Telegram Stars
+        </h3>
+        {mock && <span className="chip !text-ink-500 ml-2">dev</span>}
       </div>
-      {policy && <p className="text-[11px] text-slate-500 leading-snug">{policy}</p>}
+      {policy && <p className="text-xs text-ink-500 leading-relaxed">{policy}</p>}
       {note && (
-        <div className="px-3 py-2 rounded-xl text-xs bg-slate-800 border border-slate-700 text-slate-200">{note}</div>
+        <div className="panel !py-2 !px-3 text-xs text-ink-200">{note}</div>
       )}
 
       <div className="grid grid-cols-1 gap-2">
@@ -118,25 +122,32 @@ export const StarsShop: React.FC = () => {
           return (
             <div
               key={product.id}
-              className={`game-card !p-3 flex items-center gap-3 ${
-                product.owned ? 'border-emerald-500/30' : 'border-slate-700'
+              className={`panel !p-3 flex items-center gap-3 ${
+                product.owned ? 'panel-note panel-note-moss' : ''
               }`}
             >
               <div className="flex-1 min-w-0">
-                <div className="text-xs font-medium text-slate-100">{product.title}</div>
-                <div className="text-[11px] text-slate-500 leading-snug">{product.description}</div>
-                {product.blocked && <div className="text-[10px] text-amber-500 mt-0.5">{product.blocked}</div>}
+                <div className="text-sm font-medium text-ink-100">{product.title}</div>
+                <div className="text-xs text-ink-500 leading-relaxed">{product.description}</div>
+                {product.blocked && (
+                  <div className="text-2xs text-ochre-400 mt-0.5">{product.blocked}</div>
+                )}
               </div>
               <button
                 onClick={() => buy(product)}
                 disabled={disabled}
-                className={`text-xs px-3 py-2 rounded-xl font-medium touch-target transition-all ${
-                  disabled
-                    ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                    : 'bg-amber-600 text-white hover:bg-amber-500 active:scale-95'
+                className={`btn !min-h-[36px] !px-3 text-xs ${
+                  disabled ? 'btn-secondary' : 'btn-primary'
                 }`}
               >
-                {busy === product.id ? '…' : `⭐ ${product.stars}`}
+                {busy === product.id ? (
+                  '…'
+                ) : (
+                  <>
+                    <PixelIcon name="star" size={10} />
+                    <span className="num">{product.stars}</span>
+                  </>
+                )}
               </button>
             </div>
           );

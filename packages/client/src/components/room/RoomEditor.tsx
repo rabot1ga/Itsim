@@ -12,6 +12,8 @@ import {
 import { useGameStore } from '../../store/gameStore';
 import { haptic } from '../../lib/telegram';
 import { Composition } from './layers';
+import { PixelIcon } from '../pixel/PixelIcon';
+import { EmojiToken } from '../ui';
 
 /**
  * Room editor (docs/design.md §12.2) — per-slot carousels with live room preview.
@@ -93,10 +95,11 @@ export const RoomEditor: React.FC<{
         return (
           <div key={slotId}>
             <div className="flex items-center justify-between mb-1.5">
-              <h4 className="text-xs font-semibold text-slate-300">
-                {meta.icon} {meta.name}
+              <h4 className="text-xs font-semibold text-ink-300">
+                <EmojiToken className="!w-5 !h-5 !text-[11px]">{meta.icon}</EmojiToken>
+                {meta.name}
               </h4>
-              <span className="text-[10px] text-slate-500">
+              <span className="text-2xs text-ink-500">
                 {override ? entryName(override) : `авто: ${activeEntry ? entryName(activeEntry) : '—'}`}
               </span>
             </div>
@@ -104,14 +107,12 @@ export const RoomEditor: React.FC<{
               {/* Back to automatic */}
               <button
                 onClick={() => void apply(slotId, null)}
-                className={`snap-start shrink-0 w-[76px] rounded-xl border p-1.5 text-center transition-all active:scale-95 ${
-                  !override
-                    ? 'border-primary-500/60 bg-primary-600/10'
-                    : 'border-slate-700 bg-slate-800/50'
+                className={`snap-start shrink-0 w-[76px] rounded-lg border p-1.5 text-center transition-colors ${
+                  !override ? 'border-gold-700 bg-gold-900/20' : 'border-ink-700 bg-ink-900'
                 }`}
               >
-                <span className="text-2xl">✨</span>
-                <p className="text-[10px] text-slate-300 mt-0.5">Авто</p>
+                <PixelIcon name="star" size={16} className="text-ink-300 mx-auto h-11" />
+                <p className="text-2xs text-ink-300 mt-0.5">Авто</p>
               </button>
 
               {slot.entries.map((entry) => {
@@ -128,35 +129,35 @@ export const RoomEditor: React.FC<{
                       void apply(slotId, entry.id);
                     }}
                     title={status.unlocked ? entryName(entry.id) : status.hint}
-                    className={`snap-start shrink-0 w-[76px] rounded-xl border p-1.5 text-center transition-all active:scale-95 ${
+                    className={`snap-start shrink-0 w-[76px] rounded-lg border p-1.5 text-center transition-colors ${
                       active
-                        ? 'border-emerald-500/60 bg-emerald-600/10'
+                        ? 'border-gold-700 bg-gold-900/20'
                         : status.unlocked
-                          ? 'border-slate-700 bg-slate-800/50'
-                          : 'border-slate-800 bg-slate-900/60'
+                          ? 'border-ink-700 bg-ink-900'
+                          : 'border-ink-800 bg-ink-950'
                     }`}
                   >
-                    <span className="relative block h-11 rounded-lg overflow-hidden bg-slate-800">
+                    <span className="relative flex items-center justify-center h-11 rounded-md overflow-hidden bg-ink-800">
                       {entry.file ? (
                         <img
                           src={`/layers/${entry.file}`}
                           alt=""
                           draggable={false}
-                          className={`w-full h-full object-cover select-none ${status.unlocked ? '' : 'grayscale opacity-40'}`}
+                          className={`w-full h-full object-cover select-none pixelated ${status.unlocked ? '' : 'grayscale opacity-40'}`}
                         />
                       ) : (
-                        <span className="text-xl leading-[44px]">🚫</span>
+                        <PixelIcon name="lock" size={14} className="text-ink-600" />
                       )}
                       {!status.unlocked && (
-                        <span className="absolute inset-0 flex items-center justify-center text-base">🔒</span>
+                        <span className="absolute inset-0 flex items-center justify-center"><PixelIcon name="lock" size={12} className="text-ink-300" /></span>
                       )}
-                      {active && <span className="absolute top-0.5 right-0.5 text-[10px]">✅</span>}
+                      {active && <PixelIcon name="check" size={9} className="absolute top-1 right-1 text-gold-300" />}
                     </span>
-                    <p className={`text-[10px] mt-1 leading-tight truncate ${status.unlocked ? 'text-slate-300' : 'text-slate-500'}`}>
+                    <p className={`text-2xs mt-1 leading-tight truncate ${status.unlocked ? 'text-ink-300' : 'text-ink-500'}`}>
                       {entryName(entry.id)}
                     </p>
                     {!status.unlocked && (
-                      <p className="text-[8px] text-slate-600 leading-tight mt-0.5 line-clamp-2">{status.hint}</p>
+                      <p className="text-[9px] text-ink-600 leading-tight mt-0.5 line-clamp-2">{status.hint}</p>
                     )}
                   </button>
                 );
@@ -170,8 +171,8 @@ export const RoomEditor: React.FC<{
       {wallPalette.length > 0 && (
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <h4 className="text-xs font-semibold text-slate-300">🎨 Цвет стен</h4>
-            <span className="text-[10px] text-slate-500">банка краски — {REPAINT_COST} ₽</span>
+            <h4 className="text-2xs font-semibold uppercase tracking-[0.09em] text-ink-400">Цвет стен</h4>
+            <span className="num text-2xs text-ink-500">банка краски — {REPAINT_COST} ₽</span>
           </div>
           <div className="flex flex-wrap gap-2">
             {wallPalette.map((p: any) => {
@@ -183,16 +184,16 @@ export const RoomEditor: React.FC<{
                   onClick={() => void apply('wallColor', p.id)}
                   title={p.name}
                   className={`flex items-center gap-1.5 pl-1.5 pr-2.5 py-1.5 rounded-xl border transition-all active:scale-95 touch-target ${
-                    active ? 'border-emerald-500/60 bg-emerald-600/10' : 'border-slate-700 bg-slate-800/50'
+                    active ? 'border-moss-500/60 bg-moss-600/10' : 'border-ink-700 bg-ink-800/50'
                   }`}
                 >
                   <span
                     className="w-6 h-6 rounded-full border border-black/40 shrink-0"
                     style={{ background: swatchColor(p) }}
                   />
-                  <span className="text-[10px] text-slate-300">
+                  <span className="text-[10px] text-ink-300">
                     {p.name}
-                    {genetic ? ' 🧬' : ''}
+                    {genetic ? ' · своё' : ''}
                     {active ? ' ✅' : ''}
                   </span>
                 </button>

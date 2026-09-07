@@ -70,6 +70,21 @@ export function isTelegram(): boolean {
 let initialized = false;
 
 /** Call once at startup (main.tsx). Safe to call in a plain browser. */
+/** The app background (--bg in index.css) — Telegram's chrome is painted to match. */
+export const APP_INK = '#11151c';
+
+/** Re-apply header/background colours (safe to call again after a theme change). */
+export function applyTelegramChrome(): void {
+  const tg = getTelegram();
+  if (!tg) return;
+  try {
+    tg.setHeaderColor?.(APP_INK);
+    tg.setBackgroundColor?.(APP_INK);
+  } catch {
+    /* noop */
+  }
+}
+
 export function initTelegramApp(): void {
   const tg = getTelegram();
   if (!tg || initialized) return;
@@ -102,8 +117,8 @@ export function initTelegramApp(): void {
 
   // Blend the native chrome into our dark theme.
   try {
-    tg.setHeaderColor?.('#0b1220');
-    tg.setBackgroundColor?.('#0b1220');
+    tg.setHeaderColor?.(APP_INK);
+    tg.setBackgroundColor?.(APP_INK);
   } catch {
     /* noop */
   }

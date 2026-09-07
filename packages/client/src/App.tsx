@@ -3,12 +3,15 @@ import { useGameStore } from './store/gameStore';
 import { GameScreen } from './components/GameScreen';
 import { MainMenu } from './components/MainMenu';
 import { ResourceBar } from './components/ResourceBar';
-import { showBackButton, hideBackButton } from './lib/telegram';
+import { showBackButton, hideBackButton, applyTelegramChrome } from './lib/telegram';
+import { PixelText } from './components/pixel/PixelText';
 
 const App: React.FC = () => {
   const { initialized, screen, currentView, setScreen, setView, initGame } = useGameStore();
 
   useEffect(() => {
+    // Paint Telegram's own header/background in our ink so the app has no seams.
+    applyTelegramChrome();
     // Try to authenticate and load game state
     const initData = window.Telegram?.WebApp?.initData;
     if (initData) {
@@ -45,12 +48,23 @@ const App: React.FC = () => {
 
   if (!initialized) {
     return (
-      <div className="app-container flex items-center justify-center">
+      <div className="app-container items-center justify-center">
         <div className="text-center animate-fade-in">
-          <div className="text-6xl mb-5 animate-float">💻</div>
-          <div className="text-xl font-bold text-gradient animate-gradient">IT Life Simulator</div>
-          <div className="text-sm text-slate-500 mt-1 mb-6">Загрузка симулятора жизни...</div>
-          <div className="w-10 h-10 border-3 border-primary-500/30 border-t-primary-400 rounded-full animate-spin mx-auto" />
+          <PixelText scale={4} className="text-gold-300 mx-auto">
+            IT LIFE
+          </PixelText>
+          <div className="mt-2 text-2xs font-semibold uppercase tracking-[0.42em] text-ink-500 pl-1">
+            Simulator
+          </div>
+          <div className="mt-7 flex justify-center gap-1" aria-label="Загрузка">
+            {[0, 1, 2].map((i) => (
+              <span
+                key={i}
+                className="w-1.5 h-1.5 bg-ink-600 animate-pulse-soft"
+                style={{ animationDelay: `${i * 0.18}s` }}
+              />
+            ))}
+          </div>
         </div>
       </div>
     );
