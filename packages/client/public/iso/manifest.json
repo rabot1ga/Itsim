@@ -1,0 +1,335 @@
+{
+  "tile": {
+    "w": 32,
+    "h": 16,
+    "wallH": 72
+  },
+  "sprites": {
+    "bed": {
+      "file": "/iso/bed.png",
+      "w": 66,
+      "h": 57,
+      "kind": "floor",
+      "tiles": [
+        2,
+        3
+      ]
+    },
+    "desk_wood": {
+      "file": "/iso/desk_wood.png",
+      "w": 43,
+      "h": 47,
+      "kind": "floor",
+      "tiles": [
+        2,
+        1
+      ]
+    },
+    "chair_office": {
+      "file": "/iso/chair_office.png",
+      "w": 23,
+      "h": 36,
+      "kind": "floor",
+      "tiles": [
+        1,
+        1
+      ]
+    },
+    "bookshelf": {
+      "file": "/iso/bookshelf.png",
+      "w": 25,
+      "h": 41,
+      "kind": "floor",
+      "tiles": [
+        1,
+        1
+      ]
+    },
+    "plant_monstera": {
+      "file": "/iso/plant_monstera.png",
+      "w": 25,
+      "h": 34,
+      "kind": "floor",
+      "tiles": [
+        1,
+        1
+      ]
+    },
+    "nightstand": {
+      "file": "/iso/nightstand.png",
+      "w": 22,
+      "h": 35,
+      "kind": "floor",
+      "tiles": [
+        1,
+        1
+      ]
+    },
+    "rug_rolled": {
+      "file": "/iso/rug_rolled.png",
+      "w": 43,
+      "h": 29,
+      "kind": "floor",
+      "tiles": [
+        2,
+        1
+      ]
+    },
+    "corkboard": {
+      "file": "/iso/corkboard.png",
+      "w": 48,
+      "h": 62,
+      "kind": "wall",
+      "tilesW": 2
+    },
+    "box": {
+      "file": "/iso/box.png",
+      "w": 20,
+      "h": 20,
+      "kind": "floor",
+      "tiles": [
+        1,
+        1
+      ]
+    },
+    "pc_tower": {
+      "file": "/iso/pc_tower.png",
+      "w": 22,
+      "h": 30,
+      "kind": "floor",
+      "tiles": [
+        1,
+        1
+      ]
+    },
+    "desk_dual": {
+      "file": "/iso/desk_dual.png",
+      "w": 68,
+      "h": 62,
+      "kind": "floor",
+      "tiles": [
+        3,
+        2
+      ]
+    },
+    "tv_stand": {
+      "file": "/iso/tv_stand.png",
+      "w": 41,
+      "h": 49,
+      "kind": "floor",
+      "tiles": [
+        2,
+        1
+      ]
+    },
+    "arcade": {
+      "file": "/iso/arcade.png",
+      "w": 23,
+      "h": 36,
+      "kind": "floor",
+      "tiles": [
+        1,
+        1
+      ]
+    },
+    "server_rack": {
+      "file": "/iso/server_rack.png",
+      "w": 23,
+      "h": 33,
+      "kind": "floor",
+      "tiles": [
+        1,
+        1
+      ]
+    },
+    "fridge": {
+      "file": "/iso/fridge.png",
+      "w": 24,
+      "h": 34,
+      "kind": "floor",
+      "tiles": [
+        1,
+        1
+      ]
+    },
+    "beanbag": {
+      "file": "/iso/beanbag.png",
+      "w": 27,
+      "h": 26,
+      "kind": "floor",
+      "tiles": [
+        1,
+        1
+      ]
+    },
+    "box_open": {
+      "file": "/iso/box_open.png",
+      "w": 21,
+      "h": 23,
+      "kind": "floor",
+      "tiles": [
+        1,
+        1
+      ]
+    },
+    "chair_gaming": {
+      "file": "/iso/chair_gaming.png",
+      "w": 24,
+      "h": 42,
+      "kind": "floor",
+      "tiles": [
+        1,
+        1
+      ]
+    },
+    "laptop_table": {
+      "file": "/iso/laptop_table.png",
+      "w": 25,
+      "h": 32,
+      "kind": "floor",
+      "tiles": [
+        1,
+        1
+      ]
+    },
+    "boxes": {
+      "file": "/iso/boxes.png",
+      "w": 22,
+      "h": 22,
+      "kind": "floor",
+      "tiles": [
+        1,
+        1
+      ]
+    },
+    "window": {
+      "file": "/iso/window.png",
+      "w": 45,
+      "h": 62,
+      "kind": "wall",
+      "tilesW": 3
+    },
+    "poster": {
+      "file": "/iso/poster.png",
+      "w": 26,
+      "h": 47,
+      "kind": "wall",
+      "tilesW": 1
+    },
+    "shelf_plants": {
+      "file": "/iso/shelf_plants.png",
+      "w": 51,
+      "h": 38,
+      "kind": "wall",
+      "tilesW": 2
+    },
+    "shelf_books": {
+      "file": "/iso/shelf_books.png",
+      "w": 51,
+      "h": 44,
+      "kind": "wall",
+      "tilesW": 2
+    },
+    "sofa": {
+      "file": "/iso/sofa.png",
+      "w": 48,
+      "h": 40,
+      "kind": "floor",
+      "tiles": [
+        2,
+        1
+      ]
+    },
+    "floor_lamp": {
+      "file": "/iso/floor_lamp.png",
+      "w": 19,
+      "h": 47,
+      "kind": "floor",
+      "tiles": [
+        1,
+        1
+      ]
+    },
+    "coffee_table": {
+      "file": "/iso/coffee_table.png",
+      "w": 26,
+      "h": 23,
+      "kind": "floor",
+      "tiles": [
+        1,
+        1
+      ]
+    },
+    "palm": {
+      "file": "/iso/palm.png",
+      "w": 26,
+      "h": 41,
+      "kind": "floor",
+      "tiles": [
+        1,
+        1
+      ]
+    },
+    "pet_bed": {
+      "file": "/iso/pet_bed.png",
+      "w": 27,
+      "h": 20,
+      "kind": "floor",
+      "tiles": [
+        1,
+        1
+      ]
+    },
+    "armchair": {
+      "file": "/iso/armchair.png",
+      "w": 28,
+      "h": 27,
+      "kind": "floor",
+      "tiles": [
+        1,
+        1
+      ]
+    },
+    "whiteboard": {
+      "file": "/iso/whiteboard.png",
+      "w": 37,
+      "h": 47,
+      "kind": "floor",
+      "tiles": [
+        2,
+        1
+      ]
+    },
+    "neon_bolt": {
+      "file": "/iso/neon_bolt.png",
+      "w": 22,
+      "h": 44,
+      "kind": "wall",
+      "tilesW": 1
+    },
+    "char_base": {
+      "file": "/iso/char_base.png",
+      "w": 16,
+      "h": 46,
+      "kind": "char"
+    },
+    "char_tshirt": {
+      "file": "/iso/char_tshirt.png",
+      "w": 16,
+      "h": 46,
+      "kind": "char"
+    },
+    "char_shirt": {
+      "file": "/iso/char_shirt.png",
+      "w": 16,
+      "h": 46,
+      "kind": "char"
+    },
+    "char_long": {
+      "file": "/iso/char_long.png",
+      "w": 18,
+      "h": 46,
+      "kind": "char"
+    }
+  }
+}

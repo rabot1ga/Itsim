@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useGameStore } from '../store/gameStore';
 import { haptic } from '../lib/telegram';
-import { RoomRenderer, buildRoomComposition } from './room/RoomRenderer';
+import { IsoRoom } from './iso/IsoRoom';
 import { PixelIcon } from './pixel/PixelIcon';
 import { PixelText } from './pixel/PixelText';
 
@@ -10,63 +10,17 @@ export const MainMenu: React.FC = () => {
 
   const hasProgress = player && (player.currentDay ?? 1) > 1;
 
-  // Personal hero: the player's own room + avatar, rendered by the game engine.
-  const [roomManifest, setRoomManifest] = useState<any>(null);
-  const [avatarManifest, setAvatarManifest] = useState<any>(null);
-  const [geneticsConfig, setGeneticsConfig] = useState<any>(null);
 
-  useEffect(() => {
-    fetch('/api/content/layers')
-      .then((r) => r.json())
-      .then((l) => {
-        setRoomManifest(l.room);
-        setAvatarManifest(l.avatar);
-      })
-      .catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    fetch('/api/content/genetics')
-      .then((r) => r.json())
-      .then((g) => setGeneticsConfig(g.genetics))
-      .catch(() => {});
-  }, []);
-
-  const traits = player?.genetics;
-  const displayTraits =
-    traits && player?.room?.wallColor ? { ...traits, wallColor: player.room.wallColor } : traits;
-  const heroReady = roomManifest && avatarManifest && geneticsConfig && displayTraits;
-  const heroComposition = heroReady
-    ? buildRoomComposition({
-        traits: displayTraits,
-        housingLevel: player.housingLevel ?? 0,
-        items: player.items ?? [],
-        crossLayers: [],
-        custom: player.room,
-      })
-    : null;
 
   return (
     <div className="flex-1 flex flex-col items-center justify-between p-6 overflow-y-auto">
       <div className="flex-1 flex flex-col items-center justify-center w-full max-w-[300px]">
         {/* Hero — your own room with you standing in it */}
         <div className="w-full animate-fade-in">
-          {heroReady && heroComposition ? (
-            <RoomRenderer
-              roomManifest={roomManifest}
-              avatarManifest={avatarManifest}
-              traits={displayTraits}
-              geneticsConfig={geneticsConfig}
-              housingLevel={player.housingLevel ?? 0}
-              composition={heroComposition}
-              avatarCustom={player.avatar}
-              petWear={(player.items ?? []).filter((id: string) =>
-                ['pet_bow', 'pet_glasses', 'pet_crown'].includes(id)
-              )}
-              petFed={!!player.petFedToday}
-            />
+          {player ? (
+            <IsoRoom player={player} />
           ) : (
-            <div className="aspect-square rounded-xl border border-ink-700 bg-ink-800" />
+            <div className="aspect-[4/3] rounded-xl border border-ink-700 bg-ink-800" />
           )}
         </div>
 

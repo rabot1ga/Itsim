@@ -8,7 +8,8 @@
     "packages/server",
     "packages/client",
     "packages/bot",
-    "packages/sim"
+    "packages/sim",
+    "tools/isogen"
   ],
   "scripts": {
     "dev": "npm run build -w packages/shared && concurrently \"npm run dev -w packages/server\" \"npm run dev -w packages/client\" \"npm run dev -w packages/bot\"",

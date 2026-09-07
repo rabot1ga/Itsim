@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
-import { RoomRenderer, buildRoomComposition } from '../components/room/RoomRenderer';
+import { buildRoomComposition } from '../components/room/RoomRenderer';
+import { IsoRoom } from '../components/iso/IsoRoom';
 import { RoomEditor, entryName } from '../components/room/RoomEditor';
-import { RoomSkeleton, EmptyState } from '../components/ui';
+import { EmptyState } from '../components/ui';
 import { Wardrobe } from '../components/room/Wardrobe';
 import { ShareCard } from '../components/room/ShareCard';
 import { haptic } from '../lib/telegram';
@@ -98,23 +99,7 @@ export const RoomView: React.FC = () => {
       </div>
 
       {/* Room */}
-      {ready && composition ? (
-        <RoomRenderer
-          roomManifest={roomManifest}
-          avatarManifest={avatarManifest}
-          traits={displayTraits}
-          geneticsConfig={geneticsConfig}
-          housingLevel={player.housingLevel ?? 0}
-          composition={composition}
-          avatarCustom={player.avatar}
-          petWear={(player.items ?? []).filter((id: string) =>
-            ['pet_bow', 'pet_glasses', 'pet_crown'].includes(id)
-          )}
-          petFed={!!player.petFedToday}
-        />
-      ) : (
-        <RoomSkeleton />
-      )}
+      <IsoRoom player={player} />
 
       {/* Pet status */}
       {ready && composition?.pet && composition.pet !== 'pet_none' && (

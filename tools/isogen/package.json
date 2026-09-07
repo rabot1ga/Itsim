@@ -1,0 +1,14 @@
+{
+  "name": "@itsim/isogen",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Cuts generated isometric sprite sheets into game-ready sprites",
+  "scripts": {
+    "slice": "node slice.mjs",
+    "build": "node build.mjs"
+  },
+  "devDependencies": {
+    "sharp": "^0.34.0"
+  }
+}
