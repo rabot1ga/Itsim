@@ -166,6 +166,8 @@ warn chevron arrow gear person play plus coin`.
 
 ### 8.1. Персонаж — в полный рост
 
+![Персонаж в комнате и три образа](assets/character.png)
+
 Игрок рисуется **целой фигурой**, а не портретом: голова, торс с рукавами,
 штаны и обувь. Холст слоёв — `500×760` (объявлен в
 `packages/content/layers/avatar_manifest.json` → `resolution`), компоненты берут
