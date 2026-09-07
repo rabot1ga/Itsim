@@ -1,0 +1,46 @@
+[
+  {
+    "id": "mining_boom",
+    "title": "📈 Курс взлетел!",
+    "description": "Крипта полетела вверх. Твой кошелёк приятно тёплый, а в чатах — паника и эйфория одновременно.",
+    "tags": ["mining", "crypto"],
+    "weight": 5,
+    "cooldownDays": 45,
+    "minGameDay": 15,
+    "conditions": { "hasItem": "mining_rig" },
+    "choices": [
+      {
+        "text": "Продать монеты по пику 💸",
+        "effects": { "money": 12000, "motivation": 2 },
+        "followup": "Продал на пике. Через час курс упал. Ты — гений."
+      },
+      {
+        "text": "ХОДЛ! К луне 🚀",
+        "effects": { "motivation": 5, "reputation": 1 },
+        "followup": "Держишь. Курс, конечно, скорректировался, но вера осталась."
+      }
+    ]
+  },
+  {
+    "id": "mining_heat",
+    "title": "🔥 Ферма перегрелась",
+    "description": "Вентиляторы воют, карты греются до сотки. Пахнет палёным термопастой и потраченным депозитом.",
+    "tags": ["mining", "crisis"],
+    "weight": 6,
+    "cooldownDays": 60,
+    "minGameDay": 20,
+    "conditions": { "hasItem": "mining_gpu" },
+    "choices": [
+      {
+        "text": "Поставить жидкое охлаждение 🧊",
+        "effects": { "money": -8000, "health": -1 },
+        "followup": "Теперь ферма шумит как серверная ЦОД. Зато холодная."
+      },
+      {
+        "text": "Проветрить и надеяться 🤞",
+        "effects": { "health": -6, "motivation": -3 },
+        "followup": "Открыл окно. Зимой это даже работает."
+      }
+    ]
+  }
+]

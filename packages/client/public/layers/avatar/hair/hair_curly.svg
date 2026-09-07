@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500"><defs>
+  <linearGradient id="skinGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#969696"/><stop offset="1" stop-color="#767676"/>
+  </linearGradient>
+  <linearGradient id="hairGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#5c5c5c"/><stop offset="1" stop-color="#3c3c3c"/>
+  </linearGradient>
+  <linearGradient id="wallGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#a6abb5"/><stop offset="1" stop-color="#898e99"/>
+  </linearGradient>
+  <linearGradient id="floorGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#5f5f5f"/><stop offset="1" stop-color="#424242"/>
+  </linearGradient>
+  <linearGradient id="glassGrad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#ddeaf7"/><stop offset="1" stop-color="#a9c6e0"/>
+  </linearGradient>
+  <linearGradient id="woodGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#b98d60"/><stop offset="1" stop-color="#8a6238"/>
+  </linearGradient>
+  <linearGradient id="steelGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#8b93a3"/><stop offset="1" stop-color="#5d6672"/>
+  </linearGradient>
+</defs><g stroke="#1e2430" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+  <path d="M178 152 Q182 96 250 92 Q318 96 322 152 Q300 120 250 118 Q200 120 178 152 Z" fill="url(#hairGrad)"/>
+  <circle cx="290.0" cy="95.0" r="22" fill="url(#hairGrad)"/><circle cx="274.86439873082657" cy="118.4998072888245" r="22" fill="url(#hairGrad)"/><circle cx="240.9119162122765" cy="124.21542892634585" r="22" fill="url(#hairGrad)"/><circle cx="213.83711431931755" cy="107.82139640701489" r="22" fill="url(#hairGrad)"/><circle cx="214.12966334663412" cy="81.72438670115443" r="22" fill="url(#hairGrad)"/><circle cx="241.56816802276882" cy="65.67409647004709" r="22" fill="url(#hairGrad)"/><circle cx="275.3877150377054" cy="71.81706537332039" r="22" fill="url(#hairGrad)"/><circle cx="289.9943454553366" cy="95.50441701453049" r="22" fill="url(#hairGrad)"/><circle cx="274.33405258129017" cy="118.8100359154746" r="22" fill="url(#hairGrad)"/></g></svg>

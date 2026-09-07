@@ -1,5 +1,16 @@
 import { PlayerState, GameEvent, EventChoice } from '../types';
 import { clamp, weightedPick } from './utils';
+import { applyXp, applySoftXp } from './skills';
+
+/** Soft skills that live in PlayerState.softSkills (not .skills) */
+const SOFT_SKILL_IDS = new Set([
+  'communication',
+  'english',
+  'time_management',
+  'leadership',
+  'stress_resistance',
+  'public_speaking',
+]);
 
 /**
  * Event engine — sections 9.2, 9.4
@@ -91,8 +102,12 @@ export function pickEvent(
     if (event) return event;
   }
 
-  // 2. Filter eligible events
+  // 2. Filter eligible events (chain-only and action-triggered events are
+  // excluded from the random day pool — they fire through their own channels)
   const eligible = pool.filter(e => {
+    if (e.chainOnly) return false;
+    if (e.actionTrigger) return false;
+
     const hist = p.eventHistory[e.id];
     const lastDay = hist?.lastDay ?? -999;
     const count = hist?.count ?? 0;
@@ -121,7 +136,8 @@ export function pickEvent(
 }
 
 /**
- * Apply event effects to player state
+ * Apply event effects to player state.
+ * Returns a NEW state object (shallow copy) — the caller must use the result.
  */
 export function applyEventEffects(
   p: PlayerState,
@@ -130,7 +146,7 @@ export function applyEventEffects(
   const e = choice.effects;
   if (!e) return p;
 
-  const next = { ...p };
+  const next: PlayerState = { ...p };
 
   // Apply numeric effects
   if (e.energy !== undefined) next.energy = clamp(next.energy + e.energy, 0, next.maxEnergy);
@@ -140,16 +156,18 @@ export function applyEventEffects(
   if (e.reputation !== undefined) next.reputation = clamp(next.reputation + e.reputation, 0, 100);
   if (e.karma !== undefined) { /* karma is tracking only, no gameplay effect yet */ }
 
-  // Skill effects
+  // Skill effects — XP goes through the normal leveling curve
   if (e.skill) {
     next.skills = { ...next.skills };
-    for (const [skillId, xp] of Object.entries(e.skill)) {
-      const current = next.skills[skillId] ?? { level: 0, xp: 0 };
-      // Simple XP addition for events
-      next.skills[skillId] = {
-        level: current.level,
-        xp: current.xp + xp * 10, // events give significant XP
-      };
+    next.softSkills = { ...next.softSkills };
+    for (const [skillId, rawXp] of Object.entries(e.skill)) {
+      if (SOFT_SKILL_IDS.has(skillId)) {
+        const current = next.softSkills[skillId] ?? { level: 0, xp: 0 };
+        next.softSkills[skillId] = applySoftXp(current, rawXp);
+      } else {
+        const current = next.skills[skillId] ?? { level: 0, xp: 0 };
+        next.skills[skillId] = applyXp(current, rawXp, next.motivation);
+      }
     }
   }
 
@@ -167,6 +185,11 @@ export function applyEventEffects(
     next.jobWarnings = (next.jobWarnings ?? 0) + e.jobWarnings;
   }
 
+  // Burnout days
+  if (e.burnoutDays !== undefined) {
+    next.burnoutDays = Math.max(0, (next.burnoutDays ?? 0) + e.burnoutDays);
+  }
+
   return next;
 }
 
@@ -178,4 +201,45 @@ export function eventChancePerDay(gameDay: number): number {
   if (gameDay <= 60) return 0.35;
   if (gameDay <= 150) return 0.28;
   return 0.20;
+}
+/**
+ * Roll action-triggered follow-up events (section 9.6).
+ *
+ * After a successful action (rest_bar, freelance, side_job:courier, ...)
+ * the server rolls events whose `actionTrigger.action` matches. Each
+ * event has its own probability and cooldown — different players get
+ * different stories from the same actions.
+ */
+export function maybeTriggerActionEvent(
+  p: PlayerState,
+  pool: GameEvent[],
+  actionId: string,
+  jobId: string | undefined,
+  rng: () => number
+): GameEvent | null {
+  const eligible = pool.filter((e) => {
+    const t = e.actionTrigger;
+    if (!t) return false;
+    if (t.action !== actionId) return false;
+    if (t.jobId !== undefined && t.jobId !== jobId) return false;
+
+    const hist = p.eventHistory[e.id];
+    const cooldown = t.cooldownDays ?? e.cooldownDays ?? 0;
+    if (hist && p.currentDay - hist.lastDay < cooldown) return false;
+    if ((hist?.count ?? 0) >= (e.maxOccurrences ?? Infinity)) return false;
+    if (p.currentDay < (e.minGameDay ?? 0)) return false;
+
+    return checkConditions(e.conditions, p);
+  });
+
+  if (eligible.length === 0) return null;
+
+  // Shuffle so overlapping triggers are fair, then roll each chance
+  const shuffled = [...eligible].sort(() => rng() - 0.5);
+  for (const event of shuffled) {
+    if (rng() < (event.actionTrigger?.chance ?? 0)) {
+      return event;
+    }
+  }
+  return null;
 }

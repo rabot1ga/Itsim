@@ -1,0 +1,623 @@
+[
+  {
+    "id": "bar_hr_meeting",
+    "title": "🍻 В баре ты познакомился с HR",
+    "description": "За соседним столиком — Анна, рекрутер крупной IT-компании. Она уже третью неделю ищет «такого, как ты».",
+    "tags": ["social", "career", "bar"],
+    "weight": 100,
+    "cooldownDays": 30,
+    "actionTrigger": { "action": "rest_bar", "chance": 0.25, "cooldownDays": 30 },
+    "minGameDay": 3,
+    "choices": [
+      {
+        "text": "Взять контакт и похвастаться пет-проектом 🤝",
+        "effects": { "relation": { "hr_anna": 2 }, "reputation": 1, "motivation": 2 },
+        "followup": "Анна сохранила твой номер как «парень с баром». Это лучше, чем кажется."
+      },
+      {
+        "text": "Угостить её коктейлем 🍸",
+        "effects": { "money": -2000, "relation": { "hr_anna": 2 } },
+        "followup": "Коктейль «Дебаггер» оказался вкусным. Разговор — тоже."
+      },
+      {
+        "text": "Рассказать анекдот про Agile 😄",
+        "effects": { "skill": { "communication": 10 }, "relation": { "hr_anna": -1 } },
+        "followup": "Анна вежливо улыбнулась. Стендапер из тебя не вышел, но смелость оценена."
+      }
+    ]
+  },
+  {
+    "id": "bar_legacy_veteran",
+    "title": "👴 Ветеран Кобола в баре",
+    "description": "Седой мужчина рассказывает, как в 95-м переписывал банковское ядро на COBOL. Ты слушаешь, раскрыв рот.",
+    "tags": ["social", "bar", "study"],
+    "weight": 100,
+    "cooldownDays": 25,
+    "actionTrigger": { "action": "rest_bar", "chance": 0.15, "cooldownDays": 25 },
+    "minGameDay": 10,
+    "choices": [
+      {
+        "text": "Записать его истории как уроки 🎓",
+        "effects": { "skill": { "javascript": 15 }, "motivation": 2 },
+        "followup": "«Молодёжь теперь такая же, просто клавиатуры другие». Мудрость на века."
+      },
+      {
+        "text": "Попросить совета про легаси 🗿",
+        "effects": { "skill": { "java": 10 }, "motivation": 1 },
+        "followup": "«Легаси — это код, который работает. Остальное — эксперименты»."
+      },
+      {
+        "text": "Скептически поспорить, что COBOL мёртв 💀",
+        "effects": { "reputation": -1, "karma": -1 },
+        "followup": "Ветеран улыбнулся. В его глазах ты прочитал «банкоматы так не думают»."
+      }
+    ]
+  },
+  {
+    "id": "bar_fight",
+    "title": "🥊 Барный конфликт",
+    "description": "Кто-то задел твой ноутбук на столе. «Это же макбук!» — возмутился ты. Разговор пошёл не туда.",
+    "tags": ["bar", "crisis", "social"],
+    "weight": 100,
+    "cooldownDays": 20,
+    "actionTrigger": { "action": "rest_bar", "chance": 0.1, "cooldownDays": 20 },
+    "minGameDay": 5,
+    "choices": [
+      {
+        "text": "Перевести всё в шутку 🤝",
+        "effects": { "skill": { "communication": 10 }, "motivation": 1 },
+        "followup": "«Ноутбук — просто железо». Посмеялись, разошлись миром."
+      },
+      {
+        "text": "Стоять на своём 😤",
+        "effects": { "health": -3, "motivation": -2 },
+        "followup": "Охрана вывела обоих. Синяк под глазом — как бейдж участника."
+      },
+      {
+        "text": "Уйти, забрав ноутбук 🏃",
+        "effects": { "money": -1000, "motivation": 1 },
+        "followup": "Сбежал, забыв заказанное пиво. Ноутбук цел — победа."
+      }
+    ]
+  },
+  {
+    "id": "freelance_client_ghost",
+    "title": "👻 Клиент пропал после сдачи проекта",
+    "description": "Ты отправил готовую работу. Клиент прочитал сообщение... и исчез. Оплата зависла в воздухе.",
+    "tags": ["freelance", "crisis", "money"],
+    "weight": 100,
+    "cooldownDays": 20,
+    "actionTrigger": { "action": "freelance", "chance": 0.18, "cooldownDays": 20 },
+    "minGameDay": 5,
+    "choices": [
+      {
+        "text": "Написать досудебную претензию 📄",
+        "effects": { "skill": { "communication": 10 }, "money": -1000, "karma": 1 },
+        "followup": "Претензия напугала клиента. Он «вспомнил» про оплату. Почти всю."
+      },
+      {
+        "text": "Махнуть рукой: карма разберётся 🕉",
+        "effects": { "motivation": -2, "karma": 1 },
+        "followup": "Ты простил. Но отзыв на его профиле написал. Так, на всякий случай."
+      },
+      {
+        "text": "Заблокировать и забыть 🔒",
+        "effects": { "motivation": 1 },
+        "followup": "Блокировка принесла облегчение. И пустоту в кошельке."
+      }
+    ]
+  },
+  {
+    "id": "freelance_viral",
+    "title": "🌟 Твой фриланс-проект стал мемом",
+    "description": "Лендинг, который ты сверстал за вечер, разлетелся по твиттеру. Все смеются. В хорошем смысле.",
+    "tags": ["freelance", "reward"],
+    "weight": 100,
+    "cooldownDays": 40,
+    "actionTrigger": { "action": "freelance", "chance": 0.12, "cooldownDays": 40 },
+    "minGameDay": 10,
+    "choices": [
+      {
+        "text": "Добавить в портфолио 🏆",
+        "effects": { "reputation": 2, "motivation": 3 },
+        "followup": "Теперь ты «тот самый автор мемного лендинга»."
+      },
+      {
+        "text": "Попросить клиента премию 💰",
+        "effects": { "money": 3000, "karma": -1 },
+        "followup": "Клиент дал премию и намекнул на «продолжение франшизы»."
+      }
+    ]
+  },
+  {
+    "id": "freelance_scam",
+    "title": "🎭 Фриланс-заказчик оказался скамом",
+    "description": "Оплата пришла... со взломанной карты. Теперь и ты, и банк смотрите на эту транзакцию с подозрением.",
+    "tags": ["freelance", "crisis", "money"],
+    "weight": 100,
+    "cooldownDays": 25,
+    "actionTrigger": { "action": "freelance", "chance": 0.08, "cooldownDays": 25 },
+    "minGameDay": 8,
+    "choices": [
+      {
+        "text": "Вернуть деньги и сообщить в поддержку 🛡",
+        "effects": { "money": -2000, "karma": 1, "reputation": 1 },
+        "followup": "Поддержка поблагодарила. Чистая совесть дороже двух тысяч."
+      },
+      {
+        "text": "Разбираться с банком 🏦",
+        "effects": { "money": -1500, "motivation": -2 },
+        "followup": "Три часа в очереди поддержки. Банк развёл руками."
+      },
+      {
+        "text": "Оставить как есть 🙈",
+        "effects": { "karma": -2, "motivation": 1 },
+        "followup": "Деньги оставил. Карму потратил. Сделка сомнительная."
+      }
+    ]
+  },
+  {
+    "id": "courier_dog_chase",
+    "title": "🐕 За курьером гналась собака",
+    "description": "Три квартала, две арки и один забор. Собака оказалась быстрее твоего электросамоката на поворотах.",
+    "tags": ["sidejob", "crisis", "daily"],
+    "weight": 100,
+    "cooldownDays": 15,
+    "actionTrigger": { "action": "side_job", "jobId": "courier", "chance": 0.2, "cooldownDays": 15 },
+    "minGameDay": 1,
+    "choices": [
+      {
+        "text": "Ускориться и оторваться 🛵",
+        "effects": { "health": -2, "motivation": -2, "money": 500 },
+        "followup": "Оторвался. Заказчик дал чаевые «за спринт»."
+      },
+      {
+        "text": "Подружиться с собакой 🦴",
+        "effects": { "motivation": 3, "health": -1 },
+        "followup": "Пёс оказался добрым. Теперь он ждёт тебя на маршруте. И лает дружелюбно."
+      },
+      {
+        "text": "Позвонить заказчику: «задерживаюсь» 📞",
+        "effects": { "money": -300, "motivation": 1 },
+        "followup": "Заказчик понял. Особенно после фото собаки."
+      }
+    ]
+  },
+  {
+    "id": "courier_generous_tip",
+    "title": "💸 Щедрые чаевые от айтишника",
+    "description": "Ты привёз заказ программисту, который три дня не выходил из дома. Он дал чаевые «за спасение».",
+    "tags": ["sidejob", "reward"],
+    "weight": 100,
+    "cooldownDays": 15,
+    "actionTrigger": { "action": "side_job", "jobId": "courier", "chance": 0.15, "cooldownDays": 15 },
+    "minGameDay": 1,
+    "choices": [
+      {
+        "text": "Взять и порадоваться 🎉",
+        "effects": { "money": 2000, "motivation": 2 },
+        "followup": "Чаевые равны половине смены. Айтишники — щедрый народ."
+      },
+      {
+        "text": "Спросить, что он кодит 💬",
+        "effects": { "skill": { "communication": 5 }, "money": 1000 },
+        "followup": "Он рассказал про свой стартап. Ты кивал и думал о чаевых."
+      }
+    ]
+  },
+  {
+    "id": "barista_tiktok",
+    "title": "🎥 Тебя сняли в тикток на смене",
+    "description": "Клиентка сняла, как ты рисуешь сердечко на пенке капучино. Видео набирает просмотры.",
+    "tags": ["sidejob", "social", "reward"],
+    "weight": 100,
+    "cooldownDays": 30,
+    "actionTrigger": { "action": "side_job", "jobId": "barista", "chance": 0.15, "cooldownDays": 30 },
+    "minGameDay": 1,
+    "choices": [
+      {
+        "text": "Прокачать латте-арт 🎨",
+        "effects": { "reputation": 1, "motivation": 2 },
+        "followup": "Теперь в кофейню приходят «на то самое сердечко». Ты звезда локального масштаба."
+      },
+      {
+        "text": "Смутиться и перевести тему 😳",
+        "effects": { "motivation": 1 },
+        "followup": "Просмотры растут, а ты делаешь вид, что ничего не видел."
+      }
+    ]
+  },
+  {
+    "id": "streamer_raid",
+    "title": "🚀 Рейд от крупного стримера",
+    "description": "Посреди твоего стрима ворвались 3000 зрителей: тебя зарейдил известный стример. Чат взорвался.",
+    "tags": ["sidejob", "reward", "social"],
+    "weight": 100,
+    "cooldownDays": 30,
+    "actionTrigger": { "action": "side_job", "jobId": "streamer", "chance": 0.12, "cooldownDays": 30 },
+    "minGameDay": 1,
+    "choices": [
+      {
+        "text": "Выдать лучший контент в жизни 🎬",
+        "effects": { "money": 3000, "reputation": 1, "motivation": 3 },
+        "followup": "Ты отыграл идеально. Половина зрителей осталась. Донаты капали всю ночь."
+      },
+      {
+        "text": "Растеряться и закрыть стрим 😵",
+        "effects": { "motivation": -2 },
+        "followup": "Стрим закрыт. Момент упущен. Стример написал «lol»."
+      }
+    ]
+  },
+  {
+    "id": "youtube_gold_mine",
+    "title": "💎 Нашёл канал-клад",
+    "description": "Алгоритм подкинул канал, где объясняют то, что ты искал месяцами. Всё коротко и по делу.",
+    "tags": ["study", "reward"],
+    "weight": 100,
+    "cooldownDays": 20,
+    "actionTrigger": { "action": "study_youtube", "chance": 0.15, "cooldownDays": 20 },
+    "minGameDay": 1,
+    "choices": [
+      {
+        "text": "Смотреть всё подряд 📺",
+        "effects": { "skill": { "javascript": 20 }, "motivation": 2 },
+        "followup": "Шесть часов марафона. Голова гудит, но теперь ты понимаешь замыкания."
+      },
+      {
+        "text": "Сохранить в плейлист «на потом» 🔖",
+        "effects": { "motivation": 1 },
+        "followup": "Плейлист пополнен. «Потом» — это, конечно, никогда."
+      }
+    ]
+  },
+  {
+    "id": "youtube_rabbit_hole",
+    "title": "🌀 Рекомендации затянули",
+    "description": "Начал с туториала, закончил на «как построить дом из спичек». Алгоритм победил.",
+    "tags": ["study", "memes"],
+    "weight": 100,
+    "cooldownDays": 10,
+    "actionTrigger": { "action": "study_youtube", "chance": 0.2, "cooldownDays": 10 },
+    "minGameDay": 1,
+    "choices": [
+      {
+        "text": "Признать поражение и отдохнуть 😅",
+        "effects": { "motivation": 2, "energy": -1 },
+        "followup": "Мозгу нужна была передышка. Дом из спичек был великолепен."
+      },
+      {
+        "text": "Вернуться к учёбе через силу 💪",
+        "effects": { "skill": { "javascript": 5 }, "motivation": -2 },
+        "followup": "Досмотрел туториал. Засыпая. Дважды."
+      }
+    ]
+  },
+  {
+    "id": "english_series",
+    "title": "🎬 Сериал зашёл как учёба",
+    "description": "Ты смотрел сериал в оригинале с субтитрами. Внезапно понял шутку без перевода. Прогресс!",
+    "tags": ["study", "reward"],
+    "weight": 100,
+    "cooldownDays": 12,
+    "actionTrigger": { "action": "study_english", "chance": 0.25, "cooldownDays": 12 },
+    "minGameDay": 1,
+    "choices": [
+      {
+        "text": "Досмотреть сезон «ради языка» 🍿",
+        "effects": { "skill": { "english": 15 }, "motivation": 3 },
+        "followup": "Сезон закрыт. Словарный запас вырос на «mate» и «innit»."
+      },
+      {
+        "text": "Выписать новые слова 📝",
+        "effects": { "skill": { "english": 10 }, "motivation": 1 },
+        "followup": "Двадцать новых слов. Пять из них — ругательства. Тоже лексика."
+      }
+    ]
+  },
+  {
+    "id": "friday_deploy",
+    "title": "💥 Пятничный деплой взорвался",
+    "description": "Ты решил «быстренько задеплоить» в пятницу вечером. Суббота началась с алертов.",
+    "tags": ["work", "crisis", "code"],
+    "weight": 100,
+    "cooldownDays": 25,
+    "actionTrigger": { "action": "work_task", "chance": 0.15, "cooldownDays": 25 },
+    "minGameDay": 10,
+    "conditions": { "hasJob": true },
+    "choices": [
+      {
+        "text": "Откатить и извиниться 🙏",
+        "effects": { "motivation": -2, "reputation": 1 },
+        "followup": "Откат за минуту. Извинения — за три. Урок: по пятницам не деплоим."
+      },
+      {
+        "text": "Чинить героически всю ночь 🦸",
+        "effects": { "skill": { "javascript": 15 }, "health": -2, "burnoutDays": 1 },
+        "followup": "Починил к утру. Понедельник начался с вопроса «а что это было?»"
+      },
+      {
+        "text": "Свалить на «соседнюю команду» 🙈",
+        "effects": { "karma": -2, "jobWarnings": 1 },
+        "followup": "Поверили не все. Тимлид посмотрел в логи и вздохнул."
+      }
+    ]
+  },
+  {
+    "id": "work_praise",
+    "title": "👏 Похвала от заказчика",
+    "description": "Заказчик написал в общий чат: «ребята, это лучший релиз за год». Ты скромно улыбаешься.",
+    "tags": ["work", "reward"],
+    "weight": 100,
+    "cooldownDays": 15,
+    "actionTrigger": { "action": "work_task", "chance": 0.2, "cooldownDays": 15 },
+    "minGameDay": 5,
+    "conditions": { "hasJob": true },
+    "choices": [
+      {
+        "text": "Скромно кивнуть 🙇",
+        "effects": { "reputation": 1, "motivation": 3 },
+        "followup": "Коллеги похлопали по плечу. Тимлид кивнул. День удался."
+      },
+      {
+        "text": "Напомнить всем, кто это сделал 😎",
+        "effects": { "reputation": 2, "relation": { "toxic_senior": -1 } },
+        "followup": "Тебя запомнили. Токсик-сеньор скривился — его не спросили."
+      }
+    ]
+  },
+  {
+    "id": "overtime_pizza",
+    "title": "🍕 Переработка за пиццу",
+    "description": "Команда засиделась допоздна, и лид заказал пиццу за счёт компании. Даже веганскую. Для тебя.",
+    "tags": ["work", "reward", "social"],
+    "weight": 100,
+    "cooldownDays": 20,
+    "actionTrigger": { "action": "work_overtime", "chance": 0.25, "cooldownDays": 20 },
+    "minGameDay": 5,
+    "conditions": { "hasJob": true },
+    "choices": [
+      {
+        "text": "Есть и шутить с командой 🍕",
+        "effects": { "health": 1, "motivation": 3, "relation": { "junior_colleague": 1 } },
+        "followup": "Пицца, мемы и обсуждение легаси. Лучший корпоратив."
+      },
+      {
+        "text": "Взять кусок и продолжить кодить 💻",
+        "effects": { "skill": { "javascript": 10 }, "health": -1 },
+        "followup": "Пицца остыла, но задача закрыта. Герой молчаливый."
+      }
+    ]
+  },
+  {
+    "id": "pet_project_star",
+    "title": "⭐ Сотня звёзд на GitHub",
+    "description": "Твой пет-проект перевалил за 100 звёзд. Ночью кто-то написал «this is awesome» и зарепостил.",
+    "tags": ["code", "reward"],
+    "weight": 100,
+    "cooldownDays": 40,
+    "actionTrigger": { "action": "pet_project", "chance": 0.12, "cooldownDays": 40 },
+    "minGameDay": 10,
+    "choices": [
+      {
+        "text": "Поблагодарить сообщество 🎉",
+        "effects": { "reputation": 3, "motivation": 3 },
+        "followup": "Написал пост. Сообщество ответило теплом и двумя issue."
+      },
+      {
+        "text": "Добавить в резюме 🏆",
+        "effects": { "reputation": 2, "motivation": 1 },
+        "followup": "Рекрутёры стали писать первыми. Магия опенсорса."
+      }
+    ]
+  },
+  {
+    "id": "pet_project_cease",
+    "title": "🛑 Твой проект заблокировали",
+    "description": "Платформа заблокировала твой проект «за нарушение правил наименования». Название было... спорным.",
+    "tags": ["code", "crisis", "memes"],
+    "weight": 100,
+    "cooldownDays": 30,
+    "actionTrigger": { "action": "pet_project", "chance": 0.1, "cooldownDays": 30 },
+    "minGameDay": 5,
+    "choices": [
+      {
+        "text": "Переименовать и продолжить 🔁",
+        "effects": { "motivation": -1 },
+        "followup": "Новое имя скучное, но легальное. Проект жив."
+      },
+      {
+        "text": "Подать апелляцию 📄",
+        "effects": { "motivation": -2, "reputation": 1 },
+        "followup": "Апелляция рассмотрена. Ответ: «мы всё ещё считаем название неудачным»."
+      },
+      {
+        "text": "Бросить проект 🗑",
+        "effects": { "motivation": -3 },
+        "followup": "Ещё один проект на кладбище идей. Покойся с миром."
+      }
+    ]
+  },
+  {
+    "id": "meetup_speaker",
+    "title": "🎤 Тебя случайно позвали на сцену",
+    "description": "Спикер не пришёл, и организаторы спросили: «Может, кто-то из зала?» Все посмотрели на тебя.",
+    "tags": ["social", "career"],
+    "weight": 100,
+    "cooldownDays": 25,
+    "actionTrigger": { "action": "networking", "chance": 0.15, "cooldownDays": 25 },
+    "minGameDay": 5,
+    "choices": [
+      {
+        "text": "Выйти и импровизировать 🎤",
+        "effects": { "skill": { "public_speaking": 15 }, "reputation": 2, "motivation": 2 },
+        "followup": "Полчаса о том, как выжить на легаси. Аплодисменты. Кто-то снял на видео."
+      },
+      {
+        "text": "Прикинуться завязывающим шнурки 🙈",
+        "effects": { "motivation": -2 },
+        "followup": "Шнурки завязывал четыре минуты. Все всё поняли."
+      }
+    ]
+  },
+  {
+    "id": "meetup_cofounder",
+    "title": "🤝 Встретил будущего кофаундера",
+    "description": "В перерыве ты разговорился с человеком, у которого «есть идея, но нет кодера». Обычно это красный флаг. Но тут что-то есть.",
+    "tags": ["social", "startup"],
+    "weight": 100,
+    "cooldownDays": 40,
+    "actionTrigger": { "action": "networking", "chance": 0.12, "cooldownDays": 40 },
+    "minGameDay": 20,
+    "choices": [
+      {
+        "text": "Обменяться контактами 📇",
+        "effects": { "relation": { "uni_friend": 2 }, "reputation": 1, "motivation": 2 },
+        "followup": "Созвон назначен на следующую неделю. Идея — «фитнес для глаз айтишников». Ну а что."
+      },
+      {
+        "text": "Вежливо уйти в сторону пиццы 🍕",
+        "effects": { "motivation": 1 },
+        "followup": "Пицца была надёжнее стартапа. Проверено временем."
+      }
+    ]
+  },
+  {
+    "id": "gym_muscle_pull",
+    "title": "🩹 Потянул мышцу в зале",
+    "description": "Решил взять вес «как в молодости». Молодость не согласилась.",
+    "tags": ["health", "crisis"],
+    "weight": 100,
+    "cooldownDays": 15,
+    "actionTrigger": { "action": "rest_gym", "chance": 0.18, "cooldownDays": 15 },
+    "minGameDay": 3,
+    "choices": [
+      {
+        "text": "Сходить к массажисту 💆",
+        "effects": { "money": -2000, "health": 2 },
+        "followup": "Массажист сказал «у тебя спина программиста». Ты и так знал."
+      },
+      {
+        "text": "Перетерпеть 😐",
+        "effects": { "health": -2, "motivation": -1 },
+        "followup": "Болит, но терпимо. Как легаси-код: жить мешает, но привык."
+      }
+    ]
+  },
+  {
+    "id": "gym_pm_crossfit",
+    "title": "🏋️ PM-кроссфитер в зале",
+    "description": "За соседним тренажёром — твой PM. Оказывается, он чемпион по кроссфиту. Вы смотрите друг на друга новыми глазами.",
+    "tags": ["health", "social", "work"],
+    "weight": 100,
+    "cooldownDays": 25,
+    "actionTrigger": { "action": "rest_gym", "chance": 0.15, "cooldownDays": 25 },
+    "minGameDay": 10,
+    "conditions": { "hasJob": true },
+    "choices": [
+      {
+        "text": "Попросить совета по тренировкам 🏆",
+        "effects": { "relation": { "teamlead": 2 }, "motivation": 2 },
+        "followup": "PM расплылся в улыбке. Теперь на стендапах вы перемигиваетесь как заговорщики."
+      },
+      {
+        "text": "Сделать вид, что не узнал 🕶",
+        "effects": { "motivation": 1 },
+        "followup": "Ты прятался за тренажёром. PM всё равно помахал рукой."
+      }
+    ]
+  },
+  {
+    "id": "walk_wallet",
+    "title": "👛 Нашёл кошелёк на прогулке",
+    "description": "На лавочке лежит кошелёк. Внутри — наличные и карточка. Никого вокруг.",
+    "tags": ["daily", "money", "karma"],
+    "weight": 100,
+    "cooldownDays": 40,
+    "actionTrigger": { "action": "rest_walk", "chance": 0.1, "cooldownDays": 40 },
+    "minGameDay": 1,
+    "choices": [
+      {
+        "text": "Вернуть владельцу ❤️",
+        "effects": { "karma": 2, "reputation": 1, "motivation": 2 },
+        "followup": "Хозяин нашёлся за час. Он оказался пенсионером и подарил тебе банку варенья."
+      },
+      {
+        "text": "Взять деньги, кошелёк — в ящик 📮",
+        "effects": { "money": 3000, "karma": -2 },
+        "followup": "Деньги взял. Карточки отправил по почте. Половина совести чиста."
+      },
+      {
+        "text": "Оставить на месте 🚶",
+        "effects": { "motivation": 1 },
+        "followup": "Прошёл мимо. Кто-то другой решит эту дилемму."
+      }
+    ]
+  },
+  {
+    "id": "walk_sunset",
+    "title": "🌇 Закат, который всё расставил по местам",
+    "description": "Небо окрасилось в розовый. На минуту стало ясно, зачем ты всё это делаешь.",
+    "tags": ["daily", "reward"],
+    "weight": 100,
+    "cooldownDays": 10,
+    "actionTrigger": { "action": "rest_walk", "chance": 0.2, "cooldownDays": 10 },
+    "minGameDay": 1,
+    "choices": [
+      {
+        "text": "Постоять и подумать 🧘",
+        "effects": { "motivation": 5, "health": 1 },
+        "followup": "Пять минут тишины. В голове — порядок. Почти."
+      },
+      {
+        "text": "Сфотографировать для сторис 📸",
+        "effects": { "motivation": 2, "reputation": 1 },
+        "followup": "42 лайка. Мама написала «какая красота, сынок»."
+      }
+    ]
+  },
+  {
+    "id": "hobby_side_income",
+    "title": "💰 Хобби принесло первый заказ",
+    "description": "Кто-то увидел твои поделки и хочет купить. Ты даже не планировал продавать.",
+    "tags": ["reward", "money"],
+    "weight": 100,
+    "cooldownDays": 20,
+    "actionTrigger": { "action": "rest_hobby", "chance": 0.15, "cooldownDays": 20 },
+    "minGameDay": 3,
+    "choices": [
+      {
+        "text": "Продать за разумные деньги 🎨",
+        "effects": { "money": 1500, "motivation": 3 },
+        "followup": "Первая продажа! Хобби окупилось. Ну, процентов на десять."
+      },
+      {
+        "text": "Подарить — репутация дороже 🎁",
+        "effects": { "reputation": 1, "motivation": 2 },
+        "followup": "Получатель в восторге и обещает «рассказать друзьям»."
+      }
+    ]
+  },
+  {
+    "id": "sleep_idea",
+    "title": "💡 Решение пришло во сне",
+    "description": "Ты проснулся среди ночи с готовым ответом на задачу, над которой бился неделю.",
+    "tags": ["study", "reward"],
+    "weight": 100,
+    "cooldownDays": 10,
+    "actionTrigger": { "action": "rest_sleep", "chance": 0.12, "cooldownDays": 10 },
+    "minGameDay": 1,
+    "choices": [
+      {
+        "text": "Записать, пока не забыл ✍️",
+        "effects": { "skill": { "javascript": 15 }, "motivation": 2 },
+        "followup": "Утром решение всё ещё работало. Спасибо, подсознание."
+      },
+      {
+        "text": "«Запомню утром» и спать дальше 😴",
+        "effects": { "motivation": 1 },
+        "followup": "Утром помнил только, что решение было гениальным."
+      }
+    ]
+  }
+]

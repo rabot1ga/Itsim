@@ -1,147 +1,200 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
+import { xpToNext, canUnlockPerk } from '@itsim/shared';
 
-const SKILL_BRANCHES = [
-  {
-    id: 'frontend',
-    name: 'Frontend',
-    icon: '🎨',
-    skills: ['javascript', 'react', 'nextjs', 'css', 'typescript'],
-    color: 'border-sky-500',
-  },
-  {
-    id: 'backend',
-    name: 'Backend',
-    icon: '⚙️',
-    skills: ['python', 'java', 'spring', 'sql', 'nodejs', 'git'],
-    color: 'border-emerald-500',
-  },
-  {
-    id: 'mobile',
-    name: 'Mobile',
-    icon: '📱',
-    skills: ['swift', 'kotlin', 'android'],
-    color: 'border-purple-500',
-  },
-  {
-    id: 'qa',
-    name: 'QA',
-    icon: '🔍',
-    skills: ['manual_testing', 'automation_testing', 'selenium'],
-    color: 'border-amber-500',
-  },
-  {
-    id: 'devops',
-    name: 'DevOps',
-    icon: '🐳',
-    skills: ['docker', 'linux'],
-    color: 'border-red-500',
-  },
-];
+/**
+ * Talent tree — rendered from content (skills.json) grouped by branch.
+ * New branches (ai_ml, cybersec, gamedev, blockchain) appear automatically.
+ */
 
-const SKILL_NAMES: Record<string, string> = {
-  javascript: 'JavaScript',
-  react: 'React',
-  nextjs: 'Next.js',
-  css: 'CSS',
-  typescript: 'TypeScript',
-  python: 'Python',
-  java: 'Java',
-  spring: 'Spring',
-  sql: 'SQL',
-  nodejs: 'Node.js',
-  git: 'Git',
-  swift: 'Swift',
-  kotlin: 'Kotlin',
-  android: 'Android SDK',
-  manual_testing: 'Manual Testing',
-  automation_testing: 'Automation Testing',
-  selenium: 'Selenium',
-  docker: 'Docker',
-  linux: 'Linux',
+const BRANCH_META: Record<string, { name: string; icon: string; color: string }> = {
+  frontend: { name: 'Frontend', icon: '🎨', color: 'border-sky-500' },
+  backend: { name: 'Backend', icon: '⚙️', color: 'border-emerald-500' },
+  mobile: { name: 'Mobile', icon: '📱', color: 'border-purple-500' },
+  qa: { name: 'QA', icon: '🔍', color: 'border-amber-500' },
+  devops: { name: 'DevOps', icon: '🐳', color: 'border-red-500' },
+  ai_ml: { name: 'AI / ML', icon: '🤖', color: 'border-fuchsia-500' },
+  cybersec: { name: 'Кибербез', icon: '🛡️', color: 'border-rose-500' },
+  gamedev: { name: 'GameDev', icon: '🎮', color: 'border-orange-500' },
+  blockchain: { name: 'Blockchain', icon: '⛓️', color: 'border-yellow-500' },
 };
 
-const SKILL_ICONS: Record<string, string> = {
-  javascript: '🟨',
-  react: '⚛️',
-  nextjs: '▲',
-  css: '🎨',
-  typescript: '🔷',
-  python: '🐍',
-  java: '☕',
-  spring: '🌱',
-  sql: '🗃️',
-  nodejs: '🟢',
-  git: '🔀',
-  swift: '🐦',
-  kotlin: '🟣',
-  android: '🤖',
-  manual_testing: '👆',
-  automation_testing: '🤖',
-  selenium: '🧪',
-  docker: '🐳',
-  linux: '🐧',
+const SKILL_EMOJI: Record<string, string> = {
+  javascript: '🟨', react: '⚛️', nextjs: '▲', css: '🎨', typescript: '🔷',
+  python: '🐍', java: '☕', spring: '🌱', sql: '🗃️', nodejs: '🟢', git: '🔀', go: '🐹',
+  swift: '🐦', kotlin: '🟣', android: '🤖',
+  manual_testing: '👆', automation_testing: '🤖', selenium: '🧪',
+  docker: '🐳', linux: '🐧',
+  machine_learning: '🧠', neural_networks: '🕸️', data_science: '📊', prompt_engineering: '💬',
+  network_security: '🌐', pentest: '🎯', cryptography: '🔐',
+  game_design: '🎲', unity: '🟪', godot: '👾',
+  solidity: '📜', web3: '🧩', rust_solana: '🦀', defi: '💹',
+};
+
+interface SkillInfo {
+  id: string;
+  name: string;
+  branch: string;
+  icon: string;
+  maxLevel: number;
+  flavor: string;
+  parent?: string;
+  unlockAt?: Record<string, number>;
+}
+
+interface SoftSkillMeta {
+  key: string;
+  name: string;
+  icon: string;
+}
+
+const SOFT_SKILLS: SoftSkillMeta[] = [
+  { key: 'communication', name: 'Коммуникация', icon: '🗣️' },
+  { key: 'english', name: 'Английский', icon: '🇬🇧' },
+  { key: 'time_management', name: 'Тайм-менеджмент', icon: '📊' },
+  { key: 'leadership', name: 'Лидерство', icon: '👑' },
+  { key: 'stress_resistance', name: 'Стрессоустойчивость', icon: '🧘' },
+  { key: 'public_speaking', name: 'Выступления', icon: '🎤' },
+];
+
+interface PerkInfo {
+  id: string;
+  name: string;
+  requires: Record<string, number>;
+  effects: Record<string, number>;
+  flavor: string;
+}
+
+const PERK_EMOJI: Record<string, string> = {
+  perk_fullstack: '⚔️',
+  perk_morning_person: '🌅',
+  perk_speed_reader: '📖',
+  perk_stoic: '🗿',
+  perk_networker: '🤝',
+  perk_pro_gamer: '🎮',
+  perk_gold_rush: '🪙',
+  perk_hustler: '🧳',
 };
 
 export const SkillsView: React.FC = () => {
   const player = useGameStore((s) => s.player);
+  const setMainSkill = useGameStore((s) => s.setMainSkill);
+  const unlockPerk = useGameStore((s) => s.unlockPerk);
+  const error = useGameStore((s) => s.error);
+  const clearError = useGameStore((s) => s.clearError);
+  const [skills, setSkills] = useState<SkillInfo[]>([]);
+  const [perks, setPerks] = useState<PerkInfo[]>([]);
+
+  useEffect(() => {
+    fetch('/api/content/skills')
+      .then((r) => r.json())
+      .then((data) => setSkills(data.skills ?? []))
+      .catch(() => setSkills([]));
+    fetch('/api/content/perks')
+      .then((r) => r.json())
+      .then((data) => setPerks(data.perks ?? []))
+      .catch(() => setPerks([]));
+  }, []);
 
   if (!player) return null;
 
-  const getSkillLevel = (id: string) => {
-    const skill = player.skills?.[id];
-    const level = skill?.level ?? 0;
-    const xp = skill?.xp ?? 0;
-    return { level, xp };
+  const branchOf: Record<string, string> = {};
+  for (const s of skills) branchOf[s.id] = s.branch;
+
+  const skillLevel = (id: string) => player.skills?.[id]?.level ?? 0;
+  const skillXp = (id: string) => player.skills?.[id]?.xp ?? 0;
+
+  const unlocked = (s: SkillInfo): boolean => {
+    if (!s.unlockAt) return true;
+    return Object.entries(s.unlockAt).every(([parent, need]) => skillLevel(parent) >= need);
   };
+
+  const branches = [...new Set(skills.map((s) => s.branch))];
+  const totalLevels = Object.values(player.skills ?? {}).reduce((sum: number, s: any) => sum + (s.level ?? 0), 0);
 
   return (
     <div className="space-y-4 animate-fade-in">
-      <h2 className="text-lg font-bold text-white">📚 Навыки</h2>
+      {error && (
+        <div className="game-card border-red-500/40 bg-red-500/10 cursor-pointer" onClick={clearError}>
+          <p className="text-sm text-red-300">⚠️ {error}</p>
+        </div>
+      )}
+
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-bold text-white">📚 Навыки</h2>
+        <span className="text-xs text-slate-400">Σ {totalLevels} уровней</span>
+      </div>
+      <p className="text-[11px] text-slate-500 -mt-2">
+        Тапни по навыку, чтобы сделать его основным — учёба и работа качают именно его 🎯
+      </p>
 
       {/* Soft skills */}
       <div className="game-card">
-        <h3 className="text-sm font-medium text-slate-400 mb-2">Soft Skills</h3>
+        <h3 className="section-title mb-2">Soft Skills</h3>
         <div className="grid grid-cols-3 gap-2">
-          {Object.entries(player.softSkills ?? {}).map(([id, skill]: [string, any]) => (
-            <div key={id} className="text-center p-2 bg-slate-800 rounded-lg">
-              <div className="text-xs text-slate-400 mb-1">{getSoftSkillName(id)}</div>
-              <div className="text-lg font-bold text-primary-400">{skill.level ?? 0}</div>
-            </div>
-          ))}
+          {SOFT_SKILLS.map((s) => {
+            const lvl = player.softSkills?.[s.key]?.level ?? 0;
+            return (
+              <div key={s.key} className="text-center p-2 bg-slate-800 rounded-lg">
+                <div className="text-xs text-slate-400 mb-1">{s.icon} {s.name}</div>
+                <div className="text-lg font-bold text-primary-400">{lvl}</div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      {/* Hard skills by branch */}
-      {SKILL_BRANCHES.map((branch) => {
-        const hasSkills = branch.skills.some((s) => player.skills?.[s]);
-        if (!hasSkills) return null;
+      {/* Hard skills by branch (dynamic from content) */}
+      {branches.map((branchId) => {
+        const meta = BRANCH_META[branchId] ?? { name: branchId, icon: '📌', color: 'border-slate-500' };
+        const branchSkills = skills.filter((s) => s.branch === branchId);
+        const learned = branchSkills.filter((s) => skillLevel(s.id) > 0);
+        if (branchSkills.length === 0) return null;
 
         return (
-          <div key={branch.id} className={`game-card border-l-4 ${branch.color}`}>
-            <h3 className="text-sm font-medium text-slate-400 mb-2">
-              {branch.icon} {branch.name}
+          <div key={branchId} className={`game-card border-l-4 ${meta.color}`}>
+            <h3 className="section-title mb-2">
+              {meta.icon} {meta.name}
+              <span className="text-slate-600 ml-1">({learned.length}/{branchSkills.length})</span>
             </h3>
             <div className="space-y-2">
-              {branch.skills.map((skillId) => {
-                const { level, xp } = getSkillLevel(skillId);
-                if (level === 0 && !player.skills?.[skillId]) return null;
+              {branchSkills.map((s) => {
+                const level = skillLevel(s.id);
+                const xp = skillXp(s.id);
+                const isUnlocked = unlocked(s);
+                const xpPercent = Math.min(100, Math.round((xp / xpToNext(level)) * 100));
+                const lockedBy = s.unlockAt
+                  ? Object.entries(s.unlockAt).find(([p, need]) => skillLevel(p) < need)
+                  : undefined;
+
+                const isMain = player.mainSkillId === s.id;
                 return (
-                  <div key={skillId} className="flex items-center gap-2">
-                    <span className="text-sm">{SKILL_ICONS[skillId]}</span>
-                    <div className="flex-1">
+                  <button
+                    key={s.id}
+                    onClick={() => isUnlocked && setMainSkill(s.id)}
+                    disabled={!isUnlocked}
+                    title={isUnlocked ? (isMain ? 'Основной навык' : 'Сделать основным') : s.flavor}
+                    className={`w-full flex items-center gap-2 text-left rounded-lg px-1.5 py-1 transition-colors ${
+                      isMain ? 'bg-primary-600/10 border border-primary-500/30' : 'hover:bg-slate-800/60'
+                    } ${!isUnlocked ? 'opacity-50' : ''}`}
+                  >
+                    <span className="text-sm">{SKILL_EMOJI[s.id] ?? '📌'}</span>
+                    <div className="flex-1 min-w-0">
                       <div className="flex justify-between text-xs">
-                        <span className="text-slate-300">{SKILL_NAMES[skillId]}</span>
+                        <span className="text-slate-300 truncate">
+                          {s.name} {isMain && <span className="text-primary-400">🎯</span>}{' '}
+                          {!isUnlocked && lockedBy ? `🔒 нужен ${lockedBy[0]} ${lockedBy[1]}+` : ''}
+                        </span>
                         <span className="text-primary-400">{level}</span>
                       </div>
                       <div className="h-1.5 bg-slate-700 rounded-full mt-0.5 overflow-hidden">
                         <div
-                          className="h-full bg-primary-500 rounded-full"
-                          style={{ width: `${Math.min(100, (level / 100) * 100)}%` }}
+                          className="h-full bg-primary-500 rounded-full transition-all"
+                          style={{ width: `${xpPercent}%` }}
                         />
                       </div>
                     </div>
-                  </div>
+                  </button>
                 );
               })}
             </div>
@@ -149,25 +202,85 @@ export const SkillsView: React.FC = () => {
         );
       })}
 
-      {Object.keys(player.skills ?? {}).length === 0 && (
+      {skills.length === 0 && (
         <div className="game-card text-center py-8">
           <div className="text-3xl mb-2">📚</div>
-          <p className="text-slate-400 text-sm">Навыков пока нет</p>
-          <p className="text-slate-500 text-xs mt-1">Начни учиться в разделе «День»</p>
+          <p className="text-slate-400 text-sm">Загрузка дерева навыков...</p>
         </div>
       )}
+
+      {/* Perks */}
+      <div className="game-card">
+        <h3 className="section-title mb-2">✨ Перки</h3>
+        <div className="space-y-2">
+          {perks.map((perk) => {
+            const owned = (player.perks ?? []).includes(perk.id);
+            const canUnlock = !owned && canUnlockPerk(player, perk.requires, branchOf);
+            return (
+              <div
+                key={perk.id}
+                className={`flex items-center gap-2 p-2 rounded-lg border ${
+                  owned
+                    ? 'border-emerald-500/40 bg-emerald-900/20'
+                    : canUnlock
+                    ? 'border-amber-500/40 bg-amber-900/10'
+                    : 'border-slate-700/60 bg-slate-800/40'
+                }`}
+              >
+                <span className="text-lg">{PERK_EMOJI[perk.id] ?? '✨'}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-medium text-slate-200">{perk.name}</span>
+                    {owned && <span className="chip bg-emerald-900/60 text-emerald-300">открыт</span>}
+                  </div>
+                  <p className="text-[10px] text-slate-500 mt-0.5" title={perk.flavor}>
+                    {perk.flavor}
+                  </p>
+                  <p className="text-[10px] text-slate-600">
+                    Требует: {describeRequires(perk.requires, skills)}
+                  </p>
+                </div>
+                {!owned && (
+                  <button
+                    onClick={() => unlockPerk(perk.id)}
+                    disabled={!canUnlock}
+                    className={`text-[11px] px-2.5 py-1.5 rounded-lg shrink-0 ${
+                      canUnlock
+                        ? 'bg-amber-600 hover:bg-amber-500 text-white'
+                        : 'bg-slate-700/60 text-slate-500 cursor-not-allowed'
+                    }`}
+                  >
+                    Открыть
+                  </button>
+                )}
+              </div>
+            );
+          })}
+          {perks.length === 0 && <p className="text-xs text-slate-500">Загрузка перков...</p>}
+        </div>
+      </div>
     </div>
   );
 };
 
-function getSoftSkillName(id: string): string {
-  const names: Record<string, string> = {
-    communication: '🗣️ Комм.',
-    english: '🇬🇧 Англ.',
-    time_management: '📊 Тайм-мен.',
-    leadership: '👑 Лид.',
-    stress_resistance: '🧘 Стресс.',
-    public_speaking: '🎤 Выступ.',
-  };
-  return names[id] ?? id;
+const SOFT_REQUIRE_NAMES: Record<string, string> = {
+  communication: 'Коммуникация',
+  english: 'Английский',
+  time_management: 'Тайм-менеджмент',
+  leadership: 'Лидерство',
+  stress_resistance: 'Стрессоустойчивость',
+  public_speaking: 'Выступления',
+};
+
+function describeRequires(requires: Record<string, number>, skills: SkillInfo[]): string {
+  return Object.entries(requires)
+    .map(([key, lvl]) => {
+      if (key.endsWith('Branch')) {
+        const branch = key.replace('Branch', '');
+        return `${BRANCH_META[branch]?.name ?? branch}: ${lvl}`;
+      }
+      if (SOFT_REQUIRE_NAMES[key]) return `${SOFT_REQUIRE_NAMES[key]}: ${lvl}`;
+      return `${skills.find((s) => s.id === key)?.name ?? key}: ${lvl}`;
+    })
+    .join(', ');
 }

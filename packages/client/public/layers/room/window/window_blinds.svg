@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000"><defs>
+  <linearGradient id="skinGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#969696"/><stop offset="1" stop-color="#767676"/>
+  </linearGradient>
+  <linearGradient id="hairGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#5c5c5c"/><stop offset="1" stop-color="#3c3c3c"/>
+  </linearGradient>
+  <linearGradient id="wallGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#a6abb5"/><stop offset="1" stop-color="#898e99"/>
+  </linearGradient>
+  <linearGradient id="floorGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#5f5f5f"/><stop offset="1" stop-color="#424242"/>
+  </linearGradient>
+  <linearGradient id="glassGrad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#ddeaf7"/><stop offset="1" stop-color="#a9c6e0"/>
+  </linearGradient>
+  <linearGradient id="woodGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#b98d60"/><stop offset="1" stop-color="#8a6238"/>
+  </linearGradient>
+  <linearGradient id="steelGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#8b93a3"/><stop offset="1" stop-color="#5d6672"/>
+  </linearGradient>
+</defs><g stroke="#1e2430" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+  <rect x="500" y="76" width="520" height="14" rx="7" fill="url(#steelGrad)"/>
+  <rect x="600" y="120" width="320" height="340" rx="8" fill="url(#glassGrad)"/>
+  <circle cx="700" cy="200" r="22" fill="#ffe9a8" stroke="none" opacity="0.85"/>
+  <rect x="604" y="150" width="312" height="16" fill="#e8edf2"/>
+  <rect x="604" y="186" width="312" height="16" fill="#e8edf2"/>
+  <rect x="604" y="222" width="312" height="16" fill="#e8edf2"/>
+  <rect x="604" y="258" width="312" height="16" fill="#e8edf2"/>
+  <rect x="604" y="294" width="312" height="16" fill="#e8edf2"/>
+  <rect x="604" y="330" width="312" height="16" fill="#e8edf2"/>
+  <rect x="604" y="366" width="312" height="16" fill="#e8edf2"/>
+  <rect x="604" y="402" width="312" height="16" fill="#e8edf2"/>
+  <path d="M620 462 L700 380" stroke="#d6a53c" stroke-width="8"/></g></svg>

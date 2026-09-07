@@ -30,5 +30,13 @@
     "description": "Друг из универа. Работает в другой конторе, но вы всё ещё вместе ходите в бар по пятницам.",
     "avatar": "friend.png",
     "initialRelation": 40
+  },
+  {
+    "id": "hr_anna",
+    "name": "Анна из HR",
+    "role": "hr",
+    "description": "Рекрутер крупной IT-компании. Ищет сеньоров, но общается со всеми — вдруг вырастут.",
+    "avatar": "hr_anna.png",
+    "initialRelation": 10
   }
 ]

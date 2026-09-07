@@ -2,7 +2,10 @@
   {
     "id": "perk_fullstack",
     "name": "Фулстек-самурай",
-    "requires": { "frontendBranch": 40, "backendBranch": 40 },
+    "requires": {
+      "frontendBranch": 40,
+      "backendBranch": 40
+    },
     "effects": {
       "jobRequirementDiscount": 0.1,
       "freelancePaymentMult": 1.15
@@ -12,7 +15,9 @@
   {
     "id": "perk_morning_person",
     "name": "Жаворонок",
-    "requires": { "time_management": 25 },
+    "requires": {
+      "time_management": 25
+    },
     "effects": {
       "energyBonus": 1
     },
@@ -21,7 +26,10 @@
   {
     "id": "perk_speed_reader",
     "name": "Скорочтение",
-    "requires": { "communication": 20, "english": 20 },
+    "requires": {
+      "communication": 20,
+      "english": 20
+    },
     "effects": {
       "learningBonus": 0.15
     },
@@ -30,7 +38,10 @@
   {
     "id": "perk_stoic",
     "name": "Стоик",
-    "requires": { "stress_resistance": 20, "time_management": 15 },
+    "requires": {
+      "stress_resistance": 20,
+      "time_management": 15
+    },
     "effects": {
       "motivationResistance": 0.2
     },
@@ -39,7 +50,10 @@
   {
     "id": "perk_networker",
     "name": "Нетворкер",
-    "requires": { "communication": 35, "public_speaking": 10 },
+    "requires": {
+      "communication": 35,
+      "public_speaking": 10
+    },
     "effects": {
       "jobRequirementDiscount": 0.05,
       "freelancePaymentMult": 1.1
@@ -49,10 +63,35 @@
   {
     "id": "perk_pro_gamer",
     "name": "Киберспортсмен",
-    "requires": { "time_management": 50, "stress_resistance": 15 },
+    "requires": {
+      "time_management": 50,
+      "stress_resistance": 15
+    },
     "effects": {
       "energyBonus": 2
     },
     "flavor": "Ты успеваешь и кодить, и играть. Как? Секрет."
+  },
+  {
+    "id": "perk_gold_rush",
+    "name": "Золотая лихорадка",
+    "requires": {
+      "blockchainBranch": 40
+    },
+    "effects": {
+      "miningIncomeMult": 0.15
+    },
+    "flavor": "Карты гудят, счётчик тикает. Майнинг приносит на 15% больше."
+  },
+  {
+    "id": "perk_hustler",
+    "name": "Подработчик со стажем",
+    "requires": {
+      "communication": 20
+    },
+    "effects": {
+      "sideJobPaymentMult": 0.2
+    },
+    "flavor": "Курьер, бариста, таксист — три в одном. Подработки платят на 20% больше."
   }
 ]

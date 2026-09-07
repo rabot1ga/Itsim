@@ -1,0 +1,326 @@
+[
+  {
+    "id": "w2_standup_early",
+    "title": "⏰ Стендап перенесли на 8 утра",
+    "description": "Новый менеджер решил, что 8 утра — «идеальное время для синхронизации». Команда в трауре.",
+    "tags": ["work", "crisis"],
+    "weight": 7,
+    "cooldownDays": 35,
+    "minGameDay": 30,
+    "conditions": { "hasJob": true },
+    "choices": [
+      {
+        "text": "Привыкнуть и вставать раньше 🌅",
+        "effects": { "skill": { "time_management": 10 }, "health": -1 },
+        "followup": "Привык за две недели. Утром даже нравится. Почти."
+      },
+      {
+        "text": "Предложить перенести на 10 📊",
+        "effects": { "skill": { "communication": 10 }, "reputation": 1 },
+        "followup": "Собрал подписи команды. Менеджер сдался. Ты — герой."
+      },
+      {
+        "text": "Подключаться из кровати с камерой 😴",
+        "effects": { "motivation": 1, "karma": -1 },
+        "followup": "Камера включалась «случайно». Все всё поняли."
+      }
+    ]
+  },
+  {
+    "id": "w2_client_demo",
+    "title": "🎬 Демо клиенту, а прод шалит",
+    "description": "Через час — демо для клиента. А прод в этот момент показывает то, чего не должен. Классика жанра.",
+    "tags": ["work", "crisis"],
+    "weight": 7,
+    "cooldownDays": 45,
+    "minGameDay": 40,
+    "conditions": { "hasJob": true },
+    "choices": [
+      {
+        "text": "Подготовить запасной скринкаст 🎥",
+        "effects": { "skill": { "javascript": 10 }, "reputation": 2 },
+        "followup": "Скринкаст спас демо. Клиент ничего не заметил. Профи."
+      },
+      {
+        "text": "Демо вживую: «сейчас починим» 🔧",
+        "effects": { "skill": { "javascript": 15 }, "motivation": -2 },
+        "followup": "Починили на глазах у клиента. Опасно, но сработало."
+      },
+      {
+        "text": "Перенести демо «по техническим причинам» 🙈",
+        "effects": { "reputation": -1, "motivation": 1 },
+        "followup": "Перенесли. Клиент понял. Репутация — частично."
+      }
+    ]
+  },
+  {
+    "id": "w2_refactor_week",
+    "title": "🧹 Неделя рефакторинга",
+    "description": "Менеджмент выделил целую неделю на рефакторинг. Без новых фич, без дедлайнов. Слишком хорошо, чтобы быть правдой.",
+    "tags": ["work", "reward"],
+    "weight": 6,
+    "cooldownDays": 60,
+    "minGameDay": 60,
+    "conditions": { "hasJob": true },
+    "choices": [
+      {
+        "text": "Разобрать самые больные места 🔧",
+        "effects": { "skill": { "javascript": 25 }, "motivation": 2 },
+        "followup": "Неделя уборки в коде. Дышать стало легче."
+      },
+      {
+        "text": "Тихо закрывать баги 🐛",
+        "effects": { "skill": { "javascript": 15 }, "reputation": 1 },
+        "followup": "Баг-лог похудел на треть. Красота."
+      },
+      {
+        "text": "Не верить и работать как обычно 🤨",
+        "effects": { "motivation": -1 },
+        "followup": "Зря не поверил: неделю реально дали. Упустил."
+      }
+    ]
+  },
+  {
+    "id": "w2_new_hire",
+    "title": "👶 В команду пришёл новенький",
+    "description": "Новичок смотрит на кодовую базу с ужасом. Ты вспоминаешь себя в первый день. Всё повторяется.",
+    "tags": ["work", "social", "mentoring"],
+    "weight": 7,
+    "cooldownDays": 40,
+    "minGameDay": 30,
+    "conditions": { "hasJob": true },
+    "choices": [
+      {
+        "text": "Взять шефство 🤝",
+        "effects": { "relation": { "junior_colleague": 2 }, "reputation": 1, "skill": { "communication": 8 } },
+        "followup": "Новичок расцвёл за месяц. Ты — ментор, сам того не заметив."
+      },
+      {
+        "text": "Провести экскурсию по кодовой базе 🗺",
+        "effects": { "skill": { "javascript": 10 } },
+        "followup": "Экскурсия заняла три часа. Новичок записывал всё."
+      },
+      {
+        "text": "Заняться своими задачами 🙈",
+        "effects": { "karma": -1 },
+        "followup": "Новичок справился сам. Но мог бы быстрее — с твоей помощью."
+      }
+    ]
+  },
+  {
+    "id": "w2_office_move",
+    "title": "📦 Офис переезжает",
+    "description": "Компания переезжает в новый офис. Красивый, светлый, но в два раза дальше от дома. И с open space.",
+    "tags": ["work", "social"],
+    "weight": 6,
+    "cooldownDays": 80,
+    "minGameDay": 50,
+    "conditions": { "hasJob": true },
+    "choices": [
+      {
+        "text": "Помочь с переездом 💪",
+        "effects": { "relation": { "teamlead": 2 }, "motivation": 1 },
+        "followup": "Таскал коробки. Тимлид оценил. Спина — по-другому."
+      },
+      {
+        "text": "Перейти на удалёнку 🏠",
+        "effects": { "motivation": 2, "reputation": -1 },
+        "followup": "Удалёнка одобрена. Офис — для очных встреч."
+      },
+      {
+        "text": "Просто переехать со всеми 😌",
+        "effects": { "motivation": 1 },
+        "followup": "Новый офис — норм. Дорога — не очень."
+      }
+    ]
+  },
+  {
+    "id": "w2_project_canceled",
+    "title": "🛑 Проект закрыли",
+    "description": "Проект, в который ты вложил полгода, закрыли. «Стратегическое решение». Полгода — стратегически — в архив.",
+    "tags": ["work", "crisis"],
+    "weight": 6,
+    "cooldownDays": 90,
+    "minGameDay": 60,
+    "conditions": { "hasJob": true },
+    "choices": [
+      {
+        "text": "Извлечь уроки и двигаться дальше 🧭",
+        "effects": { "motivation": 2, "reputation": 1 },
+        "followup": "Опыт остался. Команду перевели на новый проект."
+      },
+      {
+        "text": "Оплакать и уйти в запой мемов 😢",
+        "effects": { "motivation": -2 },
+        "followup": "День на мемы. Потом — новый старт."
+      },
+      {
+        "text": "Спорить с менеджментом 📊",
+        "effects": { "relation": { "teamlead": -1 }, "motivation": -1 },
+        "followup": "Аргументы были сильные. Решение — окончательное."
+      }
+    ]
+  },
+  {
+    "id": "w2_quarter_planning",
+    "title": "📋 Планирование квартала",
+    "description": "День планирования: стикеры, спринты, «реалистичные оценки». Ты знаешь, чем это кончится.",
+    "tags": ["work", "daily"],
+    "weight": 6,
+    "cooldownDays": 80,
+    "minGameDay": 100,
+    "conditions": { "hasJob": true },
+    "choices": [
+      {
+        "text": "Оценивать честно 📐",
+        "effects": { "reputation": 1, "motivation": 1 },
+        "followup": "Честные оценки — редкость. Менеджер был удивлён."
+      },
+      {
+        "text": "Заложить буфер на всё 🛟",
+        "effects": { "skill": { "time_management": 10 } },
+        "followup": "Буфер спас квартал. Ты — мастер реализма."
+      },
+      {
+        "text": "Соглашаться на всё подряд 🙈",
+        "effects": { "motivation": -2, "burnoutDays": 1 },
+        "followup": "Квартал вышел горячим. Слишком горячим."
+      }
+    ]
+  },
+  {
+    "id": "w2_production_win",
+    "title": "📈 Твоя фича взлетела",
+    "description": "Метрики поползли вверх после твоей фичи. Пользователи довольны. Дашборд выглядит как салют.",
+    "tags": ["work", "reward"],
+    "weight": 7,
+    "cooldownDays": 50,
+    "minGameDay": 50,
+    "conditions": { "hasJob": true },
+    "choices": [
+      {
+        "text": "Презентовать результаты команде 🎤",
+        "effects": { "reputation": 3, "motivation": 3 },
+        "followup": "Презентация на 15 минут. Аплодисменты. Ты — автор хита."
+      },
+      {
+        "text": "Скромно принять похвалу 🙇",
+        "effects": { "reputation": 1, "motivation": 2 },
+        "followup": "Скромность украшает. Метрики — тоже."
+      },
+      {
+        "text": "Напомнить про премию 💰",
+        "effects": { "money": 5000, "reputation": -1 },
+        "followup": "Премию дали. Но осадочек у менеджера остался."
+      }
+    ]
+  },
+  {
+    "id": "w2_overtime_weekend",
+    "title": "📅 Просят выйти в выходные",
+    "description": "«Только в этот раз», — говорит тимлид. В трекере — релиз в понедельник. У тебя были планы на выходные.",
+    "tags": ["work", "crisis"],
+    "weight": 7,
+    "cooldownDays": 40,
+    "minGameDay": 40,
+    "conditions": { "hasJob": true },
+    "choices": [
+      {
+        "text": "Выйти и спасти релиз 🦸",
+        "effects": { "skill": { "javascript": 20 }, "reputation": 2, "health": -2 },
+        "followup": "Релиз спасён. Выходные — нет. Но героем быть приятно."
+      },
+      {
+        "text": "Отказаться: «у меня планы» 🙅",
+        "effects": { "relation": { "teamlead": -1 }, "motivation": 2 },
+        "followup": "Выходные удались. Релиз перенесли на вторник."
+      },
+      {
+        "text": "Помочь удалённо пару часов 🏠",
+        "effects": { "skill": { "javascript": 10 }, "motivation": 1 },
+        "followup": "Компромисс: два часа дома. И выходные, и совесть."
+      }
+    ]
+  },
+  {
+    "id": "w2_brown_bag",
+    "title": "🥪 Внутренний доклад на обеде",
+    "description": "Компания устраивает brown bag: доклады во время обеда. Тебя просят рассказать про свою область.",
+    "tags": ["work", "study"],
+    "weight": 6,
+    "cooldownDays": 45,
+    "minGameDay": 60,
+    "conditions": { "hasJob": true },
+    "choices": [
+      {
+        "text": "Подготовить доклад 🎤",
+        "effects": { "skill": { "public_speaking": 15 }, "reputation": 2 },
+        "followup": "Доклад зашёл. Вопросы — интересные. Обед — продуктивный."
+      },
+      {
+        "text": "Отказаться: «не умею выступать» 🙈",
+        "effects": { "motivation": -1 },
+        "followup": "Слушал чужой доклад. Мог бы и ты. В следующий раз."
+      },
+      {
+        "text": "Сделать доклад-мем 😄",
+        "effects": { "reputation": 1, "motivation": 3 },
+        "followup": "Смешной доклад запомнили больше всех."
+      }
+    ]
+  },
+  {
+    "id": "w2_pet_day",
+    "title": "🐶 День питомцев в офисе",
+    "description": "Компания разрешила привести питомцев. Офис превратился в зоопарк. Кот сидит на твоей клавиатуре.",
+    "tags": ["work", "pets", "fun"],
+    "weight": 6,
+    "cooldownDays": 70,
+    "minGameDay": 30,
+    "conditions": { "hasJob": true },
+    "choices": [
+      {
+        "text": "Гладить всех питомцев по очереди 🐾",
+        "effects": { "motivation": 4, "health": 1 },
+        "followup": "Лучший рабочий день в году. Продуктивность — ноль, счастье — сто."
+      },
+      {
+        "text": "Работать, не отвлекаясь 💻",
+        "effects": { "skill": { "javascript": 10 }, "karma": -1 },
+        "followup": "Работал. Кот всё равно сел на клавиатуру."
+      },
+      {
+        "text": "Устроить фотосессию питомцам 📸",
+        "effects": { "reputation": 1, "motivation": 2 },
+        "followup": "Фото разлетелись по чатам. Питомцы — новые звёзды."
+      }
+    ]
+  },
+  {
+    "id": "w2_retro_fight",
+    "title": "⚡ Спор на ретроспективе",
+    "description": "Обсуждение «что пошло не так» переросло в горячий спор. Две команды, два мнения, одна доска со стикерами.",
+    "tags": ["work", "social"],
+    "weight": 6,
+    "cooldownDays": 35,
+    "minGameDay": 40,
+    "conditions": { "hasJob": true },
+    "choices": [
+      {
+        "text": "Предложить компромисс 🤝",
+        "effects": { "skill": { "communication": 10 }, "reputation": 1, "motivation": 1 },
+        "followup": "Компромисс принят. Ретро закончилось миром."
+      },
+      {
+        "text": "Отстоять свою позицию 🗣",
+        "effects": { "reputation": 1, "relation": { "teamlead": 1 }, "motivation": 1 },
+        "followup": "Твою позицию записали в action items. Приятно."
+      },
+      {
+        "text": "Молча рисовать в стикерах 🎨",
+        "effects": { "motivation": 1 },
+        "followup": "Твои стикеры-каракули всех развеселили."
+      }
+    ]
+  }
+]

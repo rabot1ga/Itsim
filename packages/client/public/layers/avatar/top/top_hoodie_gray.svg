@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500"><defs>
+  <linearGradient id="skinGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#969696"/><stop offset="1" stop-color="#767676"/>
+  </linearGradient>
+  <linearGradient id="hairGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#5c5c5c"/><stop offset="1" stop-color="#3c3c3c"/>
+  </linearGradient>
+  <linearGradient id="wallGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#a6abb5"/><stop offset="1" stop-color="#898e99"/>
+  </linearGradient>
+  <linearGradient id="floorGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#5f5f5f"/><stop offset="1" stop-color="#424242"/>
+  </linearGradient>
+  <linearGradient id="glassGrad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#ddeaf7"/><stop offset="1" stop-color="#a9c6e0"/>
+  </linearGradient>
+  <linearGradient id="woodGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#b98d60"/><stop offset="1" stop-color="#8a6238"/>
+  </linearGradient>
+  <linearGradient id="steelGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#8b93a3"/><stop offset="1" stop-color="#5d6672"/>
+  </linearGradient>
+</defs><g stroke="#1e2430" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+  <path d="M176 258 Q176 240 200 232 Q220 224 250 224 Q280 224 300 232 Q324 240 324 258 L328 452 Q328 478 296 478 L204 478 Q172 478 172 452 Z" fill="#7a7f88"/>
+  <path d="M200 232 Q250 210 300 232 Q280 244 250 246 Q220 244 200 232 Z" fill="#8d929c" opacity="0.75"/>
+  <path d="M244 300 L256 300 L253 318 L247 318 Z" fill="#3c414c"/>
+  <path d="M172 452 L204 478 L296 478 L328 452 L318 460 L182 460 Z" fill="#000000" opacity="0.12"/></g></svg>

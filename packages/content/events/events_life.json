@@ -1,0 +1,500 @@
+[
+  {
+    "id": "tutorial_hell",
+    "title": "🌀 Туториальный ад",
+    "description": "Ты прошёл уже 14 курсов и всё ещё не написал ни одной строчки своего кода. Знакомо?",
+    "tags": ["study", "crisis"],
+    "weight": 10,
+    "cooldownDays": 20,
+    "minGameDay": 3,
+    "choices": [
+      {
+        "text": "Закрыть курсы и сделать хоть что-то самому 💪",
+        "requires": { "energy": 1 },
+        "effects": { "skill": { "javascript": 25 }, "motivation": -2 },
+        "followup": "Первый собственный скрипт упал. Но это ТВОЙ скрипт."
+      },
+      {
+        "text": "Купить ещё один курс «стань сеньором за неделю» 🎓",
+        "effects": { "money": -2000, "motivation": 1 },
+        "followup": "Курс куплен. Пройдено 2%. Классика."
+      }
+    ]
+  },
+  {
+    "id": "stack_overflow_war",
+    "title": "⚔️ Война на Stack Overflow",
+    "description": "Твой вопрос закрыли как дубликат. Вопрос был задан в 2011 году и ответа там нет.",
+    "tags": ["study", "social"],
+    "weight": 8,
+    "cooldownDays": 25,
+    "minGameDay": 8,
+    "conditions": { "minSkill": { "javascript": 10 } },
+    "choices": [
+      {
+        "text": "Разобраться самому и ответить на свой же вопрос 🧠",
+        "effects": { "skill": { "javascript": 20 }, "motivation": -3 },
+        "followup": "Через год кто-то пометил твой ответ решением. Ради этого и живём."
+      },
+      {
+        "text": "Спросить в чате «помогите плз» 🙏",
+        "effects": { "relation": { "uni_friend": 3 }, "motivation": 2 },
+        "followup": "Друг ответил через 3 часа. Сказал «гуглится за минуту»."
+      },
+      {
+        "text": "Закрыть вкладку и пойти гулять 🚶",
+        "effects": { "motivation": 4, "burnoutDays": 1 },
+        "followup": "Прогулка помогла. Вопрос так и висит без ответа."
+      }
+    ]
+  },
+  {
+    "id": "open_source_pr",
+    "title": "🌟 Твой PR приняли в опенсорс",
+    "description": "Ты починил опечатку в README большого проекта. Мейнтейнер слил PR и поблагодарил.",
+    "tags": ["code", "reward"],
+    "weight": 7,
+    "cooldownDays": 40,
+    "minGameDay": 25,
+    "conditions": { "minSkill": { "javascript": 25 } },
+    "choices": [
+      {
+        "text": "Взять задачу посерьёзнее 📦",
+        "effects": { "reputation": 4, "skill": { "javascript": 25 } },
+        "followup": "Ты в контрибьюторах! Теперь твоё имя в файле AUTHORS."
+      },
+      {
+        "text": "Добавить ссылку в резюме 📄",
+        "effects": { "reputation": 2, "motivation": 3 },
+        "followup": "Рекрутёры ставят лайки. Даже те, кто не открывал репозиторий."
+      },
+      {
+        "text": "Переписать проект на Rust 🦀",
+        "requires": { "energy": 2 },
+        "effects": { "skill": { "rust_solana": 30 }, "motivation": -2 },
+        "followup": "Патч на 4000 строк. Мейнтейнер попросил «чуть поменьше амбиций»."
+      }
+    ]
+  },
+  {
+    "id": "courier_rain",
+    "title": "🌧 Дождь в курьерскую смену",
+    "description": "Ты на смене, и тут небо решило устроить водопад. Заказы капают, как и вода за шиворот.",
+    "tags": ["weather", "daily"],
+    "weight": 7,
+    "cooldownDays": 15,
+    "minGameDay": 2,
+    "conditions": { "maxGrade": "junior" },
+    "choices": [
+      {
+        "text": "Доставить всё до конца 🛵",
+        "effects": { "money": 2500, "health": -2, "motivation": -2 },
+        "followup": "Промок до нитки, но чаевые отогрели душу. Или это была пицца в термосумке."
+      },
+      {
+        "text": "Переждать под козырьком магазина ⛱",
+        "effects": { "money": 800, "motivation": 1 },
+        "followup": "Полсмены простоял, глядя в телефон. Зато сухой."
+      },
+      {
+        "text": "Отменить смену и уйти домой 🏠",
+        "effects": { "money": -500, "motivation": 3 },
+        "followup": "Штраф за отмену. Но плед и чай того стоили."
+      }
+    ]
+  },
+  {
+    "id": "roommate_noise",
+    "title": "🔊 Сосед по общаге опять в CS",
+    "description": "За стеной ор: «ЗАХОДИМ НА Б!» Сосед играет в CS до четырёх утра. У тебя завтра учёба.",
+    "tags": ["daily", "crisis"],
+    "weight": 8,
+    "cooldownDays": 18,
+    "minGameDay": 1,
+    "conditions": { "maxGrade": "junior" },
+    "choices": [
+      {
+        "text": "Надеть наушники и терпеть 🎧",
+        "effects": { "motivation": -2, "health": -1 },
+        "followup": "Шумоизоляция помогла процентов на десять."
+      },
+      {
+        "text": "Пойти и договориться по-человечески 🤝",
+        "effects": { "skill": { "communication": 15 }, "motivation": 1 },
+        "followup": "Договорились: после трёх ночи он играет в наушниках. Иногда."
+      },
+      {
+        "text": "Устроить скандал 🤬",
+        "effects": { "motivation": -5, "reputation": -1 },
+        "followup": "Поругались. Теперь у тебя два врага: сосед и недосып."
+      }
+    ]
+  },
+  {
+    "id": "phone_broke",
+    "title": "📱 Экран телефона встретился с асфальтом",
+    "description": "Телефон выскользнул из рук. Паутина трещин — как твой градиентный спуск: красиво и грустно.",
+    "tags": ["daily", "money"],
+    "weight": 6,
+    "cooldownDays": 45,
+    "minGameDay": 5,
+    "choices": [
+      {
+        "text": "Заменить экран в сервисе 🔧",
+        "effects": { "money": -8000 },
+        "followup": "Сервис вернул телефон с новым экраном и одним «сюрпризом» — битым динамиком."
+      },
+      {
+        "text": "Купить новый флагман 📲",
+        "effects": { "money": -30000, "motivation": 2 },
+        "followup": "Новый телефон. Теперь ипотека подождёт ещё месяц."
+      },
+      {
+        "text": "Ходить с трещиной, «она же работает» 😎",
+        "effects": { "motivation": -2, "reputation": -1 },
+        "followup": "Палец уже привык обходить осколки. Гости спрашивают, было ли нападение."
+      }
+    ]
+  },
+  {
+    "id": "lottery_scratch",
+    "title": "🎰 Лотерейный билет на кассе",
+    "description": "Кассир предлагает лотерейный билет. «Сегодня твой день», — говорит она. Она всем так говорит.",
+    "tags": ["money", "daily"],
+    "weight": 5,
+    "cooldownDays": 30,
+    "maxOccurrences": 3,
+    "minGameDay": 1,
+    "choices": [
+      {
+        "text": "Купить билет за 500 ₽ 🎟",
+        "effects": { "money": -500, "karma": 1 },
+        "followup": "Билет проиграл. Зато ты стал частью статистики."
+      },
+      {
+        "text": "Купить кофе вместо этого ☕",
+        "effects": { "money": -300, "motivation": 2 },
+        "followup": "Кофе тоже разочаровал, но хотя бы бодрит."
+      },
+      {
+        "text": "Сказать «я лучше в крипту» 💎",
+        "effects": { "motivation": 1, "reputation": 1 },
+        "followup": "Кассир не поняла, но уважение в очереди ты заработал."
+      }
+    ]
+  },
+  {
+    "id": "family_call",
+    "title": "📞 Звонит мама",
+    "description": "«Ну как у тебя дела? Работаешь уже? А то у тёти Люды сын — сеньор…»",
+    "tags": ["family", "social"],
+    "weight": 10,
+    "cooldownDays": 20,
+    "minGameDay": 1,
+    "choices": [
+      {
+        "text": "Рассказать как есть ❤️",
+        "effects": { "motivation": 5, "health": 1 },
+        "followup": "Мама сказала, что гордится. И передала рецепт борща."
+      },
+      {
+        "text": "Соврать, что всё отлично 🙃",
+        "effects": { "motivation": -2, "karma": -1 },
+        "followup": "Теперь придётся соответствовать. Тяжко."
+      },
+      {
+        "text": "Сбросить: «мам, я на митинге» 📵",
+        "effects": { "motivation": -4, "karma": -2 },
+        "followup": "Мама написала в чат 12 сообщений. Совесть скребётся."
+      }
+    ]
+  },
+  {
+    "id": "flu_season",
+    "title": "🤧 Сезон простуд",
+    "description": "Горло першит, нос заложен, голова как после собеседования в «Corporation of Everything».",
+    "tags": ["health", "crisis"],
+    "weight": 7,
+    "cooldownDays": 40,
+    "minGameDay": 10,
+    "conditions": { "maxHealth": 70 },
+    "choices": [
+      {
+        "text": "Отлежаться день с сериалом 🛌",
+        "effects": { "health": 8, "motivation": 1 },
+        "followup": "Один день сериалов — и ты снова в строю."
+      },
+      {
+        "text": "Работать через силу 💼",
+        "effects": { "health": -5, "motivation": -3, "jobWarnings": 1 },
+        "followup": "Ты герой. Но на дейлике звучал как умирающий модем."
+      },
+      {
+        "text": "Народные средства: имбирь, мёд, лимон 🍋",
+        "effects": { "health": 3, "money": -1500 },
+        "followup": "Имбирь, мёд, лимон и ведро чая. Помогло. Наверное."
+      }
+    ]
+  },
+  {
+    "id": "rent_hike",
+    "title": "🏠 Арендодатель поднял цену",
+    "description": "«Рынок, инфляция, вы понимаете». Ты понимаешь только, что денег станет меньше.",
+    "tags": ["money", "crisis"],
+    "weight": 6,
+    "cooldownDays": 60,
+    "minGameDay": 60,
+    "conditions": { "maxGrade": "middle" },
+    "choices": [
+      {
+        "text": "Заплатить молча 😐",
+        "effects": { "money": -10000 },
+        "followup": "Оплатил. Вздохнул. Открыл сайт с вакансиями."
+      },
+      {
+        "text": "Торговаться как на базаре 🗣",
+        "requires": { "skill": { "communication": 20 } },
+        "effects": { "money": -6000, "motivation": 1 },
+        "followup": "Сбил цену! Арендодатель оценил наглость."
+      },
+      {
+        "text": "Съехать в знак протеста 📦",
+        "effects": { "motivation": -5, "health": -2 },
+        "followup": "Переезд за неделю. Коробки, пыль и сожаление."
+      }
+    ]
+  },
+  {
+    "id": "gym_january",
+    "title": "🏋️ Абонементная лихорадка",
+    "description": "Знакомый хвастается прогрессом в зале. Ты вспоминаешь, что последний раз бегал от трамвая.",
+    "tags": ["health", "social"],
+    "weight": 7,
+    "cooldownDays": 30,
+    "minGameDay": 10,
+    "choices": [
+      {
+        "text": "Купить абонемент в зал 🏃",
+        "effects": { "money": -3000, "health": 6, "motivation": 3 },
+        "followup": "Купил. Сходил два раза. Второй раз — за вещами."
+      },
+      {
+        "text": "Бегать в парке бесплатно 🌳",
+        "effects": { "health": 4 },
+        "followup": "Пробежка в парке. Бесплатно, но собаки."
+      },
+      {
+        "text": "«Начну с понедельника» 🛋",
+        "effects": { "motivation": 2, "health": -1 },
+        "followup": "Понедельник наступил. Ты не наступил."
+      }
+    ]
+  },
+  {
+    "id": "tutorial_cat",
+    "title": "🐱 Кот прошёлся по клавиатуре",
+    "description": "Ты отошёл за чаем, а кот оставил в коде 300 символов неясного назначения. Тесты зелёные. Это пугает.",
+    "tags": ["pets", "code"],
+    "weight": 8,
+    "cooldownDays": 25,
+    "minGameDay": 10,
+    "conditions": { "hasJob": true },
+    "choices": [
+      {
+        "text": "Прогнать кота и откатить изменения 🐾",
+        "effects": { "motivation": -2 },
+        "followup": "Откатил. Кот обиделся и сел на ноутбук."
+      },
+      {
+        "text": "Оставить: вдруг он что-то дельное написал 🧐",
+        "effects": { "skill": { "javascript": 10 }, "motivation": 4 },
+        "followup": "Ревьюер спросил, зачем тут `meow meow meow`. Ты ответил: «бизнес-требование»."
+      },
+      {
+        "text": "Сфоткать и выложить в твиттер 📸",
+        "effects": { "reputation": 2, "motivation": 3 },
+        "followup": "42 лайка и один оффер от кошачьего стартапа."
+      }
+    ]
+  },
+  {
+    "id": "meme_doomscroll",
+    "title": "📉 Мемы vs Дедлайн",
+    "description": "Открыл ленту «на пять минут». Прошло два часа. Дедлайн ближе, чем конец скролла.",
+    "tags": ["memes", "daily"],
+    "weight": 9,
+    "cooldownDays": 14,
+    "minGameDay": 1,
+    "choices": [
+      {
+        "text": "Ещё пять минут. Точно пять ⏱",
+        "effects": { "motivation": 3, "energy": -1 },
+        "followup": "Прошло сорок минут. Мемы того стоили."
+      },
+      {
+        "text": "Закрыть всё и сесть за дело 💪",
+        "effects": { "skill": { "javascript": 15 }, "motivation": -1 },
+        "followup": "Сделал больше, чем за весь день. Стыдно, что так работает."
+      }
+    ]
+  },
+  {
+    "id": "imposter_syndrome",
+    "title": "🎭 Синдром самозванца",
+    "description": "Кажется, все вокруг гениальнее тебя, а тебя вот-вот раскроют. Классика жанра.",
+    "tags": ["work", "mental"],
+    "weight": 8,
+    "cooldownDays": 35,
+    "minGameDay": 40,
+    "conditions": { "minGrade": "middle" },
+    "choices": [
+      {
+        "text": "Спросить коллег, как они справляются 💬",
+        "effects": { "relation": { "junior_colleague": 2 }, "motivation": 3 },
+        "followup": "Оказалось, все тоже импровизируют. Легче не стало, но стало веселее."
+      },
+      {
+        "text": "Вспомнить свои реальные достижения 🏆",
+        "effects": { "motivation": 4 },
+        "followup": "Список из 27 побед. Самозванец так не смог бы. Наверное."
+      },
+      {
+        "text": "Зарыться в работу с головой 📚",
+        "effects": { "skill": { "javascript": 20 }, "motivation": -3, "burnoutDays": 1 },
+        "followup": "Работа заглушила сомнения. Ненадолго."
+      }
+    ]
+  },
+  {
+    "id": "headhunter_call",
+    "title": "📞 Звонок хедхантера",
+    "description": "«У меня для вас уникальное предложение!» Голос бодрый. Ты подозреваешь, что вакансия — то же самое, но с другим логотипом.",
+    "tags": ["career", "reward"],
+    "weight": 6,
+    "cooldownDays": 60,
+    "minGameDay": 90,
+    "conditions": { "minGrade": "senior", "minReputation": 40 },
+    "choices": [
+      {
+        "text": "Согласиться на собеседование 🎯",
+        "requires": { "energy": 2 },
+        "effects": { "reputation": 3, "motivation": 4 },
+        "followup": "Сходил «просто посмотреть рынок». Рынок посмотрел на тебя в ответ."
+      },
+      {
+        "text": "Назвать зарплату в два раза выше 💰",
+        "effects": { "reputation": 2, "motivation": 2 },
+        "followup": "Хедхантер взял паузу. Через день перезвонил: «а можно не в два?»"
+      },
+      {
+        "text": "Отказаться: «я тут всё построил» 🏗",
+        "effects": { "relation": { "teamlead": 2 }, "motivation": 1 },
+        "followup": "Лояльность оценят. Возможно. Когда-нибудь."
+      }
+    ]
+  },
+  {
+    "id": "startup_idea",
+    "title": "🚀 Друг предлагает стартап",
+    "description": "«Идея на миллиард: доставка кактусов по подписке. Осталось только написать код, найти деньги и клиентов».",
+    "tags": ["startup", "social"],
+    "weight": 7,
+    "cooldownDays": 60,
+    "minGameDay": 50,
+    "conditions": { "npcPresent": "uni_friend", "minMoney": 20000 },
+    "choices": [
+      {
+        "text": "Вложиться в «кактусы по подписке» 🌵",
+        "effects": { "money": -20000, "motivation": 2 },
+        "chain": { "eventId": "startup_demo_day", "afterDays": 14, "chance": 1 },
+        "followup": "Ты теперь кофаундер. Доля 50%. Код — 100% твой."
+      },
+      {
+        "text": "Вежливо отказаться 🙅",
+        "effects": { "relation": { "uni_friend": -1 }, "motivation": 1 },
+        "followup": "Друг слегка обиделся. Потом переключился на идею с NFT-носками."
+      },
+      {
+        "text": "Согласиться, но только вечерами 🌙",
+        "effects": { "motivation": -2, "skill": { "javascript": 20 } },
+        "followup": "Вечерние хакатоны с пиццей. Утром — работа. Спать некогда."
+      }
+    ]
+  },
+  {
+    "id": "startup_demo_day",
+    "title": "🎤 Демо-день стартапа",
+    "description": "День презентации. Инвесторы в зале. Твой лэптоп показывает 1% заряда.",
+    "tags": ["startup", "chain"],
+    "weight": 100,
+    "cooldownDays": 0,
+    "chainOnly": true,
+    "choices": [
+      {
+        "text": "Провести демо на энтузиазме 🔥",
+        "effects": { "money": 50000, "reputation": 3, "motivation": 3 },
+        "followup": "Демо прошло! Инвестор спросил про юнит-экономику. Ты спросил, что это. Деньги всё равно дали."
+      },
+      {
+        "text": "Признаться, что продукт не готов 😬",
+        "effects": { "money": -5000, "motivation": 2 },
+        "followup": "Честность оценили, но не деньгами. Зато пицца была отличная."
+      }
+    ]
+  },
+  {
+    "id": "conference_speaker",
+    "title": "🎤 Тебя зовут выступить на конференции",
+    "description": "«Мы слышали, вы эксперт!» Сцена, сотни глаз, слайды, которые ты ещё не начал делать.",
+    "tags": ["career", "reward"],
+    "weight": 5,
+    "cooldownDays": 90,
+    "minGameDay": 120,
+    "conditions": { "minGrade": "senior", "minReputation": 50 },
+    "choices": [
+      {
+        "text": "Согласиться и зажечь 🎆",
+        "requires": { "energy": 3 },
+        "effects": { "reputation": 5, "motivation": 5, "skill": { "public_speaking": 20 } },
+        "followup": "Овации! Правда, половина зала пришла за мерчем."
+      },
+      {
+        "text": "Отправить вместо себя джуна 🤝",
+        "effects": { "relation": { "junior_colleague": 3 }, "reputation": 1 },
+        "followup": "Джун справился. Теперь он герой, а ты — «ментор года»."
+      },
+      {
+        "text": "Отказаться: сцена — это страшно 😨",
+        "effects": { "motivation": -3 },
+        "followup": "Отказался. Потом посмотрел запись доклада и пожалел."
+      }
+    ]
+  },
+  {
+    "id": "barista_regular",
+    "title": "☕ Капризный завсегдатай кофейни",
+    "description": "«Мне как обычно». Ты работаешь вторую смену и не знаешь, что у него «как обычно».",
+    "tags": ["social", "daily"],
+    "weight": 7,
+    "cooldownDays": 20,
+    "minGameDay": 5,
+    "conditions": { "maxGrade": "junior" },
+    "choices": [
+      {
+        "text": "Сделать двойной капучино наобум 🎲",
+        "effects": { "money": 1800, "motivation": 1 },
+        "followup": "Угадал! Клиент ушёл довольный. Или просто замёрз."
+      },
+      {
+        "text": "Предложить свой фирменный рецепт ✨",
+        "effects": { "reputation": 1, "motivation": 2 },
+        "followup": "Клиент в восторге и теперь приходит только к тебе. Увольняться нельзя."
+      },
+      {
+        "text": "Сказать всё, что думаешь о его тоне 😤",
+        "effects": { "money": -1000, "motivation": -4, "karma": -1 },
+        "followup": "Лишили премии. Зато высказался. Оно того не стоило."
+      }
+    ]
+  }
+]

@@ -1,5 +1,6 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { createHmac, timingSafeEqual } from 'crypto';
+import { verifySessionToken } from '../routes/auth.js';
 
 /**
  * Telegram initData validation — section 14.1
@@ -20,7 +21,7 @@ interface TelegramUser {
  */
 export function validateInitData(initData: string): TelegramUser | null {
   if (!BOT_TOKEN) {
-    console.warn('BOT_TOKEN not set — auth validation disabled');
+    console.warn('BOT_TOKEN not set — auth validation disabled (dev mode)');
     return parseInitData(initData);
   }
 
@@ -49,9 +50,15 @@ export function validateInitData(initData: string): TelegramUser | null {
 
   // 4. TTL check
   const authDate = Number(params.get('auth_date'));
-  if (Date.now() / 1000 - authDate > TTL_SECONDS) return null;
+  if (!Number.isFinite(authDate) || Date.now() / 1000 - authDate > TTL_SECONDS) return null;
 
-  return JSON.parse(params.get('user')!);
+  const userStr = params.get('user');
+  if (!userStr) return null;
+  try {
+    return JSON.parse(userStr);
+  } catch {
+    return null;
+  }
 }
 
 function parseInitData(initData: string): TelegramUser | null {
@@ -74,26 +81,46 @@ export async function telegramAuthHook(
 ) {
   const authHeader = request.headers.authorization;
   if (!authHeader) {
+    // Dev-mode fallback: no header at all → Dev user (bulletproof preview)
+    if (!BOT_TOKEN) {
+      console.warn('Dev fallback: missing auth header treated as Dev user');
+      (request as any).telegramUser = { id: 1, first_name: 'Dev' };
+      return;
+    }
     return reply.status(401).send({ error: 'Authorization header required' });
   }
 
-  // Token format: "Bearer <jwt>" or "tma <initData>"
-  const [scheme, token] = authHeader.split(' ');
+  // Token format: "tma <initData>" or "Bearer <jwt>"
+  const space = authHeader.indexOf(' ');
+  const scheme = space >= 0 ? authHeader.slice(0, space) : authHeader;
+  const token = space >= 0 ? authHeader.slice(space + 1).trim() : '';
 
   if (scheme === 'tma') {
-    // First request: validate initData
-    const user = validateInitData(token);
+    // initData is validated on EVERY request (Telegram-canonical pattern)
+    let user = validateInitData(token);
     if (!user) {
-      return reply.status(401).send({ error: 'Invalid initData' });
+      // Dev-mode fallback: tolerate legacy/malformed tokens (stale bundles)
+      if (!BOT_TOKEN) {
+        console.warn('Dev fallback: invalid tma token treated as Dev user');
+        user = { id: 1, first_name: 'Dev' };
+      } else {
+        return reply.status(401).send({ error: 'Invalid initData' });
+      }
     }
     (request as any).telegramUser = user;
   } else if (scheme === 'Bearer') {
-    // Subsequent requests: validate JWT (simplified — real impl would verify)
-    try {
-      const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString());
+    // Subsequent requests: verify signed session JWT
+    const payload = verifySessionToken(token);
+    if (!payload) {
+      if (!BOT_TOKEN) {
+        // Dev-mode fallback: any invalid session becomes the Dev user
+        console.warn('Dev fallback: invalid Bearer token treated as Dev user');
+        (request as any).telegramUser = { id: 1, first_name: 'Dev' };
+      } else {
+        return reply.status(401).send({ error: 'Invalid or expired token' });
+      }
+    } else {
       (request as any).telegramUser = payload;
-    } catch {
-      return reply.status(401).send({ error: 'Invalid token' });
     }
   } else {
     return reply.status(401).send({ error: 'Invalid auth scheme' });

@@ -21,10 +21,11 @@ const App: React.FC = () => {
   if (!initialized) {
     return (
       <div className="app-container flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-4xl mb-4">💻</div>
-          <div className="text-lg text-slate-300">Загрузка IT Life Simulator...</div>
-          <div className="mt-4 w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto" />
+        <div className="text-center animate-fade-in">
+          <div className="text-6xl mb-5 animate-float">💻</div>
+          <div className="text-xl font-bold text-gradient animate-gradient">IT Life Simulator</div>
+          <div className="text-sm text-slate-500 mt-1 mb-6">Загрузка симулятора жизни...</div>
+          <div className="w-10 h-10 border-3 border-primary-500/30 border-t-primary-400 rounded-full animate-spin mx-auto" />
         </div>
       </div>
     );

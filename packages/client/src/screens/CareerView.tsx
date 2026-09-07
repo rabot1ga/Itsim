@@ -1,13 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
-
-const COMPANIES = [
-  { id: 'search_everything', name: 'Поиск.Всё', icon: '🔍', stack: 'Python, Java, SQL', salary: '115%', bar: 1.1 },
-  { id: 'corporation_of_everything', name: 'Corporation of Everything', icon: '🌐', stack: 'Python, Java, TS, Go', salary: '130%', bar: 1.3 },
-  { id: 'green_bank_digital', name: 'ЗелёныйБанк Диджитал', icon: '🏦', stack: 'Java, Spring, SQL', salary: '105%', bar: 0.95 },
-  { id: 'neo_bank', name: 'НеоБанк', icon: '💳', stack: 'TS, React, Node.js', salary: '110%', bar: 1.05 },
-  { id: 'pixel_dot_studio', name: 'Студия «Пиксель и Точка»', icon: '🎨', stack: 'JS, React, Python', salary: '70%', bar: 0.6 },
-];
+import { InterviewPanel } from '../components/InterviewPanel';
 
 const GRADES = [
   { grade: 'intern', name: 'Стажёр', skill: 18, salary: '35 000 ₽' },
@@ -18,13 +11,52 @@ const GRADES = [
   { grade: 'architect', name: 'Архитектор', skill: 90, salary: '680 000 ₽' },
 ];
 
+const SIZE_LABELS: Record<string, string> = {
+  enterprise: 'Корпорация',
+  startup: 'Стартап',
+  product: 'Продукт',
+  outsource: 'Аутсорс',
+};
+
+interface CompanyInfo {
+  id: string;
+  name: string;
+  archetype: string;
+  size: string;
+  stack: string[];
+  salaryMult: number;
+  interviewBar: number;
+  toxicity: number;
+  growthPotential: number;
+  perks: string[];
+  flavor: string;
+  requiresEnglish: number;
+}
+
+const STACK_ICONS: Record<string, string> = {
+  javascript: '🟨', react: '⚛️', typescript: '🔷', python: '🐍', java: '☕',
+  spring: '🌱', sql: '🗃️', kotlin: '🟣', go: '🐹', nodejs: '🟢', swift: '🐦',
+};
+
 export const CareerView: React.FC = () => {
   const player = useGameStore((s) => s.player);
-  const currentView = useGameStore((s) => s.currentView);
+  const applyToCompany = useGameStore((s) => s.applyToCompany);
+  const acceptOffer = useGameStore((s) => s.acceptOffer);
+  const declineOffer = useGameStore((s) => s.declineOffer);
+  const [companies, setCompanies] = useState<CompanyInfo[]>([]);
+
+  useEffect(() => {
+    fetch('/api/content/companies')
+      .then((r) => r.json())
+      .then((data) => setCompanies(data.companies ?? []))
+      .catch(() => setCompanies([]));
+  }, []);
 
   if (!player) return null;
 
   const totalSkills = Object.values(player.skills ?? {}).reduce((sum: number, s: any) => sum + (s.level ?? 0), 0);
+  const application = player.currentApplication;
+  const offers = player.pendingOffers ?? [];
 
   return (
     <div className="space-y-4 animate-fade-in">
@@ -47,32 +79,88 @@ export const CareerView: React.FC = () => {
               <span className="text-sm font-medium text-amber-400">Без работы</span>
               <span className="text-xs text-slate-500">День {player.currentDay ?? 1}</span>
             </div>
-            <p className="text-slate-400 text-sm">Найди работу через раздел «День»</p>
+            <p className="text-slate-400 text-sm">
+              Откликайся на вакансии ниже — но сначала прокачай навыки (от 18 суммарно) и коммуникацию
+            </p>
           </>
         )}
       </div>
 
+      {/* Job offers */}
+      {offers.length > 0 && (
+        <div className="game-card border-l-4 border-emerald-500 animate-pop-in">
+          <h3 className="section-title mb-2">📩 Офферы</h3>
+          <div className="space-y-2">
+            {offers.map((o: any) => (
+              <div key={o.companyId} className="bg-slate-800/50 rounded-lg p-2.5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-slate-200">{o.position}</p>
+                    <p className="text-xs text-emerald-400">{formatMoney(o.salary)}/мес</p>
+                    <p className="text-xs text-slate-500">Сгорит через {o.expiresInDays} дн.</p>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => acceptOffer(o.companyId)}
+                      className="text-xs px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg"
+                    >
+                      Принять
+                    </button>
+                    <button
+                      onClick={() => declineOffer(o.companyId)}
+                      className="text-xs px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg"
+                    >
+                      Отклонить
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Interview quiz */}
+      {application?.status === 'interview_scheduled' && <InterviewPanel />}
+
+      {/* Application status */}
+      {application && (
+        <div className="game-card border-l-4 border-sky-500">
+          <h3 className="section-title mb-2">📄 Твой отклик</h3>
+          {application.status === 'interview_scheduled' && (
+            <p className="text-sm text-slate-300">
+              {application.position} — собеседование на {application.interviewDay} день. Готовься, скрести пальцы.
+            </p>
+          )}
+          {application.status === 'rejected' && (
+            <p className="text-sm text-slate-300">
+              {application.position} — отказ. «Мы вернёмся к вам, если что». Можешь откликнуться снова.
+            </p>
+          )}
+          {application.status === 'accepted' && (
+            <p className="text-sm text-slate-300">
+              Оффер получен — прими его в блоке «Офферы» выше.
+            </p>
+          )}
+        </div>
+      )}
+
       {/* Grade progress */}
       <div className="game-card">
-        <h3 className="text-sm font-medium text-slate-400 mb-2">📈 Грейды</h3>
+        <h3 className="section-title mb-2">📈 Грейды</h3>
         <div className="space-y-1.5">
           {GRADES.map((g) => {
-            const isReached = player.grade === g.grade ||
-              ['intern', 'junior', 'middle', 'senior', 'teamlead', 'architect'].indexOf(player.grade || '') >=
-              ['intern', 'junior', 'middle', 'senior', 'teamlead', 'architect'].indexOf(g.grade);
-
-            const showSkill = ['intern', 'junior', 'middle', 'senior'].indexOf(g.grade) >= 0;
+            const order = GRADES.map(x => x.grade);
+            const isReached = player.grade === g.grade || order.indexOf(player.grade || '') >= order.indexOf(g.grade);
 
             return (
               <div key={g.grade} className="flex items-center gap-2 text-xs">
                 <span className={`w-2 h-2 rounded-full ${isReached ? 'bg-emerald-500' : 'bg-slate-600'}`} />
                 <span className={`w-20 ${isReached ? 'text-slate-200' : 'text-slate-500'}`}>{g.name}</span>
                 <span className={`flex-1 ${isReached ? 'text-slate-300' : 'text-slate-600'}`}>{g.salary}</span>
-                {showSkill && (
-                  <span className={`${totalSkills >= g.skill ? 'text-emerald-400' : 'text-slate-600'}`}>
-                    навык {g.skill}
-                  </span>
-                )}
+                <span className={`${totalSkills >= g.skill ? 'text-emerald-400' : 'text-slate-600'}`}>
+                  навык {g.skill}
+                </span>
               </div>
             );
           })}
@@ -81,25 +169,41 @@ export const CareerView: React.FC = () => {
 
       {/* Companies */}
       <div className="game-card">
-        <h3 className="text-sm font-medium text-slate-400 mb-2">🏢 Компании</h3>
+        <h3 className="section-title mb-2">🏢 Компании</h3>
+        {companies.length === 0 && (
+          <p className="text-xs text-slate-500">Загрузка компаний...</p>
+        )}
         <div className="space-y-2">
-          {COMPANIES.map((c) => (
-            <div key={c.id} className="bg-slate-800/50 rounded-lg p-2.5">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">{c.icon}</span>
-                  <div>
-                    <p className="text-sm text-slate-200">{c.name}</p>
-                    <p className="text-xs text-slate-500">{c.stack}</p>
+          {companies.map((c) => {
+            const canApply = !player.job && (!application || ['rejected', 'accepted'].includes(application.status));
+            return (
+              <div key={c.id} className="bg-slate-800/50 rounded-lg p-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="min-w-0">
+                      <p className="text-sm text-slate-200 truncate">{c.name}</p>
+                      <p className="text-xs text-slate-500">
+                        {SIZE_LABELS[c.size] ?? c.size} · {c.stack.slice(0, 3).map(s => STACK_ICONS[s] ?? s).join(' ')}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right text-xs shrink-0 ml-2">
+                    <span className="text-emerald-400">{Math.round(c.salaryMult * 100)}%</span>
+                    <div className="text-slate-600">барьер {c.interviewBar}</div>
                   </div>
                 </div>
-                <div className="text-right text-xs">
-                  <span className="text-emerald-400">{c.salary}</span>
-                  <div className="text-slate-600">барьер {c.bar}</div>
-                </div>
+                <p className="text-xs text-slate-500 mt-1.5 line-clamp-2">{c.flavor}</p>
+                {canApply && (
+                  <button
+                    onClick={() => applyToCompany(c.id)}
+                    className="mt-2 w-full text-xs px-3 py-1.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors"
+                  >
+                    Откликнуться
+                  </button>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

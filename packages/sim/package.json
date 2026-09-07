@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "simulate": "tsx src/simulate.ts",
-    "test": "tsx src/simulate.ts --check"
+    "test": "tsx src/simulate.ts --check",
+    "build": "tsc"
   },
   "dependencies": {
     "@itsim/shared": "*"

@@ -1,0 +1,395 @@
+{
+  "version": "1.0",
+  "eyes": [
+    {
+      "id": "eye_normal",
+      "name": "Обычные глаза",
+      "weight": 50,
+      "rarity": "common"
+    },
+    {
+      "id": "eye_tired",
+      "name": "Уставшие глаза",
+      "weight": 25,
+      "rarity": "common"
+    },
+    {
+      "id": "eye_closed",
+      "name": "Вечно сонные",
+      "weight": 12,
+      "rarity": "common"
+    },
+    {
+      "id": "eye_vr",
+      "name": "Глаза в VR",
+      "weight": 8,
+      "rarity": "rare"
+    },
+    {
+      "id": "eye_red",
+      "name": "Красные от кода",
+      "weight": 3,
+      "rarity": "rare"
+    },
+    {
+      "id": "eye_legendary",
+      "name": "Глаза Сеньора",
+      "weight": 2,
+      "rarity": "legendary"
+    }
+  ],
+  "hairstyles": [
+    {
+      "id": "hair_buzzcut",
+      "name": "Ёжик",
+      "weight": 12
+    },
+    {
+      "id": "hair_short",
+      "name": "Короткие",
+      "weight": 18
+    },
+    {
+      "id": "hair_messy",
+      "name": "Взъерошенные",
+      "weight": 16
+    },
+    {
+      "id": "hair_long",
+      "name": "Длинные",
+      "weight": 10
+    },
+    {
+      "id": "hair_bald",
+      "name": "Лысый",
+      "weight": 8
+    },
+    {
+      "id": "hair_manbun",
+      "name": "Пучок",
+      "weight": 10
+    },
+    {
+      "id": "hair_curly",
+      "name": "Кудри",
+      "weight": 10
+    },
+    {
+      "id": "hair_undercut",
+      "name": "Андеркат",
+      "weight": 8
+    },
+    {
+      "id": "hair_spiky",
+      "name": "Ирокез",
+      "weight": 7
+    },
+    {
+      "id": "hair_ponytail",
+      "name": "Хвостик",
+      "weight": 8
+    }
+  ],
+  "hairPalette": [
+    {
+      "id": "hair_black",
+      "name": "Чёрный",
+      "hue": 20,
+      "sat": 0.6,
+      "light": 0.55
+    },
+    {
+      "id": "hair_brown",
+      "name": "Каштановый",
+      "hue": 25,
+      "sat": 1.8,
+      "light": 0.75
+    },
+    {
+      "id": "hair_blond",
+      "name": "Блонд",
+      "hue": 48,
+      "sat": 2.0,
+      "light": 1.25
+    },
+    {
+      "id": "hair_red",
+      "name": "Рыжий",
+      "hue": 10,
+      "sat": 2.5,
+      "light": 1.0
+    },
+    {
+      "id": "hair_gray",
+      "name": "Седой",
+      "hue": 0,
+      "sat": 0.15,
+      "light": 1.3
+    },
+    {
+      "id": "hair_blue",
+      "name": "Синий (покрасился)",
+      "hue": 220,
+      "sat": 2.4,
+      "light": 0.95
+    }
+  ],
+  "skinTones": [
+    {
+      "id": "skin_pale",
+      "name": "Бледный",
+      "hue": 30,
+      "sat": 1.3,
+      "light": 1.15
+    },
+    {
+      "id": "skin_light",
+      "name": "Светлый",
+      "hue": 28,
+      "sat": 1.5,
+      "light": 1.0
+    },
+    {
+      "id": "skin_olive",
+      "name": "Оливковый",
+      "hue": 24,
+      "sat": 1.8,
+      "light": 0.9
+    },
+    {
+      "id": "skin_tan",
+      "name": "Загорелый",
+      "hue": 22,
+      "sat": 2.0,
+      "light": 0.8
+    },
+    {
+      "id": "skin_brown",
+      "name": "Смуглый",
+      "hue": 18,
+      "sat": 2.1,
+      "light": 0.68
+    },
+    {
+      "id": "skin_dark",
+      "name": "Тёмный",
+      "hue": 15,
+      "sat": 2.2,
+      "light": 0.55
+    }
+  ],
+  "beards": [
+    {
+      "id": "beard_none",
+      "name": "Без бороды",
+      "weight": 45
+    },
+    {
+      "id": "beard_stubble",
+      "name": "Щетина",
+      "weight": 25
+    },
+    {
+      "id": "beard_goatee",
+      "name": "Эспаньолка",
+      "weight": 12
+    },
+    {
+      "id": "beard_full",
+      "name": "Борода джуна",
+      "weight": 13
+    },
+    {
+      "id": "beard_mustache",
+      "name": "Усы",
+      "weight": 5
+    }
+  ],
+  "tops": [
+    {
+      "id": "top_hoodie_gray",
+      "name": "Серое худи",
+      "weight": 25
+    },
+    {
+      "id": "top_hoodie_localhost",
+      "name": "Худи «localhost»",
+      "weight": 20
+    },
+    {
+      "id": "top_hoodie_corp",
+      "name": "Мерч «Corporation of Everything»",
+      "weight": 12,
+      "rarity": "rare"
+    },
+    {
+      "id": "top_tshirt",
+      "name": "Футболка с принтом",
+      "weight": 18
+    },
+    {
+      "id": "top_shirt",
+      "name": "Рубашка (на собеседование)",
+      "weight": 15
+    },
+    {
+      "id": "top_jacket",
+      "name": "Куртка айтишника",
+      "weight": 10
+    },
+    {
+      "id": "top_hoodie_cat",
+      "name": "Худи «meow_dev»",
+      "weight": 12
+    }
+  ],
+  "accessories": [
+    {
+      "id": "acc_none",
+      "name": "Без аксессуаров",
+      "weight": 40
+    },
+    {
+      "id": "acc_headphones",
+      "name": "Наушники",
+      "weight": 25
+    },
+    {
+      "id": "acc_glasses",
+      "name": "Очки",
+      "weight": 15
+    },
+    {
+      "id": "acc_vr_headset",
+      "name": "VR-шлем",
+      "weight": 8,
+      "rarity": "rare"
+    },
+    {
+      "id": "acc_cap",
+      "name": "Кепка",
+      "weight": 10
+    },
+    {
+      "id": "acc_medal",
+      "name": "Медаль «1000 коммитов»",
+      "weight": 2,
+      "rarity": "legendary"
+    },
+    {
+      "id": "acc_beanie",
+      "name": "Шапка-бини",
+      "weight": 9
+    }
+  ],
+  "windows": [
+    {
+      "id": "window_square",
+      "name": "Квадратное окно",
+      "weight": 45
+    },
+    {
+      "id": "window_panoramic",
+      "name": "Панорамное окно",
+      "weight": 30
+    },
+    {
+      "id": "window_round",
+      "name": "Круглый иллюминатор",
+      "weight": 15,
+      "rarity": "rare"
+    },
+    {
+      "id": "window_arched",
+      "name": "Арочное окно",
+      "weight": 10
+    },
+    {
+      "id": "window_blinds",
+      "name": "Окно с жалюзи",
+      "weight": 14
+    }
+  ],
+  "wallPalette": [
+    {
+      "id": "wall_gray",
+      "name": "Серые стены",
+      "hue": 0,
+      "sat": 0.2,
+      "light": 0.95
+    },
+    {
+      "id": "wall_beige",
+      "name": "Бежевые",
+      "hue": 35,
+      "sat": 0.9,
+      "light": 1.05
+    },
+    {
+      "id": "wall_blue",
+      "name": "Синие",
+      "hue": 210,
+      "sat": 1.6,
+      "light": 0.95
+    },
+    {
+      "id": "wall_green",
+      "name": "Зелёные",
+      "hue": 130,
+      "sat": 1.4,
+      "light": 0.9
+    },
+    {
+      "id": "wall_purple",
+      "name": "Фиолетовые",
+      "hue": 270,
+      "sat": 1.8,
+      "light": 0.95
+    },
+    {
+      "id": "wall_pink",
+      "name": "Розовые",
+      "hue": 330,
+      "sat": 1.8,
+      "light": 1.05
+    }
+  ],
+  "decorOptions": [
+    {
+      "id": "decor_poster_js",
+      "name": "Постер «JavaScript: The Good Parts»",
+      "weight": 30
+    },
+    {
+      "id": "decor_neon",
+      "name": "Неон «WORK HARD»",
+      "weight": 20
+    },
+    {
+      "id": "decor_server",
+      "name": "Серверная стойка",
+      "weight": 10,
+      "rarity": "rare"
+    },
+    {
+      "id": "decor_books",
+      "name": "Полка с книгами",
+      "weight": 25
+    },
+    {
+      "id": "decor_whiteboard",
+      "name": "Доска с легаси-схемами",
+      "weight": 15
+    },
+    {
+      "id": "decor_clock",
+      "name": "Неон «СПРИНТ»",
+      "weight": 12
+    },
+    {
+      "id": "decor_poster_python",
+      "name": "Постер «import this»",
+      "weight": 14
+    }
+  ]
+}

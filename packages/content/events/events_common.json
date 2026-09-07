@@ -3,7 +3,10 @@
     "id": "morning_routine",
     "title": "☀️ Утро начинается не с кофе",
     "description": "Будильник прозвенел 3 раза. За окном дождь. Вчера был тяжёлый день. Твои действия?",
-    "tags": ["daily", "morning"],
+    "tags": [
+      "daily",
+      "morning"
+    ],
     "weight": 15,
     "cooldownDays": 3,
     "maxOccurrences": 100,
@@ -11,17 +14,28 @@
     "choices": [
       {
         "text": "Встать и сделать зарядку 💪",
-        "effects": { "energy": -1, "health": 3, "motivation": 5 },
+        "effects": {
+          "energy": -1,
+          "health": 3,
+          "motivation": 5
+        },
         "followup": "5 минут растяжки — и мир не кажется таким серым."
       },
       {
         "text": "Полистать телефон в кровати 📱",
-        "effects": { "energy": 0, "motivation": 2 },
+        "effects": {
+          "energy": 0,
+          "motivation": 2
+        },
         "followup": "Всего 10 минут — и вот уже час. Классика."
       },
       {
         "text": "Отключить будильник и доспать 😴",
-        "effects": { "energy": 3, "motivation": -3, "money": -500 },
+        "effects": {
+          "energy": 3,
+          "motivation": -3,
+          "money": -500
+        },
         "followup": "Проспал. Опоздал. Шеф заметил."
       }
     ]
@@ -30,24 +44,39 @@
     "id": "coffee_break",
     "title": "☕ Кофе-брейк",
     "description": "Середина дня. Глаза слипаются. Нужен кофе.",
-    "tags": ["daily", "break"],
+    "tags": [
+      "daily",
+      "break"
+    ],
     "weight": 12,
     "cooldownDays": 2,
     "minGameDay": 1,
     "choices": [
       {
         "text": "Сварить дома — дёшево и сердито",
-        "effects": { "energy": 2, "money": -50, "motivation": 3 },
+        "effects": {
+          "energy": 2,
+          "money": -50,
+          "motivation": 3
+        },
         "followup": "Растворимый, но бодрит."
       },
       {
         "text": "Пойти в Specialty Coffee за 300₽",
-        "effects": { "money": -300, "motivation": 8, "energy": 3 },
+        "effects": {
+          "money": -300,
+          "motivation": 8,
+          "energy": 3
+        },
         "followup": "Латте с розовой солью. Ты чувствуешь себя IT-блогером."
       },
       {
         "text": "Энергетик — быстрый и грязный",
-        "effects": { "energy": 4, "health": -2, "money": -150 },
+        "effects": {
+          "energy": 4,
+          "health": -2,
+          "money": -150
+        },
         "followup": "Банка Adrenalin Rush. Сердце биться быстрее, код пишется сам."
       }
     ]
@@ -56,25 +85,45 @@
     "id": "random_bug",
     "title": "🐛 Неожиданный баг",
     "description": "Ты нашёл баг, который никто не замечал 3 года. 200 строк легаси-кода, и одна лишняя запятая.",
-    "tags": ["work", "code"],
+    "tags": [
+      "work",
+      "code"
+    ],
     "weight": 10,
     "cooldownDays": 7,
     "minGameDay": 5,
-    "conditions": { "hasJob": true },
+    "conditions": {
+      "hasJob": true
+    },
     "choices": [
       {
         "text": "Исправить и забыть 🛠️",
-        "effects": { "skill.javascript": 2, "motivation": 3, "reputation": 1 },
+        "effects": {
+          "motivation": 3,
+          "reputation": 1,
+          "skill": {
+            "javascript": 2
+          }
+        },
         "followup": "Баг пофикшен. Ты герой. Никто не узнает."
       },
       {
         "text": "Написать пост в корпоративном чате 📢",
-        "effects": { "reputation": 5, "motivation": 2, "relation.teamlead": 5 },
+        "effects": {
+          "reputation": 5,
+          "motivation": 2,
+          "relation": {
+            "teamlead": 5
+          }
+        },
         "followup": "Тимлид поставил реакцию 🔥. Сеньоры вдумчиво кивают."
       },
       {
         "text": "Оставить как есть — работало же 3 года 🙈",
-        "effects": { "motivation": -2, "karma": -5 },
+        "effects": {
+          "motivation": -2,
+          "karma": -5
+        },
         "followup": "Баг остался. Через полгода он упадёт на прод в пятницу вечером."
       }
     ]
@@ -83,25 +132,49 @@
     "id": "friend_invites_bar",
     "title": "🍺 Саня зовёт в бар",
     "description": "Старый друг из универа пишет: «Вечером идём в бар. Ты как?»",
-    "tags": ["social", "friend"],
+    "tags": [
+      "social",
+      "friend"
+    ],
     "weight": 12,
     "cooldownDays": 5,
     "minGameDay": 3,
-    "conditions": { "npcPresent": "uni_friend" },
+    "conditions": {
+      "npcPresent": "uni_friend"
+    },
     "choices": [
       {
         "text": "Пойти — нужно проветриться 🍻",
-        "effects": { "money": -2000, "motivation": 12, "health": -2, "relation.uni_friend": 10 },
+        "effects": {
+          "money": -2000,
+          "motivation": 12,
+          "health": -2,
+          "relation": {
+            "uni_friend": 10
+          }
+        },
         "followup": "Посидели от души. Саня рассказал про свой стартап. Опять."
       },
       {
         "text": "Сказать, что занят работой 💼",
-        "effects": { "motivation": -2, "relation.uni_friend": -5 },
+        "effects": {
+          "motivation": -2,
+          "relation": {
+            "uni_friend": -5
+          }
+        },
         "followup": "Ты остался дома. Но что-то грызёт…"
       },
       {
         "text": "Пойти, но пить чай 🍵",
-        "effects": { "money": -500, "motivation": 8, "health": 1, "relation.uni_friend": 5 },
+        "effects": {
+          "money": -500,
+          "motivation": 8,
+          "health": 1,
+          "relation": {
+            "uni_friend": 5
+          }
+        },
         "followup": "Ты за рулём. Ну, как за рулём — за ноутбуком."
       }
     ]
@@ -110,27 +183,57 @@
     "id": "late_night_coding",
     "title": "🌙 Ночная смена",
     "description": "23:45. Ты понимаешь, что завтра дедлайн, а фича не готова. В офисе тихо, только шум серверной.",
-    "tags": ["work", "overtime", "crisis"],
+    "tags": [
+      "work",
+      "overtime",
+      "crisis"
+    ],
     "weight": 8,
     "cooldownDays": 10,
     "minGameDay": 10,
-    "conditions": { "hasJob": true },
+    "conditions": {
+      "hasJob": true
+    },
     "choices": [
       {
         "text": "Остаться и допилить — надо ⚡",
-        "requires": { "energy": 3 },
-        "effects": { "energy": -3, "skill.javascript": 3, "motivation": -5, "health": -2 },
+        "requires": {
+          "energy": 3
+        },
+        "effects": {
+          "energy": -3,
+          "motivation": -5,
+          "health": -2,
+          "skill": {
+            "javascript": 3
+          }
+        },
         "followup": "Ты ушёл в 3 ночи. Зато фича работает. Гордость и усталость."
       },
       {
         "text": "Написать в чат «успеваем завтра утром» 📝",
-        "effects": { "motivation": 3, "reputation": -2, "jobWarnings": 1 },
+        "effects": {
+          "motivation": 3,
+          "reputation": -2,
+          "jobWarnings": 1
+        },
         "followup": "Утром тебя ждало 47 сообщений. Тимлид грустит."
       },
       {
         "text": "Попросить помощи у коллеги 🤝",
-        "requires": { "npcPresent": "junior_colleague" },
-        "effects": { "energy": -2, "skill.javascript": 1, "relation.junior_colleague": 10, "motivation": 3 },
+        "requires": {
+          "npcPresent": "junior_colleague"
+        },
+        "effects": {
+          "energy": -2,
+          "motivation": 3,
+          "skill": {
+            "javascript": 1
+          },
+          "relation": {
+            "junior_colleague": 10
+          }
+        },
         "followup": "Вы разобрались за час. Командная работа — магия."
       }
     ]
@@ -139,24 +242,41 @@
     "id": "internet_outage",
     "title": "🌐 Интернет пропал",
     "description": "Посреди рабочего дня интернет просто… исчез. Провайдер «авария на линии». Сколько ждать — неизвестно.",
-    "tags": ["daily", "crisis"],
+    "tags": [
+      "daily",
+      "crisis"
+    ],
     "weight": 6,
     "cooldownDays": 20,
     "minGameDay": 5,
     "choices": [
       {
         "text": "Пойти в коворкинг 🏢",
-        "effects": { "money": -1000, "energy": -1, "motivation": 3 },
+        "effects": {
+          "money": -1000,
+          "energy": -1,
+          "motivation": 3
+        },
         "followup": "Коворкинг полон таких же. Атмосфера общего страдания."
       },
       {
         "text": "Работать офлайн — читать документацию 📚",
-        "effects": { "skill.javascript": 1, "motivation": -2 },
+        "effects": {
+          "motivation": -2,
+          "skill": {
+            "javascript": 1
+          }
+        },
         "followup": "Документацию ты не читал с универа. Как оказалось — зря."
       },
       {
         "text": "Устроить выходной 🏖️",
-        "effects": { "motivation": 8, "energy": 3, "health": 2, "money": -500 },
+        "effects": {
+          "motivation": 8,
+          "energy": 3,
+          "health": 2,
+          "money": -500
+        },
         "followup": "Гулял в парке. Оказывается, мир существует вне экрана."
       }
     ]
@@ -165,26 +285,45 @@
     "id": "bonus_surprise",
     "title": "🎉 Неожиданная премия",
     "description": "Начальник вызывает на созвон. «Слушай, мы тут посмотрели твой вклад в проект… Держи премию.»",
-    "tags": ["work", "reward"],
+    "tags": [
+      "work",
+      "reward"
+    ],
     "weight": 5,
     "cooldownDays": 60,
     "maxOccurrences": 5,
     "minGameDay": 20,
-    "conditions": { "hasJob": true },
+    "conditions": {
+      "hasJob": true
+    },
     "choices": [
       {
         "text": "Отложить на чёрный день 🏦",
-        "effects": { "money": 30000, "motivation": 3, "reputation": 2 },
+        "effects": {
+          "money": 30000,
+          "motivation": 3,
+          "reputation": 2
+        },
         "followup": "30 тысяч на счету. Приятно."
       },
       {
         "text": "Купить что-то для работы/учебы 📚",
-        "effects": { "money": 15000, "motivation": 5, "skill.javascript": 2 },
+        "effects": {
+          "money": 15000,
+          "motivation": 5,
+          "skill": {
+            "javascript": 2
+          }
+        },
         "followup": "Купил новый курс на Stepik. Прокрастинация отменяется."
       },
       {
         "text": "Потратить на развлечения 🎮",
-        "effects": { "money": 5000, "motivation": 10, "health": -1 },
+        "effects": {
+          "money": 5000,
+          "motivation": 10,
+          "health": -1
+        },
         "followup": "Steam Sale. Ты не смог устоять. Но счастье есть."
       }
     ]
@@ -193,25 +332,42 @@
     "id": "health_checkup",
     "title": "🏥 Пора к врачу",
     "description": "Уже месяц болит спина. И голова. И вообще. Может, пора?",
-    "tags": ["health", "daily"],
+    "tags": [
+      "health",
+      "daily"
+    ],
     "weight": 7,
     "cooldownDays": 15,
     "minGameDay": 10,
-    "conditions": { "minHealth": 0, "maxHealth": 70 },
+    "conditions": {
+      "minHealth": 0,
+      "maxHealth": 70
+    },
     "choices": [
       {
         "text": "Записаться к врачу — здоровье важнее 🏥",
-        "effects": { "money": -3000, "energy": -2, "health": 15, "motivation": 3 },
+        "effects": {
+          "money": -3000,
+          "energy": -2,
+          "health": 15,
+          "motivation": 3
+        },
         "followup": "Врач выписал витамины и сказал меньше сидеть. Ты посмеялся."
       },
       {
         "text": "Купить витамины в аптеке 💊",
-        "effects": { "money": -1500, "health": 5 },
+        "effects": {
+          "money": -1500,
+          "health": 5
+        },
         "followup": "Магний В6. Третий месяц. Вроде помогает."
       },
       {
         "text": "Само пройдёт 🙃",
-        "effects": { "health": -3, "motivation": 0 },
+        "effects": {
+          "health": -3,
+          "motivation": 0
+        },
         "followup": "Не прошло. Стало только хуже. Но ты терпишь."
       }
     ]
@@ -220,24 +376,41 @@
     "id": "learning_plateau",
     "title": "📉 Плато в обучении",
     "description": "Ты чувствуешь, что перестал расти. Книги читаются, но ничего не откладывается. Знакомое чувство.",
-    "tags": ["study", "daily"],
+    "tags": [
+      "study",
+      "daily"
+    ],
     "weight": 8,
     "cooldownDays": 14,
     "minGameDay": 15,
     "choices": [
       {
         "text": "Сменить подход — попробовать новый язык 🆕",
-        "effects": { "skill.python": 3, "motivation": 5 },
+        "effects": {
+          "motivation": 5,
+          "skill": {
+            "python": 3
+          }
+        },
         "followup": "Новое — это хорошо забытое старое. Но другое."
       },
       {
         "text": "Взять перерыв на пару дней 🧘",
-        "effects": { "motivation": 8, "health": 2 },
+        "effects": {
+          "motivation": 8,
+          "health": 2
+        },
         "followup": "Мозг перезагрузился. Через два дня всё заходит на ура."
       },
       {
         "text": "Продавить через силу 📖",
-        "effects": { "skill.javascript": 1, "motivation": -5, "health": -1 },
+        "effects": {
+          "motivation": -5,
+          "health": -1,
+          "skill": {
+            "javascript": 1
+          }
+        },
         "followup": "Ты прочитал 50 страниц и ничего не запомнил. Зря."
       }
     ]
@@ -246,26 +419,54 @@
     "id": "code_review",
     "title": "🔍 Код-ревью",
     "description": "Твой PR висит уже 3 дня. Наконец пришёл ревьювер. Сообщение: «Давай переделаем архитектуру?»",
-    "tags": ["work", "code"],
+    "tags": [
+      "work",
+      "code"
+    ],
     "weight": 9,
     "cooldownDays": 5,
     "minGameDay": 10,
-    "conditions": { "hasJob": true },
+    "conditions": {
+      "hasJob": true
+    },
     "choices": [
       {
         "text": "Согласиться — наверное, он прав 🤷",
-        "effects": { "energy": -3, "skill.javascript": 3, "motivation": -3, "relation.teamlead": 5 },
+        "effects": {
+          "energy": -3,
+          "motivation": -3,
+          "skill": {
+            "javascript": 3
+          },
+          "relation": {
+            "teamlead": 5
+          }
+        },
         "followup": "Ты переписал 500 строк. Стало лучше. Но осадочек остался."
       },
       {
         "text": "Объяснить, почему текущее решение оптимально 📋",
-        "requires": { "skill": { "communication": 15 } },
-        "effects": { "reputation": 3, "skill.communication": 2, "motivation": 2 },
+        "requires": {
+          "skill": {
+            "communication": 15
+          }
+        },
+        "effects": {
+          "reputation": 3,
+          "motivation": 2,
+          "skill": {
+            "communication": 2
+          }
+        },
         "followup": "Ты аргументированно объяснил. Ревьювер согласился. Победа!"
       },
       {
         "text": "Закрыть PR и забыть 🏃",
-        "effects": { "motivation": 2, "reputation": -3, "jobWarnings": 1 },
+        "effects": {
+          "motivation": 2,
+          "reputation": -3,
+          "jobWarnings": 1
+        },
         "followup": "PR закрыт. Задача висит. Тимлид заметил."
       }
     ]

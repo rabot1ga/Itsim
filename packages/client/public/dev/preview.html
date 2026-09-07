@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Layer Preview — IT Life Simulator</title>
+  <style>
+    :root { color-scheme: dark; }
+    body { margin: 0; font-family: system-ui, sans-serif; background: #0f1522; color: #e2e8f0; }
+    header { display: flex; align-items: center; gap: 16px; padding: 12px 16px; background: #161d2e; flex-wrap: wrap; }
+    h1 { font-size: 16px; margin: 0; }
+    button { background: #4f46e5; color: #fff; border: 0; border-radius: 8px; padding: 8px 14px; cursor: pointer; font-size: 13px; }
+    button:hover { background: #6366f1; }
+    button.ghost { background: #263043; }
+    main { display: flex; gap: 24px; padding: 20px; flex-wrap: wrap; align-items: flex-start; }
+    .frame { position: relative; border-radius: 12px; overflow: hidden; border: 1px solid #2c3a52; background: #1a2336; }
+    .frame.avatar { width: 380px; height: 380px; }
+    .frame.room { width: 560px; height: 560px; }
+    .frame img { position: absolute; inset: 0; width: 100%; height: 100%; user-select: none; }
+    .info { font-size: 12px; color: #94a3b8; max-width: 360px; line-height: 1.5; }
+    .info b { color: #cbd5e1; }
+    .stack { font-size: 11px; font-family: monospace; color: #7dd3fc; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🎨 Layer Preview — валидация наложения (DESIGN.md §4)</h1>
+    <button id="btnRoom">🎲 Случайная комната</button>
+    <button id="btnAvatar" class="ghost">🎲 Случайный аватар</button>
+    <span class="info">Генерирует случайные комбинации слоёв из манифестов и показывает наложение (питомцы не летают, кресло не перекрывает монитор и т.д.)</span>
+  </header>
+  <main>
+    <div>
+      <div class="frame room" id="room"></div>
+      <div class="info">Комната <b>1000×1000</b></div>
+      <div class="stack" id="roomStack"></div>
+    </div>
+    <div>
+      <div class="frame avatar" id="avatar"></div>
+      <div class="info">Аватар <b>500×500</b></div>
+      <div class="stack" id="avatarStack"></div>
+    </div>
+  </main>
+  <script>
+    const rnd = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+    // Same tint formula as shared/src/engine/genetics.ts (tintFilter)
+    function tintFilter(entry) {
+      const sat = entry.sat ?? 2.2;
+      const light = entry.light ?? 1;
+      return `sepia(1) saturate(${sat}) hue-rotate(${entry.hue}deg) brightness(${light})`;
+    }
+
+    async function loadJson(url) {
+      const res = await fetch(url);
+      return res.json();
+    }
+
+    async function render(frame, manifest, picks, paletteById, stackEl) {
+      frame.innerHTML = '';
+      const lines = [];
+      for (const slot of [...manifest.slots].sort((a, b) => a.zOrder - b.zOrder)) {
+        const entry = picks[slot.id];
+        if (!entry || !entry.file) continue;
+        const img = document.createElement('img');
+        img.src = `/layers/${entry.file}`;
+        img.draggable = false;
+        if (slot.tintSlot && paletteById[slot.tintSlot]) {
+          img.style.filter = tintFilter(paletteById[slot.tintSlot]);
+        }
+        frame.appendChild(img);
+        lines.push(`${slot.id}: ${entry.id}${slot.tintSlot ? ` [tint:${slot.tintSlot}]` : ''}`);
+      }
+      stackEl.textContent = lines.join('\n');
+    }
+
+    async function main() {
+      const [{ avatar, room }, { genetics }] = await Promise.all([
+        loadJson('/api/content/layers'),
+        loadJson('/api/content/genetics'),
+      ]);
+
+      const paletteGroups = {
+        skinTone: genetics.skinTones,
+        hairColor: genetics.hairPalette,
+        wallColor: genetics.wallPalette,
+      };
+      const paletteById = {};
+      for (const [slot, list] of Object.entries(paletteGroups)) {
+        paletteById[slot] = list[0];
+      }
+
+      function randomComposition(manifest) {
+        const picks = {};
+        for (const slot of manifest.slots) {
+          const withFiles = slot.entries.filter((e) => e.file);
+          picks[slot.id] = slot.required ? rnd(withFiles) : rnd(slot.entries);
+          if (slot.tintSlot && paletteGroups[slot.tintSlot]) {
+            paletteById[slot.tintSlot] = rnd(paletteGroups[slot.tintSlot]);
+          }
+        }
+        return picks;
+      }
+
+      document.getElementById('btnRoom').onclick = () => {
+        const picks = randomComposition(room);
+        render(document.getElementById('room'), room, picks, paletteById, document.getElementById('roomStack'));
+      };
+      document.getElementById('btnAvatar').onclick = () => {
+        const picks = randomComposition(avatar);
+        render(document.getElementById('avatar'), avatar, picks, paletteById, document.getElementById('avatarStack'));
+      };
+
+      // Initial render
+      document.getElementById('btnRoom').click();
+      document.getElementById('btnAvatar').click();
+    }
+
+    main().catch((err) => {
+      document.body.insertAdjacentHTML('beforeend', `<pre style="color:#f87171">${err}</pre>`);
+    });
+  </script>
+</body>
+</html>

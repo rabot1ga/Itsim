@@ -60,6 +60,13 @@ export const EventConditionsSchema = z.object({
   notEventRecently: z.array(z.string()).optional(),
 });
 
+export const ActionEventTriggerSchema = z.object({
+  action: z.string().min(1),
+  jobId: z.string().optional(),
+  chance: z.number().min(0).max(1),
+  cooldownDays: z.number().int().min(0).optional(),
+});
+
 export const EventSchema = z.object({
   id: z.string().regex(/^[a-z0-9_]+$/),
   title: z.string().min(1).max(80),
@@ -70,6 +77,12 @@ export const EventSchema = z.object({
   maxOccurrences: z.number().int().positive().optional(),
   minGameDay: z.number().int().min(0).default(0),
   conditions: EventConditionsSchema.optional(),
+  // Chain-only events never enter the random pool — they trigger
+  // exclusively through `chain` references of other events
+  chainOnly: z.boolean().default(false),
+  // Action-triggered events never enter the random pool either —
+  // they roll after the matching player action
+  actionTrigger: ActionEventTriggerSchema.optional(),
   choices: z.array(EventChoiceSchema).min(2).max(4),
 });
 
@@ -79,7 +92,7 @@ export const EventsFileSchema = z.array(EventSchema);
 export const SkillSchema = z.object({
   id: z.string().regex(/^[a-z0-9_]+$/),
   name: z.string().min(1),
-  branch: z.enum(['frontend', 'backend', 'mobile', 'qa', 'devops', 'ai_ml', 'cybersec']),
+  branch: z.enum(['frontend', 'backend', 'mobile', 'qa', 'devops', 'ai_ml', 'cybersec', 'gamedev', 'blockchain']),
   parent: z.string().optional(),
   unlockAt: z.record(z.string(), z.number()).optional(),
   icon: z.string(),
@@ -100,6 +113,8 @@ export const PerkSchema = z.object({
     energyBonus: z.number().int().optional(),
     learningBonus: z.number().min(0).max(1).optional(),
     motivationResistance: z.number().min(0).max(1).optional(),
+    miningIncomeMult: z.number().min(0).optional(),
+    sideJobPaymentMult: z.number().min(0).optional(),
   }),
   flavor: z.string(),
 });
@@ -153,16 +168,21 @@ export const ItemEffectsSchema = z.object({
   xpBonus: z.number().optional(),
   energyCostChance: z.number().min(0).max(1).optional(),
   speedBonus: z.number().optional(),
+  hashrate: z.number().positive().optional(),
+  electricitySave: z.number().min(0).max(1).optional(),
 });
 
 export const ItemSchema = z.object({
   id: z.string().regex(/^[a-z0-9_]+$/),
   name: z.string().min(1),
-  type: z.enum(['housing', 'pc', 'chair', 'headphones', 'coffee', 'course', 'other']),
+  type: z.enum(['housing', 'pc', 'chair', 'headphones', 'coffee', 'course', 'pet', 'other']),
   price: z.number().int().min(0),
   description: z.string(),
   effects: ItemEffectsSchema,
   icon: z.string(),
+  nft: z.boolean().default(false),
+  rarity: z.enum(['common', 'rare', 'legendary']).optional(),
+  layerId: z.string().optional(),
 });
 
 export const ItemsFileSchema = z.array(ItemSchema);
@@ -220,6 +240,13 @@ export const BalanceSchema = z.object({
     maxLevel: z.number().default(100),
   })),
 
+  // Networking tuning (communication XP, reputation gain, energy cost)
+  networking: z.object({
+    commXp: z.number().default(5),
+    repGain: z.number().default(0.5),
+    energy: z.number().default(2),
+  }).default({ commXp: 5, repGain: 0.5, energy: 2 }),
+
   // Event frequency
   eventChanceOnboarding: z.number().default(0.20),
   eventChanceEarly: z.number().default(0.35),
@@ -235,6 +262,29 @@ export const BalanceSchema = z.object({
     motivationBonus: z.number(),
     reputationBonus: z.number(),
   })),
+
+  // Side jobs (non-IT gigs — courier, barista, etc.)
+  sideJobs: z.record(z.string(), z.object({
+    name: z.string(),
+    icon: z.string().default('💼'),
+    energy: z.number().int().min(0),
+    payment: z.number(),
+    paymentPerSkill: z.number().optional(),
+    paymentVar: z.number().optional(),
+    health: z.number().default(0),
+    motivation: z.number().default(0),
+    commXp: z.number().default(0),
+    repGain: z.number().default(0),
+    minSkill: z.number().default(0),
+    minDay: z.number().int().default(1),
+  })).default({}),
+
+  // Mining farm (passive crypto income)
+  mining: z.object({
+    priceBase: z.number().positive(),
+    volatility: z.number().min(0).max(1),
+    electricityPerHashrate: z.number().min(0),
+  }).default({ priceBase: 40, volatility: 0.5, electricityPerHashrate: 0.5 }),
 });
 
 export type BalanceConfig = z.infer<typeof BalanceSchema>;
@@ -263,3 +313,129 @@ export const ContentManifestSchema = z.object({
   actions: z.string(),
   balance: z.string(),
 });
+// ---- Procedural generation & Solana (DESIGN.md) ----
+
+export const TraitOptionSchema = z.object({
+  id: z.string().regex(/^[a-z0-9_]+$/),
+  name: z.string().min(1),
+  weight: z.number().positive(),
+  rarity: z.enum(['common', 'rare', 'legendary']).optional(),
+});
+
+export const TintPaletteEntrySchema = z.object({
+  id: z.string().regex(/^[a-z0-9_]+$/),
+  name: z.string().min(1),
+  hue: z.number().min(0).max(360),
+  sat: z.number().min(0).max(10).optional(),
+  light: z.number().min(0).max(3).optional(),
+  weight: z.number().positive().optional(),
+});
+
+export const GeneticsConfigSchema = z.object({
+  version: z.string().default('1.0'),
+  eyes: z.array(TraitOptionSchema).min(1),
+  hairstyles: z.array(TraitOptionSchema).min(1),
+  hairPalette: z.array(TintPaletteEntrySchema).min(1),
+  skinTones: z.array(TintPaletteEntrySchema).min(1),
+  beards: z.array(TraitOptionSchema).min(1),
+  tops: z.array(TraitOptionSchema).min(1),
+  accessories: z.array(TraitOptionSchema).min(1),
+  windows: z.array(TraitOptionSchema).min(1),
+  wallPalette: z.array(TintPaletteEntrySchema).min(1),
+  decorOptions: z.array(TraitOptionSchema).min(1),
+});
+
+export const LayerEntrySchema = z.object({
+  id: z.string().regex(/^[a-z0-9_]+$/),
+  file: z.string().nullable(),
+  weight: z.number().positive().optional(),
+  rarity: z.enum(['common', 'rare', 'legendary']).optional(),
+  excludeWith: z.array(z.string()).optional(),
+});
+
+export const LayerSlotSchema = z.object({
+  id: z.string().regex(/^[a-z0-9_]+$/),
+  zOrder: z.number().int(),
+  required: z.boolean().default(false),
+  tintSlot: z.string().optional(),
+  entries: z.array(LayerEntrySchema),
+});
+
+export const LayerManifestSchema = z.object({
+  collection: z.enum(['avatar', 'room']),
+  version: z.number().int().positive(),
+  resolution: z.object({ width: z.number().int().positive(), height: z.number().int().positive() }),
+  slots: z.array(LayerSlotSchema).min(1),
+});
+
+export const ActiveCrossBonusSchema = z.object({
+  type: z.enum(['freelance_mult', 'energy', 'motivation']),
+  value: z.number(),
+});
+
+export const CrossCollectionBonusSchema = z.object({
+  collectionId: z.string().regex(/^[a-z0-9_]+$/),
+  collectionName: z.string().min(1),
+  nftType: z.enum(['skin', 'decor', 'pet']),
+  layerId: z.string().regex(/^[a-z0-9_]+$/),
+  bonuses: z.array(ActiveCrossBonusSchema),
+});
+
+export const CrossCollectionsSchema = z.object({
+  version: z.string().default('1.0'),
+  collections: z.array(CrossCollectionBonusSchema),
+});
+
+export const NftAttributeSchema = z.object({
+  trait_type: z.string().min(1),
+  value: z.union([z.string(), z.number()]),
+});
+
+export const NftMetadataSchema = z.object({
+  name: z.string().min(1),
+  symbol: z.string().min(1),
+  description: z.string(),
+  image: z.string(),
+  attributes: z.array(NftAttributeSchema),
+  properties: z.object({
+    files: z.array(z.object({ uri: z.string(), type: z.string() })),
+  }),
+});
+
+/** Solana base58 public key */
+export const WalletAddressSchema = z
+  .string()
+  .regex(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/, 'Некорректный адрес кошелька Solana (base58)');
+
+// ---- Daily challenges ----
+
+export const DailyChallengeRewardSchema = z.object({
+  money: z.number().optional(),
+  motivation: z.number().optional(),
+  reputation: z.number().optional(),
+});
+
+export const DailyChallengeSchema = z.object({
+  id: z.string().regex(/^[a-z0-9_]+$/),
+  action: z.string().min(1),
+  match: z.enum(['prefix', 'exact']).default('exact'),
+  count: z.number().int().positive().default(1),
+  description: z.string().min(1).max(120),
+  reward: DailyChallengeRewardSchema,
+});
+
+export const DailyChallengesFileSchema = z.array(DailyChallengeSchema).min(1);
+
+// ---- Interview questions (gamified learning) ----
+
+export const InterviewQuestionSchema = z.object({
+  id: z.string().regex(/^[a-z0-9_]+$/),
+  skillId: z.string().regex(/^[a-z0-9_]+$/),
+  tier: z.enum(['junior', 'middle', 'senior']),
+  text: z.string().min(5).max(200),
+  options: z.array(z.string().min(1)).min(2).max(4),
+  correctIndex: z.number().int().min(0).max(3),
+  explanation: z.string().min(5).max(300),
+});
+
+export const InterviewQuestionsFileSchema = z.array(InterviewQuestionSchema).min(3);
