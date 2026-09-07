@@ -11,7 +11,7 @@ import { AchievementsView } from '../screens/AchievementsView';
 import { LeaderboardView } from '../screens/LeaderboardView';
 
 export const GameScreen: React.FC = () => {
-  const { currentView, setView, player, advanceDay, loadNft } = useGameStore();
+  const { currentView, setView, advanceDay, loadNft } = useGameStore();
 
   const handleAdvanceDay = async () => {
     await advanceDay();

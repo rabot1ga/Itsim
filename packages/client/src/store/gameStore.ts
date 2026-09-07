@@ -9,6 +9,11 @@ const API_BASE = '/api';
 // (Telegram-canonical pattern; no JWT lifecycle to break the preview)
 let authInitData: string | null = null;
 
+/**
+ * Authenticated API call. Exported as `apiRequest` for screens that fetch on
+ * their own (leaderboard) — every endpoint behind `telegramAuthHook` needs the
+ * `Authorization: tma <initData>` header, a bare `fetch()` gets a 401 in prod.
+ */
 async function api(path: string, init: RequestInit = {}): Promise<{ ok: boolean; status: number; data: any }> {
   const headers: Record<string, string> = {
     Authorization: authInitData ? `tma ${authInitData}` : '',
@@ -24,6 +29,8 @@ async function api(path: string, init: RequestInit = {}): Promise<{ ok: boolean;
   const data = await res.json().catch(() => ({}));
   return { ok: res.ok, status: res.status, data };
 }
+
+export const apiRequest = api;
 
 interface GameState {
   initialized: boolean;
@@ -42,6 +49,8 @@ interface GameState {
 
   // Actions
   initGame: (initData: string) => Promise<void>;
+  /** re-read /game/state (after a Stars purchase or a background change) */
+  refreshState: () => Promise<void>;
   setScreen: (screen: Screen) => void;
   setView: (view: string) => void;
   performAction: (actionId: string, params?: any) => Promise<boolean>;
@@ -121,6 +130,18 @@ export const useGameStore = create<GameState>((set, get) => ({
           housingLevel: 0,
           items: [],
         },
+      });
+    }
+  },
+
+  refreshState: async () => {
+    const res = await api('/game/state');
+    if (res.ok && res.data?.state) {
+      set({
+        player: res.data.state,
+        mining: res.data.mining ?? null,
+        careerOutlook: res.data.careerOutlook ?? null,
+        costOfDay: res.data.costOfDay ?? null,
       });
     }
   },

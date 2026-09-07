@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { telegramAuthHook } from '../middleware/telegramAuth.js';
 import { getContent } from '../services/contentService.js';
 import { loadState, saveState } from '../services/gameStore.js';
+import { findCompletedAction, rememberAction, stripInternal } from '../services/idempotency.js';
 import {
   createNewPlayer,
   calculateMaxEnergy,
@@ -16,7 +17,6 @@ import {
   calculateRating,
   checkAchievements,
   totalSkillLevels,
-  maxSkillLevel,
   clamp,
   GRADE_SALARIES,
   GRADE_ENERGY,
@@ -30,7 +30,6 @@ import {
   gateSurplus,
   promotionChance,
   reviewInterval,
-  mainBranchTotal,
   branchShareXp,
   dailyLivingCost,
   wealthTaxMonthly,
@@ -51,7 +50,6 @@ import {
   miningDailyIncome,
   hashrateOfItems,
   electricitySaveOfItems,
-  itemBonusSum,
   itemXpMult,
   itemEnergyCostChance,
   itemDailyBonuses,
@@ -100,9 +98,6 @@ type StoredState = PlayerState & {
     questions: Array<{ id: string; chosen: number | null; correct: boolean | null }>;
   };
 };
-
-// Idempotent action cache: userId -> idempotencyKey -> response
-const completedActions = new Map<string, Map<string, any>>();
 
 // Energy costs for non-study actions (study costs come from balance.json xpSources)
 const EXTRA_ENERGY_COSTS: Record<string, number> = {
@@ -178,7 +173,7 @@ function deriveGenetics(state: StoredState): void {
  * Attach the UI message to the response state (client shows state._lastEvent)
  */
 function respondState(state: StoredState, message?: string) {
-  return { ...state, _lastEvent: message };
+  return { ...stripInternal(state), _lastEvent: message };
 }
 
 /**
@@ -406,11 +401,13 @@ export async function gameRoutes(app: FastifyInstance) {
       return reply.status(404).send({ error: 'Game not started' });
     }
 
-    // Idempotency — return the stored result for a duplicate request
+    // Idempotency — a duplicate request replays nothing and returns the state
+    // as it is now (keys are persisted with the save, so restarts are safe).
     if (idempotencyKey) {
-      const cache = completedActions.get(userId);
-      const existing = cache?.get(idempotencyKey);
-      if (existing) return { state: respondState(state, existing.message), delta: existing.delta, activeEvent: null };
+      const existing = findCompletedAction(state, idempotencyKey);
+      if (existing) {
+        return { state: respondState(state, existing.m), delta: {}, activeEvent: null, duplicate: true };
+      }
     }
 
     const content = getContent();
@@ -477,12 +474,12 @@ export async function gameRoutes(app: FastifyInstance) {
       }
     }
 
-    const response = { state: respondState(state, finalMessage), delta: result.delta ?? {}, activeEvent: triggeredEvent, nft, mining: miningSummary(state, content) };
     if (idempotencyKey) {
-      if (!completedActions.has(userId)) completedActions.set(userId, new Map());
-      completedActions.get(userId)!.set(idempotencyKey, { delta: result.delta, message: result.message });
+      rememberAction(state, idempotencyKey, result.message);
+      saveState(userId, state);
     }
-    return response;
+
+    return { state: respondState(state, finalMessage), delta: result.delta ?? {}, activeEvent: triggeredEvent, nft, mining: miningSummary(state, content) };
   });
 
   /**

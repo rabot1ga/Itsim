@@ -1,12 +1,13 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { createHmac, timingSafeEqual } from 'crypto';
 import { verifySessionToken } from '../routes/auth.js';
+import { config } from '../config.js';
 
 /**
  * Telegram initData validation — section 14.1
  */
 
-const BOT_TOKEN = process.env.BOT_TOKEN || '';
+const BOT_TOKEN = config.botToken;
 const TTL_SECONDS = 86400; // 24 hours
 
 interface TelegramUser {

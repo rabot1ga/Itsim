@@ -304,6 +304,12 @@ export interface PlayerState {
 
   // Daily challenge progress
   dailyChallenge?: DailyChallengeState;
+
+  // Monetization (Telegram Stars) — cosmetics only, see content/monetization.json
+  /** layer ids unlocked by a purchase */
+  entitlements?: string[];
+  /** profile badges (supporter, fashionista, …) */
+  badges?: string[];
 }
 
 export interface SkillLevel {

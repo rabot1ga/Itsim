@@ -30,7 +30,6 @@ import {
   clamp,
   GRADE_REQUIREMENTS,
   gateProgress,
-  qualifiedGrade,
   promotionChance,
   reviewInterval,
   mainBranchTotal,
@@ -172,15 +171,10 @@ function recordMilestone(m: Record<string, number>, key: string, day: number) {
  * rule when content has no careerGates, so the sim never silently diverges
  * from a stripped-down content bundle.
  */
-function gateCtx(p: PlayerState) {
+function gateCtx() {
   return { branchOf: BRANCH_OF };
 }
 
-function simQualifiedGrade(p: PlayerState): Grade | null {
-  if (!CAREER_GATES.length) return eligibleGradeLegacy(p);
-  const main = { ...(p as any), mainSkillId: p.mainSkillId ?? 'javascript' };
-  return qualifiedGrade(main as PlayerState, CAREER_GATES, gateCtx(p));
-}
 
 /** lowest grade the player qualifies for — what they actually get hired as */
 function simMinQualifiedGrade(p: PlayerState): Grade | null {
@@ -194,7 +188,7 @@ function simMinQualifiedGrade(p: PlayerState): Grade | null {
 
 function simGateProgress(p: PlayerState, gate: CareerGate) {
   const main = { ...(p as any), mainSkillId: p.mainSkillId ?? 'javascript' };
-  return gateProgress(main as PlayerState, gate, gateCtx(p));
+  return gateProgress(main as PlayerState, gate, gateCtx());
 }
 
 function simNextGate(current: Grade): CareerGate | null {
@@ -236,16 +230,6 @@ function eligibleGradeLegacy(p: PlayerState): Grade | null {
   return best;
 }
 
-/**
- * Requirements of the next career gate above the current grade
- */
-function nextGate(p: PlayerState, current: Grade): { grade: Grade; skill: number; comm: number; rep: number } | null {
-  const idx = careerLevelIndex(current);
-  const next = GRADE_ORDER[idx + 1];
-  if (!next || next === 'cto') return null;
-  const req = GRADE_REQUIREMENTS[next];
-  return { grade: next, skill: req.skill, comm: req.comm, rep: req.rep };
-}
 
 /**
  * Best study source for the current skill level: maximum XP per energy
@@ -542,7 +526,7 @@ function addCommXp(p: PlayerState, rawXp: number) {
  * One action of the "reasonable player". Returns false when the agent
  * has nothing left to do (or must stop for the day).
  */
-function agentAction(a: Agent, random: () => number): boolean {
+function agentAction(a: Agent, _random: () => number): boolean {
   if (a.blocked || a.ending) return false; // burnout / quit: the policy stops acting
   const p = a.p;
   const comm = p.softSkills['communication']?.level ?? 0;

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { Spinner, EmptyState } from '../components/ui';
+import { StarsShop } from '../components/StarsShop';
 
 const HOUSING = [
   { level: 0, name: 'Общага', cost: 5000, bonus: 'базовое' },
@@ -84,6 +85,8 @@ export const ShopView: React.FC = () => {
         <h2 className="text-lg font-bold text-white">🏪 Магазин</h2>
         <span className="text-sm text-emerald-400">{formatMoney(player.money ?? 0)}</span>
       </div>
+
+      <StarsShop />
 
       {!loaded && <Spinner label="Открываем магазин…" />}
       {loaded && items.length === 0 && (

@@ -30,5 +30,8 @@ export {
   PixelArtSourceFileSchema,
   PixelGeneratorConfigSchema,
   PixelColorSchemeSchema,
+  ProductSchema,
+  ProductGrantsSchema,
+  MonetizationSchema,
 } from './schemas/index';
-export type { BalanceConfig } from './schemas/index';
+export type { BalanceConfig, Product, ProductGrants, MonetizationConfig } from './schemas/index';

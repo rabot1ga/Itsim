@@ -6,6 +6,7 @@ export * from './interview';
 export * from './rating';
 export * from './events';
 export * from './player';
+export * from './migrations';
 export * from './achievements';
 export * from './genetics';
 export * from './mining';

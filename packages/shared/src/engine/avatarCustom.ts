@@ -28,10 +28,12 @@ export interface AvatarUnlockContext {
   hasJob: boolean;
   housingLevel: number;
   hasPet: boolean;
+  /** layer ids unlocked by a Telegram Stars purchase (content/monetization.json) */
+  entitlements: string[];
 }
 
 export function buildAvatarUnlockContext(
-  player: Pick<PlayerState, 'achievements' | 'items' | 'skills' | 'job' | 'housingLevel'>
+  player: Pick<PlayerState, 'achievements' | 'items' | 'skills' | 'job' | 'housingLevel'> & { entitlements?: string[] }
 ): AvatarUnlockContext {
   const skills = player.skills ?? {};
   const items = player.items ?? [];
@@ -43,6 +45,7 @@ export function buildAvatarUnlockContext(
     hasJob: player.job != null,
     housingLevel: player.housingLevel ?? 0,
     hasPet: items.some((i) => i.startsWith('pet_')),
+    entitlements: player.entitlements ?? [],
   };
 }
 
@@ -60,6 +63,9 @@ export function avatarEntryStatus(
   const ach = (id: string) => ctx.achievements.includes(id);
   const lock = (hint: string): AvatarEntryStatus => ({ unlocked: false, hint });
   const open = { unlocked: true, hint: '' };
+
+  // Bought with Telegram Stars → unlocked forever, whatever the normal gate is.
+  if (ctx.entitlements.includes(entryId)) return open;
 
   switch (slot) {
     case 'hair':

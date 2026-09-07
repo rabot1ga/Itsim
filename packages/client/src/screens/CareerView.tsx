@@ -73,7 +73,6 @@ export const CareerView: React.FC = () => {
 
   if (!player) return null;
 
-  const totalSkills = Object.values(player.skills ?? {}).reduce((sum: number, s: any) => sum + (s.level ?? 0), 0);
   const application = player.currentApplication;
   const offers = player.pendingOffers ?? [];
 

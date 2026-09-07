@@ -46,6 +46,8 @@ interface TelegramWebApp {
   setBackgroundColor?: (color: string) => void;
   disableVerticalSwipes?: () => void;
   enableVerticalSwipes?: () => void;
+  openInvoice?: (url: string, callback?: (status: 'paid' | 'cancelled' | 'failed' | 'pending') => void) => void;
+  openTelegramLink?: (url: string) => void;
   MainButton?: TelegramMainButton;
   BackButton?: TelegramBackButton;
   HapticFeedback?: TelegramHaptics;
@@ -222,4 +224,29 @@ export function hideBackButton(onClick?: () => void): void {
   } catch {
     /* noop */
   }
+}
+
+// ---------------------------------------------------------------------------
+// Payments (Telegram Stars)
+// ---------------------------------------------------------------------------
+
+export type InvoiceStatus = 'paid' | 'cancelled' | 'failed' | 'pending';
+
+/**
+ * Open a Stars invoice. Inside Telegram this is the native payment sheet;
+ * in a plain browser (local dev) we fall back to a new tab so the flow is at
+ * least inspectable.
+ */
+export function openInvoice(url: string, callback?: (status: InvoiceStatus) => void): void {
+  const tg = getTelegram();
+  if (tg?.openInvoice) {
+    try {
+      tg.openInvoice(url, (status) => callback?.(status));
+      return;
+    } catch {
+      /* fall through */
+    }
+  }
+  window.open(url, '_blank');
+  callback?.('pending');
 }

@@ -1,13 +1,14 @@
 import { FastifyInstance } from 'fastify';
 import jwt from 'jsonwebtoken';
 import { validateInitData } from '../middleware/telegramAuth.js';
+import { config } from '../config.js';
 
 /**
  * Auth routes — Telegram initData validation → signed JWT session
  */
 
-const JWT_SECRET = process.env.JWT_SECRET || process.env.BOT_TOKEN || 'dev-secret';
-const JWT_TTL_SECONDS = 60 * 60; // 1 hour
+const JWT_SECRET = config.jwtSecret;
+const JWT_TTL_SECONDS = config.jwtTtlSeconds;
 
 export async function authRoutes(app: FastifyInstance) {
   /**

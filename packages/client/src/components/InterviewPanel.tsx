@@ -62,6 +62,9 @@ export const InterviewPanel: React.FC = () => {
       }
       setChosen(restored);
       setPhase('playing');
+    } else {
+      haptic('error');
+      setError('Не удалось начать собеседование. Проверь связь и попробуй ещё раз.');
     }
   };
 
@@ -83,6 +86,7 @@ export const InterviewPanel: React.FC = () => {
       }));
     } else {
       haptic('error');
+      setError('Ответ не отправился — попробуй ещё раз.');
     }
   };
 
@@ -105,15 +109,25 @@ export const InterviewPanel: React.FC = () => {
       setPhase('result');
     } else {
       haptic('error');
+      setError('Не удалось завершить собеседование — результат не сохранён.');
     }
   };
 
   const correctCount = Object.values(answers).filter((a) => a.correct).length;
   const q = questions[idx];
 
+  // Network/server failures used to be swallowed: the state existed but was
+  // never rendered, so a failed request looked like a frozen button.
+  const errorNote = error ? (
+    <div className="mb-3 px-3 py-2 rounded-xl text-xs bg-red-900/30 border border-red-600/40 text-red-200">
+      ⚠️ {error}
+    </div>
+  ) : null;
+
   if (phase === 'idle') {
     return (
       <div className="game-card border-sky-500/40 bg-sky-500/5 animate-pop-in">
+        {errorNote}
         <h3 className="text-sm font-bold text-sky-300 mb-1">🎤 Собеседование-квиз</h3>
         <p className="text-xs text-slate-300 mb-3">
           Ответь на 3 вопроса по своей специализации. Каждый ответ даёт XP —
@@ -136,6 +150,7 @@ export const InterviewPanel: React.FC = () => {
     const result = answers[q.id];
     return (
       <div className="game-card border-sky-500/40 bg-sky-500/5 animate-fade-in">
+        {errorNote}
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs text-slate-400">
             Вопрос {idx + 1} из {questions.length}

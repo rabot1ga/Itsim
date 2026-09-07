@@ -12,10 +12,16 @@
   ],
   "scripts": {
     "dev": "npm run build -w packages/shared && concurrently \"npm run dev -w packages/server\" \"npm run dev -w packages/client\" \"npm run dev -w packages/bot\"",
-    "build": "npm run build -w packages/shared && npm run build -w packages/server && npm run build -w packages/client && npm run build -w packages/bot && npm run build -w packages/sim",
-    "test": "npm run build -w packages/shared && npm run test -w packages/shared && npm run test -w packages/sim",
+    "build": "npm run build -w packages/shared && npm run build -w packages/content && npm run build -w packages/server && npm run build -w packages/client && npm run build -w packages/bot && npm run build -w packages/sim",
+    "test": "npm run build -w packages/shared && npm run validate:content && npm run test -w packages/shared && npm run test -w packages/server && npm run test -w packages/bot && npm run test -w packages/sim",
     "simulate": "npm run build -w packages/shared && tsx packages/sim/src/simulate.ts",
-    "lint": "npm run build -w packages/shared && tsc -p packages/shared && tsc -p packages/server && tsc -p packages/client && tsc -p packages/bot && tsc -p packages/sim && tsc -p tools/pixelgen",
+    "lint": "npm run lint:types && npm run lint:code",
+    "lint:types": "npm run build -w packages/shared && tsc -p packages/shared && tsc -p packages/content && tsc -p packages/server && tsc -p packages/client && tsc -p packages/bot && tsc -p packages/sim && tsc -p tools/pixelgen",
+    "lint:code": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "validate:content": "npm run build -w packages/shared && tsx packages/content/src/cli.ts",
     "pixelgen:build": "npm run build -w packages/shared",
     "pixelgen:compile": "npm run pixelgen:build && tsx tools/pixelgen/src/index.ts compile --",
     "pixelgen:validate": "npm run pixelgen:build && tsx tools/pixelgen/src/index.ts validate --",
@@ -29,8 +35,14 @@
     "pixelgen:demo": "npm run pixelgen:build && tsx tools/pixelgen/src/index.ts generate --limit=48 --scale=6 --sheet"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
     "concurrently": "^8.2.2",
+    "eslint": "^9.39.5",
+    "eslint-config-prettier": "^9.1.2",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "prettier": "^3.9.6",
     "tsx": "^4.7.0",
-    "typescript": "^5.4.0"
+    "typescript": "^5.4.0",
+    "typescript-eslint": "^8.70.0"
   }
 }
