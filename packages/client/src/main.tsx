@@ -2,19 +2,11 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './index.css';
+import { initTelegramApp } from './lib/telegram';
 
-// Initialize Telegram WebApp
-declare global {
-  interface Window {
-    Telegram?: any;
-  }
-}
-
-const tg = window.Telegram?.WebApp;
-if (tg) {
-  tg.ready();
-  tg.expand();
-}
+// Telegram chrome: fullscreen, stable viewport height, dark header, haptics-ready.
+// Safe no-op in a plain browser.
+initTelegramApp();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

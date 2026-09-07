@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000"><defs>
+  <linearGradient id="wallGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#a6abb5"/><stop offset="1" stop-color="#898e99"/>
+  </linearGradient>
+  <linearGradient id="floorGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#5f5f5f"/><stop offset="1" stop-color="#424242"/>
+  </linearGradient>
+  <linearGradient id="glassGrad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#ddeaf7"/><stop offset="1" stop-color="#a9c6e0"/>
+  </linearGradient>
+  <linearGradient id="woodGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#b98d60"/><stop offset="1" stop-color="#8a6238"/>
+  </linearGradient>
+  <linearGradient id="steelGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#8b93a3"/><stop offset="1" stop-color="#5d6672"/>
+  </linearGradient>
+</defs><ellipse cx="145" cy="836" rx="90" ry="10" fill="#000000" opacity="0.14" stroke="none"/><g stroke="#1e2430" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+  <rect x="90" y="640" width="110" height="180" rx="10" fill="#dfe7f2"/>
+  <rect x="105" y="560" width="80" height="90" rx="14" fill="url(#glassGrad)"/>
+  <rect x="120" y="700" width="50" height="40" rx="6" fill="#8b93a3"/>
+  <circle cx="145" cy="690" r="8" fill="#c45a5a" stroke="none"/>
+  <circle cx="145" cy="720" r="8" fill="#5a8ac4" stroke="none"/></g><g><rect x="-5" y="916" width="300" height="44" rx="12" fill="#000000" opacity="0.35" stroke="none"/><text x="145" y="946" font-family="monospace" font-size="24" fill="#ffffff" opacity="0.75" text-anchor="middle">coffee · cooler</text></g></svg>

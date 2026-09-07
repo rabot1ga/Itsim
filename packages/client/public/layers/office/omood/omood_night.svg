@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000"><defs>
+  <linearGradient id="wallGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#a6abb5"/><stop offset="1" stop-color="#898e99"/>
+  </linearGradient>
+  <linearGradient id="floorGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#5f5f5f"/><stop offset="1" stop-color="#424242"/>
+  </linearGradient>
+  <linearGradient id="glassGrad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#ddeaf7"/><stop offset="1" stop-color="#a9c6e0"/>
+  </linearGradient>
+  <linearGradient id="woodGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#b98d60"/><stop offset="1" stop-color="#8a6238"/>
+  </linearGradient>
+  <linearGradient id="steelGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#8b93a3"/><stop offset="1" stop-color="#5d6672"/>
+  </linearGradient>
+</defs><g stroke="#1e2430" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"><rect x="0" y="0" width="1000" height="1000" fill="#0d1530" opacity="0.45" stroke="none"/><circle cx="860" cy="150" r="46" fill="#f5f0dc" stroke="none"/><rect x="470" y="590" width="150" height="82" rx="6" fill="#bfe3ff" opacity="0.8" stroke="none"/></g></svg>

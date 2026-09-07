@@ -1,6 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { CareerPressureCard } from '../components/CareerPressureCard';
+import {
+  hideMainButton,
+  isMainButtonSupported,
+  setMainButtonProgress,
+  showMainButton,
+} from '../lib/telegram';
 
 interface DayViewProps {
   onAdvanceDay: () => void;
@@ -18,6 +24,9 @@ interface SideJobInfo {
   minSkill?: number;
   minDay?: number;
 }
+
+/** Feedable pets — cosmetic accessories (pet_bow/...) are not dinner guests */
+const REAL_PETS = ['pet_cat', 'pet_dog', 'pet_cactus', 'pet_robo', 'pet_spider', 'pet_bulldog'];
 
 const ACTIONS = [
   // Study actions
@@ -54,6 +63,8 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
   const chooseEvent = useGameStore((s) => s.chooseEvent);
   const mining = useGameStore((s) => s.mining);
   const [sideJobs, setSideJobs] = useState<Record<string, SideJobInfo>>({});
+  const [finishing, setFinishing] = useState(false);
+  const useNativeCta = isMainButtonSupported();
 
   useEffect(() => {
     fetch('/api/content/side-jobs')
@@ -61,6 +72,32 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
       .then((data) => setSideJobs(data.sideJobs ?? {}))
       .catch(() => setSideJobs({}));
   }, []);
+
+  const finishDay = useCallback(async () => {
+    if (finishing) return;
+    setFinishing(true);
+    setMainButtonProgress(true);
+    try {
+      await onAdvanceDay();
+    } finally {
+      setFinishing(false);
+      setMainButtonProgress(false);
+      // The day summary + new event render at the top — take the player there.
+      document.getElementById('game-scroll')?.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [finishing, onAdvanceDay]);
+
+  const currentDay = player?.currentDay ?? 1;
+
+  // Native Telegram MainButton replaces the in-page button when available.
+  useEffect(() => {
+    if (!useNativeCta) return;
+    const handler = () => {
+      void finishDay();
+    };
+    showMainButton(`Завершить день ${currentDay} →`, handler);
+    return () => hideMainButton(handler);
+  }, [useNativeCta, finishDay, currentDay]);
 
   if (!player) return null;
 
@@ -90,7 +127,7 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
               <button
                 key={i}
                 onClick={() => chooseEvent(activeEvent.id, i)}
-                className="w-full text-left px-3 py-2 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 hover:border-amber-500/50 rounded-lg text-sm text-slate-200 transition-colors"
+                className="w-full text-left px-3 py-3 bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700 hover:border-amber-500/50 rounded-xl text-sm text-slate-200 transition-all touch-target active:scale-[0.98]"
               >
                 {choice.text}
               </button>
@@ -148,7 +185,9 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
                   onClick={() => handleAction(action.id)}
                   disabled={!enabled}
                   className={`game-card text-left transition-all ${
-                    enabled ? 'hover:border-primary-500/50 hover:bg-slate-800/80' : 'opacity-50'
+                    enabled
+                      ? 'hover:border-primary-500/50 hover:bg-slate-800/80 active:scale-[0.96]'
+                      : 'opacity-50'
                   }`}
                 >
                   <div className="flex items-center gap-2 mb-1">
@@ -181,7 +220,9 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
                   disabled={!enabled || !minSkillMet}
                   title={!minSkillMet ? `Нужен навык ${job.minSkill}+` : jobId}
                   className={`game-card text-left transition-all ${
-                    enabled && minSkillMet ? 'hover:border-amber-500/50 hover:bg-slate-800/80' : 'opacity-50'
+                    enabled && minSkillMet
+                      ? 'hover:border-amber-500/50 hover:bg-slate-800/80 active:scale-[0.96]'
+                      : 'opacity-50'
                   }`}
                 >
                   <div className="flex items-center gap-2 mb-1">
@@ -255,13 +296,18 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
         </div>
       )}
 
-      {/* Feed pet */}
-      {(player.items ?? []).some((id: string) => id.startsWith('pet_')) && (
+      {/* Feed pet (real pets only — bows don't eat) */}
+      {(player.items ?? []).some((id: string) => REAL_PETS.includes(id)) && (
         <button
           onClick={() => performAction('feed_pet')}
-          className="w-full py-2.5 bg-amber-900/40 hover:bg-amber-900/60 border border-amber-600/50 text-amber-200 rounded-xl font-medium transition-all text-sm active:scale-[0.98]"
+          disabled={!!player.petFedToday}
+          className={`w-full py-2.5 border rounded-xl font-medium transition-all text-sm active:scale-[0.98] touch-target ${
+            player.petFedToday
+              ? 'bg-emerald-900/30 border-emerald-600/40 text-emerald-300'
+              : 'bg-amber-900/40 hover:bg-amber-900/60 border-amber-600/50 text-amber-200'
+          }`}
         >
-          🍖 Покормить питомца (500 ₽, +3 🔥)
+          {player.petFedToday ? '😋 Питомец сыт до завтра' : '🍖 Покормить питомца (500 ₽, +3 🔥)'}
         </button>
       )}
 
@@ -275,13 +321,19 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
         </button>
       )}
 
-      {/* End day button */}
-      <button
-        onClick={onAdvanceDay}
-        className="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white rounded-2xl font-bold transition-all text-lg mt-4 shadow-lg shadow-indigo-900/40 active:scale-[0.98]"
-      >
-        ➡️ Завершить день {player.currentDay ?? 1} →
-      </button>
+      {/* End day button — sticky fallback for non-Telegram browsers
+          (inside Telegram the native MainButton is used, see the effect above) */}
+      {!useNativeCta && (
+        <div className="sticky-cta">
+          <button
+            onClick={() => void finishDay()}
+            disabled={finishing}
+            className="w-full py-3.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 disabled:opacity-70 text-white rounded-2xl font-bold transition-all text-lg mt-4 shadow-lg shadow-indigo-900/40 active:scale-[0.98] touch-target"
+          >
+            {finishing ? 'Считаем день…' : `➡️ Завершить день ${player.currentDay ?? 1} →`}
+          </button>
+        </div>
+      )}
     </div>
   );
 };

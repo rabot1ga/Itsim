@@ -105,6 +105,16 @@
         {
           "id": "decor_poster_python",
           "file": "room/decor/decor_poster_python.svg"
+        },
+        {
+          "id": "decor_garland",
+          "file": "room/decor/decor_garland.svg",
+          "rarity": "rare"
+        },
+        {
+          "id": "decor_fir",
+          "file": "room/decor/decor_fir.svg",
+          "rarity": "rare"
         }
       ]
     },

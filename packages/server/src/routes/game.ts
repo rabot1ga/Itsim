@@ -59,6 +59,15 @@ import {
   pickInterviewQuestions,
   interviewAnswerScore,
   interviewXpForQuestion,
+  roomEntryStatus,
+  buildRoomUnlockContext,
+  isRoomSlotId,
+  REPAINT_COST,
+  avatarEntryStatus,
+  buildAvatarUnlockContext,
+  isAvatarSlotId,
+  avatarChangeCost,
+  geneticTraitForSlot,
   type PlayerState,
   type GameEvent,
   type Grade,
@@ -118,6 +127,8 @@ const EXTRA_ENERGY_COSTS: Record<string, number> = {
   study_english_course: 3,
   use_banked_day: 0,
   feed_pet: 1,
+  customize_room: 0,
+  customize_avatar: 0,
 };
 
 const GRADE_POSITIONS: Record<Grade, string> = {
@@ -419,7 +430,18 @@ export async function gameRoutes(app: FastifyInstance) {
       return reply.status(400).send({ error: 'Не хватает денег', state: respondState(state) });
     }
 
-    const result = applyAction(state, actionId, params, content);
+    // Room editor: cross-collection layers need the on-chain (mock) holdings
+    let heldCollections: string[] = [];
+    if (actionId === 'customize_room') {
+      try {
+        const wallet = state.walletAddress ?? `local:${userId}`;
+        heldCollections = await getNftProvider().getHeldCollections(wallet);
+      } catch {
+        heldCollections = [];
+      }
+    }
+
+    const result = applyAction(state, actionId, params, content, heldCollections);
     if (result.error) {
       return reply.status(400).send({ error: result.error, state: respondState(state) });
     }
@@ -1053,6 +1075,22 @@ function getActionMoneyCost(actionId: string, params: any, state: PlayerState, c
       if (next > 4) return null;
       return HOUSING_COSTS[next] ?? null;
     }
+    case 'customize_room': {
+      // Rearranging furniture is free; a fresh coat of paint costs money.
+      if (params?.slot !== 'wallColor') return null;
+      const current = state.room?.wallColor ?? state.genetics?.wallColor;
+      if (!params?.entryId || params.entryId === current) return null;
+      return REPAINT_COST;
+    }
+    case 'customize_avatar': {
+      // Barbers and hat stands charge; the closet is free.
+      const slot = params?.slot as string | undefined;
+      const entryId = (params?.entryId as string | null | undefined) ?? null;
+      if (!slot || !isAvatarSlotId(slot) || entryId === null) return null;
+      const current = (state.avatar as any)?.[slot] ?? geneticTraitForSlot(state.genetics, slot);
+      const cost = avatarChangeCost(slot, entryId, current);
+      return cost > 0 ? cost : null;
+    }
     default:
       return null;
   }
@@ -1064,7 +1102,13 @@ interface ActionResult {
   delta?: Record<string, any>;
 }
 
-function applyAction(state: StoredState, actionId: string, params: any, content: any): ActionResult {
+function applyAction(
+  state: StoredState,
+  actionId: string,
+  params: any,
+  content: any,
+  heldCollections: string[] = []
+): ActionResult {
   const delta: Record<string, any> = {};
 
   // ---- Study actions (hard skills from balance.xpSources) ----
@@ -1254,7 +1298,10 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
 
     // ---- Pets ----
     case 'feed_pet': {
-      const hasPet = (content.items as any[]).some((i) => i.type === 'pet' && state.items.includes(i.id));
+      // Real pets have a layerId; cosmetic accessories (bow/crown/glasses) don't count
+      const hasPet = (content.items as any[]).some(
+        (i) => i.type === 'pet' && i.layerId && state.items.includes(i.id)
+      );
       if (!hasPet) return { error: 'У тебя нет питомца. Купи его в магазине' };
       if (state.petFedToday) return { error: 'Питомец уже сыт. Хватит на сегодня' };
       state.petFedToday = true;
@@ -1470,6 +1517,69 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       state.maxEnergy = recalcMaxEnergy(state, content);
       delta.housingLevel = next;
       return { message: `🏠 Переезд: новый уровень жилья ${next}. Запах картонных коробок — запах свободы` };
+    }
+
+    case 'customize_room': {
+      const slot = params?.slot as string | undefined;
+      const entryId = (params?.entryId as string | null | undefined) ?? null;
+      if (!slot || (slot !== 'wallColor' && !isRoomSlotId(slot))) {
+        return { error: 'Неизвестный слот комнаты' };
+      }
+      if (!state.room) state.room = { slots: {} };
+
+      // null = back to automatic
+      if (entryId === null) {
+        if (slot === 'wallColor') delete state.room.wallColor;
+        else delete state.room.slots[slot];
+        delta.room = state.room;
+        return { message: '🎨 Вернули как было (авто)', delta };
+      }
+
+      if (slot === 'wallColor') {
+        const palette = (content.genetics?.wallPalette ?? []) as any[];
+        if (!palette.some((p) => p.id === entryId)) return { error: 'Такого цвета нет в палитре' };
+        state.room.wallColor = entryId;
+        delta.room = state.room;
+        const name = palette.find((p) => p.id === entryId)?.name ?? entryId;
+        return { message: `🎨 Стены перекрашены: ${name} (−${REPAINT_COST} ₽ за банку краски)`, delta };
+      }
+
+      const manifestSlot = (content.roomLayers?.slots ?? []).find((s: any) => s.id === slot);
+      if (!manifestSlot?.entries?.some((e: any) => e.id === entryId)) {
+        return { error: 'Такого предмета нет в этом слоте' };
+      }
+      const status = roomEntryStatus(buildRoomUnlockContext(state, heldCollections), slot, entryId);
+      if (!status.unlocked) return { error: `🔒 ${status.hint}` };
+      state.room.slots[slot] = entryId;
+      delta.room = state.room;
+      return { message: '🎨 Комната обновлена', delta };
+    }
+
+    case 'customize_avatar': {
+      const slot = params?.slot as string | undefined;
+      const entryId = (params?.entryId as string | null | undefined) ?? null;
+      if (!slot || !isAvatarSlotId(slot)) {
+        return { error: 'Неизвестный слот внешности' };
+      }
+      if (!state.avatar) state.avatar = {};
+
+      if (entryId === null) {
+        delete (state.avatar as any)[slot];
+        delta.avatar = state.avatar;
+        return { message: '🧍 Вернули как было от природы', delta };
+      }
+
+      const manifestSlot = (content.avatarLayers?.slots ?? []).find((s: any) => s.id === slot);
+      if (!manifestSlot?.entries?.some((e: any) => e.id === entryId)) {
+        return { error: 'Такого варианта нет в этом слоте' };
+      }
+      const status = avatarEntryStatus(buildAvatarUnlockContext(state), slot, entryId);
+      if (!status.unlocked) return { error: `🔒 ${status.hint}` };
+      (state.avatar as any)[slot] = entryId;
+      delta.avatar = state.avatar;
+      const flavor =
+        slot === 'hair' ? '💇 Новая стрижка' : slot === 'beard' ? '🪒 Борода обновлена' : '🧍 Образ обновлён';
+      return { message: flavor, delta };
     }
 
     default:

@@ -39,6 +39,7 @@ export interface ContentBundle {
   genetics: any;
   avatarLayers: any;
   roomLayers: any;
+  officeLayers: any;
   crossCollections: any;
   challenges: any[];
   interviewQuestions: any[];
@@ -63,6 +64,7 @@ export function loadContent(): ContentBundle {
     genetics: loadAndValidate('genetics.json', GeneticsConfigSchema),
     avatarLayers: loadAndValidate('layers/avatar_manifest.json', LayerManifestSchema),
     roomLayers: loadAndValidate('layers/room_manifest.json', LayerManifestSchema),
+    officeLayers: loadAndValidate('layers/office_manifest.json', LayerManifestSchema),
     crossCollections: loadAndValidate('cross_collections.json', CrossCollectionsSchema),
     challenges: loadAndValidate('challenges.json', DailyChallengesFileSchema),
     interviewQuestions: loadAndValidate('interview_questions.json', InterviewQuestionsFileSchema),
@@ -161,9 +163,9 @@ function validateCrossReferences(bundle: ContentBundle) {
     'public_speaking',
   ]);
 
-  // Layer ids across both manifests
+  // Layer ids across all manifests
   const layerIds = new Set<string>();
-  for (const manifest of [bundle.avatarLayers, bundle.roomLayers]) {
+  for (const manifest of [bundle.avatarLayers, bundle.roomLayers, bundle.officeLayers]) {
     for (const slot of manifest.slots) {
       for (const entry of slot.entries) {
         layerIds.add(entry.id);

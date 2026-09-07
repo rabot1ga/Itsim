@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
+import { haptic } from '../lib/telegram';
 import { xpToNext, canUnlockPerk } from '@itsim/shared';
 
 /**
@@ -84,6 +85,8 @@ export const SkillsView: React.FC = () => {
   const clearError = useGameStore((s) => s.clearError);
   const [skills, setSkills] = useState<SkillInfo[]>([]);
   const [perks, setPerks] = useState<PerkInfo[]>([]);
+  const [openBranches, setOpenBranches] = useState<Record<string, boolean>>({});
+  const [branchesSeeded, setBranchesSeeded] = useState(false);
 
   useEffect(() => {
     fetch('/api/content/skills')
@@ -96,7 +99,29 @@ export const SkillsView: React.FC = () => {
       .catch(() => setPerks([]));
   }, []);
 
+  // Branch accordions: open what the player already touches (main skill branch
+  // + branches with progress), keep the rest collapsed to kill the endless scroll.
+  const mainSkillId = player?.mainSkillId;
+  useEffect(() => {
+    if (branchesSeeded || skills.length === 0 || !player) return;
+    setBranchesSeeded(true);
+    const next: Record<string, boolean> = {};
+    for (const branchId of [...new Set(skills.map((s) => s.branch))]) {
+      const inBranch = skills.filter((s) => s.branch === branchId);
+      const hasProgress = inBranch.some((s) => (player.skills?.[s.id]?.level ?? 0) > 0);
+      const hasMain = inBranch.some((s) => s.id === mainSkillId);
+      next[branchId] = hasProgress || hasMain;
+    }
+    if (!Object.values(next).some(Boolean)) next[skills[0].branch] = true;
+    setOpenBranches(next);
+  }, [skills, branchesSeeded, player, mainSkillId]);
+
   if (!player) return null;
+
+  const toggleBranch = (branchId: string) => {
+    haptic('selection');
+    setOpenBranches((prev) => ({ ...prev, [branchId]: !(prev[branchId] ?? false) }));
+  };
 
   const branchOf: Record<string, string> = {};
   for (const s of skills) branchOf[s.id] = s.branch;
@@ -128,6 +153,27 @@ export const SkillsView: React.FC = () => {
         Тапни по навыку, чтобы сделать его основным — учёба и работа качают именно его 🎯
       </p>
 
+      {/* Pinned main skill — always one tap away */}
+      {(() => {
+        const main = skills.find((s) => s.id === player.mainSkillId);
+        if (!main) return null;
+        return (
+          <button
+            onClick={() => toggleBranch(main.branch)}
+            className="game-card !py-2.5 w-full flex items-center gap-2.5 text-left border-primary-500/30 active:scale-[0.98] transition-all"
+          >
+            <span className="text-xl">🎯</span>
+            <div className="flex-1 min-w-0">
+              <p className="text-[10px] text-slate-500 uppercase tracking-wide">Основной навык</p>
+              <p className="text-sm font-medium text-slate-100 truncate">
+                {SKILL_EMOJI[main.id] ?? '📌'} {main.name} · ур. {skillLevel(main.id)}
+              </p>
+            </div>
+            <span className="text-[11px] text-primary-400 shrink-0">к ветке →</span>
+          </button>
+        );
+      })()}
+
       {/* Soft skills */}
       <div className="game-card">
         <h3 className="section-title mb-2">Soft Skills</h3>
@@ -151,13 +197,33 @@ export const SkillsView: React.FC = () => {
         const learned = branchSkills.filter((s) => skillLevel(s.id) > 0);
         if (branchSkills.length === 0) return null;
 
+        const open = openBranches[branchId] ?? false;
+        const progress = branchSkills.length ? learned.length / branchSkills.length : 0;
+
         return (
-          <div key={branchId} className={`game-card border-l-4 ${meta.color}`}>
-            <h3 className="section-title mb-2">
-              {meta.icon} {meta.name}
-              <span className="text-slate-600 ml-1">({learned.length}/{branchSkills.length})</span>
-            </h3>
-            <div className="space-y-2">
+          <div key={branchId} className={`game-card !p-0 overflow-hidden border-l-4 ${meta.color}`}>
+            <button
+              onClick={() => toggleBranch(branchId)}
+              className="w-full flex items-center gap-2.5 px-3.5 py-3 text-left touch-target active:bg-slate-800/40 transition-colors"
+            >
+              <span className="text-lg">{meta.icon}</span>
+              <span className="flex-1 min-w-0 text-sm font-semibold text-slate-200 truncate">
+                {meta.name}
+                <span className="text-slate-500 font-normal ml-1.5 text-xs">
+                  {learned.length}/{branchSkills.length}
+                </span>
+              </span>
+              <span className="w-14 h-1.5 bg-slate-700/70 rounded-full overflow-hidden shrink-0">
+                <span
+                  className="block h-full bg-emerald-500 rounded-full transition-all"
+                  style={{ width: `${Math.round(progress * 100)}%` }}
+                />
+              </span>
+              <span className={`accordion-chevron text-slate-500 text-xs ${open ? 'open' : ''}`}>▾</span>
+            </button>
+            <div className={`accordion-body ${open ? 'open' : ''}`}>
+              <div className="accordion-inner">
+                <div className="px-2 pb-2.5 space-y-1">
               {branchSkills.map((s) => {
                 const level = skillLevel(s.id);
                 const xp = skillXp(s.id);
@@ -174,7 +240,7 @@ export const SkillsView: React.FC = () => {
                     onClick={() => isUnlocked && setMainSkill(s.id)}
                     disabled={!isUnlocked}
                     title={isUnlocked ? (isMain ? 'Основной навык' : 'Сделать основным') : s.flavor}
-                    className={`w-full flex items-center gap-2 text-left rounded-lg px-1.5 py-1 transition-colors ${
+                    className={`w-full flex items-center gap-2 text-left rounded-lg px-2 py-2 min-h-[48px] transition-colors ${
                       isMain ? 'bg-primary-600/10 border border-primary-500/30' : 'hover:bg-slate-800/60'
                     } ${!isUnlocked ? 'opacity-50' : ''}`}
                   >
@@ -197,6 +263,8 @@ export const SkillsView: React.FC = () => {
                   </button>
                 );
               })}
+                </div>
+              </div>
             </div>
           </div>
         );
@@ -244,7 +312,7 @@ export const SkillsView: React.FC = () => {
                   <button
                     onClick={() => unlockPerk(perk.id)}
                     disabled={!canUnlock}
-                    className={`text-[11px] px-2.5 py-1.5 rounded-lg shrink-0 ${
+                    className={`text-xs px-3 py-2 rounded-lg shrink-0 touch-target font-medium ${
                       canUnlock
                         ? 'bg-amber-600 hover:bg-amber-500 text-white'
                         : 'bg-slate-700/60 text-slate-500 cursor-not-allowed'

@@ -330,5 +330,32 @@
     },
     "icon": "pet_bulldog.png",
     "layerId": "pet_bulldog"
+  },
+  {
+    "id": "pet_bow",
+    "name": "🎀 Бант для питомца",
+    "type": "pet",
+    "price": 3000,
+    "description": "Питомец становится на 200% милее. Чистая косметика — зато какая!",
+    "effects": {},
+    "icon": "pet_bow.png"
+  },
+  {
+    "id": "pet_glasses",
+    "name": "🕶️ Очки для питомца",
+    "type": "pet",
+    "price": 5000,
+    "description": "Твой питомец теперь тоже code reviewer. Косметика.",
+    "effects": {},
+    "icon": "pet_glasses.png"
+  },
+  {
+    "id": "pet_crown",
+    "name": "👑 Корона для питомца",
+    "type": "pet",
+    "price": 15000,
+    "description": "Признай очевидное: дома главный — он. Косметика.",
+    "effects": {},
+    "icon": "pet_crown.png"
   }
 ]

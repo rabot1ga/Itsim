@@ -497,6 +497,32 @@ def room_decor(variant):
         texts = '''
   <text x="220" y="330" font-family="sans-serif" font-size="100" font-weight="bold" fill="#ffd43b" text-anchor="middle">Py</text>
   <text x="220" y="400" font-family="monospace" font-size="26" fill="#9fc5e8" text-anchor="middle">import this</text>'''
+    elif variant == 'decor_garland':
+        # Festive swag across the top of the wall (seasonal drop)
+        d = '''
+  <path d="M40 130 Q140 210 240 130 Q340 210 440 130" fill="none" stroke="#2f6b3a" stroke-width="8"/>'''
+        bulbs = [(80, 158, '#ff5a5a'), (140, 176, '#ffd43b'), (200, 158, '#38bdf8'),
+                 (280, 158, '#e879f9'), (340, 176, '#7fae7a'), (400, 158, '#ff5a5a')]
+        for x, y, c in bulbs:
+            d += f'''
+  <line x1="{x}" y1="{y - 22}" x2="{x}" y2="{y - 8}" stroke="#2f6b3a" stroke-width="4"/>
+  <circle cx="{x}" cy="{y}" r="11" fill="{c}"/>'''
+    elif variant == 'decor_fir':
+        # Little New Year tree in the corner (seasonal drop)
+        d = '''
+  <polygon points="175,380 110,500 240,500" fill="#2f6b3a"/>
+  <polygon points="175,440 95,580 255,580" fill="#2a6134"/>
+  <polygon points="175,510 80,660 270,660" fill="#26592e"/>
+  <rect x="160" y="660" width="30" height="44" fill="#6b4f35"/>
+  <rect x="120" y="704" width="110" height="22" rx="6" fill="#8a6238"/>'''
+        toys = [(175, 420, '#ff5a5a'), (150, 480, '#ffd43b'), (200, 480, '#38bdf8'),
+                (130, 560, '#e879f9'), (175, 560, '#ff5a5a'), (220, 560, '#ffd43b'),
+                (150, 620, '#38bdf8'), (200, 620, '#e879f9')]
+        for x, y, c in toys:
+            d += f'''
+  <circle cx="{x}" cy="{y}" r="9" fill="{c}" stroke="none"/>'''
+        d += '''
+  <polygon points="175,352 162,382 188,382" fill="#ffd43b"/>'''
     return svg(R, R, d, texts=texts)
 
 
@@ -777,7 +803,8 @@ def main():
     for v in ['window_square', 'window_panoramic', 'window_round', 'window_arched', 'window_blinds']:
         write(f'room/window/{v}.svg', room_window(v))
     for v in ['decor_poster_js', 'decor_neon', 'decor_server', 'decor_books', 'decor_whiteboard',
-              'decor_madlads_poster', 'decor_pirate_poster', 'decor_clock', 'decor_poster_python']:
+              'decor_madlads_poster', 'decor_pirate_poster', 'decor_clock', 'decor_poster_python',
+              'decor_garland', 'decor_fir']:
         write(f'room/decor/{v}.svg', room_decor(v))
     for v in ['desk_parata', 'desk_ikea', 'desk_office', 'desk_standing', 'desk_rgb']:
         write(f'room/desk/{v}.svg', room_desk(v))

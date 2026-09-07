@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000"><defs>
+  <linearGradient id="wallGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#a6abb5"/><stop offset="1" stop-color="#898e99"/>
+  </linearGradient>
+  <linearGradient id="floorGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#5f5f5f"/><stop offset="1" stop-color="#424242"/>
+  </linearGradient>
+  <linearGradient id="glassGrad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#ddeaf7"/><stop offset="1" stop-color="#a9c6e0"/>
+  </linearGradient>
+  <linearGradient id="woodGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#b98d60"/><stop offset="1" stop-color="#8a6238"/>
+  </linearGradient>
+  <linearGradient id="steelGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#8b93a3"/><stop offset="1" stop-color="#5d6672"/>
+  </linearGradient>
+</defs><g stroke="#1e2430" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"><ellipse cx="735" cy="592" rx="30" ry="20" fill="#f4d35e"/><circle cx="752" cy="572" r="14" fill="#f4d35e"/><circle cx="756" cy="570" r="3" fill="#222" stroke="none"/><path d="M764 574 l14 4 -14 4 Z" fill="#ee964b" stroke="none"/></g><g><rect x="585" y="916" width="300" height="44" rx="12" fill="#000000" opacity="0.35" stroke="none"/><text x="735" y="946" font-family="monospace" font-size="24" fill="#ffffff" opacity="0.75" text-anchor="middle">micro · duck</text></g></svg>

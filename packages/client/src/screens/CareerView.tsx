@@ -51,6 +51,7 @@ const STACK_ICONS: Record<string, string> = {
 
 export const CareerView: React.FC = () => {
   const player = useGameStore((s) => s.player);
+  const setView = useGameStore((s) => s.setView);
   const applyToCompany = useGameStore((s) => s.applyToCompany);
   const acceptOffer = useGameStore((s) => s.acceptOffer);
   const declineOffer = useGameStore((s) => s.declineOffer);
@@ -103,6 +104,23 @@ export const CareerView: React.FC = () => {
         )}
       </div>
 
+      {/* Office entry */}
+      {player.job && (
+        <button
+          onClick={() => setView('office')}
+          className="game-card w-full flex items-center gap-3 text-left border-sky-500/30 hover:border-sky-500/50 active:scale-[0.98] transition-all"
+        >
+          <span className="text-2xl">🏢</span>
+          <span className="flex-1 min-w-0">
+            <span className="block text-sm font-medium text-slate-100">Мой офис</span>
+            <span className="block text-[11px] text-slate-500 truncate">
+              {player.job.position} · команда, задачи и настроение дня
+            </span>
+          </span>
+          <span className="text-primary-400 shrink-0">→</span>
+        </button>
+      )}
+
       {/* Job offers */}
       {offers.length > 0 && (
         <div className="game-card border-l-4 border-emerald-500 animate-pop-in">
@@ -116,16 +134,16 @@ export const CareerView: React.FC = () => {
                     <p className="text-xs text-emerald-400">{formatMoney(o.salary)}/мес</p>
                     <p className="text-xs text-slate-500">Сгорит через {o.expiresInDays} дн.</p>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 shrink-0 ml-2">
                     <button
                       onClick={() => acceptOffer(o.companyId)}
-                      className="text-xs px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg"
+                      className="text-xs px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white rounded-xl touch-target font-medium transition-all"
                     >
                       Принять
                     </button>
                     <button
                       onClick={() => declineOffer(o.companyId)}
-                      className="text-xs px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded-lg"
+                      className="text-xs px-4 py-2.5 bg-slate-700 hover:bg-slate-600 active:scale-95 text-slate-300 rounded-xl touch-target transition-all"
                     >
                       Отклонить
                     </button>
@@ -235,7 +253,7 @@ export const CareerView: React.FC = () => {
                 {canApply && (
                   <button
                     onClick={() => applyToCompany(c.id)}
-                    className="mt-2 w-full text-xs px-3 py-1.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors"
+                    className="mt-2 w-full text-sm px-3 py-2.5 bg-primary-600 hover:bg-primary-700 active:scale-[0.98] text-white rounded-xl transition-all touch-target font-medium"
                   >
                     Откликнуться
                   </button>

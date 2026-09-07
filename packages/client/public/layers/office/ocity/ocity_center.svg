@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000"><defs>
+  <linearGradient id="wallGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#a6abb5"/><stop offset="1" stop-color="#898e99"/>
+  </linearGradient>
+  <linearGradient id="floorGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#5f5f5f"/><stop offset="1" stop-color="#424242"/>
+  </linearGradient>
+  <linearGradient id="glassGrad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#ddeaf7"/><stop offset="1" stop-color="#a9c6e0"/>
+  </linearGradient>
+  <linearGradient id="woodGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#b98d60"/><stop offset="1" stop-color="#8a6238"/>
+  </linearGradient>
+  <linearGradient id="steelGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#8b93a3"/><stop offset="1" stop-color="#5d6672"/>
+  </linearGradient>
+</defs><ellipse cx="760" cy="386" rx="200" ry="10" fill="#000000" opacity="0.14" stroke="none"/><g stroke="#1e2430" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+  <rect x="560" y="70" width="400" height="290" rx="8" fill="url(#glassGrad)"/>
+  <rect x="560" y="70" width="400" height="290" rx="8" fill="#a9c6e0" opacity="0.55"/>
+  
+  <rect x="610" y="150" width="70" height="180" fill="#7d8a9c"/>
+  <rect x="690" y="110" width="90" height="220" fill="#6d7a8c"/>
+  <rect x="790" y="170" width="120" height="160" fill="#7d8a9c"/>
+  <circle cx="880" cy="130" r="14" fill="#ffe08a" stroke="none"/>
+  <line x1="760" y1="70" x2="760" y2="360" stroke="#5d6672" stroke-width="8"/>
+  <line x1="560" y1="215" x2="960" y2="215" stroke="#5d6672" stroke-width="8"/>
+  <rect x="540" y="360" width="440" height="18" rx="6" fill="url(#woodGrad)"/></g><g><rect x="610" y="916" width="300" height="44" rx="12" fill="#000000" opacity="0.35" stroke="none"/><text x="760" y="946" font-family="monospace" font-size="24" fill="#ffffff" opacity="0.75" text-anchor="middle">view · center</text></g></svg>
