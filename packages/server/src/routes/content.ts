@@ -84,6 +84,19 @@ export async function contentRoutes(app: FastifyInstance) {
   });
 
   /**
+   * GET /api/content/career-gates — the promotion ladder as data (v2.1).
+   * The client must show the *real* gates, not a hardcoded copy of them.
+   */
+  app.get('/career-gates', async () => {
+    const balance = getContent().balance as any;
+    return {
+      gates: balance.careerGates ?? [],
+      livingCosts: balance.livingCosts ?? null,
+      endings: balance.endings ?? null,
+    };
+  });
+
+  /**
    * GET /api/content/side-jobs — non-IT gigs (courier, barista, etc.)
    */
   app.get('/side-jobs', async () => {

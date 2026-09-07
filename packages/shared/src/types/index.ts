@@ -19,6 +19,53 @@ export type EventId = string;
 export type NPCId = string;
 export type AchievementId = string;
 
+/**
+ * Career gate — a data-driven promotion requirement (content: balance.careerGates).
+ * `skill` gates on the level of the MAIN skill (depth), `total` on the sum of all
+ * skill levels (breadth) — both must hold, which is what keeps late game honest.
+ */
+export interface CareerGate {
+  grade: Grade;
+  label?: string;
+  skill: number;
+  comm: number;
+  rep: number;
+  total?: number;
+  branchTotal?: number;
+  english?: number;
+  leadership?: number;
+  /** review cycle in days since the last promotion */
+  minDaysInGrade?: number;
+  /** candidates competing for one open slot (org budget pressure) */
+  competition?: number;
+  /** not reachable by promotion — requires a special action (CTO election) */
+  special?: boolean;
+  /** how often the board meets for a special (non-promotion) election */
+  electionIntervalDays?: number;
+}
+
+/**
+ * Daily living costs (food, commute, subscriptions) — the money pressure
+ * that salaries alone do not provide (ТЗ section 5.6).
+ */
+export interface LivingCosts {
+  foodBase: number;
+  foodBroke?: number;
+  perHousingLevel?: number;
+  perCareerIndex?: number;
+  subscriptionsMonthly?: number;
+  /** each owned item shaves a little off lifestyle (cooking gear, gym, ...) */
+  lifestyleRefundMultiplier?: number;
+  /** wealth tax: money sitting above the threshold pays for the lifestyle around it */
+  wealthTaxMonthly?: number;
+  wealthTaxThreshold?: number;
+  wealthTaxRate?: number;
+  wealthTaxCap?: number;
+}
+
+/** Career endings (ТЗ «Финалы») */
+export type CareerEnding = 'corporate_god' | 'exit' | 'free_artist' | 'teacher' | 'burnout' | 'left_it';
+
 // ---- Player State ----
 
 export interface PlayerState {
@@ -34,6 +81,22 @@ export interface PlayerState {
   maxEnergy: number;
   reputation: number;
   bankedDays: number;
+
+  // Career (v2.1 balance layer)
+  /** skill the player is known for — the depth requirement of career gates applies to it */
+  mainSkillId?: SkillId;
+  /** day of the last promotion / last career ending */
+  lastPromotionDay?: number;
+  /** board election cooldown (CTO), in game days */
+  ctoCooldownUntilDay?: number;
+  /** terminal career outcome, if reached */
+  careerEnding?: CareerEnding;
+  /** last charged daily living cost (for UI: «твой день стоит … ₽») */
+  lastLivingCost?: number;
+  /** consecutive days with zero money (drives the «ушёл из IT» ending) */
+  brokeDays?: number;
+  /** last freelance payout — landlord income estimate for players without a job */
+  freelanceLastPayment?: number;
 
   // Procedural generation (DESIGN.md) — optional for backward compatibility
   walletAddress?: string;

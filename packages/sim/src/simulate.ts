@@ -19,12 +19,25 @@ import {
   calculateMaxEnergy,
   calculateRating,
   totalSkillLevels,
+  maxSkillLevel,
+  branchShareXp,
+  dailyLivingCost,
+  wealthTaxMonthly,
   freelancePayment,
   interviewChance,
   rollInterview,
   weeklySalary,
   clamp,
   GRADE_REQUIREMENTS,
+  gateProgress,
+  qualifiedGrade,
+  promotionChance,
+  reviewInterval,
+  mainBranchTotal,
+  nextGateOf,
+  gateFor,
+  ctoElectionChance,
+  type CareerGate,
   GRADE_SALARIES,
   GRADE_ORDER,
   careerLevelIndex,
@@ -39,6 +52,23 @@ const balance = JSON.parse(readFileSync(balancePath, 'utf-8'));
 const XP_SOURCES: Record<string, { xp: number; energy: number; cost: number; maxLevel: number }> =
   balance.xpSources;
 const NETWORKING = balance.networking ?? { commXp: 5, repGain: 0.5, energy: 2 };
+const LIVING = balance.livingCosts ?? null;
+const ENDINGS = balance.endings ?? { burnoutDays: 7, brokeDaysToQuit: 15 };
+const SOFT_OPTS = {
+  saturatesAt: balance.softSkills?.saturatesAt ?? 30,
+  damping: balance.softSkills?.xpDamping ?? 0.5,
+};
+
+// Career gates + branch map come from content (same source as the server)
+const CAREER_GATES: CareerGate[] = (balance.careerGates ?? []) as CareerGate[];
+const skillsPath = join(__dirname, '..', '..', 'content', 'skills.json');
+const BRANCH_OF: Record<string, string> = (() => {
+  const raw = JSON.parse(readFileSync(skillsPath, 'utf-8'));
+  const list = raw.skills ?? raw;
+  const map: Record<string, string> = {};
+  for (const sk of list as any[]) if (sk.id && sk.branch) map[sk.id] = sk.branch;
+  return map;
+})();
 
 const RUNS = 40;
 const DAYS = 365;
@@ -58,28 +88,42 @@ const MAX_ACTIONS_PER_DAY = 7;
 // Promotion review happens every N days (mirrors server rule)
 const PROMO_COOLDOWN_DAYS = 7;
 
+// The board meets every N days to elect a CTO (server: cto_elect action + cooldown)
+const CTO_ELECTION_DAYS = 60;
+
 // Freelance gig cooldown by difficulty (mirrors server rule)
 const FREELANCE_COOLDOWN_DAYS: Record<string, number> = { easy: 3, medium: 5, hard: 7 };
 
 // Housing upgrade requires N× the cost saved up for M consecutive days
 // (a real saving habit, not a one-day money spike)
 const HOUSING_SAVE_MULT = 5;
-const HOUSING_SAVE_DAYS = 14;
+const HOUSING_SAVE_DAYS = 20;
+// The further up you move, the more of a *habit* it must be — per-level
+// saveMult/saveStreakDays come from balance.housing (content, not code)
+const HOUSING_DEFS: Record<number, { saveMult?: number; saveStreakDays?: number }> = {};
+for (const h of (balance.housing ?? [])) HOUSING_DEFS[h.level] = h;
+
+// Monthly income required per housing level (content: balance.housing[].incomeGateMult)
+const HOUSING_INCOME_GATE: Record<number, number> = {};
+for (const h of (balance.housing ?? [])) HOUSING_INCOME_GATE[h.level] = h.incomeGateMult ?? 0;
 
 
 // Target milestones from section 3.4 (README)
 const MILESTONES: Record<string, { target: number; tolerance: number }> = {
-  firstOffer: { target: 12, tolerance: 0.4 },
-  junior: { target: 24, tolerance: 0.4 },
-  middle: { target: 78, tolerance: 0.35 },
-  senior: { target: 172, tolerance: 0.3 },
-  teamlead: { target: 194, tolerance: 0.3 },
-  architect: { target: 281, tolerance: 0.25 },
-  housing_1: { target: 203, tolerance: 0.35 },
-  housing_2: { target: 286, tolerance: 0.3 },
+  firstOffer: { target: 16, tolerance: 0.25 },
+  junior: { target: 30, tolerance: 0.2 },
+  middle: { target: 74, tolerance: 0.2 },
+  senior: { target: 150, tolerance: 0.2 },
+  teamlead: { target: 205, tolerance: 0.15 },
+  architect: { target: 285, tolerance: 0.15 },
+  housing_1: { target: 203, tolerance: 0.25 },
+  housing_2: { target: 286, tolerance: 0.25 },
 };
 
-const TRACKED_GRADES: Grade[] = ['junior', 'middle', 'senior', 'teamlead', 'architect'];
+const TRACKED_GRADES: Grade[] = ['junior', 'middle', 'senior', 'teamlead', 'architect', 'cto'];
+// CTO is intentionally NOT a corridor-checked milestone: it is a second-year goal.
+// The sim only reports how many reasonable players reached it within 365 days.
+const CTO_MAX_SHARE = 0.35;
 
 interface Agent {
   p: PlayerState;
@@ -99,6 +143,12 @@ interface Agent {
   lastFreelanceDay: number;
   mainSkill: string;
   richDays: number;
+  ending: string | null;
+  brokeStreak: number;
+  ctoNextTryDay: number;
+  blocked: boolean;
+  networkedToday: boolean;
+  lastFreelancePayment?: number;
 }
 
 function rng(seed: number) {
@@ -116,7 +166,64 @@ function recordMilestone(m: Record<string, number>, key: string, day: number) {
 /**
  * Best grade the agent qualifies for (skill + communication + reputation)
  */
-function eligibleGrade(p: PlayerState): Grade | null {
+/**
+ * Gate evaluation on content data (v2.1): main-skill depth + branch breadth +
+ * total breadth + soft skills + reputation. Falls back to the legacy sum-only
+ * rule when content has no careerGates, so the sim never silently diverges
+ * from a stripped-down content bundle.
+ */
+function gateCtx(p: PlayerState) {
+  return { branchOf: BRANCH_OF };
+}
+
+function simQualifiedGrade(p: PlayerState): Grade | null {
+  if (!CAREER_GATES.length) return eligibleGradeLegacy(p);
+  const main = { ...(p as any), mainSkillId: p.mainSkillId ?? 'javascript' };
+  return qualifiedGrade(main as PlayerState, CAREER_GATES, gateCtx(p));
+}
+
+/** lowest grade the player qualifies for — what they actually get hired as */
+function simMinQualifiedGrade(p: PlayerState): Grade | null {
+  if (!CAREER_GATES.length) return eligibleGradeLegacy(p);
+  for (const gate of CAREER_GATES) {
+    if (gate.grade === 'unemployed' || gate.special) continue;
+    if (simGateProgress(p, gate).ok) return gate.grade;
+  }
+  return null;
+}
+
+function simGateProgress(p: PlayerState, gate: CareerGate) {
+  const main = { ...(p as any), mainSkillId: p.mainSkillId ?? 'javascript' };
+  return gateProgress(main as PlayerState, gate, gateCtx(p));
+}
+
+function simNextGate(current: Grade): CareerGate | null {
+  if (!CAREER_GATES.length) return null;
+  return nextGateOf(CAREER_GATES, current);
+}
+
+function simReviewInterval(current: Grade): number {
+  if (!CAREER_GATES.length) return PROMO_COOLDOWN_DAYS;
+  return reviewInterval(CAREER_GATES, current);
+}
+
+/** how far the weakest *binding* requirement is exceeded (0 when not qualified) */
+function simSurplus(p: PlayerState, gate: CareerGate): number {
+  const prog = simGateProgress(p, gate);
+  if (!prog.ok) return -1;
+  const margins = [
+    maxSkillLevel(p) - gate.skill,
+    (p.softSkills['communication']?.level ?? 0) - gate.comm,
+    Math.round(p.reputation) - gate.rep,
+  ];
+  if (gate.total) margins.push(totalSkillLevels(p) - gate.total);
+  if (gate.branchTotal) margins.push(mainBranchTotal(p as any, BRANCH_OF, p.mainSkillId ?? 'javascript') - gate.branchTotal);
+  if (gate.english) margins.push((p.softSkills['english']?.level ?? 0) - gate.english);
+  if (gate.leadership) margins.push((p.softSkills['leadership']?.level ?? 0) - gate.leadership);
+  return Math.max(0, Math.min(...margins));
+}
+
+function eligibleGradeLegacy(p: PlayerState): Grade | null {
   const comm = p.softSkills['communication']?.level ?? 0;
   let best: Grade | null = null;
   for (const grade of GRADE_ORDER) {
@@ -189,11 +296,17 @@ function simulate(random: () => number): Agent {
     lastFreelanceDay: 0,
     mainSkill: 'javascript',
     richDays: 0,
+    ending: null,
+    brokeStreak: 0,
+    ctoNextTryDay: 1,
+    blocked: false,
+    networkedToday: false,
   };
 
   for (let day = 1; day <= DAYS; day++) {
     p.currentDay = day;
     agent.freelanceToday = false;
+    agent.networkedToday = false;
 
     // ---- Actions for the day ----
     let actions = 0;
@@ -217,6 +330,20 @@ function simulate(random: () => number): Agent {
       agent.noIncomeDays = 0;
     }
 
+    // ---- Daily living costs (ТЗ 5.6) — food, commute, subs ----
+    if (LIVING) {
+      const lc = dailyLivingCost({ ...(p as any), mainSkillId: p.mainSkillId ?? 'javascript' } as PlayerState, LIVING);
+      if (p.money >= lc.amount) p.money -= lc.amount;
+      else {
+        p.money = 0;
+        p.motivation = clamp(p.motivation - 2, 0, 100);
+      }
+      if (day % 30 === 0) {
+        const tax = wealthTaxMonthly(p as PlayerState, LIVING);
+        if (tax > 0) p.money = Math.max(0, p.money - tax);
+      }
+    }
+
     // ---- End-of-day effects (mirrors server advance-day) ----
     const jobCultureMot = agent.hasJob ? -0.3 : 0;
     const drift = applyMotivationDrift(p.motivation, p.health, agent.hasJob, jobCultureMot);
@@ -227,20 +354,77 @@ function simulate(random: () => number): Agent {
       p.burnoutDays = 0;
     }
 
-    // Job: promotion check (requirements must be met)
+    // Job: promotion review — content gates + org budget (mirrors server tryPromote)
     if (agent.hasJob) {
       agent.daysSinceLastPromotion++;
-      if (agent.daysSinceLastPromotion >= PROMO_COOLDOWN_DAYS) {
-        const next = nextGate(p, agent.jobGrade);
-        if (next && eligibleGrade(p) === next.grade) {
-          agent.jobGrade = next.grade;
-          agent.jobSalary = GRADE_SALARIES[next.grade];
-          agent.daysSinceLastPromotion = 0;
-          p.grade = next.grade;
-          for (const g of TRACKED_GRADES) {
-            if (next.grade === g) recordMilestone(agent.milestones, g, day);
+      p.job = p.job ? { ...p.job, daysSinceLastPromotion: p.job.daysSinceLastPromotion + 1 } : p.job;
+
+      const next = simNextGate(agent.jobGrade);
+      if (next && agent.daysSinceLastPromotion >= simReviewInterval(agent.jobGrade)) {
+        const progress = simGateProgress(p, next);
+        if (progress.ok) {
+          const surplus = Math.max(0, simSurplus(p, next));
+          if (promotionChance(surplus, next.competition ?? 1, random)) {
+            agent.jobGrade = next.grade;
+            agent.jobSalary = GRADE_SALARIES[next.grade];
+            agent.daysSinceLastPromotion = 0;
+            p.job = p.job ? { ...p.job, grade: next.grade, salary: next.grade === agent.jobGrade ? agent.jobSalary : p.job.salary, daysSinceLastPromotion: 0 } : p.job;
+            p.grade = next.grade;
+            p.reputation = clamp(p.reputation + 3, 0, 100);
+            for (const g of TRACKED_GRADES) {
+              if (next.grade === g) recordMilestone(agent.milestones, g, day);
+            }
           }
         }
+      }
+
+      // senior+: work also grows the branch (knowledge sharing) and leadership
+      const gate = simNextGate(agent.jobGrade);
+      if (gate) {
+        const xp = Math.max(2, Math.round((XP_SOURCES.work_task?.xp ?? 8) / 2));
+        for (const [id, share] of Object.entries(branchShareXp({ ...(p as any), mainSkillId: agent.mainSkill } as PlayerState, BRANCH_OF, xp, 2))) {
+          addXp(p, id, share);
+        }
+        if (careerLevelIndex(agent.jobGrade) >= careerLevelIndex('middle')) {
+          const carries = careerLevelIndex(agent.jobGrade) >= careerLevelIndex('senior');
+          addSoftXpTo(p, 'leadership', carries ? 8 : 4);
+        }
+      }
+    }
+
+    // CTO: a board election, not a promotion (mirrors server cto_elect)
+    if (p.grade === 'architect' && agent.hasJob && day >= agent.ctoNextTryDay) {
+      const ctoGate = gateFor(CAREER_GATES, 'cto');
+      if (ctoGate) {
+        const { chance, qualified } = ctoElectionChance({ ...(p as any), mainSkillId: p.mainSkillId ?? agent.mainSkill } as PlayerState, ctoGate);
+        // The board meets on a schedule; the candidate has to be ready that day
+        agent.ctoNextTryDay = day + (ctoGate.electionIntervalDays ?? CTO_ELECTION_DAYS);
+        if (qualified && chance > 0 && random() < chance) {
+          p.grade = 'cto';
+          agent.jobGrade = 'cto';
+          agent.jobSalary = GRADE_SALARIES.cto;
+          recordMilestone(agent.milestones, 'cto', day);
+          recordMilestone(agent.milestones, 'ending_corporate_god', day);
+          agent.ending = 'corporate_god';
+        }
+      }
+    }
+
+    // Career endings (ТЗ «Финалы»)
+    if (!agent.ending) {
+      if (p.motivation <= 0 && p.burnoutDays >= (ENDINGS.burnoutDays ?? 7)) {
+        agent.ending = 'burnout';
+        agent.blocked = true;
+        p.job = null;
+        agent.hasJob = false;
+        recordMilestone(agent.milestones, 'ending_burnout', day);
+      }
+      if (p.money <= 0) agent.brokeStreak++;
+      else agent.brokeStreak = 0;
+      if (!agent.ending && agent.brokeStreak >= (ENDINGS.brokeDaysToQuit ?? 15) && !agent.hasJob) {
+        agent.ending = 'left_it';
+        agent.blocked = true;
+        recordMilestone(agent.milestones, 'ending_left_it', day);
       }
     }
 
@@ -261,12 +445,19 @@ function simulate(random: () => number): Agent {
     }
 
     // Housing upgrade when the savings goal holds for several days straight
+    // (and income is big enough for the lifestyle — mirrors the server gate)
     if (p.housingLevel < 4) {
       const nextLevel = (p.housingLevel + 1) as 0 | 1 | 2 | 3 | 4;
       const cost = HOUSING_COSTS[nextLevel];
-      if (p.money >= cost * HOUSING_SAVE_MULT) {
+      const incomeGate = HOUSING_INCOME_GATE[nextLevel] ?? 0;
+      const income = (agent.hasJob ? agent.jobSalary : 0) + (agent.lastFreelancePayment ?? 0) * 4;
+      const incomeOk = incomeGate <= 0 || income >= incomeGate;
+      const def = HOUSING_DEFS[nextLevel] ?? {};
+      const saveMult = def.saveMult ?? HOUSING_SAVE_MULT;
+      const needDays = def.saveStreakDays ?? HOUSING_SAVE_DAYS;
+      if (p.money >= cost * saveMult && incomeOk) {
         agent.richDays++;
-        if (agent.richDays >= HOUSING_SAVE_DAYS) {
+        if (agent.richDays >= needDays) {
           p.housingLevel = nextLevel;
           p.money -= cost;
           agent.richDays = 0;
@@ -327,6 +518,8 @@ function createAgentPlayer(): PlayerState {
     daysSinceRegistration: 1,
     lastMotivationDrift: 0,
     burnoutDays: 0,
+    mainSkillId: 'javascript',
+    lastPromotionDay: 0,
   };
 }
 
@@ -335,9 +528,14 @@ function addXp(p: PlayerState, skillId: string, rawXp: number) {
   p.skills = { ...p.skills, [skillId]: applyXp(current, rawXp, p.motivation) };
 }
 
+function addSoftXpTo(p: PlayerState, key: string, rawXp: number) {
+  if (rawXp <= 0) return;
+  const cur = p.softSkills[key] ?? { level: 0, xp: 0 };
+  p.softSkills = { ...p.softSkills, [key]: applySoftXp(cur, rawXp, SOFT_OPTS) };
+}
+
 function addCommXp(p: PlayerState, rawXp: number) {
-  const comm = p.softSkills['communication'] ?? { level: 0, xp: 0 };
-  p.softSkills = { ...p.softSkills, communication: applySoftXp(comm, rawXp) };
+  addSoftXpTo(p, 'communication', rawXp);
 }
 
 /**
@@ -345,21 +543,29 @@ function addCommXp(p: PlayerState, rawXp: number) {
  * has nothing left to do (or must stop for the day).
  */
 function agentAction(a: Agent, random: () => number): boolean {
+  if (a.blocked || a.ending) return false; // burnout / quit: the policy stops acting
   const p = a.p;
   const comm = p.softSkills['communication']?.level ?? 0;
-  const gate = a.hasJob ? nextGate(p, a.jobGrade) : { grade: 'intern' as Grade, skill: 18, comm: 8, rep: 0 };
+  const english = p.softSkills['english']?.level ?? 0;
+  // Growth target: next promotion, or the CTO board election once you are the
+  // top of the ladder — otherwise a qualified architect would stop growing.
+  const gate = (a.hasJob ? simNextGate(a.jobGrade) : simNextGate('unemployed')) ?? gateFor(CAREER_GATES, 'cto') ?? null;
   const rep = p.reputation;
 
-  // 1. Apply for a job when ready
-  if (!a.hasJob && !a.application && totalSkillLevels(p) >= 18 && comm >= 8) {
-    const grade = eligibleGrade(p) ?? 'intern';
-    a.application = {
-      grade,
-      requirements: { [a.mainSkill]: GRADE_REQUIREMENTS[grade].skill },
-      interviewDay: p.currentDay + 2,
-    };
-    p.energy -= 1;
-    return true;
+  // 1. Apply as soon as *any* gate is open — a reasonable player takes the offer
+  // they can get now and grows inside the company, rather than hiding on the resume
+  if (!a.hasJob && !a.application) {
+    const grade = simMinQualifiedGrade(p);
+    if (grade) {
+      const g = gateFor(CAREER_GATES, grade);
+      a.application = {
+        grade,
+        requirements: { [a.mainSkill]: g?.skill ?? GRADE_REQUIREMENTS[grade].skill },
+        interviewDay: p.currentDay + 2,
+      };
+      p.energy -= 1;
+      return true;
+    }
   }
 
   // 2. Recover motivation when low
@@ -383,6 +589,7 @@ function agentAction(a: Agent, random: () => number): boolean {
   ) {
     const payment = freelancePayment(level, p.reputation, difficulty);
     p.money += payment;
+    a.lastFreelancePayment = payment;
     p.energy -= 4;
     p.reputation = clamp(p.reputation + 0.2, 0, 100);
     a.freelanceToday = true;
@@ -399,12 +606,56 @@ function agentAction(a: Agent, random: () => number): boolean {
     return true;
   }
 
-  // 5. Build reputation toward the career gate
-  if (gate && rep < gate.rep + 2) {
-    p.energy -= NETWORKING.energy;
-    addCommXp(p, NETWORKING.commXp);
-    p.reputation = clamp(p.reputation + NETWORKING.repGain, 0, 100);
-    return true;
+  // 5. Build reputation toward the career gate (networking = soft career skills:
+  //    communication, reputation and a drip of leadership). Capped once a day,
+  //    exactly like the server: meetups are not farmable.
+  if (gate && !a.networkedToday) {
+    const needSoft = comm < gate.comm || rep < gate.rep + 2;
+    if (needSoft) {
+      a.networkedToday = true;
+      p.energy -= NETWORKING.energy;
+      addCommXp(p, NETWORKING.commXp);
+      p.reputation = clamp(p.reputation + NETWORKING.repGain, 0, 100);
+      const seniorPlus = careerLevelIndex(p.grade) >= careerLevelIndex('senior');
+      addSoftXpTo(p, 'leadership', Math.round((NETWORKING.leadershipPerDay ?? 0) * (seniorPlus ? 2 : 1)));
+      return true;
+    }
+  }
+
+  // 5a. English, when the gate asks for it (companies gate on it too)
+  if (gate?.english && english < gate.english) {
+    const def = XP_SOURCES.study_english_course;
+    const cost = def?.cost ?? 0;
+    if (p.energy >= 2 && p.money - cost >= MONEY_FLOOR) {
+      p.energy -= 2;
+      if (cost) p.money -= cost;
+      p.softSkills = { ...p.softSkills, english: applySoftXp(p.softSkills['english'] ?? { level: 0, xp: 0 }, 10) };
+      return true;
+    }
+  }
+
+  // 5b. Branch breadth: gates need depth AND the branch behind it. A reasonable
+  // player trains the weakest sibling skill of their branch when it is the blocker.
+  if (gate?.branchTotal) {
+    const have = mainBranchTotal(p as any, BRANCH_OF, a.mainSkill);
+    if (have < gate.branchTotal) {
+      const level = p.skills[a.mainSkill]?.level ?? 0;
+      const sibling = Object.entries(p.skills)
+        .filter(([id]) => id !== a.mainSkill && BRANCH_OF[id] === BRANCH_OF[a.mainSkill])
+        .sort((x, y) => x[1].level - y[1].level)[0]?.[0];
+      const target = sibling ?? Object.keys(BRANCH_OF).find((id) => BRANCH_OF[id] === BRANCH_OF[a.mainSkill] && id !== a.mainSkill)!;
+      const have2 = p.skills[target]?.level ?? 0;
+      if (have2 <= level) {
+        const source = pickStudySource(p.money, have2);
+        const def = XP_SOURCES[source];
+        if (p.energy >= def.energy && p.money - def.cost >= MONEY_FLOOR) {
+          p.energy -= def.energy;
+          p.money -= def.cost;
+          addXp(p, target, def.xp);
+          return true;
+        }
+      }
+    }
   }
 
   // 6. Study — best value source for the current level
@@ -475,6 +726,8 @@ interface RunResult {
   grade: Grade;
   rating: number;
   maxNoIncome: number;
+  ending: string | null;
+  livingCost: number;
 }
 
 function main() {
@@ -496,6 +749,8 @@ function main() {
       grade: agent.p.grade,
       rating: calculateRating(agent.p),
       maxNoIncome: agent.maxNoIncome,
+      ending: agent.ending,
+      livingCost: LIVING ? dailyLivingCost(agent.p, LIVING).amount : 0,
     });
   }
 
@@ -539,6 +794,19 @@ function main() {
   console.log(`  Skills: ${Math.round(skills[Math.floor(skills.length / 2)])}`);
   console.log(`  Max no-income streak (p90): ${noIncome[Math.floor(noIncome.length * 0.9)]} days`);
 
+  // ---- Career outcomes (v2.1) ----
+  const endingCounts: Record<string, number> = {};
+  for (const r of results) {
+    const key = r.ending ?? 'running';
+    endingCounts[key] = (endingCounts[key] || 0) + 1;
+  }
+  const ctoDay = results.map((r) => r.milestones.cto).filter((v): v is number => v !== undefined).sort((x, y) => x - y);
+  const living = results.map((r) => r.livingCost).sort((x, y) => x - y);
+  console.log('\n=== Career Outcomes ===');
+  console.log(`  endings: ${Object.entries(endingCounts).sort().map(([k, v]) => `${k} ${v}`).join(', ')}`);
+  console.log(`  living cost / day (median): ${Math.round(living[Math.floor(living.length / 2)]).toLocaleString()} ₽`);
+  if (ctoDay.length) console.log(`  CTO elected: ${ctoDay.length}/${RUNS}, median day ${ctoDay[Math.floor(ctoDay.length / 2)]}`);
+
   // ---- Grade distribution ----
   const gradeCounts: Record<string, number> = {};
   for (const r of results) gradeCounts[r.grade] = (gradeCounts[r.grade] || 0) + 1;
@@ -557,7 +825,26 @@ function main() {
   console.log(`  ${reachedMiddle === RUNS ? '✓' : '✗'} All reached Middle: ${reachedMiddle}/${RUNS}`);
   console.log(`  ${deadEnds === 0 ? '✓' : '✗'} Dead ends: ${deadEnds}`);
 
-  if (maxStreak > 10 || reachedMiddle !== RUNS || deadEnds > 0) failed = true;
+  // Late-game pacing: nobody should be at the top of the ladder by the middle
+  // of the year, and the ladder must not be a straight line to architect.
+  const architectBy250 = results.filter((r) => (r.milestones.architect ?? Infinity) <= 250).length;
+  const architectShare = results.filter((r) => r.milestones.architect !== undefined).length / RUNS;
+  const ctoShare = results.filter((r) => r.milestones.cto !== undefined).length / RUNS;
+  const burnoutShare = (endingCounts.burnout ?? 0) / RUNS;
+  console.log(`  ${architectBy250 <= RUNS * 0.25 ? '✓' : '✗'} Architect before day 250: ${architectBy250}/${RUNS} (≤ 25%)`);
+  console.log(`  ${architectShare >= 0.5 ? '✓' : '✗'} Architect share by 365: ${(architectShare * 100).toFixed(0)}% (≥ 50%: the ladder is walkable)`);
+  console.log(`  ${ctoShare <= CTO_MAX_SHARE ? '✓' : '✗'} CTO by 365: ${(ctoShare * 100).toFixed(0)}% (≤ ${(CTO_MAX_SHARE * 100).toFixed(0)}% — endgame must stay hard)`);
+  console.log(`  ${burnoutShare <= 0.2 ? '✓' : '✗'} Burnout endings: ${(burnoutShare * 100).toFixed(0)}% (≤ 20%)`);
+
+  if (
+    maxStreak > 10 ||
+    reachedMiddle !== RUNS ||
+    deadEnds > 0 ||
+    architectBy250 > RUNS * 0.25 ||
+    architectShare < 0.5 ||
+    ctoShare > CTO_MAX_SHARE ||
+    burnoutShare > 0.2
+  ) failed = true;
 
   console.log(`\n${failed ? '❌ Simulation FAILED' : '✅ Simulation complete'}`);
 
@@ -565,5 +852,37 @@ function main() {
     process.exit(1);
   }
 }
+
+/**
+ * Diagnostics: `--why` prints what blocked the median agent's next promotion.
+ */
+function reportBlockers() {
+  console.log('\n=== Blockers (--why) ===');
+  for (let i = 0; i < 2; i++) {
+    const a = simulate(rng(SEED + i * 1000));
+    console.log(`  run#${i} milestones: ${Object.entries(a.milestones).map(([k, v]) => `${k}@${v}`).join(' ')}`);
+  }
+  for (let i = 0; i < 5; i++) {
+    const agent = simulate(rng(SEED + i * 1000));
+    const p = agent.p;
+    const gate = simNextGate(agent.jobGrade) ?? gateFor(CAREER_GATES, 'intern');
+    const prog = gate ? simGateProgress(p, gate) : null;
+    const ctoG = gateFor(CAREER_GATES, 'cto');
+    const ctoDiag = ctoG ? simGateProgress(p, ctoG) : null;
+    const ctoChance = ctoG ? ctoElectionChance({ ...(p as any), mainSkillId: p.mainSkillId ?? 'javascript' } as PlayerState, ctoG) : null;
+    console.log(
+      `  run#${i} CTO: qualified=${ctoDiag?.ok} missing=${Object.entries(ctoDiag?.missing ?? {}).map(([k, v]) => `${k} ${v.current}/${v.needed}`).join(',') || '-'} chance=${ctoChance?.qualified ? Math.round(ctoChance.chance * 100) + '%' : 'n/a'}`
+    );
+    console.log(
+      `  run#${i} grade=${p.grade} day=${p.currentDay} money=${Math.round(p.money).toLocaleString()} ` +
+      `mainSkill=${maxSkillLevel(p)} total=${totalSkillLevels(p)} comm=${p.softSkills['communication']?.level ?? 0} ` +
+      `eng=${p.softSkills['english']?.level ?? 0} lead=${p.softSkills['leadership']?.level ?? 0} rep=${p.reputation.toFixed(1)} ` +
+      `mot=${p.motivation} hp=${p.health}` +
+      (gate ? ` | next=${gate.grade} missing=${Object.entries(prog!.missing).map(([k, v]) => `${k} ${v.current}/${v.needed}`).join(',') || 'none'}` : '')
+    );
+  }
+}
+
+if (process.argv.includes('--why')) reportBlockers();
 
 main();

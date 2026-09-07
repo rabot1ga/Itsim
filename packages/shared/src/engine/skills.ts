@@ -33,13 +33,23 @@ export function applyXp(
 }
 
 /**
- * Apply XP to a soft skill
+ * Apply XP to a soft skill.
+ *
+ * Soft skills saturate: people, unlike syntax, do not improve linearly with
+ * the number of meetings. Above `saturatesAt` the XP inflow is throttled by
+ * `softXpDamping` — this is what stops «grind 5000 meetups» from being a
+ * legitimate route through the late-game career gates.
  */
 export function applySoftXp(
   skill: SkillLevel,
-  rawXp: number
+  rawXp: number,
+  opts: { saturatesAt?: number; damping?: number } = {}
 ): SkillLevel {
-  let xp = skill.xp + rawXp;
+  const saturatesAt = opts.saturatesAt ?? 30;
+  const damping = opts.damping ?? 0.5;
+  const xpGain = skill.level >= saturatesAt ? Math.max(1, Math.round(rawXp * damping)) : rawXp;
+
+  let xp = skill.xp + xpGain;
   let level = skill.level;
 
   while (level < 100 && xp >= xpToNext(level)) {
@@ -120,6 +130,26 @@ export function canUnlockPerk(
  */
 export function totalSkillLevels(p: PlayerState): number {
   return Object.values(p.skills).reduce((sum, s) => sum + s.level, 0);
+}
+
+/**
+ * Highest single skill level — career depth. Late grades gate on this, not on
+ * the sum: spreading 3 XP over 30 skills is not a senior engineer.
+ */
+export function maxSkillLevel(p: PlayerState): number {
+  let best = 0;
+  for (const skill of Object.values(p.skills)) {
+    if (skill.level > best) best = skill.level;
+  }
+  return best;
+}
+
+/**
+ * Level of the player's main skill (falls back to the highest one).
+ */
+export function mainSkillLevel(p: PlayerState): number {
+  if (p.mainSkillId) return p.skills[p.mainSkillId]?.level ?? 0;
+  return maxSkillLevel(p);
 }
 
 /**

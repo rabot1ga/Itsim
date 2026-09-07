@@ -240,12 +240,22 @@ export const BalanceSchema = z.object({
     maxLevel: z.number().default(100),
   })),
 
-  // Networking tuning (communication XP, reputation gain, energy cost)
+  // Networking tuning (communication XP, reputation gain, energy cost,
+  // daily cap — soft skills must not be farmable without limit)
   networking: z.object({
     commXp: z.number().default(5),
     repGain: z.number().default(0.5),
     energy: z.number().default(2),
-  }).default({ commXp: 5, repGain: 0.5, energy: 2 }),
+    dailyCap: z.number().int().min(1).default(1),
+    leadershipPerDay: z.number().min(0).default(0),
+    repFromPromotion: z.number().min(0).default(0),
+  }).default({ commXp: 5, repGain: 0.5, energy: 2, dailyCap: 1, leadershipPerDay: 0, repFromPromotion: 0 }),
+
+  // Soft-skill saturation: above this level XP trickles (people skills saturate)
+  softSkills: z.object({
+    saturatesAt: z.number().int().min(1).default(30),
+    xpDamping: z.number().min(0).max(1).default(0.5),
+  }).default({ saturatesAt: 30, xpDamping: 0.5 }),
 
   // Event frequency
   eventChanceOnboarding: z.number().default(0.20),
@@ -261,6 +271,12 @@ export const BalanceSchema = z.object({
     energyBonus: z.number(),
     motivationBonus: z.number(),
     reputationBonus: z.number(),
+    /** monthly income required to move in (lifestyle has an entry fee) */
+    incomeGateMult: z.number().min(0).default(0),
+    /** how many monthly payments must be sitting in the account to move */
+    saveMult: z.number().min(1).default(5),
+    /** how many days that cushion must be held (savings habit, not one lucky month) */
+    saveStreakDays: z.number().int().min(0).default(14),
   })),
 
   // Side jobs (non-IT gigs — courier, barista, etc.)
@@ -285,6 +301,45 @@ export const BalanceSchema = z.object({
     volatility: z.number().min(0).max(1),
     electricityPerHashrate: z.number().min(0),
   }).default({ priceBase: 40, volatility: 0.5, electricityPerHashrate: 0.5 }),
+
+  // Career gates (v2.1): data-driven promotion ladder.
+  // skill = level of the MAIN skill (depth); total = sum over all skills (breadth).
+  careerGates: z.array(z.object({
+    grade: z.enum(['intern', 'junior', 'middle', 'senior', 'teamlead', 'architect', 'cto']),
+    label: z.string().optional(),
+    skill: z.number().int().min(0),
+    comm: z.number().int().min(0),
+    rep: z.number().int().min(0),
+    total: z.number().int().min(0).default(0),
+    branchTotal: z.number().int().min(0).optional(),
+    english: z.number().int().min(0).optional(),
+    leadership: z.number().int().min(0).optional(),
+    minDaysInGrade: z.number().int().min(1).default(7),
+    competition: z.number().int().min(1).default(1),
+    special: z.boolean().default(false),
+    /** how often the board meets for a special (non-promotion) election */
+    electionIntervalDays: z.number().int().min(1).default(60),
+  })).optional(),
+
+  // Daily living costs (ТЗ 5.6) — the counterweight to high late-game salaries
+  livingCosts: z.object({
+    foodBase: z.number().min(0).default(350),
+    foodBroke: z.number().min(0).default(180),
+    perHousingLevel: z.number().min(0).default(0),
+    perCareerIndex: z.number().min(0).default(0),
+    subscriptionsMonthly: z.number().min(0).default(0),
+    lifestyleRefundMultiplier: z.number().min(0).default(0),
+    wealthTaxMonthly: z.number().min(0).default(0),
+    wealthTaxThreshold: z.number().min(0).default(500000),
+    wealthTaxRate: z.number().min(0).max(1).default(0),
+    wealthTaxCap: z.number().min(0).default(0),
+  }).optional(),
+
+  // Career endings (ТЗ «Финалы») — terminal states reached by living conditions
+  endings: z.object({
+    burnoutDays: z.number().int().min(1).default(7),
+    brokeDaysToQuit: z.number().int().min(1).default(15),
+  }).optional(),
 });
 
 export type BalanceConfig = z.infer<typeof BalanceSchema>;

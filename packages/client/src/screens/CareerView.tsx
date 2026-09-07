@@ -2,14 +2,25 @@ import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { InterviewPanel } from '../components/InterviewPanel';
 
-const GRADES = [
-  { grade: 'intern', name: 'Стажёр', skill: 18, salary: '35 000 ₽' },
-  { grade: 'junior', name: 'Junior', skill: 32, salary: '90 000 ₽' },
-  { grade: 'middle', name: 'Middle', skill: 55, salary: '220 000 ₽' },
-  { grade: 'senior', name: 'Senior', skill: 76, salary: '400 000 ₽' },
-  { grade: 'teamlead', name: 'Teamlead', skill: 80, salary: '520 000 ₽' },
-  { grade: 'architect', name: 'Архитектор', skill: 90, salary: '680 000 ₽' },
-];
+interface GateInfo {
+  grade: string;
+  label?: string;
+  skill: number;
+  total?: number;
+  branchTotal?: number;
+  comm: number;
+  rep: number;
+  english?: number;
+  leadership?: number;
+  minDaysInGrade?: number;
+  competition?: number;
+  special?: boolean;
+}
+
+const SALARY_LABELS: Record<string, string> = {
+  intern: '35 000 ₽', junior: '90 000 ₽', middle: '220 000 ₽', senior: '400 000 ₽',
+  teamlead: '520 000 ₽', architect: '680 000 ₽', cto: '1 000 000 ₽',
+};
 
 const SIZE_LABELS: Record<string, string> = {
   enterprise: 'Корпорация',
@@ -44,12 +55,18 @@ export const CareerView: React.FC = () => {
   const acceptOffer = useGameStore((s) => s.acceptOffer);
   const declineOffer = useGameStore((s) => s.declineOffer);
   const [companies, setCompanies] = useState<CompanyInfo[]>([]);
+  const [gates, setGates] = useState<GateInfo[]>([]);
+  const outlook = useGameStore((s) => s.careerOutlook);
 
   useEffect(() => {
     fetch('/api/content/companies')
       .then((r) => r.json())
       .then((data) => setCompanies(data.companies ?? []))
       .catch(() => setCompanies([]));
+    fetch('/api/content/career-gates')
+      .then((r) => r.json())
+      .then((data) => setGates(data.gates ?? []))
+      .catch(() => setGates([]));
   }, []);
 
   if (!player) return null;
@@ -145,25 +162,47 @@ export const CareerView: React.FC = () => {
         </div>
       )}
 
-      {/* Grade progress */}
+      {/* Grade progress — real content gates, not a hardcoded copy */}
       <div className="game-card">
-        <h3 className="section-title mb-2">📈 Грейды</h3>
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="section-title">📈 Грейды</h3>
+          <span className="text-[10px] text-slate-500">глубина + ветка + мягкие навыки</span>
+        </div>
         <div className="space-y-1.5">
-          {GRADES.map((g) => {
-            const order = GRADES.map(x => x.grade);
-            const isReached = player.grade === g.grade || order.indexOf(player.grade || '') >= order.indexOf(g.grade);
+          {(gates.length ? gates : []).map((g) => {
+            const order = gates.map(x => x.grade);
+            const isReached = order.indexOf(player.grade || '') >= order.indexOf(g.grade);
+            const isNext = outlook?.grade === g.grade || outlook?.label === g.label;
+            const mainSkill = Math.max(...Object.values(player.skills ?? {}).map((x: any) => x.level ?? 0), 0);
 
             return (
-              <div key={g.grade} className="flex items-center gap-2 text-xs">
-                <span className={`w-2 h-2 rounded-full ${isReached ? 'bg-emerald-500' : 'bg-slate-600'}`} />
-                <span className={`w-20 ${isReached ? 'text-slate-200' : 'text-slate-500'}`}>{g.name}</span>
-                <span className={`flex-1 ${isReached ? 'text-slate-300' : 'text-slate-600'}`}>{g.salary}</span>
-                <span className={`${totalSkills >= g.skill ? 'text-emerald-400' : 'text-slate-600'}`}>
-                  навык {g.skill}
-                </span>
+              <div key={g.grade} className={`rounded-lg px-2 py-1.5 ${isNext ? 'bg-primary-500/10 border border-primary-500/30' : ''}`}>
+                <div className="flex items-center gap-2 text-xs">
+                  <span className={`w-2 h-2 rounded-full ${isReached ? 'bg-emerald-500' : g.special ? 'bg-amber-400/70' : 'bg-slate-600'}`} />
+                  <span className={`w-24 ${isReached ? 'text-slate-200' : 'text-slate-500'}`}>{g.label ?? g.grade}</span>
+                  <span className={`flex-1 ${isReached ? 'text-slate-300' : 'text-slate-600'}`}>{SALARY_LABELS[g.grade] ?? ''}</span>
+                  <span className={`font-mono ${mainSkill >= g.skill ? 'text-emerald-400' : 'text-slate-500'}`}>
+                    навык {g.skill}
+                  </span>
+                </div>
+                {(isNext || isReached) && (
+                  <div className="mt-1 flex flex-wrap gap-1 pl-4 text-[10px] text-slate-500">
+                    {g.total ? <span className="chip">всего {g.total}</span> : null}
+                    {g.branchTotal ? <span className="chip">ветка {g.branchTotal}</span> : null}
+                    <span className="chip">comm {g.comm}</span>
+                    {g.english ? <span className="chip">eng {g.english}</span> : null}
+                    {g.leadership ? <span className="chip">lead {g.leadership}</span> : null}
+                    <span className="chip">rep {g.rep}</span>
+                    {g.special ? <span className="chip text-amber-300">выборы борда</span> : null}
+                    {!g.special && g.minDaysInGrade ? <span className="chip">ревью раз в {g.minDaysInGrade} дн.</span> : null}
+                  </div>
+                )}
               </div>
             );
           })}
+          {!gates.length && (
+            <p className="text-xs text-slate-500">Грейды ещё не загружены.</p>
+          )}
         </div>
       </div>
 
