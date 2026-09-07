@@ -1,0 +1,301 @@
+{
+  "format": 1,
+  "categories": [
+    {
+      "category": "face",
+      "required": true,
+      "variants": [
+        "face_round",
+        "face_angular",
+        "face_long"
+      ],
+      "weights": {
+        "face_round": 100,
+        "face_angular": 100,
+        "face_long": 100
+      }
+    },
+    {
+      "category": "eyes",
+      "required": true,
+      "variants": [
+        "eyes_normal",
+        "eyes_tired",
+        "eyes_closed",
+        "eyes_wide",
+        "eyes_red"
+      ],
+      "weights": {
+        "eyes_normal": 100,
+        "eyes_tired": 100,
+        "eyes_closed": 100,
+        "eyes_wide": 100,
+        "eyes_red": 100
+      }
+    },
+    {
+      "category": "mouth",
+      "required": true,
+      "variants": [
+        "mouth_smile",
+        "mouth_flat",
+        "mouth_grin",
+        "mouth_grimace"
+      ],
+      "weights": {
+        "mouth_smile": 100,
+        "mouth_flat": 100,
+        "mouth_grin": 100,
+        "mouth_grimace": 100
+      }
+    },
+    {
+      "category": "clothing",
+      "required": true,
+      "noneId": "clothing_none",
+      "variants": [
+        "clothing_none",
+        "clothing_hoodie",
+        "clothing_tshirt",
+        "clothing_shirt"
+      ],
+      "weights": {
+        "clothing_none": 100,
+        "clothing_hoodie": 100,
+        "clothing_tshirt": 100,
+        "clothing_shirt": 100
+      }
+    },
+    {
+      "category": "hair",
+      "required": true,
+      "noneId": "hair_bald",
+      "variants": [
+        "hair_short",
+        "hair_buzz",
+        "hair_curly",
+        "hair_long",
+        "hair_bald",
+        "hair_manbun"
+      ],
+      "weights": {
+        "hair_short": 100,
+        "hair_buzz": 100,
+        "hair_curly": 100,
+        "hair_long": 100,
+        "hair_bald": 100,
+        "hair_manbun": 100
+      }
+    },
+    {
+      "category": "hat",
+      "required": false,
+      "noneId": "hat_none",
+      "variants": [
+        "hat_none",
+        "hat_beanie",
+        "hat_hood",
+        "hat_cap",
+        "hat_vr"
+      ],
+      "weights": {
+        "hat_none": 25,
+        "hat_beanie": 100,
+        "hat_hood": 100,
+        "hat_cap": 100,
+        "hat_vr": 100
+      }
+    },
+    {
+      "category": "accessory",
+      "required": false,
+      "noneId": "accessory_none",
+      "variants": [
+        "accessory_none",
+        "accessory_glasses",
+        "accessory_headphones"
+      ],
+      "weights": {
+        "accessory_none": 30,
+        "accessory_glasses": 100,
+        "accessory_headphones": 100
+      }
+    }
+  ],
+  "colorSchemes": [
+    {
+      "id": "base",
+      "name": "Базовая палитра",
+      "palettes": {}
+    },
+    {
+      "id": "nocturne",
+      "name": "Ноктюрн",
+      "match": {
+        "hairColor": [
+          "hair_black",
+          "hair_blue"
+        ],
+        "skinTone": [
+          "skin_dark",
+          "skin_brown"
+        ]
+      },
+      "palettes": {
+        "skin": [
+          "#c9a88a",
+          "#a8846a",
+          "#7d5b46",
+          "#3a2619"
+        ],
+        "hair": [
+          "#8f9bb3",
+          "#4c5a75",
+          "#2f3a4e",
+          "#141a26"
+        ],
+        "eyes": [
+          "#bfe9ff",
+          "#48b7d8",
+          "#1f5f78",
+          "#0a1a22"
+        ],
+        "cloth": [
+          "#7f8ca6",
+          "#3f4a63",
+          "#2a3245",
+          "#10151f"
+        ],
+        "hat": [
+          "#9e6f8a",
+          "#5f3f57",
+          "#3d2637",
+          "#180f16"
+        ],
+        "accessory": [
+          "#c9d1dd",
+          "#7b8797",
+          "#4a5462",
+          "#1b202a"
+        ],
+        "mouth": [
+          "#c98d8d",
+          "#96544f",
+          "#5f2f2f",
+          "#28110f"
+        ]
+      }
+    },
+    {
+      "id": "neon",
+      "name": "Неон",
+      "match": {
+        "hairColor": [
+          "hair_blue",
+          "hair_red"
+        ]
+      },
+      "palettes": {
+        "skin": [
+          "#ffe2c4",
+          "#f0b48a",
+          "#b9764f",
+          "#4d2a16"
+        ],
+        "hair": [
+          "#9dffb4",
+          "#2fd97a",
+          "#149a56",
+          "#05301d"
+        ],
+        "eyes": [
+          "#ffe98a",
+          "#ff9d2f",
+          "#b35c00",
+          "#3a1d00"
+        ],
+        "cloth": [
+          "#d0a8ff",
+          "#8a4fd8",
+          "#5a2c96",
+          "#20093c"
+        ],
+        "hat": [
+          "#ff9ecb",
+          "#ff3d8b",
+          "#b31463",
+          "#3d0320"
+        ],
+        "accessory": [
+          "#a8f0ff",
+          "#33cfe8",
+          "#128ba0",
+          "#04262e"
+        ],
+        "mouth": [
+          "#ffb3d9",
+          "#d94f8a",
+          "#8a2050",
+          "#2e0a1a"
+        ]
+      }
+    },
+    {
+      "id": "paper",
+      "name": "Крафт",
+      "match": {
+        "skinTone": [
+          "skin_pale"
+        ],
+        "hairColor": [
+          "hair_gray",
+          "hair_blond"
+        ]
+      },
+      "palettes": {
+        "skin": [
+          "#f2e2c8",
+          "#dcc39a",
+          "#b3946a",
+          "#5c452c"
+        ],
+        "hair": [
+          "#d9c39a",
+          "#a3814f",
+          "#6f5430",
+          "#2c1f10"
+        ],
+        "eyes": [
+          "#e8e2d2",
+          "#7d7a6a",
+          "#4a4638",
+          "#1f1c16"
+        ],
+        "cloth": [
+          "#efe6d4",
+          "#c2b191",
+          "#8f7d5f",
+          "#3f3323"
+        ],
+        "hat": [
+          "#e3d3b8",
+          "#b09265",
+          "#7c6039",
+          "#31230f"
+        ],
+        "accessory": [
+          "#e8e0cf",
+          "#a89b83",
+          "#6f6350",
+          "#2b241a"
+        ],
+        "mouth": [
+          "#e0c3a8",
+          "#a87c5c",
+          "#6f4a30",
+          "#2b190f"
+        ]
+      }
+    }
+  ]
+}

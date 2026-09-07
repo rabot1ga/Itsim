@@ -494,3 +494,83 @@ export const InterviewQuestionSchema = z.object({
 });
 
 export const InterviewQuestionsFileSchema = z.array(InterviewQuestionSchema).min(3);
+
+// ---- Pixel-art avatar (docs/pixel-art.md) ----
+
+const PixelCategorySchema = z.enum(['face', 'eyes', 'mouth', 'hair', 'hat', 'clothing', 'accessory']);
+const HexColor = z
+  .string()
+  .regex(/^#[0-9a-fA-F]{6}$/, 'must be #rrggbb');
+
+export const PixelDefSchema = z.object({
+  x: z.number().int(),
+  y: z.number().int(),
+  /** "palette#index", "palette#role" or "#rrggbb" — resolvability is checked by the validator */
+  c: z.string().min(1),
+});
+
+export const PixelComponentSchema = z.object({
+  category: PixelCategorySchema,
+  label: z.string().min(1),
+  anchor: z.object({ x: z.number().int(), y: z.number().int() }).default({ x: 0, y: 0 }),
+  mirror: z.boolean().optional(),
+  excludes: z.array(PixelCategorySchema).optional(),
+  pixels: z.array(PixelDefSchema).default([]),
+  tags: z.array(z.string()).optional(),
+  extended: z.boolean().optional(),
+});
+
+export const PixelArtFileSchema = z.object({
+  format: z.number().int().default(1),
+  $schema: z.string().optional(),
+  sourceChecksum: z.string().regex(/^[0-9a-f]{64}$/).optional(),
+  canvas: z.object({ width: z.number().int().positive(), height: z.number().int().positive() }),
+  layout: z.object({
+    eyes_y: z.number().int().min(0),
+    mouth_y: z.number().int().min(0),
+    symmetry_axis_x: z.number(),
+    head: z.object({ x: z.number(), y: z.number(), w: z.number(), h: z.number() }).optional(),
+  }),
+  palettes: z.record(z.string(), z.array(HexColor)),
+  layer_order: z.array(PixelCategorySchema),
+  components: z.record(z.string(), PixelComponentSchema),
+});
+
+/** Authored form: components may use the `rows` shorthand instead of pixels */
+export const PixelArtSourceFileSchema = PixelArtFileSchema.extend({
+  components: z.record(
+    z.string(),
+    PixelComponentSchema.partial({ pixels: true }).extend({
+      rows: z.array(z.string()).optional(),
+      palettes: z.array(z.string()).optional(),
+    })
+  ),
+});
+
+export const PixelColorSchemeSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().optional(),
+  palettes: z.record(z.string(), z.array(HexColor)),
+  tags: z.array(z.string()).optional(),
+  /** which genetic traits should get this recolor in-game */
+  match: z
+    .object({
+      hairColor: z.array(z.string()).optional(),
+      skinTone: z.array(z.string()).optional(),
+    })
+    .optional(),
+});
+
+export const PixelGeneratorConfigSchema = z.object({
+  format: z.number().int().default(1),
+  categories: z.array(z.object({
+    category: PixelCategorySchema,
+    required: z.boolean().default(false),
+    noneId: z.string().optional(),
+    variants: z.array(z.string().min(1)),
+    weights: z.record(z.string(), z.number().min(0)).optional(),
+  })),
+  colorSchemes: z.array(PixelColorSchemeSchema).default([]),
+});
+
+export type PixelArtFileInput = z.input<typeof PixelArtFileSchema>;

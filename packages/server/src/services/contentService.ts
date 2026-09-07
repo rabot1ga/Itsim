@@ -1,4 +1,4 @@
-import { readFileSync, readdirSync } from 'fs';
+import { existsSync, readFileSync, readdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -16,6 +16,9 @@ import {
   CrossCollectionsSchema,
   DailyChallengesFileSchema,
   InterviewQuestionsFileSchema,
+  PixelArtFileSchema,
+  PixelGeneratorConfigSchema,
+  validatePixelArtFile,
 } from '@itsim/shared';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -39,6 +42,9 @@ export interface ContentBundle {
   crossCollections: any;
   challenges: any[];
   interviewQuestions: any[];
+  /** Pixel-art avatar pack (docs/pixel-art.md). null = not generated yet. */
+  pixelArt: any | null;
+  pixelGeneratorConfig: any | null;
 }
 
 /**
@@ -60,6 +66,7 @@ export function loadContent(): ContentBundle {
     crossCollections: loadAndValidate('cross_collections.json', CrossCollectionsSchema),
     challenges: loadAndValidate('challenges.json', DailyChallengesFileSchema),
     interviewQuestions: loadAndValidate('interview_questions.json', InterviewQuestionsFileSchema),
+    ...loadPixelArt(),
   };
 
   // Run cross-file validation
@@ -67,6 +74,49 @@ export function loadContent(): ContentBundle {
 
   content = bundle;
   return bundle;
+}
+
+/**
+ * Pixel-art avatars are a build artifact of `npm run pixelgen:compile`, so a
+ * missing pack must not brick the server — but a *present* pack must validate,
+ * because the client renders from it verbatim.
+ */
+function loadPixelArt(): Pick<ContentBundle, 'pixelArt' | 'pixelGeneratorConfig'> {
+  const dir = join(CONTENT_DIR, 'pixel');
+  const componentsPath = join(dir, 'components.json');
+  if (!existsSync(componentsPath)) {
+    console.warn('⚠ pixel content not found (run: npm run pixelgen:compile) — avatar will fall back to SVG layers');
+    return { pixelArt: null, pixelGeneratorConfig: null };
+  }
+  const raw = JSON.parse(readFileSync(componentsPath, 'utf-8'));
+  const parsed = PixelArtFileSchema.safeParse(raw);
+  if (!parsed.success) {
+    for (const issue of parsed.error.issues) {
+      console.error(`  pixel/components.json ${issue.path.join('.')}: ${issue.message}`);
+    }
+    throw new Error('Content validation failed: pixel/components.json');
+  }
+  const configPath = join(dir, 'generator_config.json');
+  let config: any = null;
+  if (existsSync(configPath)) {
+    const parsedCfg = PixelGeneratorConfigSchema.safeParse(JSON.parse(readFileSync(configPath, 'utf-8')));
+    if (!parsedCfg.success) {
+      for (const issue of parsedCfg.error.issues) {
+        console.error(`  pixel/generator_config.json ${issue.path.join('.')}: ${issue.message}`);
+      }
+      throw new Error('Content validation failed: pixel/generator_config.json');
+    }
+    config = parsedCfg.data;
+  }
+  const validation = validatePixelArtFile(parsed.data, config);
+  const errors = validation.issues.filter((i) => i.level === 'error');
+  if (errors.length) {
+    for (const issue of errors) console.error(`  pixel ${issue.path}: ${issue.message}`);
+    throw new Error(`Content validation failed: pixel/components.json (${errors.length} structural errors)`);
+  }
+  const warns = validation.issues.length - errors.length;
+  console.log(`✓ pixel/components.json validated (${validation.stats.components} components, ${validation.stats.pixels} px${warns ? `, ${warns} warning(s)` : ''})`);
+  return { pixelArt: parsed.data, pixelGeneratorConfig: config };
 }
 
 function loadAndValidate(filename: string, schema: any, data?: any): any {

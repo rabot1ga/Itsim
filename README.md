@@ -28,6 +28,9 @@ it-life-simulator/
 │   ├── client/          # React + Tailwind клиент
 │   ├── bot/             # Telegram Bot
 │   └── sim/             # Симулятор баланса (40 прогонов × 365 дней)
+└── tools/
+    ├── generate_layer_assets.py   # SVG-слои для слоистого аватара/комнаты
+    └── pixelgen/                  # CLI пиксельного пайплайна (compile/generate/repro/prompt)
 ```
 
 ### Стек
@@ -90,6 +93,28 @@ it-life-simulator/
 - **Cross-collection (мок):** SMB Gen2 → +5% к фрилансу, Mad Lads → постер, DeGods → пёс
 - **Шар-карточка:** Canvas-рендер комнаты + статистики → PNG → шеринг в Telegram
 - **Прод:** заменить `MockNftProvider` на Helius RPC (интерфейс уже готов)
+
+## 🟩 Пиксельный аватар (процедурная генерация персонажей)
+
+Отдельное направление: вместо рукотворных слоёв — **пиксельные JSON-описания**, из которых
+движок рисует персонажа. Полное описание и правки ТЗ: [docs/pixel-art.md](docs/pixel-art.md).
+
+Цепочка: `prompt → AI → components.json → валидатор → generator_config.json → рендер → PNG + manifest.json → игра`.
+
+- **Канвас 32×32, вид анфас**; слой за слоем в `layer_order`, прозрачность = отсутствие пикселя
+- **30 MVP-компонентов** (лицо 3, глаза 5, рот 4, волосы 6, шапки 5, одежда 4, аксессуары 3) + 4 цветовые схемы
+- **Детерминизм:** персонаж = `seed` + `sha256(components.json)` + `sha256(generator_config.json)`;
+  `pixelgen repro` перерисовывает партию и сверяет пиксели побайтово
+- **Совместимость:** только `excludes` (капюшон ⇒ `hair_bald`), взаимных исключений валидатор не даёт
+- **Один рендерер на CLI и браузер:** `packages/shared/src/engine/pixelArt.ts`, апскейл — только nearest
+- **AI-вывод проходит через `pixelgen import`:** пиксель вне канваса и «цвет словом» — ошибка, а не warning
+
+```bash
+npm run pixelgen:audit      # compile-идемпотентность + схема + структура + 64 комбинации (CI-гейт)
+npm run pixelgen:demo       # 48 персонажей → artifacts/pixel (PNG, spritesheet, gallery.html)
+npm run pixelgen:render -- face=face_angular hair=hair_manbun hat=hat_beanie   # ASCII-превью
+npm run pixelgen:prompt -- hair --count=2   # мастер-промпт для генерации новых компонентов
+```
 
 ## 📊 Баланс (v2.1 — career gates + стоимость жизни + финалы)
 
@@ -161,13 +186,14 @@ npx tsx packages/sim/src/simulate.ts --why   # что именно блокир�
 npm run lint      # типизация всех пакетов (tsc)
 npm test          # юнит-тесты движка (vitest) + симулятор баланса (--check)
 npm run build     # полная сборка (shared → server → client → bot → sim)
+npm run pixelgen:audit      # пиксельный контент: compile-идемпотентность + валидация
 ```
 
 Симулятор (40 агентов × 365 дней) проверяет вехи из таблицы выше
 и падает с ненулевым кодом, если баланс вышел из коридоров.
 
-CI (GitHub Actions, `.github/workflows/ci.yml`): lint → test → build
-на каждый push в main и каждый PR.
+CI-конфига в репозитории нет (`.github/workflows/` отсутствует) — все проверки выше
+запускаются локально и в PR вручную. Тот же набор стоит повесить на Actions, когда появится пайплайн.
 
 ## 📄 Техническое задание
 

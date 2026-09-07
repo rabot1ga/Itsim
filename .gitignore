@@ -5,3 +5,6 @@ data/
 *.log
 .DS_Store
 .vite/
+
+# generated pixel-art artifacts (PNG/gallery/spritesheet) — rebuild with npm run pixelgen:generate
+artifacts/

@@ -11,4 +11,5 @@ export * from './genetics';
 export * from './mining';
 export * from './items';
 export * from './interviewQuestions';
-export * from './utils';
+export * from './utils';export * from './pixelArt';
+export * from './pixelArtValidate';
