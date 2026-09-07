@@ -31,6 +31,10 @@ interface GameState {
   currentView: string;
   error: string | null;
   activeEvent: any;
+  /** promotion/election outlook from the server (career gates) */
+  careerOutlook: any;
+  /** daily money pressure: «твой день стоит …» */
+  costOfDay: any;
   inventory: any[];
   heldCollections: string[];
   mining: any;
@@ -63,6 +67,8 @@ export const useGameStore = create<GameState>((set, get) => ({
   currentView: 'main',
   error: null,
   activeEvent: null,
+  careerOutlook: null,
+  costOfDay: null,
   inventory: [],
   heldCollections: [],
   mining: null,
@@ -91,6 +97,8 @@ export const useGameStore = create<GameState>((set, get) => ({
         player: stateRes.data.state,
         activeEvent: stateRes.data.activeEvent ?? null,
         mining: stateRes.data.mining ?? null,
+        careerOutlook: stateRes.data.careerOutlook ?? null,
+        costOfDay: stateRes.data.costOfDay ?? null,
         screen: stateRes.data.isNew ? 'game' : 'menu',
       });
     } catch (err: any) {
@@ -138,6 +146,8 @@ export const useGameStore = create<GameState>((set, get) => ({
           player: res.data.state,
           activeEvent: res.data.activeEvent ?? null,
           mining: res.data.mining ?? null,
+          careerOutlook: res.data.careerOutlook ?? get().careerOutlook,
+          costOfDay: res.data.costOfDay ?? get().costOfDay,
           error: null,
         });
       }
@@ -161,6 +171,8 @@ export const useGameStore = create<GameState>((set, get) => ({
           player: res.data.state,
           activeEvent: res.data.activeEvent ?? null,
           mining: res.data.mining ?? null,
+          careerOutlook: res.data.careerOutlook ?? null,
+          costOfDay: res.data.costOfDay ?? null,
           error: null,
         });
       }

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
+import { CareerPressureCard } from '../components/CareerPressureCard';
 
 interface DayViewProps {
   onAdvanceDay: () => void;
@@ -130,6 +131,9 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
           </p>
         </div>
       )}
+
+      {/* Career pressure: living costs + what the next gate really needs */}
+      <CareerPressureCard />
 
       {/* Actions by category */}
       {categories.map(cat => (

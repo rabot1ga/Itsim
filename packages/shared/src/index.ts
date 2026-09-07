@@ -26,5 +26,9 @@ export {
   DailyChallengesFileSchema,
   InterviewQuestionSchema,
   InterviewQuestionsFileSchema,
+  PixelArtFileSchema,
+  PixelArtSourceFileSchema,
+  PixelGeneratorConfigSchema,
+  PixelColorSchemeSchema,
 } from './schemas/index';
 export type { BalanceConfig } from './schemas/index';

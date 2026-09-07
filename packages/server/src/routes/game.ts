@@ -16,12 +16,27 @@ import {
   calculateRating,
   checkAchievements,
   totalSkillLevels,
+  maxSkillLevel,
   clamp,
   GRADE_SALARIES,
   GRADE_ENERGY,
   GRADE_REQUIREMENTS,
   GRADE_ORDER,
   careerLevelIndex,
+  qualifiedGrade,
+  nextGateOf,
+  gateFor,
+  gateProgress,
+  gateSurplus,
+  promotionChance,
+  reviewInterval,
+  mainBranchTotal,
+  branchShareXp,
+  dailyLivingCost,
+  wealthTaxMonthly,
+  ctoElectionChance,
+  dailyCostBreakdown,
+  type CareerGate,
   weeklySalary,
   HOUSING_COSTS,
   freelancePayment,
@@ -67,6 +82,9 @@ type StoredState = PlayerState & {
   sideJobDoneToday: boolean;
   mainSkillId: string;
   petFedToday: boolean;
+  networkingToday?: number;
+  /** first day the player has been holding the savings cushion for the next flat */
+  savingsSinceDay?: number;
   firstName: string;
   interviewSession?: {
     companyId: string;
@@ -90,6 +108,7 @@ const EXTRA_ENERGY_COSTS: Record<string, number> = {
   rest_gym: 2,
   networking: 2,
   apply_job: 1,
+  cto_elect: 3,
   buy_item: 0,
   upgrade_housing: 0,
   accept_offer: 0,
@@ -152,20 +171,148 @@ function respondState(state: StoredState, message?: string) {
 }
 
 /**
- * Highest grade the player currently qualifies for (skill + communication + reputation)
+ * Career gates: content-driven (balance.careerGates) with a graceful fallback to
+ * the built-in table so an old content bundle still boots.
  */
-function targetGrade(state: StoredState, content: any): Grade | null {
-  let best: Grade | null = null;
-  const comm = state.softSkills['communication']?.level ?? 0;
-  const discount = Math.min(0.5, perkEffectSum(state, content, 'jobRequirementDiscount'));
-  for (const grade of GRADE_ORDER) {
-    if (grade === 'unemployed' || grade === 'cto') continue;
-    const req = GRADE_REQUIREMENTS[grade];
-    if (totalSkillLevels(state) >= req.skill * (1 - discount) && comm >= req.comm && state.reputation >= req.rep) {
-      best = grade;
+const branchMapCache = new Map<string, Record<string, string>>();
+
+function branchOfMap(content: any): Record<string, string> {
+  const key = `${(content.skills as any[])?.length ?? 0}:${(content.skills as any[])?.[0]?.id ?? ''}`;
+  const cached = branchMapCache.get(key);
+  if (cached) return cached;
+  const map: Record<string, string> = {};
+  for (const skill of (content.skills ?? []) as any[]) {
+    if (skill.id && skill.branch) map[skill.id] = skill.branch;
+  }
+  branchMapCache.set(key, map);
+  return map;
+}
+
+/**
+ * Monthly recurring costs granted by owned items (gym subscription, internet, ...).
+ * Content-driven: an item with effects.monthlyCost is a subscription, not a purchase.
+ */
+function monthlySubscriptions(state: StoredState, content: any): number {
+  let total = 0;
+  for (const item of (content.items ?? []) as any[]) {
+    if (state.items.includes(item.id) && item.effects?.monthlyCost) {
+      total += item.effects.monthlyCost;
     }
   }
-  return best;
+  return total;
+}
+
+const HUMAN_REQ: Record<string, string> = {
+  skill: 'основной навык',
+  total: 'всего навыков',
+  branchTotal: 'навыки в ветке',
+  comm: 'коммуникация',
+  english: 'английский',
+  leadership: 'лидерство',
+  rep: 'репутация',
+};
+
+/**
+ * What the next promotion actually needs — the late game should be legible,
+ * otherwise gates feel like an invisible wall. Sent with /state and shown in «Карьера».
+ */
+function careerOutlook(state: StoredState, content: any) {
+  const gates = careerGatesOf(content);
+  const branchOf = branchOfMap(content);
+  const next = nextGateOf(gates, state.grade);
+  if (!next) {
+    const cto = gateFor(gates, 'cto');
+    if (cto && state.grade === 'architect') {
+      const { chance, qualified, missing } = ctoElectionChance(state, cto);
+      return {
+        kind: 'cto_election',
+        label: 'Выборы CTO',
+        ready: qualified,
+        chance: Math.round(chance * 100),
+        cooldownDays: Math.max(0, (state.ctoCooldownUntilDay ?? 0) - state.currentDay),
+        missing: Object.entries(missing).map(([k, v]) => ({ key: k, label: HUMAN_REQ[k] ?? k, ...v })),
+      };
+    }
+    return { kind: 'top', label: 'Вы на вершине лестницы' };
+  }
+  const progress = gateProgress(state, next, { branchOf });
+  const interval = reviewInterval(gates, state.grade);
+  const since = state.job ? (state.job.daysSinceLastPromotion ?? 0) : 0;
+  return {
+    kind: 'promotion',
+    grade: next.grade,
+    label: next.label ?? next.grade,
+    ready: progress.ok,
+    progress: Math.round(progress.progress * 100),
+    daysToReview: Math.max(0, interval - since),
+    reviewInterval: interval,
+    competition: next.competition ?? 1,
+    missing: Object.entries(progress.missing).map(([k, v]) => ({ key: k, label: HUMAN_REQ[k] ?? k, ...v })),
+  };
+}
+
+/**
+ * Daily money pressure summary: «твой день стоит X ₽». This is what makes the
+ * late game a decision and not a spreadsheet with growing numbers.
+ */
+function costOfDay(state: StoredState, content: any) {
+  const living = content.balance?.livingCosts;
+  if (!living) return null;
+  const breakdown = dailyCostBreakdown(state, living, {
+    subscriptionsMonthly: monthlySubscriptions(state, content),
+    rentMonthly: HOUSING_COSTS[state.housingLevel] ?? 0,
+  });
+  const weekly = state.job ? weeklySalary(state.job.salary) : 0;
+  return {
+    ...breakdown,
+    incomeDaily: Math.round(weekly / 7),
+    balanceDaily: Math.round(weekly / 7) - breakdown.daily - breakdown.rent - breakdown.wealthTax,
+  };
+}
+
+/**
+ * Soft-skill tuning from content (saturation keeps people skills un-farmable)
+ */
+function softOpts(content: any) {
+  const cfg = content.balance?.softSkills ?? { saturatesAt: 30, xpDamping: 0.5 };
+  return { saturatesAt: cfg.saturatesAt ?? 30, damping: cfg.xpDamping ?? 0.5 };
+}
+
+function careerGatesOf(content: any): CareerGate[] {
+  const fromContent = content.balance?.careerGates as CareerGate[] | undefined;
+  if (fromContent?.length) return fromContent;
+  // Fallback: derive the legacy table into the new shape
+  return GRADE_ORDER.filter((g) => g !== 'unemployed').map((grade) => ({
+    grade,
+    skill: GRADE_REQUIREMENTS[grade].skill,
+    total: 0,
+    comm: GRADE_REQUIREMENTS[grade].comm,
+    rep: GRADE_REQUIREMENTS[grade].rep,
+    minDaysInGrade: 7,
+    competition: 1,
+    special: grade === 'cto',
+  }));
+}
+
+/**
+ * Highest grade the player currently qualifies for (depth + breadth + soft skills)
+ */
+function targetGrade(state: StoredState, content: any): Grade | null {
+  const discount = Math.min(0.5, perkEffectSum(state, content, 'jobRequirementDiscount'));
+  const legacy = careerGatesOf(content).length === 0;
+  if (legacy) {
+    let best: Grade | null = null;
+    const comm = state.softSkills['communication']?.level ?? 0;
+    for (const grade of GRADE_ORDER) {
+      if (grade === 'unemployed' || grade === 'cto') continue;
+      const req = GRADE_REQUIREMENTS[grade];
+      if (totalSkillLevels(state) >= req.skill * (1 - discount) && comm >= req.comm && state.reputation >= req.rep) {
+        best = grade;
+      }
+    }
+    return best;
+  }
+  return qualifiedGrade(state, careerGatesOf(content), { branchOf: branchOfMap(content), discount });
 }
 
 export async function gameRoutes(app: FastifyInstance) {
@@ -226,6 +373,8 @@ export async function gameRoutes(app: FastifyInstance) {
       offlineDaysEarned: banked,
       activeEvent,
       mining: miningSummary(state, getContent()),
+      careerOutlook: careerOutlook(state, getContent()),
+      costOfDay: costOfDay(state, getContent()),
     };
   });
 
@@ -350,6 +499,8 @@ export async function gameRoutes(app: FastifyInstance) {
       messages,
       activeEvent: event,
       mining: miningSummary(state, content),
+      careerOutlook: careerOutlook(state, content),
+      costOfDay: costOfDay(state, content),
     };
   });
 
@@ -649,7 +800,7 @@ export async function gameRoutes(app: FastifyInstance) {
       const gain = interviewXpForQuestion(!!slot.correct);
       if (def.skillId === 'general') {
         const comm = state.softSkills['communication'] ?? { level: 0, xp: 0 };
-        state.softSkills = { ...state.softSkills, communication: applySoftXp(comm, gain) };
+        state.softSkills = { ...state.softSkills, communication: applySoftXp(comm, gain, softOpts(content)) };
         xpGains.push(`soft +${gain}`);
       } else {
         const cur = state.skills[def.skillId] ?? { level: 0, xp: 0 };
@@ -715,7 +866,7 @@ export async function gameRoutes(app: FastifyInstance) {
   app.post('/reset', async (request) => {
     const user = (request as any).telegramUser;
     const userId = String(user.id);
-    const state = { ...createNewPlayer(), telegramId: userId, lastTickAt: Date.now(), ratingScore: 0, activeEventId: null, freelanceDoneToday: false, lastFreelanceDay: 0, sideJobDoneToday: false, petFedToday: false, firstName: user.first_name || 'Игрок', mainSkillId: 'javascript' } as StoredState;
+    const state = { ...createNewPlayer(), telegramId: userId, lastTickAt: Date.now(), ratingScore: 0, activeEventId: null, freelanceDoneToday: false, lastFreelanceDay: 0, sideJobDoneToday: false, petFedToday: false, networkingToday: 0, firstName: user.first_name || 'Игрок', mainSkillId: 'javascript' } as StoredState;
     deriveGenetics(state);
     resetDailyChallenge(state, getContent());
     saveState(userId, state);
@@ -953,14 +1104,14 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
     // ---- English (soft skill, gates foreign companies) ----
     case 'study_english': {
       const eng = state.softSkills['english'] ?? { level: 0, xp: 0 };
-      state.softSkills = { ...state.softSkills, english: applySoftXp(eng, 10) };
+      state.softSkills = { ...state.softSkills, english: applySoftXp(eng, 10, softOpts(content)) };
       delta.softSkills = { english: { from: eng.level, to: state.softSkills['english'].level } };
       return { message: `🇬🇧 Английский: бесплатные уроки с котиками. Уровень ${state.softSkills['english'].level}`, delta };
     }
 
     case 'study_english_course': {
       const eng = state.softSkills['english'] ?? { level: 0, xp: 0 };
-      state.softSkills = { ...state.softSkills, english: applySoftXp(eng, 25) };
+      state.softSkills = { ...state.softSkills, english: applySoftXp(eng, 25, softOpts(content)) };
       delta.softSkills = { english: { from: eng.level, to: state.softSkills['english'].level } };
       return { message: `🇬🇧 Интенсивный курс английского: уровень ${state.softSkills['english'].level}. Now you can ask for a raise`, delta };
     }
@@ -983,12 +1134,28 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       const learningMult = state.job.companyCulture?.learningMult ?? 1;
       const skillId = state.mainSkillId;
       const current = state.skills[skillId] ?? { level: 0, xp: 0 };
-      const next = applyXp(current, xpGain(state, content, Math.round(8 * learningMult)), xpMotivation(state, content));
-      state.skills = { ...state.skills, [skillId]: next };
+      const xp = xpGain(state, content, Math.round(8 * learningMult));
+      const next = applyXp(current, xp, xpMotivation(state, content));
+      const skills: Record<string, any> = { [skillId]: next };
+      // On the job you also absorb the neighbouring skills of your branch —
+      // this is the only natural source of the depth *plus breadth* career gates need.
+      const carriesPeople = careerLevelIndex(state.grade) >= careerLevelIndex('senior');
+      const share = branchShareXp(state, branchOfMap(content), Math.max(2, Math.round(xp / 2)), carriesPeople ? 3 : 2);
+      for (const [id, amount] of Object.entries(share)) {
+        skills[id] = applyXp(state.skills[id] ?? { level: 0, xp: 0 }, amount, xpMotivation(state, content));
+      }
+      state.skills = { ...state.skills, ...skills };
+      if (careerLevelIndex(state.grade) >= careerLevelIndex('middle')) {
+        // middle+ = reviewing other people's PRs: leadership grows with the work itself
+        state.softSkills = {
+          ...state.softSkills,
+          leadership: applySoftXp(state.softSkills['leadership'] ?? { level: 0, xp: 0 }, carriesPeople ? 8 : 4, softOpts(content)),
+        };
+      }
       state.job.daysWorked += 1;
       state.motivation = clamp(state.motivation - 1, 0, 100);
       delta.skills = { [skillId]: { from: current.level, to: next.level } };
-      return { message: '💼 Закрыл рабочие задачи. Ретроспектива отменена, все свободны' };
+      return { message: carriesPeople ? '💼 Задачи + разбор чужого кода. Растёшь не только ты' : '💼 Закрыл рабочие задачи. Ретроспектива отменена, все свободны' };
     }
 
     case 'work_overtime': {
@@ -1041,6 +1208,7 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
         payment = Math.round(payment * totalMult);
       }
       state.money += payment;
+      state.freelanceLastPayment = payment;
       state.freelanceDoneToday = true;
       state.lastFreelanceDay = state.currentDay;
       const current = state.skills[skillId] ?? { level: 0, xp: 0 };
@@ -1078,7 +1246,7 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       state.reputation = clamp(state.reputation + (job.repGain ?? 0), 0, 100);
       if (job.commXp) {
         const comm = state.softSkills['communication'] ?? { level: 0, xp: 0 };
-        state.softSkills = { ...state.softSkills, communication: applySoftXp(comm, job.commXp) };
+        state.softSkills = { ...state.softSkills, communication: applySoftXp(comm, job.commXp, softOpts(content)) };
       }
       delta.money = payment;
       return { message: `${job.icon} ${job.name}: +${fmtMoney(payment)}. «Это временно, я же айтишник» — говоришь ты себе`, delta };
@@ -1129,12 +1297,26 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
 
     // ---- Social ----
     case 'networking': {
-      const net = content.balance.networking ?? { commXp: 5, repGain: 0.5, energy: 2 };
+      const net = { commXp: 5, repGain: 0.5, energy: 2, dailyCap: 1, leadershipPerDay: 0, ...(content.balance.networking ?? {}) };
+      const cap = net.dailyCap ?? 1;
+      if ((state.networkingToday ?? 0) >= cap) {
+        return { error: 'Нетворкинг на сегодня закончился: митапы не резиновые. Завтра — новый барак' };
+      }
       const comm = state.softSkills['communication'] ?? { level: 0, xp: 0 };
       state.softSkills = { ...state.softSkills, communication: applySoftXp(comm, net.commXp) };
       state.reputation = clamp(state.reputation + net.repGain, 0, 100);
       delta.reputation = net.repGain;
+      // Networking is where soft career skills grow: communication, reputation and —
+      // for those who already carry people — leadership. Without this drip, leadership
+      // had no source below senior and teamlead/CTO were mathematically unreachable.
+      const seniorPlus = careerLevelIndex(state.grade) >= careerLevelIndex('senior');
+      const leadGain = Math.round((net.leadershipPerDay ?? 0) * (seniorPlus ? 2 : 1));
+      if (leadGain > 0) {
+        const lead = state.softSkills['leadership'] ?? { level: 0, xp: 0 };
+        state.softSkills = { ...state.softSkills, leadership: applySoftXp(lead, leadGain, softOpts(content)) };
+      }
       const npcs = content.npcs as any[];
+      state.networkingToday = (state.networkingToday ?? 0) + 1;
       if (npcs.length > 0 && rng() < 0.3) {
         const npc = npcs[Math.floor(rng() * npcs.length)];
         state.relationships = { ...state.relationships, [npc.id]: clamp((state.relationships[npc.id] ?? 0) + 2, -100, 100) };
@@ -1230,6 +1412,12 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       return { message: 'Оффер отклонён. HR переживёт... наверное' };
     }
 
+    case 'cto_elect': {
+      const res = runCtoElection(state, content);
+      if (res.error) return { error: res.error };
+      return { message: res.message };
+    }
+
     // ---- Shop ----
     case 'buy_item': {
       const item = (content.items as any[]).find((i) => i.id === params?.itemId);
@@ -1257,6 +1445,27 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       if (next > 4) return { error: 'Лучше уже некуда. Это пентхаус, Карл' };
       const cost = HOUSING_COSTS[next];
       if (state.money < cost) return { error: 'Не хватает денег на переезд' };
+      // The further up you move, the more of a habit it must be: the account must
+      // hold saveMult× the monthly payment, held for saveStreakDays in a row.
+      const hdef = ((content.balance.housing ?? []) as any[]).find((h) => h.level === next) ?? {};
+      const saveMult = hdef.saveMult ?? 5;
+      const needStreak = hdef.saveStreakDays ?? 14;
+      if (state.money < cost * saveMult) {
+        return { error: `Мало просто иметь ${fmtMoney(cost)}: нужен запас ${saveMult}× месячного платежа (${fmtMoney(cost * saveMult)})` };
+      }
+      if (state.savingsSinceDay === undefined || (state.currentDay - state.savingsSinceDay) < needStreak) {
+        const held = state.savingsSinceDay === undefined ? 0 : state.currentDay - state.savingsSinceDay;
+        return { error: `Переезд — привычка, а не импульс: держи подушку ещё ${Math.max(1, needStreak - held)} дн.` };
+      }
+      // Lifestyle has an entry fee: the landlord looks at income, not at one lucky month.
+      const def = ((content.balance.housing ?? []) as any[]).find((h) => h.level === next);
+      const incomeGate = def?.incomeGateMult ?? 0;
+      if (incomeGate > 0) {
+        const income = (state.job?.salary ?? 0) + (state.freelanceLastPayment ?? 0) * 4;
+        if (income < incomeGate) {
+          return { error: `Аренда по карману доходу: нужно от ${fmtMoney(incomeGate)}/мес (у тебя ${fmtMoney(income)})` };
+        }
+      }
       state.housingLevel = next;
       state.maxEnergy = recalcMaxEnergy(state, content);
       delta.housingLevel = next;
@@ -1318,8 +1527,9 @@ function advanceDay(state: StoredState, content: any, messages: string[]) {
     } else if (company && rng() < (company.culture?.layoffRisk ?? 0)) {
       messages.push(`📉 Сокращение в «${company.name}». Ты в списке. Рынок, держись!`);
       state.job = null;
-    } else if (state.job.daysSinceLastPromotion >= 7) {
-      tryPromote(state, company, messages);
+    } else {
+      // Review cadence is per-gate (minDaysInGrade) and lives inside tryPromote
+      tryPromote(state, company, content, messages);
     }
   }
 
@@ -1340,6 +1550,65 @@ function advanceDay(state: StoredState, content: any, messages: string[]) {
       state.money = 0;
       state.motivation = clamp(state.motivation - 8, 0, 100);
       messages.push(`⚠️ Не хватило денег на жильё (${fmtMoney(cost)}). Мотивация упала. Срочно нужен доход!`);
+    }
+  }
+
+  // 6a2. Savings-cushion tracking for the next housing level
+  {
+    const nextLevel = (state.housingLevel + 1) as 0 | 1 | 2 | 3 | 4;
+    const cost = HOUSING_COSTS[nextLevel] ?? 0;
+    const hdef = ((content.balance.housing ?? []) as any[]).find((h) => h.level === nextLevel) ?? {};
+    const needed = cost * (hdef.saveMult ?? 5);
+    if (nextLevel <= 4 && state.money >= needed) {
+      state.savingsSinceDay = state.savingsSinceDay ?? state.currentDay;
+    } else {
+      state.savingsSinceDay = undefined;
+    }
+  }
+
+  // 6b. Daily living costs (ТЗ 5.6) — food, commute, subs. Previously dead constants.
+  const living = content.balance?.livingCosts;
+  let livingToday = 0;
+  if (living) {
+    const monthlySubs = monthlySubscriptions(state, content);
+    const lc = dailyLivingCost(state, living, { subscriptionsMonthly: monthlySubs });
+    livingToday = lc.amount;
+    if (state.money >= lc.amount) {
+      state.money -= lc.amount;
+    } else {
+      state.money = 0;
+      state.motivation = clamp(state.motivation - 2, 0, 100);
+      if (state.currentDay % 10 === 0) {
+        messages.push(`🍜 На еду не хватило — сегодня на гречке. Расходы: ${fmtMoney(lc.amount)}/день`);
+      }
+    }
+    state.lastLivingCost = livingToday;
+
+    // Wealth tax: idle capital pays for the lifestyle around it (ТЗ 13.1 money sinks)
+    const tax = wealthTaxMonthly(state, living);
+    if (tax > 0) {
+      if (state.currentDay % 30 === 0) {
+        const paid = Math.min(state.money, tax);
+        state.money -= paid;
+        messages.push(`🏦 Налог на состояние и образ жизни: −${fmtMoney(paid)}. Деньги «под матрасом» обесцениваются — реинвестируй`);
+      }
+    }
+  }
+
+  // 6c. Career endings (ТЗ «Финалы»): burnout and «ушёл из IT»
+  const endings = content.balance?.endings ?? { burnoutDays: 7, brokeDaysToQuit: 15 };
+  if (!state.careerEnding) {
+    if (state.burnoutDays >= (endings.burnoutDays ?? 7)) {
+      state.careerEnding = 'burnout';
+      state.job = null;
+      messages.push('🔥 Выгорание. Ты ушёл в отпуск длиной в жизнь: ноутбук в ящик, тикеты чужие. Финал: «Пчеловод»');
+    } else {
+      if (state.money <= 0) state.brokeDays = (state.brokeDays ?? 0) + 1;
+      else state.brokeDays = 0;
+      if ((state.brokeDays ?? 0) >= (endings.brokeDaysToQuit ?? 15) && !state.job) {
+        state.careerEnding = 'left_it';
+        messages.push('💀 15 дней без денег и без работы. Ты ушёл из IT — в деревню, за теплицы. Финал: «Ушёл из IT»');
+      }
     }
   }
 
@@ -1390,6 +1659,7 @@ function advanceDay(state: StoredState, content: any, messages: string[]) {
   state.freelanceDoneToday = false;
   state.sideJobDoneToday = false;
   state.petFedToday = false;
+  state.networkingToday = 0;
 
   // Daily challenge: new assignment for the new day
   if (!state.dailyChallenge || state.dailyChallenge.day !== state.currentDay) {
@@ -1402,27 +1672,88 @@ function advanceDay(state: StoredState, content: any, messages: string[]) {
   state.ratingScore = calculateRating(state);
 }
 
-function tryPromote(state: StoredState, company: any, messages: string[]) {
-  const idx = careerLevelIndex(state.job!.grade);
-  const next = GRADE_ORDER[idx + 1];
-  if (!next || next === 'cto') return;
+/**
+ * Promotion review. Requirements open the review; the org budget decides.
+ *
+ * Before v2.1 this was `if (meets requirements) promote()` on a 7-day timer, so a
+ * grinding player swept the whole ladder (simulator: 100% architects). Now:
+ *   - gates are content-driven and check MAIN-skill depth + branch + breadth + soft skills
+ *   - higher grades are reviewed rarer (minDaysInGrade)
+ *   - a qualified candidate still competes for the slot (competition), so waiting
+ *     is real and over-qualifying is what actually speeds you up
+ */
+function tryPromote(state: StoredState, company: any, content: any, messages: string[]) {
+  const gates = careerGatesOf(content);
+  const gate = nextGateOf(gates, state.job!.grade);
+  if (!gate) return; // CTO is not a promotion — it is an election
 
-  const req = GRADE_REQUIREMENTS[next];
-  const comm = state.softSkills['communication']?.level ?? 0;
-  if (totalSkillLevels(state) < req.skill || comm < req.comm || state.reputation < req.rep) return;
+  if ((state.job!.daysSinceLastPromotion ?? 0) < reviewInterval(gates, state.job!.grade)) return;
+
+  const progress = gateProgress(state, gate, { branchOf: branchOfMap(content) });
+  if (!progress.ok) return;
+
+  const surplus = gateSurplus(progress);
+  if (!promotionChance(surplus, gate.competition ?? 1, rng)) {
+    // No spam: tell the player only on the day the review happened
+    messages.push(`📋 Ревью на ${gate.label ?? gate.grade}: место пока занято. Ты у уреза — качай глубину, не ширину`);
+    return;
+  }
 
   const salaryMult = company?.salaryMult ?? 1;
-  const newSalary = Math.round((GRADE_SALARIES[next] * salaryMult) / 1000) * 1000;
+  const newSalary = Math.round((GRADE_SALARIES[gate.grade] * salaryMult) / 1000) * 1000;
   state.job = {
     ...state.job!,
-    position: GRADE_POSITIONS[next],
-    grade: next,
+    position: GRADE_POSITIONS[gate.grade],
+    grade: gate.grade,
     salary: newSalary,
     daysSinceLastPromotion: 0,
   };
-  state.grade = next;
-  messages.push(`🚀 Повышение! Теперь ты ${GRADE_POSITIONS[next]} (${fmtMoney(newSalary)}/мес). Поздравляем, тебя ждёт ещё больше созвонов`);
+  state.grade = gate.grade;
+  state.lastPromotionDay = state.currentDay;
+  state.reputation = clamp(state.reputation + 3, 0, 100);
+  messages.push(`🚀 Повышение! Теперь ты ${GRADE_POSITIONS[gate.grade]} (${fmtMoney(newSalary)}/мес). Поздравляем, тебя ждёт ещё больше созвонов`);
 }
+
+/**
+ * Board election for CTO — the "Корпоративный бог" final of the ТЗ. Deliberately
+ * not a promotion: a single high-variance roll with a long cooldown on failure.
+ */
+function runCtoElection(state: StoredState, content: any): { message: string; error?: undefined } | { error: string; message?: undefined } {
+  const gate = gateFor(careerGatesOf(content), 'cto');
+  if (!gate) return { error: 'Путь CTO не настроен в контенте' };
+  if (state.grade !== 'architect') return { error: 'CTO выбирают из архитекторов — сначала дорасти до архит' };
+  if (!state.job) return { error: 'Нужна большая компания: без штата и борда выборы не имеют смысла' };
+  if ((state.ctoCooldownUntilDay ?? 0) > state.currentDay) {
+    return { error: `Борд ещё не отошёл после прошлого раунда. Попробуй через ${state.ctoCooldownUntilDay! - state.currentDay} дн.` };
+  }
+
+  const { chance, qualified, missing } = ctoElectionChance(state, gate);
+  if (!qualified) {
+    const human = Object.entries(missing)
+      .map(([k, v]) => `${HUMAN_REQ[k] ?? k}: ${v.current}/${v.needed}`)
+      .join(', ');
+    return { error: `Тебя не выдвигают. Не хватает: ${human}` };
+  }
+
+  // NB: energy cost and totalActions are handled by the /action route
+  // (EXTRA_ENERGY_COSTS.cto_elect) — do not deduct them here.
+  const won = rng() < chance;
+  if (won) {
+    const salaryMult = (content.companies as any[]).find((c: any) => c.id === state.job!.companyId)?.salaryMult ?? 1;
+    const salary = Math.round((GRADE_SALARIES.cto * salaryMult) / 1000) * 1000;
+    state.job = { ...state.job!, position: GRADE_POSITIONS.cto, grade: 'cto', salary, daysSinceLastPromotion: 0 };
+    state.grade = 'cto';
+    state.reputation = clamp(state.reputation + 10, 0, 100);
+    state.careerEnding = 'corporate_god';
+    state.lastPromotionDay = state.currentDay;
+    return { message: `👔 Борд проголосовал за тебя (шанс был ${Math.round(chance * 100)}%). Ты CTO — отныне ты отвечаешь за чужие карьеры и за свой сон` };
+  }
+  state.ctoCooldownUntilDay = state.currentDay + (gate.electionIntervalDays ?? 60);
+  state.reputation = clamp(state.reputation - 4, 0, 100);
+  state.motivation = clamp(state.motivation - 10, 0, 100);
+  return { message: `🗑 Выборы проиграны (${Math.round(chance * 100)}% было). Борд выбрал «человека системы». Минус 4 репутации, минус 10 мотивации` };
+}
+
 
 function resolveInterview(state: StoredState, app: Application, content: any, messages: string[]) {
   const company = (content.companies as any[]).find((c: any) => c.id === app.companyId);

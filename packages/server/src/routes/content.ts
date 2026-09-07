@@ -84,6 +84,38 @@ export async function contentRoutes(app: FastifyInstance) {
   });
 
   /**
+   * GET /api/content/career-gates — the promotion ladder as data (v2.1).
+   * The client must show the *real* gates, not a hardcoded copy of them.
+   */
+  app.get('/career-gates', async () => {
+    const balance = getContent().balance as any;
+    return {
+      gates: balance.careerGates ?? [],
+      livingCosts: balance.livingCosts ?? null,
+      endings: balance.endings ?? null,
+    };
+  });
+
+  /**
+   * GET /api/content/pixel — pixel-art avatar pack (docs/pixel-art.md).
+   * The client renders from this payload with the shared engine; there are no
+   * pre-rendered sprites at runtime, so PNGs stay a build/QA artifact.
+   */
+  app.get('/pixel', async () => {
+    const { pixelArt, pixelGeneratorConfig } = getContent();
+    if (!pixelArt) return { available: false, canvas: null, components: {}, palettes: {}, generatorConfig: null };
+    return {
+      available: true,
+      canvas: pixelArt.canvas,
+      layout: pixelArt.layout,
+      layerOrder: pixelArt.layer_order,
+      palettes: pixelArt.palettes,
+      components: pixelArt.components,
+      generatorConfig: pixelGeneratorConfig,
+    };
+  });
+
+  /**
    * GET /api/content/side-jobs — non-IT gigs (courier, barista, etc.)
    */
   app.get('/side-jobs', async () => {

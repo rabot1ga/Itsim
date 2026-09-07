@@ -19,6 +19,178 @@ export type EventId = string;
 export type NPCId = string;
 export type AchievementId = string;
 
+/**
+ * Career gate — a data-driven promotion requirement (content: balance.careerGates).
+ * `skill` gates on the level of the MAIN skill (depth), `total` on the sum of all
+ * skill levels (breadth) — both must hold, which is what keeps late game honest.
+ */
+export interface CareerGate {
+  grade: Grade;
+  label?: string;
+  skill: number;
+  comm: number;
+  rep: number;
+  total?: number;
+  branchTotal?: number;
+  english?: number;
+  leadership?: number;
+  /** review cycle in days since the last promotion */
+  minDaysInGrade?: number;
+  /** candidates competing for one open slot (org budget pressure) */
+  competition?: number;
+  /** not reachable by promotion — requires a special action (CTO election) */
+  special?: boolean;
+  /** how often the board meets for a special (non-promotion) election */
+  electionIntervalDays?: number;
+}
+
+/**
+ * Daily living costs (food, commute, subscriptions) — the money pressure
+ * that salaries alone do not provide (ТЗ section 5.6).
+ */
+export interface LivingCosts {
+  foodBase: number;
+  foodBroke?: number;
+  perHousingLevel?: number;
+  perCareerIndex?: number;
+  subscriptionsMonthly?: number;
+  /** each owned item shaves a little off lifestyle (cooking gear, gym, ...) */
+  lifestyleRefundMultiplier?: number;
+  /** wealth tax: money sitting above the threshold pays for the lifestyle around it */
+  wealthTaxMonthly?: number;
+  wealthTaxThreshold?: number;
+  wealthTaxRate?: number;
+  wealthTaxCap?: number;
+}
+
+/** Career endings (ТЗ «Финалы») */
+export type CareerEnding = 'corporate_god' | 'exit' | 'free_artist' | 'teacher' | 'burnout' | 'left_it';
+
+// ---- Pixel-art avatar (docs/pixel-art.md, ТЗ «Процедурная генерация пиксельных персонажей») ----
+
+export type PixelCategory = 'face' | 'eyes' | 'mouth' | 'hair' | 'hat' | 'clothing' | 'accessory';
+
+/** Named palette roles — index-based access is fragile, role-based is not */
+export type PaletteRole = 'hlt' | 'base' | 'shd' | 'outline';
+
+/** One pixel of a component; x/y are offsets from the component anchor */
+export interface PixelDef {
+  x: number;
+  y: number;
+  /** "palette#index", "palette#role" (preferred) or "#rrggbb" (hat/accessory only) */
+  c: string;
+}
+
+/** Authored form: rows of tokens, '.' = empty. Compiled into `pixels`. */
+export interface PixelComponentRows {
+  rows: string[];
+}
+
+export interface PixelComponent {
+  category: PixelCategory;
+  label: string;
+  anchor: { x: number; y: number };
+  /** mirror the component about layout.symmetry_axis_x (right half is generated) */
+  mirror?: boolean;
+  /** categories force-set to their *_none/*_bald variant when this component is chosen */
+  excludes?: PixelCategory[];
+  pixels: PixelDef[];
+  /** tags for the shop/vitrina filtering */
+  tags?: string[];
+  /** extended set flag — MVP components must not set it */
+  extended?: boolean;
+  /**
+   * Authored-only shorthand (consumed by `pixelgen compile`, never shipped in
+   * components.json): rows of space-separated tokens — '.' empty, digit N =
+   * palettes[N], "#rrggbb" = literal. Requires `palettes` below.
+   */
+  rows?: string[];
+  /** palette tokens used by `rows`, index order matters */
+  palettes?: string[];
+}
+
+export interface PixelArtLayout {
+  /** fixed rows so features don't drift between variants */
+  eyes_y: number;
+  mouth_y: number;
+  /** fractional axis allowed: 15.5 on a 32-wide canvas */
+  symmetry_axis_x: number;
+  /** head bounds — informational, used by validators and the prompt builder */
+  head?: { x: number; y: number; w: number; h: number };
+}
+
+export interface PixelArtFile {
+  format: number;
+  $schema?: string;
+  /** sha256 of components.source.json this file was compiled from (drift guard) */
+  sourceChecksum?: string;
+  canvas: { width: number; height: number };
+  layout: PixelArtLayout;
+  /** palette name → ordered hex list, light → dark: [hlt, base, shd, outline] */
+  palettes: Record<string, string[]>;
+  layer_order: PixelCategory[];
+  components: Record<string, PixelComponent>;
+}
+
+/** A named full-palette recolor (generator_config.colorSchemes entry) */
+export interface PixelColorScheme {
+  id: string;
+  name?: string;
+  /** palette name → colors; missing palettes fall back to the base palettes */
+  palettes: Record<string, string[]>;
+  tags?: string[];
+  /** genetic trait ids (GeneticTraits) this recolor is picked for */
+  match?: { hairColor?: string[]; skinTone?: string[] };
+}
+
+export interface PixelCategoryConfig {
+  category: PixelCategory;
+  required: boolean;
+  /** id of the variant used when the category is excluded (none/bald) */
+  noneId?: string;
+  variants: string[];
+  weights?: Record<string, number>;
+}
+
+export interface PixelGeneratorConfig {
+  format: number;
+  categories: PixelCategoryConfig[];
+  colorSchemes: PixelColorScheme[];
+}
+
+/** Chosen component ids per category (after excludes) + palette scheme */
+export interface PixelComposition {
+  [categoryOrKey: string]: string | null;
+}
+
+export interface PixelManifestEntry {
+  id: string;
+  file: string;
+  /**
+   * Reproduction key. "draw" = a real seed consumed by combinationFromSeed;
+   * "enumerate" = an index into the enumerated cartesian product. Both are
+   * reproducible, but only the first via the seeded path (docs/pixel-art.md §1.7).
+   */
+  seed: string;
+  seedKind: 'draw' | 'enumerate';
+  scheme: string;
+  /** final component ids per category, after excludes */
+  combo: Record<string, string | null>;
+  /** palette name → colors actually used */
+  palettes: Record<string, string[]>;
+  tags: string[];
+}
+
+export interface PixelManifest {
+  format: number;
+  generatedAt?: string;
+  /** content checksums — reproducibility without them is a lottery */
+  checksums: { components: string; generatorConfig?: string };
+  canvas: { width: number; height: number };
+  count: number;
+  entries: PixelManifestEntry[];
+}
+
 // ---- Player State ----
 
 export interface PlayerState {
@@ -34,6 +206,22 @@ export interface PlayerState {
   maxEnergy: number;
   reputation: number;
   bankedDays: number;
+
+  // Career (v2.1 balance layer)
+  /** skill the player is known for — the depth requirement of career gates applies to it */
+  mainSkillId?: SkillId;
+  /** day of the last promotion / last career ending */
+  lastPromotionDay?: number;
+  /** board election cooldown (CTO), in game days */
+  ctoCooldownUntilDay?: number;
+  /** terminal career outcome, if reached */
+  careerEnding?: CareerEnding;
+  /** last charged daily living cost (for UI: «твой день стоит … ₽») */
+  lastLivingCost?: number;
+  /** consecutive days with zero money (drives the «ушёл из IT» ending) */
+  brokeDays?: number;
+  /** last freelance payout — landlord income estimate for players without a job */
+  freelanceLastPayment?: number;
 
   // Procedural generation (DESIGN.md) — optional for backward compatibility
   walletAddress?: string;

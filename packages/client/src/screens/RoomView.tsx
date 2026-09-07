@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { RoomRenderer, buildRoomComposition } from '../components/room/RoomRenderer';
 import { ShareCard } from '../components/room/ShareCard';
+import { buildAvatarData, fetchPixelPack, PixelAvatarData } from '../components/room/pixelAvatar';
+import { PixelIdentity } from '../components/room/PixelIdentity';
 
 /**
  * «Дом» — procedural room (DESIGN.md), NFT inventory (mock Solana),
@@ -18,6 +20,7 @@ export const RoomView: React.FC = () => {
   const [avatarManifest, setAvatarManifest] = useState<any>(null);
   const [roomManifest, setRoomManifest] = useState<any>(null);
   const [crossCollections, setCrossCollections] = useState<any[]>([]);
+  const [pixelPack, setPixelPack] = useState<Awaited<ReturnType<typeof fetchPixelPack>>>(null);
   const [walletInput, setWalletInput] = useState('');
   const [error, setError] = useState<string | null>(null);
 
@@ -26,17 +29,22 @@ export const RoomView: React.FC = () => {
       fetch('/api/content/genetics').then((r) => r.json()),
       fetch('/api/content/layers').then((r) => r.json()),
       fetch('/api/content/cross-collections').then((r) => r.json()),
+      fetchPixelPack(),
     ])
-      .then(([g, l, c]) => {
+      .then(([g, l, c, pixel]) => {
         setGeneticsConfig(g.genetics);
         setAvatarManifest(l.avatar);
         setRoomManifest(l.room);
         setCrossCollections(c.crossCollections?.collections ?? []);
+        setPixelPack(pixel);
       })
       .catch(() => setError('Не удалось загрузить контент'));
   }, []);
 
   if (!player) return null;
+
+  const pixelAvatarData: PixelAvatarData | null =
+    pixelPack && player.genetics ? buildAvatarData(pixelPack, player.genetics) : null;
 
   const traits = player.genetics;
   const ready = geneticsConfig && avatarManifest && roomManifest && traits;
@@ -82,11 +90,16 @@ export const RoomView: React.FC = () => {
           geneticsConfig={geneticsConfig}
           housingLevel={player.housingLevel ?? 0}
           composition={composition}
+          pixelAvatar={pixelAvatarData}
         />
       ) : (
         <div className="aspect-square rounded-2xl bg-slate-800 flex items-center justify-center text-slate-500">
           Загрузка комнаты…
         </div>
+      )}
+
+      {pixelAvatarData && pixelPack && (
+        <PixelIdentity pack={pixelPack} data={pixelAvatarData} />
       )}
 
       {error && <div className="game-card border-red-500/40 bg-red-500/10"><p className="text-sm text-red-300">⚠️ {error}</p></div>}

@@ -1,0 +1,990 @@
+{
+  "format": 1,
+  "$schema": "./pixel-art.schema.json",
+  "canvas": {
+    "width": 32,
+    "height": 32
+  },
+  "layout": {
+    "eyes_y": 15,
+    "mouth_y": 20,
+    "symmetry_axis_x": 15.5,
+    "head": {
+      "x": 8,
+      "y": 5,
+      "w": 16,
+      "h": 19
+    }
+  },
+  "palettes": {
+    "skin": [
+      "#f7d7b8",
+      "#e8b98f",
+      "#c8956c",
+      "#6b4a34"
+    ],
+    "white": [
+      "#ffffff",
+      "#e6e9ef",
+      "#b9c0cc",
+      "#101014"
+    ],
+    "hair": [
+      "#e8c77e",
+      "#a9743a",
+      "#6f4620",
+      "#2c1c10"
+    ],
+    "eyes": [
+      "#d6f2ff",
+      "#4a90c4",
+      "#1f3a52",
+      "#0d1620",
+      "#ff5d5d",
+      "#c23b3b"
+    ],
+    "cloth": [
+      "#c9e4ff",
+      "#5b8ac9",
+      "#33567e",
+      "#1b2b40"
+    ],
+    "hat": [
+      "#f0b6b6",
+      "#c2565a",
+      "#8a3438",
+      "#3c1518"
+    ],
+    "accessory": [
+      "#e6e9ef",
+      "#9aa4b2",
+      "#5d6672",
+      "#232a34"
+    ],
+    "mouth": [
+      "#ffb6b6",
+      "#c86a6a",
+      "#8a3f3f",
+      "#3d1a1a"
+    ]
+  },
+  "layer_order": [
+    "face",
+    "eyes",
+    "mouth",
+    "clothing",
+    "hair",
+    "hat",
+    "accessory"
+  ],
+  "components": {
+    "face_round": {
+      "category": "face",
+      "label": "Округлое лицо",
+      "anchor": {
+        "x": 8,
+        "y": 5
+      },
+      "palettes": [
+        "skin#0",
+        "skin#1",
+        "skin#2",
+        "skin#3"
+      ],
+      "rows": [
+        "@1 3 3 3 3 3 3 3 3 3 3 3 3 3 3",
+        "@1 3 0 1 1 1 1 1 1 1 1 1 1 2 3",
+        "@1 3 0 1 1 1 1 1 1 1 1 1 1 2 3",
+        "3 0 1 1 1 1 1 1 1 1 1 1 1 1 2 3",
+        "3 0 1 1 1 1 1 1 1 1 1 1 1 1 2 3",
+        "3 0 1 1 1 1 1 1 1 1 1 1 1 1 2 3",
+        "3 0 1 1 1 1 1 1 1 1 1 1 1 1 2 3",
+        "3 0 1 1 1 1 1 1 1 1 1 1 1 1 2 3",
+        "3 0 1 1 1 1 1 1 1 1 1 1 1 1 2 3",
+        "3 0 1 1 1 1 1 1 1 1 1 1 1 1 2 3",
+        "3 0 1 1 1 1 1 1 1 1 1 1 1 1 2 3",
+        "3 0 1 1 1 1 1 1 1 1 1 1 1 1 2 3",
+        "3 0 1 1 1 1 1 1 1 1 1 1 1 1 2 3",
+        "3 0 1 1 1 1 1 1 1 1 1 1 1 1 2 3",
+        "3 0 1 1 1 1 1 1 1 1 1 1 1 1 2 3",
+        "@1 3 0 1 1 1 1 1 1 1 1 1 1 2 3",
+        "@1 3 0 1 1 1 1 1 1 1 1 1 1 2 3",
+        "@2 3 0 1 1 1 1 1 1 1 1 2 3",
+        "@2 3 3 3 1 1 1 1 1 1 3 3 3",
+        "@5 2 2 2 2 2 2",
+        "@5 2 2 2 2 2 2"
+      ],
+      "tags": [
+        "face"
+      ]
+    },
+    "face_angular": {
+      "category": "face",
+      "label": "Угловатое лицо",
+      "anchor": {
+        "x": 9,
+        "y": 5
+      },
+      "palettes": [
+        "skin#0",
+        "skin#1",
+        "skin#2",
+        "skin#3"
+      ],
+      "rows": [
+        "@1 3 3 3 3 3 3 3 3 3 3 3 3",
+        "@1 3 0 1 1 1 1 1 1 1 1 2 3",
+        "@1 3 0 1 1 1 1 1 1 1 1 2 3",
+        "3 0 1 1 1 1 1 1 1 1 1 1 2 3",
+        "3 0 1 1 1 1 1 1 1 1 1 1 2 3",
+        "3 0 1 1 1 1 1 1 1 1 1 1 2 3",
+        "3 0 1 1 1 1 1 1 1 1 1 1 2 3",
+        "3 0 1 1 1 1 1 1 1 1 1 1 2 3",
+        "3 0 1 1 1 1 1 1 1 1 1 1 2 3",
+        "3 0 1 1 1 1 1 1 1 1 1 1 2 3",
+        "3 0 1 1 1 1 1 1 1 1 1 1 2 3",
+        "3 0 1 1 1 1 1 1 1 1 1 1 2 3",
+        "3 0 1 1 1 1 1 1 1 1 1 1 2 3",
+        "3 0 1 1 1 1 1 1 1 1 1 1 2 3",
+        "3 0 1 1 1 1 1 1 1 1 1 1 2 3",
+        "@1 3 0 1 1 1 1 1 1 1 1 2 3",
+        "@1 3 0 1 1 1 1 1 1 1 1 2 3",
+        "@2 3 0 1 1 1 1 1 1 2 3",
+        "@2 3 3 1 1 1 1 1 1 3 3",
+        "@4 2 2 2 2 2 2",
+        "@4 2 2 2 2 2 2"
+      ],
+      "tags": [
+        "face"
+      ]
+    },
+    "face_long": {
+      "category": "face",
+      "label": "Вытянутое лицо",
+      "anchor": {
+        "x": 8,
+        "y": 5
+      },
+      "palettes": [
+        "skin#0",
+        "skin#1",
+        "skin#2",
+        "skin#3"
+      ],
+      "rows": [
+        "@1 3 3 3 3 3 3 3 3 3 3 3 3 3 3",
+        "@1 3 0 1 1 1 1 1 1 1 1 1 1 2 3",
+        "@1 3 0 1 0 1 1 1 1 1 1 0 1 2 3",
+        "3 0 1 1 0 1 1 1 1 1 1 0 1 1 2 3",
+        "3 0 1 1 0 1 1 1 1 1 1 0 1 1 2 3",
+        "3 0 1 1 1 1 1 1 1 1 1 1 1 1 2 3",
+        "3 0 1 1 1 1 1 1 1 1 1 1 1 1 2 3",
+        "3 0 1 1 1 1 1 1 1 1 1 1 1 1 2 3",
+        "3 0 1 1 1 1 1 1 1 1 1 1 1 1 2 3",
+        "3 0 1 1 1 1 1 1 1 1 1 1 1 1 2 3",
+        "3 0 1 1 1 1 1 1 1 1 1 1 1 1 2 3",
+        "3 0 1 1 1 1 1 1 1 1 1 1 1 1 2 3",
+        "3 0 1 1 1 1 1 1 1 1 1 1 1 1 2 3",
+        "3 0 1 1 1 1 1 1 1 1 1 1 1 1 2 3",
+        "3 0 1 1 1 1 1 1 1 1 1 1 1 1 2 3",
+        "@1 3 0 1 1 1 1 1 1 1 1 1 1 2 3",
+        "@1 3 0 1 1 1 1 1 1 1 1 1 1 2 3",
+        "@1 3 0 1 1 1 1 1 1 1 1 1 1 2 3",
+        "@1 3 0 1 1 1 1 1 1 1 1 1 1 2 3",
+        "@1 2 2 2 2 2 2 2 2 2 2 2 2 2 2",
+        "@5 2 2 2 2 2 2"
+      ],
+      "tags": [
+        "face"
+      ]
+    },
+    "eyes_normal": {
+      "category": "eyes",
+      "label": "Обычные",
+      "anchor": {
+        "x": 9,
+        "y": 12
+      },
+      "mirror": true,
+      "palettes": [
+        "hair#1",
+        "eyes#0",
+        "eyes#1",
+        "eyes#2",
+        "eyes#3",
+        "skin#2",
+        "white#0",
+        "white#3",
+        "eyes#4",
+        "eyes#5"
+      ],
+      "rows": [
+        "0 0 0",
+        "",
+        "1 6 6",
+        "6 2 3",
+        "@1 6"
+      ]
+    },
+    "eyes_tired": {
+      "category": "eyes",
+      "label": "Уставшие",
+      "anchor": {
+        "x": 9,
+        "y": 12
+      },
+      "mirror": true,
+      "palettes": [
+        "hair#1",
+        "eyes#0",
+        "eyes#1",
+        "eyes#2",
+        "eyes#3",
+        "skin#2",
+        "white#0",
+        "white#3",
+        "eyes#4",
+        "eyes#5"
+      ],
+      "rows": [
+        "0 0 0",
+        "",
+        "1 6 6",
+        "6 2 3",
+        "4 3",
+        "5 5"
+      ],
+      "tags": [
+        "tired"
+      ]
+    },
+    "eyes_closed": {
+      "category": "eyes",
+      "label": "Закрытые",
+      "anchor": {
+        "x": 9,
+        "y": 12
+      },
+      "mirror": true,
+      "palettes": [
+        "hair#1",
+        "eyes#0",
+        "eyes#1",
+        "eyes#2",
+        "eyes#3",
+        "skin#2",
+        "white#0",
+        "white#3",
+        "eyes#4",
+        "eyes#5"
+      ],
+      "rows": [
+        "0 0 0",
+        "",
+        "",
+        "4 4 4"
+      ],
+      "tags": [
+        "rested"
+      ]
+    },
+    "eyes_wide": {
+      "category": "eyes",
+      "label": "Удивлённые",
+      "anchor": {
+        "x": 9,
+        "y": 12
+      },
+      "mirror": true,
+      "palettes": [
+        "hair#1",
+        "eyes#0",
+        "eyes#1",
+        "eyes#2",
+        "eyes#3",
+        "skin#2",
+        "white#0",
+        "white#3",
+        "eyes#4",
+        "eyes#5"
+      ],
+      "rows": [
+        "0 0 0",
+        "@1 6 3",
+        "1 6 2",
+        "6 2 3",
+        "@1 6"
+      ],
+      "tags": [
+        "shocked"
+      ]
+    },
+    "eyes_red": {
+      "category": "eyes",
+      "label": "Красные от кода",
+      "anchor": {
+        "x": 9,
+        "y": 12
+      },
+      "mirror": true,
+      "palettes": [
+        "hair#1",
+        "eyes#0",
+        "eyes#1",
+        "eyes#2",
+        "eyes#3",
+        "skin#2",
+        "white#0",
+        "white#3",
+        "eyes#4",
+        "eyes#5"
+      ],
+      "rows": [
+        "0 0 0",
+        "",
+        "8 8 8",
+        "9 2 9",
+        "@1 6"
+      ],
+      "tags": [
+        "burnout"
+      ]
+    },
+    "mouth_smile": {
+      "category": "mouth",
+      "label": "Улыбка",
+      "anchor": {
+        "x": 10,
+        "y": 19
+      },
+      "mirror": true,
+      "palettes": [
+        "mouth#0",
+        "mouth#1",
+        "mouth#2",
+        "mouth#3",
+        "white#0",
+        "white#3",
+        "skin#1",
+        "skin#2"
+      ],
+      "rows": [
+        "3",
+        "@1 3 3 3",
+        "@2 2 2 2"
+      ]
+    },
+    "mouth_flat": {
+      "category": "mouth",
+      "label": "Прямо",
+      "anchor": {
+        "x": 10,
+        "y": 20
+      },
+      "mirror": true,
+      "palettes": [
+        "mouth#0",
+        "mouth#1",
+        "mouth#2",
+        "mouth#3",
+        "white#0",
+        "white#3",
+        "skin#1",
+        "skin#2"
+      ],
+      "rows": [
+        "3 3 3 3 3"
+      ]
+    },
+    "mouth_grin": {
+      "category": "mouth",
+      "label": "Широкая ухмылка",
+      "anchor": {
+        "x": 9,
+        "y": 19
+      },
+      "mirror": true,
+      "palettes": [
+        "mouth#0",
+        "mouth#1",
+        "mouth#2",
+        "mouth#3",
+        "white#0",
+        "white#3",
+        "skin#1",
+        "skin#2"
+      ],
+      "rows": [
+        "3",
+        "@1 3 4 4 1",
+        "@2 2 2 . 2"
+      ]
+    },
+    "mouth_grimace": {
+      "category": "mouth",
+      "label": "Гримаса дедлайна",
+      "anchor": {
+        "x": 10,
+        "y": 19
+      },
+      "mirror": true,
+      "palettes": [
+        "mouth#0",
+        "mouth#1",
+        "mouth#2",
+        "mouth#3",
+        "white#0",
+        "white#3",
+        "skin#1",
+        "skin#2"
+      ],
+      "rows": [
+        "3 . . . 3",
+        "@1 3 2 3",
+        "@1 7 7"
+      ]
+    },
+    "hair_short": {
+      "category": "hair",
+      "label": "Короткая",
+      "anchor": {
+        "x": 8,
+        "y": 3
+      },
+      "mirror": true,
+      "palettes": [
+        "skin#0",
+        "skin#1",
+        "skin#2",
+        "skin#3",
+        "hair#0",
+        "hair#1",
+        "hair#2",
+        "hair#3"
+      ],
+      "rows": [
+        "@2 7 7 7 7 7 7",
+        "@2 7 4 5 5 6 7",
+        "@2 7 4 5 5 6 7",
+        "@2 7 4 5 5 6 7",
+        "@1 7 4 5 7 7 7 7",
+        "7 4 7 7",
+        "7 7 . . 7 7",
+        "7 7",
+        "7 7"
+      ],
+      "tags": [
+        "short"
+      ]
+    },
+    "hair_buzz": {
+      "category": "hair",
+      "label": "Ёжик",
+      "anchor": {
+        "x": 8,
+        "y": 4
+      },
+      "mirror": true,
+      "palettes": [
+        "skin#0",
+        "skin#1",
+        "skin#2",
+        "skin#3",
+        "hair#0",
+        "hair#1",
+        "hair#2",
+        "hair#3"
+      ],
+      "rows": [
+        "@1 7 7 7 7 7 7 7",
+        "@1 7 4 5 5 5 6 7",
+        "@1 7 7 7 7 7 7 7",
+        "7",
+        "7"
+      ],
+      "tags": [
+        "buzz"
+      ]
+    },
+    "hair_curly": {
+      "category": "hair",
+      "label": "Кудри",
+      "anchor": {
+        "x": 8,
+        "y": 2
+      },
+      "mirror": true,
+      "palettes": [
+        "skin#0",
+        "skin#1",
+        "skin#2",
+        "skin#3",
+        "hair#0",
+        "hair#1",
+        "hair#2",
+        "hair#3"
+      ],
+      "rows": [
+        "@1 7 7 7 7 7 7 7",
+        "@1 7 4 5 5 5 6 7",
+        "7 4 5 5 5 5 5 6",
+        "@1 7 4 5 5 5 6 7",
+        "@1 7 7 7 7 7 7 7",
+        "7",
+        "@1 7 7",
+        "@3 7 7",
+        "@5 7"
+      ],
+      "tags": [
+        "curly"
+      ]
+    },
+    "hair_long": {
+      "category": "hair",
+      "label": "Длинные",
+      "anchor": {
+        "x": 6,
+        "y": 3
+      },
+      "mirror": true,
+      "palettes": [
+        "skin#0",
+        "skin#1",
+        "skin#2",
+        "skin#3",
+        "hair#0",
+        "hair#1",
+        "hair#2",
+        "hair#3"
+      ],
+      "rows": [
+        "@3 7 7 7 7 7 7 7",
+        "@3 7 4 5 5 5 6 7",
+        "@3 7 4 5 5 5 6 7",
+        "@3 7 4 5 5 5 6 7",
+        "@3 7 4 5 5 5 6 7",
+        "@2 7 4 7 7 7 7 7",
+        "@2 7 7",
+        "@2 7 7",
+        "@2 7 7",
+        "@1 7 4 7",
+        "@1 7 4 7",
+        "@1 7 4 7",
+        "@1 7 4 7",
+        "@1 7 4 7",
+        "@1 7 4 7",
+        "7 4 6 7",
+        "7 4 6 7",
+        "7 4 6 7",
+        "7 4 6 7",
+        "7 4 6 7",
+        "7 4 6 7",
+        "7 7 7 7"
+      ],
+      "tags": [
+        "long"
+      ]
+    },
+    "hair_bald": {
+      "category": "hair",
+      "label": "Лысый",
+      "anchor": {
+        "x": 0,
+        "y": 0
+      },
+      "palettes": [
+        "skin#0",
+        "skin#1",
+        "skin#2",
+        "skin#3",
+        "hair#0",
+        "hair#1",
+        "hair#2",
+        "hair#3"
+      ],
+      "rows": [],
+      "tags": [
+        "bald"
+      ]
+    },
+    "hair_manbun": {
+      "category": "hair",
+      "label": "Man bun",
+      "anchor": {
+        "x": 8,
+        "y": 1
+      },
+      "palettes": [
+        "skin#0",
+        "skin#1",
+        "skin#2",
+        "skin#3",
+        "hair#0",
+        "hair#1",
+        "hair#2",
+        "hair#3"
+      ],
+      "rows": [
+        "@5 7 7 7",
+        "@5 7 4 7",
+        "@5 7 4 7",
+        "@2 7 7 7 5 6 7",
+        "@2 7 4 5 5 6 7",
+        "@2 7 4 5 5 6 7",
+        "@1 7 7 7 7 7 7 7",
+        "7",
+        "7",
+        "7"
+      ],
+      "tags": [
+        "manbun"
+      ]
+    },
+    "hat_none": {
+      "category": "hat",
+      "label": "Без шапки",
+      "anchor": {
+        "x": 0,
+        "y": 0
+      },
+      "palettes": [
+        "hat#0",
+        "hat#1",
+        "hat#2",
+        "hat#3"
+      ],
+      "rows": [],
+      "tags": [
+        "none"
+      ]
+    },
+    "hat_beanie": {
+      "category": "hat",
+      "label": "Шапка-бини",
+      "anchor": {
+        "x": 7,
+        "y": 2
+      },
+      "mirror": true,
+      "palettes": [
+        "hat#0",
+        "hat#1",
+        "hat#2",
+        "hat#3"
+      ],
+      "rows": [
+        "@3 3 3",
+        "@1 1 1 1 1 1 1 1 1",
+        "@1 1 0 0 0 0 0 0 0",
+        "@1 1 1 1 1 1 1 1 1",
+        "@1 1 1 1 1 1 1 1 1",
+        "2 2 2 2 2 2 2 2 2"
+      ],
+      "tags": [
+        "warm"
+      ]
+    },
+    "hat_hood": {
+      "category": "hat",
+      "label": "Капюшон",
+      "anchor": {
+        "x": 6,
+        "y": 2
+      },
+      "mirror": true,
+      "excludes": [
+        "hair"
+      ],
+      "palettes": [
+        "hat#0",
+        "hat#1",
+        "hat#2",
+        "hat#3",
+        "skin#1"
+      ],
+      "rows": [
+        "@2 1 1 1 1 1 1 1 1",
+        "@2 1 0 0 0 0 0 0 0",
+        "@2 1 1 1 1 1 1 1 1",
+        "@2 1 1 1 1 1 1 1 1",
+        "@2 3 3 3 3 3 3 3 3",
+        "@1 2 2 2 2 2 2 2 2 2",
+        "2 1",
+        "2 1",
+        "2 1",
+        "2 1",
+        "2 1",
+        "2 1",
+        "2 1",
+        "2",
+        "2",
+        "2",
+        "2",
+        "2",
+        "2"
+      ],
+      "tags": [
+        "hood",
+        "cozy"
+      ]
+    },
+    "hat_cap": {
+      "category": "hat",
+      "label": "Кепка",
+      "anchor": {
+        "x": 5,
+        "y": 3
+      },
+      "palettes": [
+        "hat#0",
+        "hat#1",
+        "hat#2",
+        "hat#3"
+      ],
+      "rows": [
+        "@5 1 1 0 1 1 1",
+        "@5 1 1 1 1 1 1",
+        "@5 1 1 1 1 1 1",
+        "@5 1 1 1 1 1 1",
+        "@4 2 2 2 2 2 2 2",
+        "3 3 3 3 3 3",
+        "2 2 2 2 2 2"
+      ],
+      "tags": [
+        "swag"
+      ]
+    },
+    "hat_vr": {
+      "category": "hat",
+      "label": "VR-шлем",
+      "anchor": {
+        "x": 7,
+        "y": 13
+      },
+      "mirror": true,
+      "palettes": [
+        "hat#0",
+        "hat#1",
+        "hat#2",
+        "hat#3",
+        "#39506b"
+      ],
+      "rows": [
+        "1 0 0 0 0 0 0 0 0",
+        "1 1 4 4 4 4 4 4 1",
+        "1 1 4 4 4 4 4 4 1",
+        "1 3 3 3 3 3 3 3 3"
+      ],
+      "tags": [
+        "vr",
+        "metaverse"
+      ]
+    },
+    "clothing_none": {
+      "category": "clothing",
+      "label": "Как есть",
+      "anchor": {
+        "x": 0,
+        "y": 0
+      },
+      "palettes": [
+        "cloth#0",
+        "cloth#1",
+        "cloth#2",
+        "cloth#3"
+      ],
+      "rows": [],
+      "tags": [
+        "none",
+        "naked"
+      ]
+    },
+    "clothing_hoodie": {
+      "category": "clothing",
+      "label": "Худи",
+      "anchor": {
+        "x": 4,
+        "y": 25
+      },
+      "mirror": true,
+      "palettes": [
+        "cloth#0",
+        "cloth#1",
+        "cloth#2",
+        "cloth#3",
+        "skin#2"
+      ],
+      "rows": [
+        "@6 3 2 2 2 2 2",
+        "@5 3 1 1 1 1 1 1",
+        "@4 3 0 2 1 1 1 1 1",
+        "@3 3 0 1 2 1 1 1 1 1",
+        "@2 3 0 1 1 2 1 1 1 1 1",
+        "@1 3 0 1 1 1 2 1 1 1 1 1",
+        "3 0 1 1 1 1 1 1 1 1 1 1"
+      ],
+      "tags": [
+        "hoodie",
+        "startup"
+      ]
+    },
+    "clothing_tshirt": {
+      "category": "clothing",
+      "label": "Футболка",
+      "anchor": {
+        "x": 5,
+        "y": 25
+      },
+      "mirror": true,
+      "palettes": [
+        "cloth#0",
+        "cloth#1",
+        "cloth#2",
+        "cloth#3"
+      ],
+      "rows": [
+        "@6 3 3 3 3 3",
+        "@5 3 1 1 1 1 1",
+        "@4 3 1 1 1 1 1 1",
+        "@3 3 1 1 0 0 1 1 1",
+        "@2 3 1 1 1 0 0 1 1 1",
+        "@1 3 1 1 1 1 1 1 1 1 1",
+        "3 1 1 1 1 1 1 1 1 1 1"
+      ],
+      "tags": [
+        "merch"
+      ]
+    },
+    "clothing_shirt": {
+      "category": "clothing",
+      "label": "Корпоративная рубашка",
+      "anchor": {
+        "x": 4,
+        "y": 25
+      },
+      "mirror": true,
+      "palettes": [
+        "cloth#0",
+        "cloth#1",
+        "cloth#2",
+        "cloth#3",
+        "hat#2"
+      ],
+      "rows": [
+        "@6 2 0 1 1 1 1",
+        "@5 2 0 3 0 0 0 3",
+        "@4 2 0 0 0 3 4 4 0",
+        "@3 2 0 0 0 0 0 4 4 0",
+        "@2 2 0 0 0 0 0 0 4 4 0",
+        "@1 2 0 0 0 0 0 0 0 4 4 0",
+        "2 0 0 0 0 0 0 0 0 4 4 0"
+      ],
+      "tags": [
+        "corp",
+        "tie"
+      ]
+    },
+    "accessory_none": {
+      "category": "accessory",
+      "label": "Без аксессуара",
+      "anchor": {
+        "x": 0,
+        "y": 0
+      },
+      "palettes": [
+        "accessory#0",
+        "accessory#1",
+        "accessory#2",
+        "accessory#3"
+      ],
+      "rows": [],
+      "tags": [
+        "none"
+      ]
+    },
+    "accessory_glasses": {
+      "category": "accessory",
+      "label": "Очки",
+      "anchor": {
+        "x": 7,
+        "y": 14
+      },
+      "mirror": true,
+      "palettes": [
+        "accessory#0",
+        "accessory#1",
+        "accessory#2",
+        "accessory#3",
+        "#39506b",
+        "#9aa4b2"
+      ],
+      "rows": [
+        "@1 5 5 5 5 5 5",
+        "5 . 4 4 4 4 . 5",
+        "@1 5 5 5 5 5 5"
+      ],
+      "tags": [
+        "glasses",
+        "smart"
+      ]
+    },
+    "accessory_headphones": {
+      "category": "accessory",
+      "label": "Наушники",
+      "anchor": {
+        "x": 6,
+        "y": 4
+      },
+      "mirror": true,
+      "palettes": [
+        "accessory#0",
+        "accessory#1",
+        "accessory#2",
+        "accessory#3"
+      ],
+      "rows": [
+        "@5 0 0 1 1 1",
+        "@5 1 1 1 1 1",
+        "@5 1 1 1 1 1",
+        "@1 1",
+        "@1 1",
+        "@1 1",
+        "@1 1",
+        "@1 1",
+        "2 1",
+        "2 1",
+        "2 1",
+        "2 1",
+        "2 1"
+      ],
+      "tags": [
+        "audio"
+      ]
+    }
+  },
+  "extendedPack": {
+    "accessory_medal": {
+      "category": "accessory",
+      "label": "Медаль «Золотой фонда»",
+      "anchor": {
+        "x": 12,
+        "y": 26
+      },
+      "palettes": [
+        "accessory#0",
+        "accessory#1",
+        "accessory#2",
+        "accessory#3"
+      ],
+      "rows": [
+        "@1 3",
+        "d d",
+        "d d"
+      ],
+      "tags": [
+        "medal"
+      ],
+      "extended": true
+    }
+  }
+}

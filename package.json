@@ -15,7 +15,18 @@
     "build": "npm run build -w packages/shared && npm run build -w packages/server && npm run build -w packages/client && npm run build -w packages/bot && npm run build -w packages/sim",
     "test": "npm run build -w packages/shared && npm run test -w packages/shared && npm run test -w packages/sim",
     "simulate": "npm run build -w packages/shared && tsx packages/sim/src/simulate.ts",
-    "lint": "npm run build -w packages/shared && tsc -p packages/shared && tsc -p packages/server && tsc -p packages/client && tsc -p packages/bot && tsc -p packages/sim"
+    "lint": "npm run build -w packages/shared && tsc -p packages/shared && tsc -p packages/server && tsc -p packages/client && tsc -p packages/bot && tsc -p packages/sim && tsc -p tools/pixelgen",
+    "pixelgen:build": "npm run build -w packages/shared",
+    "pixelgen:compile": "npm run pixelgen:build && tsx tools/pixelgen/src/index.ts compile --",
+    "pixelgen:validate": "npm run pixelgen:build && tsx tools/pixelgen/src/index.ts validate --",
+    "pixelgen:generate": "npm run pixelgen:build && tsx tools/pixelgen/src/index.ts generate --",
+    "pixelgen:render": "npm run pixelgen:build && tsx tools/pixelgen/src/index.ts render --",
+    "pixelgen:repro": "npm run pixelgen:build && tsx tools/pixelgen/src/index.ts repro --",
+    "pixelgen:prompt": "npm run pixelgen:build && tsx tools/pixelgen/src/index.ts prompt --",
+    "pixelgen:import": "npm run pixelgen:build && tsx tools/pixelgen/src/index.ts import --",
+    "pixelgen:export": "npm run pixelgen:build && tsx tools/pixelgen/src/index.ts export --",
+    "pixelgen:audit": "npm run pixelgen:build && tsx tools/pixelgen/src/index.ts audit --",
+    "pixelgen:demo": "npm run pixelgen:build && tsx tools/pixelgen/src/index.ts generate --limit=48 --scale=6 --sheet"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",

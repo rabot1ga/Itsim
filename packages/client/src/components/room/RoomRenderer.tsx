@@ -2,6 +2,8 @@ import React from 'react';
 import { LayerManifest, GeneticTraits, GeneticsConfig } from '@itsim/shared';
 import { Composition, buildLayerStack } from './layers';
 import { ProceduralAvatar } from './ProceduralAvatar';
+import { PixelAvatar } from './PixelAvatar';
+import { PixelAvatarData } from './pixelAvatar';
 
 /**
  * Layered procedural room — DESIGN.md sections 1-2.
@@ -15,7 +17,9 @@ export const RoomRenderer: React.FC<{
   geneticsConfig: GeneticsConfig;
   housingLevel: number;
   composition: Composition;
-}> = ({ roomManifest, avatarManifest, traits, geneticsConfig, housingLevel, composition }) => {
+  /** when a pixel pack is loaded, it replaces the layered avatar in the room */
+  pixelAvatar?: PixelAvatarData | null;
+}> = ({ roomManifest, avatarManifest, traits, geneticsConfig, housingLevel, composition, pixelAvatar }) => {
   const layers = buildLayerStack(roomManifest, composition, traits, geneticsConfig);
 
   return (
@@ -33,12 +37,16 @@ export const RoomRenderer: React.FC<{
 
       {/* The avatar stands in front of the desk */}
       <div className="absolute left-[8%] bottom-[16%] w-[34%]">
-        <ProceduralAvatar
-          manifest={avatarManifest}
-          traits={traits}
-          geneticsConfig={geneticsConfig}
-          compositionOverrides={composition.avatarAccessory ? { accessory: composition.avatarAccessory } : undefined}
-        />
+        {pixelAvatar ? (
+          <PixelAvatar data={pixelAvatar} scale={8} className="rounded-lg" background="transparent" />
+        ) : (
+          <ProceduralAvatar
+            manifest={avatarManifest}
+            traits={traits}
+            geneticsConfig={geneticsConfig}
+            compositionOverrides={composition.avatarAccessory ? { accessory: composition.avatarAccessory } : undefined}
+          />
+        )}
       </div>
 
       {/* Housing level badge */}

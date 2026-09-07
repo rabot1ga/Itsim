@@ -240,12 +240,22 @@ export const BalanceSchema = z.object({
     maxLevel: z.number().default(100),
   })),
 
-  // Networking tuning (communication XP, reputation gain, energy cost)
+  // Networking tuning (communication XP, reputation gain, energy cost,
+  // daily cap — soft skills must not be farmable without limit)
   networking: z.object({
     commXp: z.number().default(5),
     repGain: z.number().default(0.5),
     energy: z.number().default(2),
-  }).default({ commXp: 5, repGain: 0.5, energy: 2 }),
+    dailyCap: z.number().int().min(1).default(1),
+    leadershipPerDay: z.number().min(0).default(0),
+    repFromPromotion: z.number().min(0).default(0),
+  }).default({ commXp: 5, repGain: 0.5, energy: 2, dailyCap: 1, leadershipPerDay: 0, repFromPromotion: 0 }),
+
+  // Soft-skill saturation: above this level XP trickles (people skills saturate)
+  softSkills: z.object({
+    saturatesAt: z.number().int().min(1).default(30),
+    xpDamping: z.number().min(0).max(1).default(0.5),
+  }).default({ saturatesAt: 30, xpDamping: 0.5 }),
 
   // Event frequency
   eventChanceOnboarding: z.number().default(0.20),
@@ -261,6 +271,12 @@ export const BalanceSchema = z.object({
     energyBonus: z.number(),
     motivationBonus: z.number(),
     reputationBonus: z.number(),
+    /** monthly income required to move in (lifestyle has an entry fee) */
+    incomeGateMult: z.number().min(0).default(0),
+    /** how many monthly payments must be sitting in the account to move */
+    saveMult: z.number().min(1).default(5),
+    /** how many days that cushion must be held (savings habit, not one lucky month) */
+    saveStreakDays: z.number().int().min(0).default(14),
   })),
 
   // Side jobs (non-IT gigs — courier, barista, etc.)
@@ -285,6 +301,45 @@ export const BalanceSchema = z.object({
     volatility: z.number().min(0).max(1),
     electricityPerHashrate: z.number().min(0),
   }).default({ priceBase: 40, volatility: 0.5, electricityPerHashrate: 0.5 }),
+
+  // Career gates (v2.1): data-driven promotion ladder.
+  // skill = level of the MAIN skill (depth); total = sum over all skills (breadth).
+  careerGates: z.array(z.object({
+    grade: z.enum(['intern', 'junior', 'middle', 'senior', 'teamlead', 'architect', 'cto']),
+    label: z.string().optional(),
+    skill: z.number().int().min(0),
+    comm: z.number().int().min(0),
+    rep: z.number().int().min(0),
+    total: z.number().int().min(0).default(0),
+    branchTotal: z.number().int().min(0).optional(),
+    english: z.number().int().min(0).optional(),
+    leadership: z.number().int().min(0).optional(),
+    minDaysInGrade: z.number().int().min(1).default(7),
+    competition: z.number().int().min(1).default(1),
+    special: z.boolean().default(false),
+    /** how often the board meets for a special (non-promotion) election */
+    electionIntervalDays: z.number().int().min(1).default(60),
+  })).optional(),
+
+  // Daily living costs (ТЗ 5.6) — the counterweight to high late-game salaries
+  livingCosts: z.object({
+    foodBase: z.number().min(0).default(350),
+    foodBroke: z.number().min(0).default(180),
+    perHousingLevel: z.number().min(0).default(0),
+    perCareerIndex: z.number().min(0).default(0),
+    subscriptionsMonthly: z.number().min(0).default(0),
+    lifestyleRefundMultiplier: z.number().min(0).default(0),
+    wealthTaxMonthly: z.number().min(0).default(0),
+    wealthTaxThreshold: z.number().min(0).default(500000),
+    wealthTaxRate: z.number().min(0).max(1).default(0),
+    wealthTaxCap: z.number().min(0).default(0),
+  }).optional(),
+
+  // Career endings (ТЗ «Финалы») — terminal states reached by living conditions
+  endings: z.object({
+    burnoutDays: z.number().int().min(1).default(7),
+    brokeDaysToQuit: z.number().int().min(1).default(15),
+  }).optional(),
 });
 
 export type BalanceConfig = z.infer<typeof BalanceSchema>;
@@ -439,3 +494,83 @@ export const InterviewQuestionSchema = z.object({
 });
 
 export const InterviewQuestionsFileSchema = z.array(InterviewQuestionSchema).min(3);
+
+// ---- Pixel-art avatar (docs/pixel-art.md) ----
+
+const PixelCategorySchema = z.enum(['face', 'eyes', 'mouth', 'hair', 'hat', 'clothing', 'accessory']);
+const HexColor = z
+  .string()
+  .regex(/^#[0-9a-fA-F]{6}$/, 'must be #rrggbb');
+
+export const PixelDefSchema = z.object({
+  x: z.number().int(),
+  y: z.number().int(),
+  /** "palette#index", "palette#role" or "#rrggbb" — resolvability is checked by the validator */
+  c: z.string().min(1),
+});
+
+export const PixelComponentSchema = z.object({
+  category: PixelCategorySchema,
+  label: z.string().min(1),
+  anchor: z.object({ x: z.number().int(), y: z.number().int() }).default({ x: 0, y: 0 }),
+  mirror: z.boolean().optional(),
+  excludes: z.array(PixelCategorySchema).optional(),
+  pixels: z.array(PixelDefSchema).default([]),
+  tags: z.array(z.string()).optional(),
+  extended: z.boolean().optional(),
+});
+
+export const PixelArtFileSchema = z.object({
+  format: z.number().int().default(1),
+  $schema: z.string().optional(),
+  sourceChecksum: z.string().regex(/^[0-9a-f]{64}$/).optional(),
+  canvas: z.object({ width: z.number().int().positive(), height: z.number().int().positive() }),
+  layout: z.object({
+    eyes_y: z.number().int().min(0),
+    mouth_y: z.number().int().min(0),
+    symmetry_axis_x: z.number(),
+    head: z.object({ x: z.number(), y: z.number(), w: z.number(), h: z.number() }).optional(),
+  }),
+  palettes: z.record(z.string(), z.array(HexColor)),
+  layer_order: z.array(PixelCategorySchema),
+  components: z.record(z.string(), PixelComponentSchema),
+});
+
+/** Authored form: components may use the `rows` shorthand instead of pixels */
+export const PixelArtSourceFileSchema = PixelArtFileSchema.extend({
+  components: z.record(
+    z.string(),
+    PixelComponentSchema.partial({ pixels: true }).extend({
+      rows: z.array(z.string()).optional(),
+      palettes: z.array(z.string()).optional(),
+    })
+  ),
+});
+
+export const PixelColorSchemeSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().optional(),
+  palettes: z.record(z.string(), z.array(HexColor)),
+  tags: z.array(z.string()).optional(),
+  /** which genetic traits should get this recolor in-game */
+  match: z
+    .object({
+      hairColor: z.array(z.string()).optional(),
+      skinTone: z.array(z.string()).optional(),
+    })
+    .optional(),
+});
+
+export const PixelGeneratorConfigSchema = z.object({
+  format: z.number().int().default(1),
+  categories: z.array(z.object({
+    category: PixelCategorySchema,
+    required: z.boolean().default(false),
+    noneId: z.string().optional(),
+    variants: z.array(z.string().min(1)),
+    weights: z.record(z.string(), z.number().min(0)).optional(),
+  })),
+  colorSchemes: z.array(PixelColorSchemeSchema).default([]),
+});
+
+export type PixelArtFileInput = z.input<typeof PixelArtFileSchema>;
