@@ -110,6 +110,8 @@ export interface SpriteMeta {
   kind: 'floor' | 'wall' | 'char' | 'flat';
   tiles?: [number, number];
   tilesW?: number;
+  /** shading ramps that may be recoloured, by role (see recolor.ts) */
+  roles?: Record<string, string[]>;
 }
 
 export interface PlacedFloorItem {
@@ -122,6 +124,8 @@ export interface PlacedFloorItem {
   flip?: boolean;
   /** lift the sprite off the floor (e.g. something standing on a desk) */
   lift?: number;
+  /** role → colour overrides for this instance */
+  colours?: Record<string, string>;
 }
 
 export interface PlacedWallItem {
@@ -132,6 +136,8 @@ export interface PlacedWallItem {
   /** pixels between the wall top and the sprite top */
   top: number;
   flip?: boolean;
+  /** role → colour overrides for this instance */
+  colours?: Record<string, string>;
 }
 
 export type PlacedItem = PlacedFloorItem | PlacedWallItem;
@@ -145,6 +151,8 @@ export interface DrawCall {
   flip: boolean;
   /** painter's order: bigger is drawn later */
   depth: number;
+  /** role → colour overrides, applied by the renderer */
+  colours?: Record<string, string>;
 }
 
 /**
@@ -178,6 +186,7 @@ export function layout(
         flip: item.flip ?? item.side === 'left',
         // walls are always behind everything standing on the floor
         depth: -1000 + item.along,
+        colours: item.colours,
       });
       continue;
     }
@@ -193,6 +202,7 @@ export function layout(
       h: meta.h,
       flip: item.flip ?? false,
       depth: item.gx + fw + item.gy + fd + (item.kind === 'flat' ? -0.5 : 0),
+      colours: item.colours,
     });
   }
 

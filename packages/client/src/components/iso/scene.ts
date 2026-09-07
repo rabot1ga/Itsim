@@ -1,4 +1,6 @@
 import { PlacedItem, RoomSize, WallSide } from './geometry';
+import { FLOOR_STYLES, FloorStyle, WALL_PAINTS, WallPaint, floorsFor, paintsFor } from './styles';
+import { rolls } from './palette';
 
 /**
  * Builds the isometric room scene from player state.
@@ -29,60 +31,26 @@ export interface RoomPalette {
   floorB: string;
   floorLine: string;
   skirting: string;
+  floorPattern: FloorStyle['pattern'];
+  /** ids of the chosen finishes, so the editor can show what is applied */
+  paintId: string;
+  floorId: string;
 }
 
-const PALETTES: RoomPalette[] = [
-  // 0 — общага: cold concrete, tired lino
-  {
-    wallLeft: '#2b3140',
-    wallRight: '#343b4c',
-    wallTrim: '#454d61',
-    floorA: '#6b5a46',
-    floorB: '#75634d',
-    floorLine: '#584a3a',
-    skirting: '#232936',
-  },
-  // 1 — однушка: warmer paint, honest parquet
-  {
-    wallLeft: '#2f3646',
-    wallRight: '#3a4254',
-    wallTrim: '#505b72',
-    floorA: '#8a6238',
-    floorB: '#95693c',
-    floorLine: '#6d4d2c',
-    skirting: '#262c39',
-  },
-  // 2 — центр: soft blue-grey, light oak
-  {
-    wallLeft: '#333c4f',
-    wallRight: '#3f4a60',
-    wallTrim: '#55617a',
-    floorA: '#a2794f',
-    floorB: '#ae8357',
-    floorLine: '#7d5b39',
-    skirting: '#28303e',
-  },
-  // 3 — ипотека: deep evening walls, dark walnut
-  {
-    wallLeft: '#2c3547',
-    wallRight: '#374258',
-    wallTrim: '#4e5c76',
-    floorA: '#7a5535',
-    floorB: '#845c3a',
-    floorLine: '#5e4128',
-    skirting: '#232b3a',
-  },
-  // 4 — пентхаус: near-black walls, pale designer floor
-  {
-    wallLeft: '#252c3b',
-    wallRight: '#2f3849',
-    wallTrim: '#5b6a86',
-    floorA: '#9d8b74',
-    floorB: '#a9977f',
-    floorLine: '#7a6a57',
-    skirting: '#1d2431',
-  },
-];
+function paletteFrom(paint: WallPaint, floor: FloorStyle): RoomPalette {
+  return {
+    wallLeft: paint.left,
+    wallRight: paint.right,
+    wallTrim: paint.trim,
+    skirting: paint.skirting,
+    floorA: floor.a,
+    floorB: floor.b,
+    floorLine: floor.line,
+    floorPattern: floor.pattern,
+    paintId: paint.id,
+    floorId: floor.id,
+  };
+}
 
 const SIZES: RoomSize[] = [
   { w: 6, d: 6 },
@@ -98,7 +66,16 @@ export interface ScenePlayer {
   skills?: Record<string, { level?: number }>;
   achievements?: string[];
   petFedToday?: boolean;
+  genetics?: { seed?: string };
+  telegramId?: number | string;
+  /** what the player changed by hand in the room editor */
+  room?: { paint?: string; floor?: string; wallColor?: string; slots?: Record<string, string | null> };
   job?: unknown;
+}
+
+/** Everything the room is generated from, in one string. */
+export function roomSeed(player: ScenePlayer): string {
+  return player.genetics?.seed ?? String(player.telegramId ?? 'player');
 }
 
 interface Allocator {
@@ -157,46 +134,97 @@ export function buildRoomScene(player: ScenePlayer): RoomScene {
   const a: Allocator = { size, taken: new Array(size.w * size.d).fill(false), items: [] };
   const { w, d } = size;
 
+  // Finishes: the player's own choice wins, otherwise the seed picks from the
+  // palettes this housing level can afford.
+  const seed = roomSeed(player);
+  const pick = rolls(`${seed}:room`);
+  const paintPool = paintsFor(level);
+  const floorPool = floorsFor(level);
+  const paint = WALL_PAINTS.find((p) => p.id === player.room?.paint) ?? paintPool[pick(paintPool.length)];
+  const floor = FLOOR_STYLES.find((f) => f.id === player.room?.floor) ?? floorPool[pick(floorPool.length)];
+
+  /**
+   * Layout style. Two flats with the same furniture should still not be the
+   * same picture, so the seed decides whether the bed lives on the left wall
+   * with the desk on the right, or the other way round.
+   */
+  const swapped = pick(2) === 1;
+  /** anchor helper: `bedSide` cells hug the wall the bed is on */
+  const mirror = ([gx, gy]: [number, number]): [number, number] =>
+    swapped ? [Math.max(0, Math.min(size.w - 1, gy)), Math.max(0, Math.min(size.d - 1, gx))] : [gx, gy];
+  const at = (...cells: Array<[number, number]>): Array<[number, number]> => cells.map(mirror);
+
   // ── the workplace: desk against the back-right wall ─────────────────────
   const bigDesk = hasAny('gaming_pc', 'macbook');
   if (bigDesk) {
-    place(a, 'desk_dual', [3, 2], [[1, 0], [2, 0], [0, 0]]);
+    place(a, 'desk_dual', swapped ? [2, 3] : [3, 2], at([1, 0], [2, 0], [0, 0]));
   } else {
-    place(a, 'desk_wood', [2, 1], [[1, 0], [2, 0], [0, 0]]);
+    place(a, 'desk_wood', swapped ? [1, 2] : [2, 1], at([1, 0], [2, 0], [0, 0]));
   }
-  if (hasAny('gaming_pc', 'mining_gpu')) place(a, 'pc_tower', [1, 1], [[w - 2, 0], [4, 0], [w - 1, 1]]);
-  if (has('macbook')) place(a, 'laptop_table', [1, 1], [[4, 1], [w - 2, 2]]);
+  if (hasAny('gaming_pc', 'mining_gpu')) place(a, 'pc_tower', [1, 1], at([w - 2, 0], [4, 0], [w - 1, 1]));
+  if (has('macbook')) place(a, 'laptop_table', [1, 1], at([4, 1], [w - 2, 2]));
 
   const chair = hasAny('gaming_chair', 'herman_miller')
     ? 'chair_gaming'
     : has('office_chair')
       ? 'chair_office'
       : null;
-  if (chair) place(a, chair, [1, 1], [[2, 2], [1, 2], [3, 2]]);
+  if (chair) place(a, chair, [1, 1], at([2, 2], [1, 2], [3, 2]));
 
   // ── living: bed along the back-left wall, then comfort by housing level ──
-  place(a, 'bed', [2, 3], [[0, 2], [0, 1], [0, 3]]);
-  if (level >= 1) place(a, 'nightstand', [1, 1], [[0, 1], [0, 0], [1, 1]]);
-  if (level >= 1) place(a, 'fridge', [1, 1], [[w - 1, 0], [w - 1, 1]]);
+  place(a, 'bed', swapped ? [3, 2] : [2, 3], at([0, 2], [0, 1], [0, 3]));
+  if (level >= 1) place(a, 'nightstand', [1, 1], at([0, 1], [0, 0], [1, 1]));
+  if (level >= 1) place(a, 'fridge', [1, 1], at([w - 2, 0], [w - 2, 1], [w - 3, 0]));
   if (level >= 2) place(a, 'tv_stand', [2, 1], [[1, d - 1], [2, d - 1]]);
   if (level >= 2) place(a, 'coffee_table', [1, 1], [[w - 3, d - 2], [3, d - 2]]);
   if (level >= 3) place(a, 'sofa', [2, 1], [[w - 3, d - 1], [w - 2, d - 1]]);
-  if (level >= 2) place(a, 'armchair', [1, 1], [[w - 1, d - 2], [w - 1, d - 3]]);
-  if (level >= 3) place(a, 'palm', [1, 1], [[0, d - 1], [1, d - 1]]);
-  if (level >= 4) place(a, 'arcade', [1, 1], [[w - 1, 2], [w - 1, 3]]);
-  if (level >= 1) place(a, 'floor_lamp', [1, 1], [[w - 1, d - 1], [0, d - 1]]);
+  if (level >= 2) place(a, 'armchair', [1, 1], [[w - 2, d - 2], [w - 2, d - 3], [w - 3, d - 2]]);
+  if (level >= 3) place(a, 'palm', [1, 1], [[1, d - 2], [1, d - 1], [w - 2, d - 2]]);
+  if (level >= 4) place(a, 'arcade', [1, 1], at([w - 2, 3], [w - 2, 4], [w - 3, 3]));
+  if (level >= 1) place(a, 'floor_lamp', [1, 1], [[w - 2, d - 2], [1, d - 2], [w - 2, d - 3]]);
   if (level <= 1) place(a, 'boxes', [1, 1], [[3, d - 1], [2, d - 2]]);
   if (level === 0) place(a, 'rug_rolled', [2, 1], [[2, d - 2], [1, d - 2]]);
   if (level >= 2) place(a, 'beanbag', [1, 1], [[w - 2, 2], [w - 2, 3]]);
 
   // ── what the player earned ──────────────────────────────────────────────
-  if (totalLevels >= 20) place(a, 'bookshelf', [1, 1], [[w - 1, 0], [w - 2, 0], [w - 1, 1]]);
+  if (totalLevels >= 20) place(a, 'bookshelf', [1, 1], at([w - 2, 0], [w - 3, 0], [w - 2, 1]));
   if (totalLevels >= 40) place(a, 'whiteboard', [2, 1], [[w - 2, 1], [w - 3, 0]]);
-  if (has('desk_plant')) place(a, 'plant_monstera', [1, 1], [[w - 1, d - 1], [0, d - 1], [w - 2, d - 1]]);
-  if (hasAny('mining_rig', 'mining_asic')) place(a, 'server_rack', [1, 1], [[w - 1, 3], [w - 1, 2]]);
-  const pet = [...items].some((id) => id.startsWith('pet_') && !id.match(/^pet_(bow|glasses|crown)$/));
-  if (pet) place(a, 'pet_bed', [1, 1], [[2, d - 2], [1, d - 2], [3, d - 2]]);
-  if (level === 0 && !pet) place(a, 'box_open', [1, 1], [[2, d - 2], [3, d - 2]]);
+  if (has('desk_plant')) place(a, 'plant_monstera', [1, 1], [[w - 2, d - 2], [1, d - 2], [w - 2, d - 3]]);
+  if (hasAny('mining_rig', 'mining_asic')) place(a, 'server_rack', [1, 1], at([w - 2, 3], [w - 2, 2], [w - 3, 3]));
+  // ── the pet itself, next to its bed ─────────────────────────────────────
+  const PET_SPRITES: Record<string, string> = {
+    pet_cat: 'pet_cat',
+    pet_dog: 'pet_dog',
+    pet_bulldog: 'pet_bulldog',
+    pet_cactus: 'pet_cactus',
+    pet_robo: 'pet_robo',
+    pet_spider: 'pet_spider',
+  };
+  const petId = [...items].find((id) => PET_SPRITES[id]);
+  if (petId) {
+    place(a, 'pet_bed', [1, 1], [[2, d - 2], [1, d - 2], [3, d - 2]]);
+    place(a, PET_SPRITES[petId], [1, 1], [[3, d - 2], [2, d - 1], [4, d - 2], [1, d - 1]]);
+    if (petId === 'pet_cat') place(a, 'cat_tower', [1, 1], [[0, d - 2], [w - 1, d - 3]]);
+  }
+  if (level === 0 && !petId) place(a, 'box_open', [1, 1], [[2, d - 2], [3, d - 2]]);
+
+  // ── the rest of a home: kitchen, storage, the odd hobby ─────────────────
+  if (level >= 1) place(a, 'wardrobe', swapped ? [1, 2] : [2, 1], at([w - 3, 0], [w - 4, 0], [w - 3, 1]));
+  if (level >= 2) place(a, 'dresser', swapped ? [1, 2] : [2, 1], [[1, d - 2], [w - 3, d - 2]]);
+  if (level >= 1) place(a, 'kitchen_counter', swapped ? [1, 2] : [2, 1], at([w - 4, 1], [w - 3, 1], [w - 4, 2]));
+  if (level >= 2) place(a, 'stove', [1, 1], at([w - 2, 2], [w - 2, 1], [w - 3, 2]));
+  if (level >= 3) place(a, 'dining_table', [2, 2], [[3, d - 3], [4, d - 3], [2, d - 3]]);
+  if (level >= 3) place(a, 'mirror', [1, 1], [[1, d - 3], [w - 2, d - 4]]);
+  if (level >= 4) place(a, 'kitchen_sink', swapped ? [1, 2] : [2, 1], at([w - 4, 2], [w - 4, 3]));
+  if (level <= 1) place(a, 'basket', [1, 1], [[0, d - 1], [1, d - 2]]);
+
+  // hobbies and small victories, seeded so two identical players still differ
+  const flavour = pick(4);
+  if (level >= 1 && flavour === 0) place(a, 'guitar', [1, 1], [[0, d - 2], [w - 1, d - 2]]);
+  if (level >= 1 && flavour === 1) place(a, 'skateboard', [1, 1], [[0, d - 2], [1, d - 1]]);
+  if (level >= 2 && flavour === 2) place(a, 'dumbbells', [2, 1], [[w - 3, d - 1], [1, d - 1]]);
+  if (has('gym_subscription')) place(a, 'dumbbells', [2, 1], [[w - 3, d - 1], [1, d - 1]]);
+  if (level <= 1) place(a, 'pizza_boxes', [1, 1], [[3, d - 1], [4, d - 1]]);
 
   // ── walls ───────────────────────────────────────────────────────────────
   wall(a, 'window', 'right', Math.max(1, w - 4), 6);
@@ -204,7 +232,12 @@ export function buildRoomScene(player: ScenePlayer): RoomScene {
   if (level >= 1) wall(a, 'corkboard', 'left', Math.max(2, d - 4), 8);
   if (totalLevels >= 20) wall(a, 'shelf_books', 'right', 1, 16);
   if (level >= 3) wall(a, 'shelf_plants', 'left', Math.max(3, d - 3), 14);
-  if (hasAny('gaming_pc', 'mining_rig') || level >= 3) wall(a, 'neon_bolt', 'right', w - 1, 12);
+  if (hasAny('gaming_pc', 'mining_rig') || level >= 3) wall(a, 'neon_bolt', 'right', w - 2, 12);
+  if (level >= 1) wall(a, 'wall_clock', 'right', Math.max(2, w - 3), 8);
+  if (totalLevels >= 30) wall(a, 'diploma', 'left', Math.max(1, d - 6), 12);
+  if (level >= 2) wall(a, 'cabinets', 'right', Math.max(1, w - 3), 4);
+  if (level >= 2 && pick(2) === 0) wall(a, 'string_lights', 'left', 2, 2);
+  if (level >= 3 && pick(2) === 0) wall(a, 'hoop', 'right', 2, 4);
 
   // ── the player stands in the free middle of the room ────────────────────
   let spot: [number, number] = [Math.floor(w / 2), Math.max(1, d - 2)];
@@ -223,27 +256,9 @@ export function buildRoomScene(player: ScenePlayer): RoomScene {
 
   return {
     size,
-    palette: PALETTES[level],
+    palette: paletteFrom(paint, floor),
     items: a.items,
     player: { gx: spot[0], gy: spot[1] },
   };
 }
 
-/**
- * Which character sprite the player is drawn with.
- *
- * The wardrobe has more options than the sprite set does, so tops collapse to
- * three silhouettes (hoodie / t-shirt / office shirt) and long hairstyles get
- * their own sprite. Everything unknown falls back to the hoodie.
- */
-export function characterSprite(player: ScenePlayer): string {
-  const g = (player as { genetics?: { hairStyle?: string; top?: string } }).genetics;
-  const av = (player as { avatar?: { hair?: string | null; top?: string | null } }).avatar;
-  const hair = av?.hair ?? g?.hairStyle ?? '';
-  const top = av?.top ?? g?.top ?? '';
-
-  if (/long|ponytail|manbun/.test(hair)) return 'char_long';
-  if (top === 'top_shirt' || top === 'top_jacket') return 'char_shirt';
-  if (top === 'top_tshirt') return 'char_tshirt';
-  return 'char_base';
-}

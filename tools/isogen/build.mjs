@@ -58,6 +58,82 @@ async function deFringe(input) {
   return sharp(buf, { raw: { width, height, channels: 4 } }).png().toBuffer();
 }
 
+/**
+ * Colour roles for recolouring.
+ *
+ * A character sprite is just pixels, but the recolour engine needs to know
+ * which of those pixels are hair and which are trousers. Rather than hand-mask
+ * 19 sprites, classify the shipped palette: skin is found by hue, the rest is
+ * split by how high up the sprite each colour sits (hair on top, shoes at the
+ * bottom). Each role comes out as a shading ramp sorted dark → light, which is
+ * exactly what the runtime needs to map onto a new colour.
+ */
+async function colourRoles(buf, kind) {
+  const img = sharp(buf).ensureAlpha();
+  const { width, height } = await img.metadata();
+  const raw = await img.raw().toBuffer();
+  const stats = new Map();
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const i = (y * width + x) * 4;
+      if (raw[i + 3] < 200) continue;
+      const r = raw[i], g = raw[i + 1], b = raw[i + 2];
+      const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+      if (lum < 40) continue; // outline, never recoloured
+      const hex = '#' + [r, g, b].map((v) => v.toString(16).padStart(2, '0')).join('');
+      const st = stats.get(hex) ?? { n: 0, sy: 0, ymax: 0, r, g, b, lum };
+      st.n++;
+      st.sy += y / height;
+      st.ymax = Math.max(st.ymax, y / height);
+      stats.set(hex, st);
+    }
+  }
+
+  const total = [...stats.values()].reduce((a, s) => a + s.n, 0) || 1;
+  const colours = [...stats.entries()]
+    .map(([hex, s]) => ({ hex, share: s.n / total, y: s.sy / s.n, ...s }))
+    .filter((c) => c.share > 0.004);
+
+  const isSkin = (c) => {
+    const max = Math.max(c.r, c.g, c.b), min = Math.min(c.r, c.g, c.b);
+    if (max < 90 || max - min < 12) return false;
+    if (!(c.r > c.g && c.g >= c.b)) return false;
+    const hue = (60 * (c.g - c.b)) / (max - min);
+    return hue >= 8 && hue <= 48 && c.r - c.b > 18 && c.r - c.b < 130 && c.y < 0.45;
+  };
+
+  const roles = {};
+  const push = (role, c) => (roles[role] ??= []).push(c);
+
+  if (kind === 'char') {
+    for (const c of colours) {
+      // A hood or a collar also sits high on the sprite, so height alone is not
+      // enough: anything that covers a lot of the figure is clothing, not hair.
+      // These sprites are ~3 heads tall, so the head owns the top 40% of the
+      // frame. Only what sits below it can be clothing; the band in between is
+      // left alone (faces, beards, glasses keep their own colours).
+      if (isSkin(c)) push('skin', c);
+      else if (c.y < 0.22 && c.ymax < 0.36 && c.share < 0.2) push('hair', c);
+      else if (c.y >= 0.4 && c.y < 0.66) push('top', c);
+      else if (c.y >= 0.66 && c.y < 0.88) push('bottom', c);
+      else if (c.y >= 0.88) push('shoes', c);
+    }
+  } else {
+    // creatures: every lit colour is coat, so one recolour swaps the whole animal
+    for (const c of colours) push('coat', c);
+  }
+
+  // A one-colour "hair" ramp is almost always a rim light picked up around a
+  // dark hairstyle — recolouring it paints the head. Leave those alone.
+  if (kind === 'char' && (roles.hair?.length ?? 0) < 2) delete roles.hair;
+
+  for (const role of Object.keys(roles)) {
+    roles[role] = roles[role].sort((a, b) => a.lum - b.lum).map((c) => c.hex);
+  }
+  return roles;
+}
+
 const manifest = { tile: catalogue.tile, sprites: {} };
 
 for (const entry of catalogue.sprites) {
@@ -99,6 +175,8 @@ for (const entry of catalogue.sprites) {
     .png({ palette: true, colours: 48, dither: 0, compressionLevel: 9 })
     .toBuffer();
 
+  const roles = entry.roles ? await colourRoles(out, entry.kind ?? 'floor') : null;
+
   const file = `${entry.id}.png`;
   fs.writeFileSync(path.join(OUT, file), out);
   manifest.sprites[entry.id] = {
@@ -108,6 +186,7 @@ for (const entry of catalogue.sprites) {
     kind: entry.kind ?? 'floor',
     ...(entry.tiles ? { tiles: entry.tiles } : {}),
     ...(entry.tilesW ? { tilesW: entry.tilesW } : {}),
+    ...(roles ? { roles } : {}),
   };
   console.log(`${entry.id.padEnd(16)} ${targetW}×${targetH}`);
 }

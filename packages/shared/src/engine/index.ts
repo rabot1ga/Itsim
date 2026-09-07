@@ -12,5 +12,5 @@ export * from './genetics';
 export * from './mining';
 export * from './items';
 export * from './interviewQuestions';
-export * from './utils';export * from './roomDecor';export * from './avatarCustom';export * from './pixelArt';
+export * from './utils';export * from './roomDecor';export * from './isoFinishes';export * from './avatarCustom';export * from './pixelArt';
 export * from './pixelArtValidate';

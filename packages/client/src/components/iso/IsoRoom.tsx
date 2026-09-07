@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { layout, viewport, SpriteMeta, PlacedItem } from './geometry';
-import { buildRoomScene, characterSprite, ScenePlayer } from './scene';
+import { layout, viewport, DrawCall, SpriteMeta, PlacedItem } from './geometry';
+import { buildRoomScene, ScenePlayer } from './scene';
 import { shellPolygons, pointsAttr } from './shell';
+import { characterLook, petLook } from './palette';
+import { recolourSprite, variantKey } from './recolor';
 
 /**
  * Isometric room — the player's flat, drawn from generated pixel sprites.
@@ -10,6 +12,9 @@ import { shellPolygons, pointsAttr } from './shell';
  * the code computes, the furniture is `<image>` sprites placed on the tile grid
  * and painted back-to-front. An SVG viewBox scales to any screen for free, and
  * `image-rendering: pixelated` keeps every sprite crisp instead of soapy.
+ *
+ * Sprites that carry colour roles (the player, the pets) are recoloured on a
+ * canvas first, so one drawing covers thousands of different looks.
  */
 
 export interface IsoManifest {
@@ -44,12 +49,61 @@ export function useIsoManifest(): IsoManifest | null {
   return manifest;
 }
 
+/**
+ * Resolve every recoloured sprite in the scene to a data URL. Until a variant
+ * is ready the original file is drawn, so the room never flashes empty.
+ */
+export function useSpriteVariants(calls: DrawCall[], sprites: Record<string, SpriteMeta>): Record<string, string> {
+  const [urls, setUrls] = useState<Record<string, string>>({});
+
+  const wanted = useMemo(
+    () =>
+      calls
+        .filter((c) => c.colours && sprites[c.sprite]?.roles)
+        .map((c) => ({ key: variantKey(sprites[c.sprite].file, c.colours!), call: c })),
+    [calls, sprites]
+  );
+
+  const signature = wanted.map((w) => w.key).join('|');
+
+  useEffect(() => {
+    let alive = true;
+    Promise.all(
+      wanted.map(async ({ key, call }) => {
+        const meta = sprites[call.sprite];
+        const url = await recolourSprite(meta.file, meta.roles!, call.colours!);
+        return [key, url] as const;
+      })
+    ).then((pairs) => {
+      if (!alive) return;
+      setUrls((prev) => {
+        const next = { ...prev };
+        let changed = false;
+        for (const [key, url] of pairs) {
+          if (next[key] !== url) {
+            next[key] = url;
+            changed = true;
+          }
+        }
+        return changed ? next : prev;
+      });
+    });
+    return () => {
+      alive = false;
+    };
+    // `signature` captures every variant this scene needs
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [signature]);
+
+  return urls;
+}
+
 export const IsoRoom: React.FC<{
   player: ScenePlayer;
-  /** sprite id for the player figure; defaults to the wardrobe match */
+  /** override the sprite chosen for the player figure */
   character?: string;
   className?: string;
-  /** extra sprites (pets, events) placed on free tiles by the caller */
+  /** extra sprites (events, guests) placed on free tiles by the caller */
   extras?: PlacedItem[];
 }> = ({ player, character, className, extras }) => {
   const manifest = useIsoManifest();
@@ -59,21 +113,38 @@ export const IsoRoom: React.FC<{
     const scene = buildRoomScene(player);
     const vp = viewport(scene.size, manifest.tile);
     const polys = shellPolygons(vp, scene.size, scene.palette, manifest.tile);
+
+    const p = player as { genetics?: { seed?: string }; telegramId?: number | string };
+    const look = characterLook({
+      genetics: (player as { genetics?: never }).genetics,
+      avatar: (player as { avatar?: never }).avatar ?? null,
+      fallbackSeed: String(p.telegramId ?? 'player'),
+    });
+    const seed = p.genetics?.seed ?? String(p.telegramId ?? 'player');
+
     const items: PlacedItem[] = [
-      ...scene.items,
+      ...scene.items.map((item) =>
+        item.kind !== 'wall' && item.sprite.startsWith('pet_')
+          ? { ...item, colours: petLook(seed, item.sprite) }
+          : item
+      ),
       ...(extras ?? []),
       {
         kind: 'char',
-        sprite: character ?? characterSprite(player),
+        sprite: character ?? look.base,
         gx: scene.player.gx,
         gy: scene.player.gy,
         tiles: [1, 1],
+        colours: look.colours,
       },
     ];
+
     return { vp, polys, calls: layout(vp, items, manifest.sprites, manifest.tile) };
   }, [manifest, player, character, extras]);
 
-  if (!view) {
+  const variants = useSpriteVariants(view?.calls ?? [], manifest?.sprites ?? {});
+
+  if (!view || !manifest) {
     return (
       <div
         className={`w-full rounded-xl border border-ink-700 bg-ink-800 animate-pulse-soft ${className ?? ''}`}
@@ -95,18 +166,22 @@ export const IsoRoom: React.FC<{
       {polys.map((p, i) => (
         <polygon key={i} points={pointsAttr(p.points)} fill={p.fill} opacity={p.opacity} />
       ))}
-      {calls.map((c, i) => (
-        <image
-          key={`${c.sprite}-${i}`}
-          href={manifest!.sprites[c.sprite].file}
-          x={c.x}
-          y={c.y}
-          width={c.w}
-          height={c.h}
-          style={{ imageRendering: 'pixelated' }}
-          transform={c.flip ? `translate(${2 * c.x + c.w} 0) scale(-1 1)` : undefined}
-        />
-      ))}
+      {calls.map((c, i) => {
+        const meta = manifest.sprites[c.sprite];
+        const href = c.colours ? variants[variantKey(meta.file, c.colours)] ?? meta.file : meta.file;
+        return (
+          <image
+            key={`${c.sprite}-${i}`}
+            href={href}
+            x={c.x}
+            y={c.y}
+            width={c.w}
+            height={c.h}
+            style={{ imageRendering: 'pixelated' }}
+            transform={c.flip ? `translate(${2 * c.x + c.w} 0) scale(-1 1)` : undefined}
+          />
+        );
+      })}
     </svg>
   );
 };

@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { buildRoomComposition } from '../components/room/RoomRenderer';
 import { IsoRoom } from '../components/iso/IsoRoom';
-import { RoomEditor, entryName } from '../components/room/RoomEditor';
+import { IsoRoomEditor } from '../components/iso/IsoRoomEditor';
+import { entryName } from '../components/room/RoomEditor';
 import { EmptyState } from '../components/ui';
 import { Wardrobe } from '../components/room/Wardrobe';
 import { ShareCard } from '../components/room/ShareCard';
@@ -119,7 +120,7 @@ export const RoomView: React.FC = () => {
       )}
 
       {/* Room editor */}
-      {ready && composition && (
+      {ready && (
         <div className="game-card">
           <button
             onClick={() => {
@@ -137,14 +138,7 @@ export const RoomView: React.FC = () => {
           <div className={`accordion-body ${editorOpen ? 'open' : ''}`}>
             <div className="accordion-inner">
               <div className="pt-3">
-                <RoomEditor
-                  roomManifest={roomManifest}
-                  geneticsConfig={geneticsConfig}
-                  traits={traits}
-                  player={player}
-                  heldCollections={heldCollections ?? []}
-                  composition={composition}
-                />
+                <IsoRoomEditor player={player} />
               </div>
             </div>
           </div>

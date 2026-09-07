@@ -305,6 +305,496 @@
       "id": "char_long",
       "kind": "char",
       "heightPx": 46
+    },
+    {
+      "slice": "chars_a_00",
+      "id": "char_a00",
+      "kind": "char",
+      "heightPx": 46,
+      "roles": true
+    },
+    {
+      "slice": "chars_a_01",
+      "id": "char_a01",
+      "kind": "char",
+      "heightPx": 46,
+      "roles": true
+    },
+    {
+      "slice": "chars_a_02",
+      "id": "char_a02",
+      "kind": "char",
+      "heightPx": 46,
+      "roles": true
+    },
+    {
+      "slice": "chars_a_03",
+      "id": "char_a03",
+      "kind": "char",
+      "heightPx": 46,
+      "roles": true
+    },
+    {
+      "slice": "chars_a_04",
+      "id": "char_a04",
+      "kind": "char",
+      "heightPx": 46,
+      "roles": true
+    },
+    {
+      "slice": "chars_a_05",
+      "id": "char_a05",
+      "kind": "char",
+      "heightPx": 46,
+      "roles": true
+    },
+    {
+      "slice": "chars_a_06",
+      "id": "char_a06",
+      "kind": "char",
+      "heightPx": 46,
+      "roles": true
+    },
+    {
+      "slice": "chars_a_07",
+      "id": "char_a07",
+      "kind": "char",
+      "heightPx": 46,
+      "roles": true
+    },
+    {
+      "slice": "chars_a_08",
+      "id": "char_a08",
+      "kind": "char",
+      "heightPx": 46,
+      "roles": true
+    },
+    {
+      "slice": "chars_a_09",
+      "id": "char_a09",
+      "kind": "char",
+      "heightPx": 46,
+      "roles": true
+    },
+    {
+      "slice": "chars_a_10",
+      "id": "char_a10",
+      "kind": "char",
+      "heightPx": 46,
+      "roles": true
+    },
+    {
+      "slice": "chars_a_11",
+      "id": "char_a11",
+      "kind": "char",
+      "heightPx": 46,
+      "roles": true
+    },
+    {
+      "slice": "chars_a_12",
+      "id": "char_a12",
+      "kind": "char",
+      "heightPx": 46,
+      "roles": true
+    },
+    {
+      "slice": "chars_a_13",
+      "id": "char_a13",
+      "kind": "char",
+      "heightPx": 46,
+      "roles": true
+    },
+    {
+      "slice": "chars_a_14",
+      "id": "char_a14",
+      "kind": "char",
+      "heightPx": 46,
+      "roles": true
+    },
+    {
+      "slice": "chars_a_15",
+      "id": "char_a15",
+      "kind": "char",
+      "heightPx": 46,
+      "roles": true
+    },
+    {
+      "slice": "chars_a_16",
+      "id": "char_a16",
+      "kind": "char",
+      "heightPx": 46,
+      "roles": true
+    },
+    {
+      "slice": "chars_a_17",
+      "id": "char_a17",
+      "kind": "char",
+      "heightPx": 46,
+      "roles": true
+    },
+    {
+      "slice": "chars_a_18",
+      "id": "char_a18",
+      "kind": "char",
+      "heightPx": 46,
+      "roles": true
+    },
+    {
+      "slice": "pets_00",
+      "id": "pet_cat",
+      "tiles": [
+        1,
+        1
+      ],
+      "scale": 0.62,
+      "roles": true
+    },
+    {
+      "slice": "pets_01",
+      "id": "pet_dog",
+      "tiles": [
+        1,
+        1
+      ],
+      "scale": 0.62,
+      "roles": true
+    },
+    {
+      "slice": "pets_02",
+      "id": "pet_bulldog",
+      "tiles": [
+        1,
+        1
+      ],
+      "scale": 0.62,
+      "roles": true
+    },
+    {
+      "slice": "pets_03",
+      "id": "pet_cactus",
+      "tiles": [
+        1,
+        1
+      ],
+      "scale": 0.62,
+      "roles": true
+    },
+    {
+      "slice": "pets_04",
+      "id": "pet_robo",
+      "tiles": [
+        1,
+        1
+      ],
+      "scale": 0.62,
+      "roles": true
+    },
+    {
+      "slice": "pets_05",
+      "id": "pet_spider",
+      "tiles": [
+        1,
+        1
+      ],
+      "scale": 0.62,
+      "roles": true
+    },
+    {
+      "slice": "pets_06",
+      "id": "pet_parrot",
+      "tiles": [
+        1,
+        1
+      ],
+      "scale": 0.62,
+      "roles": true
+    },
+    {
+      "slice": "pets_07",
+      "id": "pet_fish",
+      "tiles": [
+        1,
+        1
+      ],
+      "scale": 0.62,
+      "roles": true
+    },
+    {
+      "slice": "pets_08",
+      "id": "pet_hamster",
+      "tiles": [
+        1,
+        1
+      ],
+      "scale": 0.62,
+      "roles": true
+    },
+    {
+      "slice": "home2_00",
+      "id": "wardrobe",
+      "tiles": [
+        2,
+        1
+      ],
+      "scale": 0.72
+    },
+    {
+      "slice": "home2_01",
+      "id": "dresser",
+      "tiles": [
+        2,
+        1
+      ],
+      "scale": 0.72
+    },
+    {
+      "slice": "home2_02",
+      "id": "kitchen_counter",
+      "tiles": [
+        2,
+        1
+      ],
+      "scale": 0.78
+    },
+    {
+      "slice": "home2_03",
+      "id": "kitchen_sink",
+      "tiles": [
+        2,
+        1
+      ],
+      "scale": 0.78
+    },
+    {
+      "slice": "home2_04",
+      "id": "dishwasher",
+      "tiles": [
+        1,
+        1
+      ],
+      "scale": 0.68
+    },
+    {
+      "slice": "home2_05",
+      "id": "stove",
+      "tiles": [
+        1,
+        1
+      ],
+      "scale": 0.68
+    },
+    {
+      "slice": "home2_06",
+      "id": "dining_table",
+      "tiles": [
+        2,
+        2
+      ],
+      "scale": 0.8
+    },
+    {
+      "slice": "home2_07",
+      "id": "mirror",
+      "tiles": [
+        1,
+        1
+      ],
+      "scale": 0.62
+    },
+    {
+      "slice": "home2_08",
+      "id": "bench",
+      "tiles": [
+        1,
+        1
+      ],
+      "scale": 0.7
+    },
+    {
+      "slice": "home2_11",
+      "id": "basket",
+      "tiles": [
+        1,
+        1
+      ],
+      "scale": 0.5
+    },
+    {
+      "slice": "home2_13",
+      "id": "side_cabinet",
+      "tiles": [
+        1,
+        1
+      ],
+      "scale": 0.6
+    },
+    {
+      "slice": "home2_09",
+      "id": "cabinets_long",
+      "kind": "wall",
+      "tilesW": 3,
+      "scale": 0.8
+    },
+    {
+      "slice": "home2_10",
+      "id": "cabinets",
+      "kind": "wall",
+      "tilesW": 2,
+      "scale": 0.75
+    },
+    {
+      "slice": "decor2_00",
+      "id": "guitar",
+      "tiles": [
+        1,
+        1
+      ],
+      "scale": 0.6
+    },
+    {
+      "slice": "decor2_01",
+      "id": "cat_tower",
+      "tiles": [
+        1,
+        1
+      ],
+      "scale": 0.7
+    },
+    {
+      "slice": "decor2_04",
+      "id": "dumbbells",
+      "tiles": [
+        2,
+        1
+      ],
+      "scale": 0.6
+    },
+    {
+      "slice": "decor2_07",
+      "id": "pizza_boxes",
+      "tiles": [
+        1,
+        1
+      ],
+      "scale": 0.5
+    },
+    {
+      "slice": "decor2_08",
+      "id": "skateboard",
+      "tiles": [
+        1,
+        1
+      ],
+      "scale": 0.55
+    },
+    {
+      "slice": "decor2_02",
+      "id": "wall_clock",
+      "kind": "wall",
+      "tilesW": 1,
+      "scale": 0.42
+    },
+    {
+      "slice": "decor2_03",
+      "id": "diploma",
+      "kind": "wall",
+      "tilesW": 1,
+      "scale": 0.55
+    },
+    {
+      "slice": "decor2_06",
+      "id": "string_lights",
+      "kind": "wall",
+      "tilesW": 3,
+      "scale": 0.8
+    },
+    {
+      "slice": "decor2_09",
+      "id": "hoop",
+      "kind": "wall",
+      "tilesW": 2,
+      "scale": 0.6
+    },
+    {
+      "slice": "office_00",
+      "id": "desk_office",
+      "tiles": [
+        2,
+        2
+      ],
+      "scale": 0.85
+    },
+    {
+      "slice": "office_01",
+      "id": "meeting_table",
+      "tiles": [
+        4,
+        2
+      ],
+      "scale": 0.95
+    },
+    {
+      "slice": "office_02",
+      "id": "water_cooler",
+      "tiles": [
+        1,
+        1
+      ],
+      "scale": 0.7
+    },
+    {
+      "slice": "office_04",
+      "id": "printer",
+      "tiles": [
+        1,
+        1
+      ],
+      "scale": 0.75
+    },
+    {
+      "slice": "office_05",
+      "id": "filing_cabinet",
+      "tiles": [
+        1,
+        1
+      ],
+      "scale": 0.75
+    },
+    {
+      "slice": "office_06",
+      "id": "reception",
+      "tiles": [
+        3,
+        2
+      ],
+      "scale": 0.9
+    },
+    {
+      "slice": "office_08",
+      "id": "office_sofa",
+      "tiles": [
+        2,
+        1
+      ],
+      "scale": 0.9
+    },
+    {
+      "slice": "office_09",
+      "id": "presentation_board",
+      "tiles": [
+        2,
+        1
+      ],
+      "scale": 0.85
+    },
+    {
+      "slice": "office_10",
+      "id": "coffee_machine",
+      "tiles": [
+        1,
+        1
+      ],
+      "scale": 0.75
     }
   ]
 }

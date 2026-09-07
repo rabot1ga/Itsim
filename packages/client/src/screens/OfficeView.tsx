@@ -2,11 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { haptic } from '../lib/telegram';
 import { CareerPressureCard } from '../components/CareerPressureCard';
-import {
-  OfficeRenderer,
-  buildOfficeComposition,
-  officeMoodOf,
-} from '../components/room/OfficeRenderer';
+import { IsoOffice } from '../components/iso/IsoOffice';
+import { officeMoodOf } from '../components/room/OfficeRenderer';
 import { PixelIcon } from '../components/pixel/PixelIcon';
 import { EmojiToken } from '../components/ui';
 
@@ -43,25 +40,19 @@ export const OfficeView: React.FC = () => {
   const clearError = useGameStore((s) => s.clearError);
 
   const [officeManifest, setOfficeManifest] = useState<any>(null);
-  const [avatarManifest, setAvatarManifest] = useState<any>(null);
-  const [geneticsConfig, setGeneticsConfig] = useState<any>(null);
   const [npcs, setNpcs] = useState<any[]>([]);
   const [companies, setCompanies] = useState<any[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([
-      fetch('/api/content/layers').then((r) => r.json()),
       fetch('/api/content/npcs').then((r) => r.json()),
       fetch('/api/content/companies').then((r) => r.json()),
-      fetch('/api/content/genetics').then((r) => r.json()),
     ])
-      .then(([l, n, c, g]) => {
-        setOfficeManifest(l.office);
-        setAvatarManifest(l.avatar);
+      .then(([n, c]) => {
+        setOfficeManifest(true);
         setNpcs(n.npcs ?? []);
         setCompanies(c.companies ?? []);
-        setGeneticsConfig(g.genetics);
       })
       .catch(() => setLoadError('Не удалось загрузить офис'));
   }, []);
@@ -107,7 +98,6 @@ export const OfficeView: React.FC = () => {
     relationships: player.relationships ?? {},
   };
   const mood = officeMoodOf(input);
-  const composition = buildOfficeComposition(input);
   const ready = officeManifest;
 
   const canAct = (energy: number) => (player.energy ?? 0) >= energy;
@@ -148,14 +138,16 @@ export const OfficeView: React.FC = () => {
 
       {/* Office render */}
       {ready ? (
-        <OfficeRenderer
-          officeManifest={officeManifest}
-          composition={composition}
-          mood={mood}
-          avatarManifest={avatarManifest}
-          traits={player.genetics}
-          geneticsConfig={geneticsConfig}
-          avatarCustom={player.avatar}
+        <IsoOffice
+          office={{
+            companyId: company?.id ?? player.job?.companyId,
+            companySize: company?.size,
+            grade: player.job?.grade,
+            teamSize: TEAM.length,
+            mood,
+            seed: company?.id ?? player.job?.companyId,
+          }}
+          player={player}
         />
       ) : (
         <div className="aspect-square rounded-xl border border-ink-700 bg-ink-800 flex items-center justify-center text-sm text-ink-500">

@@ -66,6 +66,10 @@ import {
   isAvatarSlotId,
   avatarChangeCost,
   geneticTraitForSlot,
+  paintAllowed,
+  floorAllowed,
+  wallPaint,
+  floorStyle,
   type PlayerState,
   type GameEvent,
   type Grade,
@@ -1073,9 +1077,15 @@ function getActionMoneyCost(actionId: string, params: any, state: PlayerState, c
       return HOUSING_COSTS[next] ?? null;
     }
     case 'customize_room': {
-      // Rearranging furniture is free; a fresh coat of paint costs money.
-      if (params?.slot !== 'wallColor') return null;
-      const current = state.room?.wallColor ?? state.genetics?.wallColor;
+      // Rearranging furniture is free; paint and flooring cost money.
+      const slot = params?.slot as string | undefined;
+      if (slot !== 'wallColor' && slot !== 'paint' && slot !== 'floor') return null;
+      const current =
+        slot === 'paint'
+          ? state.room?.paint
+          : slot === 'floor'
+            ? state.room?.floor
+            : (state.room?.wallColor ?? state.genetics?.wallColor);
       if (!params?.entryId || params.entryId === current) return null;
       return REPAINT_COST;
     }
@@ -1519,7 +1529,8 @@ function applyAction(
     case 'customize_room': {
       const slot = params?.slot as string | undefined;
       const entryId = (params?.entryId as string | null | undefined) ?? null;
-      if (!slot || (slot !== 'wallColor' && !isRoomSlotId(slot))) {
+      const isoSlot = slot === 'paint' || slot === 'floor';
+      if (!slot || (!isoSlot && slot !== 'wallColor' && !isRoomSlotId(slot))) {
         return { error: 'Неизвестный слот комнаты' };
       }
       if (!state.room) state.room = { slots: {} };
@@ -1527,9 +1538,32 @@ function applyAction(
       // null = back to automatic
       if (entryId === null) {
         if (slot === 'wallColor') delete state.room.wallColor;
+        else if (slot === 'paint') delete state.room.paint;
+        else if (slot === 'floor') delete state.room.floor;
         else delete state.room.slots[slot];
         delta.room = state.room;
         return { message: '🎨 Вернули как было (авто)', delta };
+      }
+
+      // Isometric finishes: paint and flooring, gated by what the flat can carry.
+      if (slot === 'paint' || slot === 'floor') {
+        const allowed =
+          slot === 'paint'
+            ? paintAllowed(entryId, state.housingLevel ?? 0)
+            : floorAllowed(entryId, state.housingLevel ?? 0);
+        if (!allowed) return { error: 'Такая отделка недоступна для этого жилья' };
+        const name =
+          slot === 'paint' ? wallPaint(entryId)?.name ?? entryId : floorStyle(entryId)?.name ?? entryId;
+        if (slot === 'paint') state.room.paint = entryId;
+        else state.room.floor = entryId;
+        delta.room = state.room;
+        return {
+          message:
+            slot === 'paint'
+              ? `🎨 Стены перекрашены: ${name} (−${REPAINT_COST} ₽ за банку краски)`
+              : `🪵 Новый пол: ${name} (−${REPAINT_COST} ₽ за материал)`,
+          delta,
+        };
       }
 
       if (slot === 'wallColor') {

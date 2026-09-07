@@ -224,6 +224,10 @@ export interface RoomCustomization {
   slots: Partial<Record<RoomSlotId, string | null>>;
   /** wallColor palette id override (a repaint); missing = genetic */
   wallColor?: string;
+  /** isometric wall finish id (see isoFinishes); missing = seeded */
+  paint?: string;
+  /** isometric flooring id (see isoFinishes); missing = seeded */
+  floor?: string;
 }
 
 // ---- Player State ----
