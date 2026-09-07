@@ -7,6 +7,7 @@ import {
   HAIRCUT_COST,
   BEARD_COST,
   HAT_COST,
+  PANTS_COST,
   buildAvatarUnlockContext,
   avatarEntryStatus,
   avatarChangeCost,
@@ -27,6 +28,7 @@ const SLOT_META: Record<AvatarSlotId, { icon: string; name: string; price?: stri
   hair: { icon: '💇', name: 'Причёска', price: `стрижка — ${HAIRCUT_COST} ₽` },
   beard: { icon: '🪒', name: 'Борода', price: `барбер — ${BEARD_COST} ₽` },
   top: { icon: '👕', name: 'Одежда' },
+  bottom: { icon: '👖', name: 'Штаны', price: `швейный цех — ${PANTS_COST} ₽` },
   accessory: { icon: '🎧', name: 'Аксессуар', price: `кепка/шапка — ${HAT_COST} ₽` },
 };
 
@@ -38,12 +40,14 @@ const ENTRY_NAMES: Record<string, string> = {
   beard_full: 'Борода', beard_mustache: 'Усы',
   top_hoodie_gray: 'Серое худи', top_hoodie_localhost: 'localhost', top_hoodie_corp: 'Корп. мерч',
   top_tshirt: 'Футболка', top_shirt: 'Рубашка', top_jacket: 'Куртка', top_hoodie_cat: 'Кот-худи',
+  bottom_jeans: 'Джинсы', bottom_sweatpants: 'Спортивки', bottom_chinos: 'Чиносы',
+  bottom_shorts: 'Шорты', bottom_suit: 'Костюмные',
   acc_none: 'Нет', acc_headphones: 'Наушники', acc_glasses: 'Очки',
   acc_vr_headset: 'VR-шлем', acc_cap: 'Кепка', acc_medal: 'Медаль', acc_beanie: 'Шапка',
 };
 
 function entryName(id: string): string {
-  return ENTRY_NAMES[id] ?? id.replace(/^(hair|beard|top|acc)_/, '').replace(/_/g, ' ');
+  return ENTRY_NAMES[id] ?? id.replace(/^(hair|beard|top|bottom|acc)_/, '').replace(/_/g, ' ');
 }
 
 export const Wardrobe: React.FC<{

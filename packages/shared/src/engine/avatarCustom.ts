@@ -13,8 +13,9 @@ import { TRAIT_COMPONENT_MAP } from './pixelArt';
 export const HAIRCUT_COST = 2000;
 export const BEARD_COST = 1000;
 export const HAT_COST = 1000;
+export const PANTS_COST = 1500;
 
-export const AVATAR_EDITABLE_SLOTS: AvatarSlotId[] = ['hair', 'beard', 'top', 'accessory'];
+export const AVATAR_EDITABLE_SLOTS: AvatarSlotId[] = ['hair', 'beard', 'top', 'bottom', 'accessory'];
 
 export function isAvatarSlotId(slot: string): slot is AvatarSlotId {
   return (AVATAR_EDITABLE_SLOTS as string[]).includes(slot);
@@ -91,6 +92,22 @@ export function avatarEntryStatus(
           return lock('Неизвестная одежда');
       }
     }
+    case 'bottom': {
+      switch (entryId) {
+        case 'bottom_jeans':
+        case 'bottom_sweatpants':
+        case 'bottom_shorts':
+          return open;
+        case 'bottom_chinos':
+          return ctx.hasJob ? open : lock('Устройся на работу — будет на что одеться');
+        case 'bottom_suit':
+          return ctx.housingLevel >= 2 || ach('reached_senior')
+            ? open
+            : lock('Жильё 2+ или грейд Senior');
+        default:
+          return lock('Неизвестные штаны');
+      }
+    }
     case 'accessory': {
       switch (entryId) {
         case 'acc_none':
@@ -133,6 +150,8 @@ export function avatarChangeCost(
       return entryId === 'acc_cap' || entryId === 'acc_beanie' ? HAT_COST : 0;
     case 'top':
       return 0;
+    case 'bottom':
+      return PANTS_COST;
   }
 }
 
@@ -143,6 +162,9 @@ export function geneticTraitForSlot(
 ): string | undefined {
   if (!genetics) return undefined;
   switch (slot) {
+    case 'bottom':
+      // Trousers are not inherited: everybody starts in the same jeans.
+      return 'bottom_jeans';
     case 'hair':
       return genetics.hairStyle;
     case 'beard':

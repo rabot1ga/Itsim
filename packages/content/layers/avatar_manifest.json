@@ -3,7 +3,7 @@
   "version": 1,
   "resolution": {
     "width": 500,
-    "height": 500
+    "height": 760
   },
   "slots": [
     {
@@ -16,6 +16,39 @@
           "id": "body_base",
           "file": "avatar/body/base.svg",
           "weight": 1
+        }
+      ]
+    },
+    {
+      "id": "bottom",
+      "zOrder": 1,
+      "required": true,
+      "entries": [
+        {
+          "id": "bottom_jeans",
+          "file": "avatar/bottom/bottom_jeans.svg",
+          "weight": 4
+        },
+        {
+          "id": "bottom_sweatpants",
+          "file": "avatar/bottom/bottom_sweatpants.svg",
+          "weight": 3
+        },
+        {
+          "id": "bottom_chinos",
+          "file": "avatar/bottom/bottom_chinos.svg",
+          "weight": 2
+        },
+        {
+          "id": "bottom_shorts",
+          "file": "avatar/bottom/bottom_shorts.svg",
+          "weight": 2
+        },
+        {
+          "id": "bottom_suit",
+          "file": "avatar/bottom/bottom_suit.svg",
+          "weight": 1,
+          "rarity": "rare"
         }
       ]
     },

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { haptic } from '../lib/telegram';
 import { DayView } from '../screens/DayView';
@@ -11,18 +11,30 @@ import { AchievementsView } from '../screens/AchievementsView';
 import { LeaderboardView } from '../screens/LeaderboardView';
 import { PixelIcon } from './pixel/PixelIcon';
 
+/**
+ * Four tabs carry the loop: the day, what you learn, where you work, where you
+ * live. Everything you visit once in a while lives behind «Ещё» — seven equal
+ * tabs made every one of them look equally unimportant.
+ */
 const TABS = [
   { view: 'main', icon: 'calendar', label: 'День' },
   { view: 'skills', icon: 'book', label: 'Навыки' },
   { view: 'career', icon: 'briefcase', label: 'Карьера' },
   { view: 'room', icon: 'house', label: 'Дом' },
-  { view: 'shop', icon: 'bag', label: 'Магазин' },
-  { view: 'achievements', icon: 'trophy', label: 'Трофеи' },
-  { view: 'leaderboard', icon: 'chart', label: 'Топ' },
 ] as const;
+
+const MORE = [
+  { view: 'shop', icon: 'bag', label: 'Магазин', hint: 'Техника, мебель, жильё' },
+  { view: 'achievements', icon: 'trophy', label: 'Трофеи', hint: 'Ачивки и челленджи' },
+  { view: 'leaderboard', icon: 'chart', label: 'Топ', hint: 'Рейтинг игроков' },
+  { view: 'office', icon: 'people', label: 'Офис', hint: 'Команда и задачи' },
+] as const;
+
+const MORE_VIEWS: string[] = MORE.map((m) => m.view);
 
 export const GameScreen: React.FC = () => {
   const { currentView, setView, advanceDay, loadNft } = useGameStore();
+  const [moreOpen, setMoreOpen] = useState(false);
 
   const handleAdvanceDay = async () => {
     await advanceDay();
@@ -32,6 +44,11 @@ export const GameScreen: React.FC = () => {
   useEffect(() => {
     if (currentView === 'room') loadNft();
   }, [currentView, loadNft]);
+
+  // The sheet is a navigation detour, never a state you can get stuck in.
+  useEffect(() => {
+    setMoreOpen(false);
+  }, [currentView]);
 
   const renderView = () => {
     switch (currentView) {
@@ -63,11 +80,54 @@ export const GameScreen: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
+    <div className="relative flex-1 flex flex-col overflow-hidden">
       {/* Content area */}
       <div id="game-scroll" className="flex-1 overflow-y-auto p-3 space-y-3">
         {renderView()}
       </div>
+
+      {/* «Ещё» sheet */}
+      {moreOpen && (
+        <>
+          <button
+            aria-label="Закрыть"
+            onClick={() => setMoreOpen(false)}
+            className="absolute inset-0 z-20 bg-black/50 animate-fade-in"
+          />
+          <div className="absolute inset-x-0 bottom-0 z-30 animate-slide-up">
+            <div className="rounded-t-xl border-t border-x border-ink-700 bg-ink-900 p-3 pb-2">
+              <div className="h-1 w-9 rounded-full bg-ink-700 mx-auto mb-3" />
+              <div className="grid grid-cols-2 gap-2">
+                {MORE.map((item) => (
+                  <button
+                    key={item.view}
+                    onClick={() => nav(item.view)}
+                    className={`tile flex items-start gap-2.5 ${
+                      currentView === item.view ? 'panel-note panel-note-gold' : ''
+                    }`}
+                  >
+                    <PixelIcon
+                      name={item.icon}
+                      size={15}
+                      className={currentView === item.view ? 'text-gold-300 mt-0.5' : 'text-ink-300 mt-0.5'}
+                    />
+                    <span className="min-w-0">
+                      <span className="block text-sm font-semibold text-ink-100">{item.label}</span>
+                      <span className="block text-2xs text-ink-500 leading-tight mt-0.5">{item.hint}</span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => setMoreOpen(false)}
+                className="btn btn-ghost w-full mt-2 !min-h-[40px] text-sm"
+              >
+                Закрыть
+              </button>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Bottom navigation */}
       <nav className="tabbar safe-area-pb">
@@ -76,10 +136,19 @@ export const GameScreen: React.FC = () => {
             key={tab.view}
             icon={tab.icon}
             label={tab.label}
-            active={currentView === tab.view}
+            active={currentView === tab.view && !moreOpen}
             onClick={() => nav(tab.view)}
           />
         ))}
+        <NavButton
+          icon="plus"
+          label="Ещё"
+          active={moreOpen || MORE_VIEWS.includes(currentView)}
+          onClick={() => {
+            haptic('selection');
+            setMoreOpen((v) => !v);
+          }}
+        />
       </nav>
     </div>
   );

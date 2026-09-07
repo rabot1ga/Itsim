@@ -203,7 +203,7 @@ export type RoomSlotId =
   | 'atmosphere'
   | 'pet';
 
-export type AvatarSlotId = 'hair' | 'beard' | 'top' | 'accessory';
+export type AvatarSlotId = 'hair' | 'beard' | 'top' | 'bottom' | 'accessory';
 
 /**
  * Wardrobe overrides (docs/design.md §12.5) — layered-manifest entry ids.
@@ -213,6 +213,8 @@ export interface AvatarCustomization {
   hair?: string | null;
   beard?: string | null;
   top?: string | null;
+  /** trousers/shorts — the avatar is drawn full-body (docs/ui.md §9) */
+  bottom?: string | null;
   accessory?: string | null;
 }
 

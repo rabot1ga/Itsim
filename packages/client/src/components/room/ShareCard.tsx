@@ -105,6 +105,7 @@ async function renderCanvas(
       hair: player?.avatar?.hair ?? traits.hairStyle,
       beard: player?.avatar?.beard ?? traits.beard,
       top: player?.avatar?.top ?? traits.top,
+      bottom: player?.avatar?.bottom ?? 'bottom_jeans',
       accessory: player?.avatar?.accessory ?? composition.avatarAccessory ?? traits.accessory,
     },
     traits,
@@ -119,14 +120,17 @@ async function renderCanvas(
   }
   ctx.filter = 'none';
 
-  // 2. Avatar standing in the room
-  const avatarX = Math.round(W * 0.08);
-  const avatarY = Math.round(H * 0.5);
-  const avatarSize = Math.round(W * 0.34);
+  // 2. The player stands on the floor (full-body art: 500×760)
+  const avatarRatio =
+    (avatarManifest.resolution?.height ?? 760) / (avatarManifest.resolution?.width ?? 500);
+  const avatarW = Math.round(W * 0.38);
+  const avatarH = Math.round(avatarW * avatarRatio);
+  const avatarX = Math.round(W * 0.06);
+  const avatarY = Math.round(H * 0.95) - avatarH;
   for (const layer of avatarLayers) {
     const img = await loadImage(layer.file);
     ctx.filter = layer.filter ?? 'none';
-    ctx.drawImage(img, avatarX, avatarY, avatarSize, avatarSize);
+    ctx.drawImage(img, avatarX, avatarY, avatarW, avatarH);
   }
   ctx.filter = 'none';
 

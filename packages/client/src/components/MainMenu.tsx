@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { haptic } from '../lib/telegram';
 import { RoomRenderer, buildRoomComposition } from './room/RoomRenderer';
-import { buildAvatarData, fetchPixelPack, PixelAvatarData } from './room/pixelAvatar';
 import { PixelIcon } from './pixel/PixelIcon';
 import { PixelText } from './pixel/PixelText';
 
@@ -15,17 +14,13 @@ export const MainMenu: React.FC = () => {
   const [roomManifest, setRoomManifest] = useState<any>(null);
   const [avatarManifest, setAvatarManifest] = useState<any>(null);
   const [geneticsConfig, setGeneticsConfig] = useState<any>(null);
-  const [pixelPack, setPixelPack] = useState<Awaited<ReturnType<typeof fetchPixelPack>>>(null);
 
   useEffect(() => {
-    Promise.all([
-      fetch('/api/content/layers').then((r) => r.json()),
-      fetchPixelPack(),
-    ])
-      .then(([l, pixel]) => {
+    fetch('/api/content/layers')
+      .then((r) => r.json())
+      .then((l) => {
         setRoomManifest(l.room);
         setAvatarManifest(l.avatar);
-        setPixelPack(pixel);
       })
       .catch(() => {});
   }, []);
@@ -50,90 +45,72 @@ export const MainMenu: React.FC = () => {
         custom: player.room,
       })
     : null;
-  const heroAvatar: PixelAvatarData | null =
-    pixelPack && traits ? buildAvatarData(pixelPack, traits, player?.avatar) : null;
 
   return (
     <div className="flex-1 flex flex-col items-center justify-between p-6 overflow-y-auto">
-      <div className="flex-1 flex flex-col items-center justify-center w-full max-w-sm">
-        {/* Hero — your own room, or the classic laptop while it loads */}
-        <div className="text-center mb-6 animate-fade-in w-full">
+      <div className="flex-1 flex flex-col items-center justify-center w-full max-w-[300px]">
+        {/* Hero — your own room with you standing in it */}
+        <div className="w-full animate-fade-in">
           {heroReady && heroComposition ? (
-            <div className="max-w-[280px] mx-auto mb-4">
-              <RoomRenderer
-                roomManifest={roomManifest}
-                avatarManifest={avatarManifest}
-                traits={displayTraits}
-                geneticsConfig={geneticsConfig}
-                housingLevel={player.housingLevel ?? 0}
-                composition={heroComposition}
-                pixelAvatar={heroAvatar}
-                avatarCustom={player.avatar}
-                petWear={(player.items ?? []).filter((id: string) =>
-                  ['pet_bow', 'pet_glasses', 'pet_crown'].includes(id)
-                )}
-                petFed={!!player.petFedToday}
-              />
-            </div>
+            <RoomRenderer
+              roomManifest={roomManifest}
+              avatarManifest={avatarManifest}
+              traits={displayTraits}
+              geneticsConfig={geneticsConfig}
+              housingLevel={player.housingLevel ?? 0}
+              composition={heroComposition}
+              avatarCustom={player.avatar}
+              petWear={(player.items ?? []).filter((id: string) =>
+                ['pet_bow', 'pet_glasses', 'pet_crown'].includes(id)
+              )}
+              petFed={!!player.petFedToday}
+            />
           ) : (
-            <div className="max-w-[280px] mx-auto mb-4 aspect-square rounded-xl border border-ink-700 bg-ink-800" />
+            <div className="aspect-square rounded-xl border border-ink-700 bg-ink-800" />
           )}
-          <h1 className="flex flex-col items-center gap-2">
-            <PixelText scale={4} className="text-gold-300">
-              IT LIFE
-            </PixelText>
-            <span className="text-2xs font-semibold uppercase tracking-[0.42em] text-ink-500 pl-1">
-              Simulator
-            </span>
-          </h1>
-          <p className="text-ink-400 text-sm max-w-[32ch] mx-auto mt-3 leading-relaxed">
-            {hasProgress
-              ? `С возвращением. День ${player.currentDay}, ${gradeLabel(player.grade).toLowerCase()}.`
-              : 'Симулятор жизни айтишника: карьера, навыки, деньги и попытка не выгореть.'}
-          </p>
         </div>
 
-        {/* Player progress summary */}
-        {hasProgress && (
-          <div className="w-full panel mb-4 animate-pop-in !py-2.5 mt-5">
-            <div className="flex items-center justify-between text-xs">
-              <span className="flex items-center gap-1.5 text-ink-400">
-                <PixelIcon name="calendar" size={12} className="text-ink-500" />
-                <span className="num">День {player.currentDay}</span>
-              </span>
-              <span className="text-ink-200 font-semibold uppercase tracking-[0.06em] text-2xs">
-                {gradeLabel(player.grade)}
-              </span>
-              <span className="num text-moss-300 font-semibold">
-                {formatMoney(player.money ?? 0)}
-              </span>
-            </div>
-          </div>
+        {/* Wordmark */}
+        <h1 className="flex flex-col items-center gap-2 mt-6">
+          <PixelText scale={4} className="text-gold-300">
+            IT LIFE
+          </PixelText>
+          <span className="text-2xs font-semibold uppercase tracking-[0.42em] text-ink-500 pl-1">
+            Simulator
+          </span>
+        </h1>
+
+        {/* One line of context: where you left off, or what this is */}
+        {hasProgress ? (
+          <p className="flex items-center gap-2 text-xs text-ink-400 mt-4">
+            <span className="num">День {player.currentDay}</span>
+            <span className="text-ink-700">·</span>
+            <span className="text-ink-200 font-semibold">{gradeLabel(player.grade)}</span>
+            <span className="text-ink-700">·</span>
+            <span className="num text-moss-300 font-semibold">{formatMoney(player.money ?? 0)}</span>
+          </p>
+        ) : (
+          <p className="text-ink-400 text-sm max-w-[30ch] text-center mt-4 leading-relaxed">
+            Карьера, навыки, деньги и попытка не выгореть.
+          </p>
         )}
 
-        {/* Actions */}
-        <div className="w-full space-y-3 animate-fade-in">
-          <button
-            onClick={() => {
-              haptic('medium');
-              setScreen('game');
-            }}
-            className="btn btn-primary w-full text-base"
-          >
-            <PixelIcon name="play" size={13} />
-            {hasProgress ? 'Продолжить игру' : 'Начать игру'}
-          </button>
+        {/* The only action on this screen */}
+        <button
+          onClick={() => {
+            haptic('medium');
+            setScreen('game');
+          }}
+          className="btn btn-primary w-full text-base mt-6"
+        >
+          <PixelIcon name="play" size={13} />
+          {hasProgress ? `Продолжить · день ${player.currentDay}` : 'Начать игру'}
+        </button>
 
-          <div className="grid grid-cols-3 gap-2">
-            <MenuTile
-              icon="chart"
-              label="Лидерборд"
-              onClick={() => {
-                setView('leaderboard');
-                setScreen('game');
-              }}
-            />
-            <MenuTile
+        {/* Quiet shortcuts, only once there is something to look at */}
+        {hasProgress && (
+          <div className="flex items-center gap-5 mt-4">
+            <MenuLink
               icon="house"
               label="Мой дом"
               onClick={() => {
@@ -141,9 +118,17 @@ export const MainMenu: React.FC = () => {
                 setScreen('game');
               }}
             />
-            <MenuTile icon="gear" label="Настройки" />
+            <span className="w-px h-3 bg-ink-700" />
+            <MenuLink
+              icon="chart"
+              label="Топ игроков"
+              onClick={() => {
+                setView('leaderboard');
+                setScreen('game');
+              }}
+            />
           </div>
-        </div>
+        )}
       </div>
 
       {/* Footer */}
@@ -154,21 +139,20 @@ export const MainMenu: React.FC = () => {
   );
 };
 
-const MenuTile: React.FC<{ icon: string; label: string; onClick?: () => void }> = ({
+const MenuLink: React.FC<{ icon: string; label: string; onClick: () => void }> = ({
   icon,
   label,
   onClick,
 }) => (
   <button
     onClick={() => {
-      if (onClick) haptic('selection');
-      onClick?.();
+      haptic('selection');
+      onClick();
     }}
-    disabled={!onClick}
-    className="tile flex flex-col items-center justify-center gap-2 min-h-[68px]"
+    className="flex items-center gap-1.5 text-xs text-ink-400 hover:text-ink-200 transition-colors min-h-[44px]"
   >
-    <PixelIcon name={icon} size={18} className="text-ink-300" />
-    <span className="text-2xs text-ink-400 font-medium">{label}</span>
+    <PixelIcon name={icon} size={11} className="text-ink-500" />
+    {label}
   </button>
 );
 

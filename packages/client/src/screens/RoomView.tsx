@@ -106,7 +106,6 @@ export const RoomView: React.FC = () => {
           geneticsConfig={geneticsConfig}
           housingLevel={player.housingLevel ?? 0}
           composition={composition}
-          pixelAvatar={pixelAvatarData}
           avatarCustom={player.avatar}
           petWear={(player.items ?? []).filter((id: string) =>
             ['pet_bow', 'pet_glasses', 'pet_crown'].includes(id)

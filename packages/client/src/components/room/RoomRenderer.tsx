@@ -2,12 +2,14 @@ import React from 'react';
 import { LayerManifest, GeneticTraits, GeneticsConfig, AvatarCustomization } from '@itsim/shared';
 import { Composition, buildLayerStack } from './layers';
 import { ProceduralAvatar } from './ProceduralAvatar';
-import { PixelAvatar } from './PixelAvatar';
-import { PixelAvatarData } from './pixelAvatar';
 import { PixelIcon } from '../pixel/PixelIcon';
 
 /**
  * Layered procedural room — DESIGN.md sections 1-2.
+ *
+ * The player is drawn full-body, standing on the floor in the same vector style
+ * as the furniture. The 32×32 pixel bust is a portrait and lives in the
+ * identity card (PixelIdentity), not in the room.
  * Fixed slots (bg/window/decor/desk/chair/setup/atmosphere/pet) stacked
  * by zOrder. Owned items and cross-collection bonuses override slots.
  */
@@ -27,15 +29,13 @@ export const RoomRenderer: React.FC<{
   geneticsConfig: GeneticsConfig;
   housingLevel: number;
   composition: Composition;
-  /** when a pixel pack is loaded, it replaces the layered avatar in the room */
-  pixelAvatar?: PixelAvatarData | null;
-  /** wardrobe overrides for the layered fallback avatar */
+  /** wardrobe overrides for the layered avatar */
   avatarCustom?: AvatarCustomization | null;
   /** owned pet accessory item ids (pet_bow / pet_glasses / pet_crown) */
   petWear?: string[];
   /** pet was fed today → happy bubble */
   petFed?: boolean;
-}> = ({ roomManifest, avatarManifest, traits, geneticsConfig, housingLevel, composition, pixelAvatar, avatarCustom, petWear, petFed }) => {
+}> = ({ roomManifest, avatarManifest, traits, geneticsConfig, housingLevel, composition, avatarCustom, petWear, petFed }) => {
   const layers = buildLayerStack(roomManifest, composition, traits, geneticsConfig);
 
   // Wardrobe wins; owned headphones still auto-equip when the slot is untouched.
@@ -43,6 +43,7 @@ export const RoomRenderer: React.FC<{
     ...(avatarCustom?.hair ? { hair: avatarCustom.hair } : {}),
     ...(avatarCustom?.beard ? { beard: avatarCustom.beard } : {}),
     ...(avatarCustom?.top ? { top: avatarCustom.top } : {}),
+    ...(avatarCustom?.bottom ? { bottom: avatarCustom.bottom } : {}),
   };
   const accessory = avatarCustom?.accessory ?? composition.avatarAccessory;
   if (accessory) avatarOverrides.accessory = accessory;
@@ -79,18 +80,14 @@ export const RoomRenderer: React.FC<{
         </>
       )}
 
-      {/* The avatar stands in front of the desk */}
-      <div className="absolute left-[8%] bottom-[16%] w-[34%]">
-        {pixelAvatar ? (
-          <PixelAvatar data={pixelAvatar} scale={8} className="rounded-lg" background="transparent" />
-        ) : (
-          <ProceduralAvatar
-            manifest={avatarManifest}
-            traits={traits}
-            geneticsConfig={geneticsConfig}
-            compositionOverrides={avatarOverrides}
-          />
-        )}
+      {/* The player stands on the floor, next to the desk */}
+      <div className="absolute left-[6%] bottom-[5%] w-[38%]">
+        <ProceduralAvatar
+          manifest={avatarManifest}
+          traits={traits}
+          geneticsConfig={geneticsConfig}
+          compositionOverrides={avatarOverrides}
+        />
       </div>
 
       {/* Housing level badge */}

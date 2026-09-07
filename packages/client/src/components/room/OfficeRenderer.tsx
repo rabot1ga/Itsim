@@ -1,8 +1,7 @@
 import React from 'react';
-import { LayerManifest } from '@itsim/shared';
+import { LayerManifest, GeneticTraits, GeneticsConfig, AvatarCustomization } from '@itsim/shared';
 import { Composition, buildLayerStack } from './layers';
-import { PixelAvatar } from './PixelAvatar';
-import { PixelAvatarData } from './pixelAvatar';
+import { ProceduralAvatar } from './ProceduralAvatar';
 
 /**
  * Office renderer (docs/design.md §11) — the same layer engine as the room
@@ -101,8 +100,12 @@ export const OfficeRenderer: React.FC<{
   officeManifest: LayerManifest;
   composition: Composition;
   mood: OfficeMood;
-  pixelAvatar?: PixelAvatarData | null;
-}> = ({ officeManifest, composition, mood, pixelAvatar }) => {
+  /** the player, drawn full-body next to the hero desk */
+  avatarManifest?: LayerManifest | null;
+  traits?: GeneticTraits | null;
+  geneticsConfig?: GeneticsConfig | null;
+  avatarCustom?: AvatarCustomization | null;
+}> = ({ officeManifest, composition, mood, avatarManifest, traits, geneticsConfig, avatarCustom }) => {
   const layers = buildLayerStack(officeManifest, composition, null, null);
 
   return (
@@ -121,10 +124,21 @@ export const OfficeRenderer: React.FC<{
         />
       ))}
 
-      {/* The player sits at the hero desk */}
-      {pixelAvatar && (
-        <div className="absolute left-[40%] bottom-[7%] w-[30%]">
-          <PixelAvatar data={pixelAvatar} scale={8} className="rounded-lg" background="transparent" />
+      {/* The player stands at the hero desk */}
+      {avatarManifest && traits && geneticsConfig && (
+        <div className="absolute left-[38%] bottom-[4%] w-[30%]">
+          <ProceduralAvatar
+            manifest={avatarManifest}
+            traits={traits}
+            geneticsConfig={geneticsConfig}
+            compositionOverrides={{
+              ...(avatarCustom?.hair ? { hair: avatarCustom.hair } : {}),
+              ...(avatarCustom?.beard ? { beard: avatarCustom.beard } : {}),
+              ...(avatarCustom?.top ? { top: avatarCustom.top } : {}),
+              ...(avatarCustom?.bottom ? { bottom: avatarCustom.bottom } : {}),
+              ...(avatarCustom?.accessory ? { accessory: avatarCustom.accessory } : {}),
+            }}
+          />
         </div>
       )}
 

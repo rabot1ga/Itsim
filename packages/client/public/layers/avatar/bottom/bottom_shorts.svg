@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 760" width="500" height="760"><g stroke="#1e2430" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+  <path d="M172 444 L328 444 L326 588 Q326 604 308 604 L282 604 Q264 604 264 588 L252 508 L236 588 Q236 604 218 604 L192 604 Q174 604 174 588 Z" fill="#6b7686"/>
+  <!-- waistband -->
+  <path d="M172 444 L328 444 L327 482 L173 482 Z" fill="#5c6575"/>
+  <path d="M250 488 L250 548" stroke="#525b69" stroke-width="5" fill="none" opacity="0.8"/>
+  <path d="M176 630 L240 630 L239 664 L177 664 Z" fill="#c6ccd8"/>
+  <path d="M260 630 L324 630 L324 664 L261 664 Z" fill="#c6ccd8"/>
+  <!-- shoes -->
+  <path d="M170 670 L242 670 L242 700 Q242 722 220 722 L182 722 Q170 722 170 710 Z" fill="#2a3240"/>
+  <path d="M258 670 L330 670 L330 710 Q330 722 318 722 L280 722 Q258 722 258 700 Z" fill="#2a3240"/>
+  <path d="M170 704 L242 704 L242 722 L182 722 Q170 722 170 712 Z" fill="#a9b1bf"/>
+  <path d="M258 704 L330 704 L330 712 Q330 722 318 722 L258 722 Z" fill="#a9b1bf"/>
+</g></svg>
