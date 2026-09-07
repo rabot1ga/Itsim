@@ -1,0 +1,144 @@
+{
+  "collection": "office",
+  "version": 1,
+  "resolution": {
+    "width": 1000,
+    "height": 1000
+  },
+  "slots": [
+    {
+      "id": "obg",
+      "zOrder": 0,
+      "required": true,
+      "entries": [
+        { "id": "obg_garage_0", "file": "office/obg/obg_garage_0.svg" },
+        { "id": "obg_garage_1", "file": "office/obg/obg_garage_1.svg" },
+        { "id": "obg_product_0", "file": "office/obg/obg_product_0.svg" },
+        { "id": "obg_product_1", "file": "office/obg/obg_product_1.svg" },
+        { "id": "obg_corp_0", "file": "office/obg/obg_corp_0.svg" },
+        { "id": "obg_corp_1", "file": "office/obg/obg_corp_1.svg" },
+        { "id": "obg_cowork_0", "file": "office/obg/obg_cowork_0.svg" },
+        { "id": "obg_cowork_1", "file": "office/obg/obg_cowork_1.svg" }
+      ]
+    },
+    {
+      "id": "ocity",
+      "zOrder": 1,
+      "required": true,
+      "entries": [
+        { "id": "ocity_spalnik", "file": "office/ocity/ocity_spalnik.svg" },
+        { "id": "ocity_center", "file": "office/ocity/ocity_center.svg" },
+        { "id": "ocity_city", "file": "office/ocity/ocity_city.svg" },
+        { "id": "ocity_neon", "file": "office/ocity/ocity_neon.svg" }
+      ]
+    },
+    {
+      "id": "oboard",
+      "zOrder": 2,
+      "required": true,
+      "entries": [
+        { "id": "oboard_kanban", "file": "office/oboard/oboard_kanban.svg" },
+        { "id": "oboard_sprint", "file": "office/oboard/oboard_sprint.svg" },
+        { "id": "oboard_arch", "file": "office/oboard/oboard_arch.svg" },
+        { "id": "oboard_motivate", "file": "office/oboard/oboard_motivate.svg" }
+      ]
+    },
+    {
+      "id": "oteam",
+      "zOrder": 3,
+      "required": true,
+      "entries": [
+        { "id": "oteam_row", "file": "office/oteam/oteam_row.svg" },
+        { "id": "oteam_island", "file": "office/oteam/oteam_island.svg" },
+        { "id": "oteam_cubes", "file": "office/oteam/oteam_cubes.svg" }
+      ]
+    },
+    {
+      "id": "odesk",
+      "zOrder": 4,
+      "required": true,
+      "entries": [
+        { "id": "odesk_0", "file": "office/odesk/odesk_0.svg" },
+        { "id": "odesk_1", "file": "office/odesk/odesk_1.svg" },
+        { "id": "odesk_2", "file": "office/odesk/odesk_2.svg" },
+        { "id": "odesk_3", "file": "office/odesk/odesk_3.svg" },
+        { "id": "odesk_4", "file": "office/odesk/odesk_4.svg" }
+      ]
+    },
+    {
+      "id": "odesk_micro",
+      "zOrder": 5,
+      "required": false,
+      "entries": [
+        { "id": "omicro_none", "file": "office/omicro/omicro_none.svg" },
+        { "id": "omicro_photo", "file": "office/omicro/omicro_photo.svg" },
+        { "id": "omicro_figure", "file": "office/omicro/omicro_figure.svg" },
+        { "id": "omicro_mug", "file": "office/omicro/omicro_mug.svg" },
+        { "id": "omicro_cactus", "file": "office/omicro/omicro_cactus.svg" },
+        { "id": "omicro_award", "file": "office/omicro/omicro_award.svg" },
+        { "id": "omicro_duck", "file": "office/omicro/omicro_duck.svg" }
+      ]
+    },
+    {
+      "id": "colleague1",
+      "zOrder": 6,
+      "required": false,
+      "entries": [
+        { "id": "none", "file": "office/colleague/none.svg" },
+        { "id": "lead", "file": "office/colleague/lead.svg" },
+        { "id": "mentor", "file": "office/colleague/mentor.svg" },
+        { "id": "toxic", "file": "office/colleague/toxic.svg" },
+        { "id": "hr", "file": "office/colleague/hr.svg" },
+        { "id": "junior", "file": "office/colleague/junior.svg" }
+      ]
+    },
+    {
+      "id": "colleague2",
+      "zOrder": 7,
+      "required": false,
+      "entries": [
+        { "id": "none", "file": "office/colleague/none.svg" },
+        { "id": "lead", "file": "office/colleague/lead.svg" },
+        { "id": "mentor", "file": "office/colleague/mentor.svg" },
+        { "id": "toxic", "file": "office/colleague/toxic.svg" },
+        { "id": "hr", "file": "office/colleague/hr.svg" },
+        { "id": "junior", "file": "office/colleague/junior.svg" }
+      ]
+    },
+    {
+      "id": "colleague3",
+      "zOrder": 8,
+      "required": false,
+      "entries": [
+        { "id": "none", "file": "office/colleague/none.svg" },
+        { "id": "mentor", "file": "office/colleague/mentor.svg" },
+        { "id": "toxic", "file": "office/colleague/toxic.svg" },
+        { "id": "hr", "file": "office/colleague/hr.svg" },
+        { "id": "junior", "file": "office/colleague/junior.svg" },
+        { "id": "lead", "file": "office/colleague/lead.svg" }
+      ]
+    },
+    {
+      "id": "ocoffee",
+      "zOrder": 9,
+      "required": true,
+      "entries": [
+        { "id": "ocoffee_cooler", "file": "office/ocoffee/ocoffee_cooler.svg" },
+        { "id": "ocoffee_machine", "file": "office/ocoffee/ocoffee_machine.svg" },
+        { "id": "ocoffee_juice", "file": "office/ocoffee/ocoffee_juice.svg" }
+      ]
+    },
+    {
+      "id": "omood",
+      "zOrder": 10,
+      "required": false,
+      "entries": [
+        { "id": "omood_none", "file": "office/omood/omood_none.svg" },
+        { "id": "omood_deadline", "file": "office/omood/omood_deadline.svg" },
+        { "id": "omood_friday", "file": "office/omood/omood_friday.svg" },
+        { "id": "omood_night", "file": "office/omood/omood_night.svg" },
+        { "id": "omood_retro", "file": "office/omood/omood_retro.svg" }
+      ]
+    }
+  ]
+}

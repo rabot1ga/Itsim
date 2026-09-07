@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useGameStore } from '../store/gameStore';
+import { haptic } from '../lib/telegram';
 
 /**
  * Interview mini-game — gamified learning (quiz with explanations).
@@ -53,6 +54,7 @@ export const InterviewPanel: React.FC = () => {
     const data = await startInterview();
     setBusy(false);
     if (data?.questions?.length) {
+      haptic('medium');
       setQuestions(data.questions);
       const restored: Record<string, number> = {};
       for (const a of data.answers ?? []) {
@@ -69,6 +71,7 @@ export const InterviewPanel: React.FC = () => {
     const data = await answerInterview(questions[idx].id, optionIndex);
     setBusy(false);
     if (data) {
+      haptic(data.correct ? 'success' : 'error');
       setChosen((c) => ({ ...c, [questions[idx].id]: optionIndex }));
       setAnswers((a) => ({
         ...a,
@@ -78,10 +81,13 @@ export const InterviewPanel: React.FC = () => {
           explanation: data.explanation,
         },
       }));
+    } else {
+      haptic('error');
     }
   };
 
   const next = () => {
+    haptic('selection');
     if (idx + 1 < questions.length) {
       setIdx(idx + 1);
     } else {
@@ -94,8 +100,11 @@ export const InterviewPanel: React.FC = () => {
     const data = await finishInterview();
     setBusy(false);
     if (data) {
+      haptic(data.result === 'offer' ? 'success' : 'warning');
       setFinish(data);
       setPhase('result');
+    } else {
+      haptic('error');
     }
   };
 
@@ -114,7 +123,7 @@ export const InterviewPanel: React.FC = () => {
         <button
           onClick={start}
           disabled={busy}
-          className="w-full py-2.5 bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white rounded-xl font-bold transition-all active:scale-[0.98]"
+          className="w-full py-3 bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white rounded-xl font-bold transition-all active:scale-[0.98] touch-target"
         >
           {busy ? 'Готовим вопросы...' : 'Начать собеседование'}
         </button>
@@ -160,7 +169,7 @@ export const InterviewPanel: React.FC = () => {
                 key={i}
                 onClick={() => choose(i)}
                 disabled={result !== undefined || busy}
-                className={`w-full text-left px-3 py-2.5 rounded-xl border text-sm text-slate-200 transition-all ${cls}`}
+                className={`w-full text-left px-3 py-3 rounded-xl border text-sm text-slate-200 transition-all touch-target active:scale-[0.98] ${cls}`}
               >
                 <span className="font-mono text-xs text-slate-500 mr-2">{String.fromCharCode(65 + i)}.</span>
                 {option}
@@ -184,7 +193,7 @@ export const InterviewPanel: React.FC = () => {
             </div>
             <button
               onClick={next}
-              className="w-full mt-2 py-2.5 bg-sky-600 hover:bg-sky-500 text-white rounded-xl font-bold transition-all active:scale-[0.98]"
+              className="w-full mt-2 py-3 bg-sky-600 hover:bg-sky-500 text-white rounded-xl font-bold transition-all active:scale-[0.98] touch-target"
             >
               {idx + 1 < questions.length ? 'Следующий вопрос →' : 'К итогам 📊'}
             </button>
@@ -214,7 +223,7 @@ export const InterviewPanel: React.FC = () => {
         <button
           onClick={complete}
           disabled={busy}
-          className="w-full py-2.5 bg-gradient-to-r from-sky-600 to-violet-600 hover:from-sky-500 hover:to-violet-500 disabled:opacity-50 text-white rounded-xl font-bold transition-all active:scale-[0.98]"
+          className="w-full py-3 bg-gradient-to-r from-sky-600 to-violet-600 hover:from-sky-500 hover:to-violet-500 disabled:opacity-50 text-white rounded-xl font-bold transition-all active:scale-[0.98] touch-target"
         >
           {busy ? 'Интервьюер совещается...' : 'Узнать решение 🎯'}
         </button>

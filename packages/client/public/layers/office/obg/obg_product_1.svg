@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000"><defs>
+  <linearGradient id="wallGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#a6abb5"/><stop offset="1" stop-color="#898e99"/>
+  </linearGradient>
+  <linearGradient id="floorGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#5f5f5f"/><stop offset="1" stop-color="#424242"/>
+  </linearGradient>
+  <linearGradient id="glassGrad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#ddeaf7"/><stop offset="1" stop-color="#a9c6e0"/>
+  </linearGradient>
+  <linearGradient id="woodGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#b98d60"/><stop offset="1" stop-color="#8a6238"/>
+  </linearGradient>
+  <linearGradient id="steelGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#8b93a3"/><stop offset="1" stop-color="#5d6672"/>
+  </linearGradient>
+</defs><g stroke="#1e2430" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+  <rect x="0" y="0" width="1000" height="680" fill="url(#wallGrad)"/>
+  <rect x="0" y="0" width="1000" height="680" fill="#aec6d8" opacity="0.35"/>
+  <rect x="0" y="656" width="1000" height="24" fill="url(#steelGrad)"/>
+  <rect x="0" y="680" width="1000" height="320" fill="url(#floorGrad)"/>
+  <line x1="0" y1="760" x2="1000" y2="760" stroke="#000000" stroke-width="3" opacity="0.15"/>
+  <line x1="0" y1="840" x2="1000" y2="840" stroke="#000000" stroke-width="3" opacity="0.15"/>
+  <line x1="0" y1="920" x2="1000" y2="920" stroke="#000000" stroke-width="3" opacity="0.15"/>
+  <circle cx="130" cy="140" r="34" fill="#ffe08a"/>
+  <rect x="90" y="230" width="80" height="120" rx="6" fill="#7fae7a"/>
+  <rect x="70" y="350" width="120" height="26" rx="6" fill="url(#woodGrad)"/>
+  <ellipse cx="500" cy="860" rx="330" ry="60" fill="#000000" opacity="0.10" stroke="none"/>
+  <rect x="180" y="790" width="640" height="130" rx="14" fill="#3d5a80" opacity="0.55"/>
+  <circle cx="500" cy="110" r="40" fill="#fff8d8" opacity="0.85" stroke="none"/></g><g><rect x="350" y="926" width="300" height="44" rx="12" fill="#000000" opacity="0.35" stroke="none"/><text x="500" y="956" font-family="monospace" font-size="24" fill="#ffffff" opacity="0.75" text-anchor="middle">product · lvl 1</text></g></svg>

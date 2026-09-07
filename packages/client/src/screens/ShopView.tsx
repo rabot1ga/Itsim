@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
+import { Spinner, EmptyState } from '../components/ui';
 
 const HOUSING = [
   { level: 0, name: 'Общага', cost: 5000, bonus: 'базовое' },
@@ -25,19 +26,52 @@ interface ShopItem {
   price: number;
   description: string;
   icon: string;
+  layerId?: string;
+  nft?: boolean;
 }
 
 export const ShopView: React.FC = () => {
   const player = useGameStore((s) => s.player);
   const performAction = useGameStore((s) => s.performAction);
   const [items, setItems] = useState<ShopItem[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  const [roomManifest, setRoomManifest] = useState<any>(null);
+  const [avatarManifest, setAvatarManifest] = useState<any>(null);
 
   useEffect(() => {
     fetch('/api/content/items')
       .then((r) => r.json())
-      .then((data) => setItems(data.items ?? []))
-      .catch(() => setItems([]));
+      .then((data) => {
+        setItems(data.items ?? []);
+        setLoaded(true);
+      })
+      .catch(() => {
+        setItems([]);
+        setLoaded(true);
+      });
+    // Layer manifests power the "how it looks" thumbnails (DESIGN.md 3.2: layerId)
+    fetch('/api/content/layers')
+      .then((r) => r.json())
+      .then((data) => {
+        setRoomManifest(data.room ?? null);
+        setAvatarManifest(data.avatar ?? null);
+      })
+      .catch(() => {});
   }, []);
+
+  /** Find the visual for an item's layerId across room + avatar manifests. */
+  const layerVisual = (layerId?: string): { file: string; where: 'room' | 'avatar' } | null => {
+    if (!layerId) return null;
+    for (const [manifest, where] of [
+      [roomManifest, 'room'],
+      [avatarManifest, 'avatar'],
+    ] as const) {
+      const slot = manifest?.slots?.find((s: any) => s.entries?.some((e: any) => e.id === layerId));
+      const entry = slot?.entries?.find((e: any) => e.id === layerId);
+      if (entry?.file) return { file: entry.file, where };
+    }
+    return null;
+  };
 
   if (!player) return null;
 
@@ -51,10 +85,19 @@ export const ShopView: React.FC = () => {
         <span className="text-sm text-emerald-400">{formatMoney(player.money ?? 0)}</span>
       </div>
 
+      {!loaded && <Spinner label="Открываем магазин…" />}
+      {loaded && items.length === 0 && (
+        <EmptyState
+          icon="🏚"
+          title="Полки пустые"
+          hint="Не удалось загрузить товары. Проверь соединение и зайди позже."
+        />
+      )}
       <div className="grid grid-cols-1 gap-3">
         {items.map((item) => {
           const owned = alreadyOwned(item.id);
           const affordable = canAfford(item.price);
+          const visual = layerVisual(item.layerId);
 
           return (
             <div
@@ -63,13 +106,36 @@ export const ShopView: React.FC = () => {
                 owned ? 'border-emerald-500/30' : affordable ? 'border-slate-600' : 'border-slate-700/50 opacity-60'
               }`}
             >
-              <span className="text-2xl">{TYPE_ICONS[item.type] ?? '📦'}</span>
+              {visual ? (
+                <img
+                  src={`/layers/${visual.file}`}
+                  alt=""
+                  draggable={false}
+                  className="w-14 h-14 rounded-xl border border-slate-700 bg-slate-800 object-cover shrink-0 select-none"
+                />
+              ) : (
+                <span className="text-2xl w-14 text-center shrink-0">{TYPE_ICONS[item.type] ?? '📦'}</span>
+              )}
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-sm font-medium text-slate-200">{item.name}</span>
                   {owned && <span className="text-xs text-emerald-400">✅</span>}
                 </div>
                 <p className="text-xs text-slate-500">{item.description}</p>
+                {(visual || item.nft) && (
+                  <div className="flex gap-1 mt-1 flex-wrap">
+                    {visual && (
+                      <span className="chip bg-primary-900/50 text-primary-300 border border-primary-700/40">
+                        {visual.where === 'room' ? '🎨 в комнату' : '🧍 на персонажа'}
+                      </span>
+                    )}
+                    {item.nft && (
+                      <span className="chip bg-amber-900/40 text-amber-300 border border-amber-700/40">
+                        🔗 NFT
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
               <div className="text-right">
                 <div className="text-sm text-emerald-400 font-mono">{formatMoney(item.price)}</div>
@@ -77,9 +143,9 @@ export const ShopView: React.FC = () => {
                   <button
                     disabled={!affordable}
                     onClick={() => performAction('buy_item', { itemId: item.id })}
-                    className={`mt-1 text-xs px-3 py-1 rounded ${
+                    className={`mt-1.5 text-sm px-4 py-2 rounded-xl touch-target font-medium transition-all ${
                       affordable
-                        ? 'bg-primary-600 text-white hover:bg-primary-700'
+                        ? 'bg-primary-600 text-white hover:bg-primary-700 active:scale-95'
                         : 'bg-slate-700 text-slate-500 cursor-not-allowed'
                     }`}
                   >
@@ -100,6 +166,9 @@ export const ShopView: React.FC = () => {
             const current = player.housingLevel === h.level;
             const isNext = player.housingLevel + 1 === h.level;
             const affordable = canAfford(h.cost);
+            const bgEntry = roomManifest?.slots
+              ?.find((s: any) => s.id === 'bg')
+              ?.entries?.find((e: any) => e.id === `bg_${h.level}`);
             return (
               <div
                 key={h.level}
@@ -107,11 +176,24 @@ export const ShopView: React.FC = () => {
                   current ? 'bg-emerald-800/20 border border-emerald-500/30' : 'bg-slate-800/50'
                 }`}
               >
-                <div>
-                  <span className={`text-sm ${current ? 'text-emerald-300' : 'text-slate-300'}`}>
-                    {current ? '📍 ' : ''}{h.name}
-                  </span>
-                  <span className="text-xs text-slate-500 ml-2">{h.bonus}</span>
+                <div className="flex items-center gap-2 min-w-0">
+                  {bgEntry?.file && (
+                    <img
+                      src={`/layers/${bgEntry.file}`}
+                      alt=""
+                      draggable={false}
+                      className="w-10 h-10 rounded-lg border border-slate-700 bg-slate-800 object-cover shrink-0 select-none"
+                    />
+                  )}
+                  <div className="min-w-0">
+                    <span className={`text-sm ${current ? 'text-emerald-300' : 'text-slate-300'}`}>
+                      {current ? '📍 ' : ''}{h.name}
+                    </span>
+                    <span className="text-xs text-slate-500 ml-2">{h.bonus}</span>
+                    {!current && (
+                      <span className="block text-[10px] text-primary-400 mt-0.5">🎨 меняет фон комнаты</span>
+                    )}
+                  </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-slate-400">{formatMoney(h.cost)}/мес</span>
@@ -119,9 +201,9 @@ export const ShopView: React.FC = () => {
                     <button
                       disabled={!affordable}
                       onClick={() => performAction('upgrade_housing')}
-                      className={`text-xs px-3 py-1 rounded ${
+                      className={`text-xs px-4 py-2 rounded-xl touch-target font-medium transition-all ${
                         affordable
-                          ? 'bg-primary-600 text-white hover:bg-primary-700'
+                          ? 'bg-primary-600 text-white hover:bg-primary-700 active:scale-95'
                           : 'bg-slate-700 text-slate-500 cursor-not-allowed'
                       }`}
                     >

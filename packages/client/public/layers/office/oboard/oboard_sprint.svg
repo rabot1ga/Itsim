@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000"><defs>
+  <linearGradient id="wallGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#a6abb5"/><stop offset="1" stop-color="#898e99"/>
+  </linearGradient>
+  <linearGradient id="floorGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#5f5f5f"/><stop offset="1" stop-color="#424242"/>
+  </linearGradient>
+  <linearGradient id="glassGrad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#ddeaf7"/><stop offset="1" stop-color="#a9c6e0"/>
+  </linearGradient>
+  <linearGradient id="woodGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#b98d60"/><stop offset="1" stop-color="#8a6238"/>
+  </linearGradient>
+  <linearGradient id="steelGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#8b93a3"/><stop offset="1" stop-color="#5d6672"/>
+  </linearGradient>
+</defs><ellipse cx="260" cy="446" rx="180" ry="10" fill="#000000" opacity="0.14" stroke="none"/><g stroke="#1e2430" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+  <rect x="70" y="130" width="380" height="300" rx="10" fill="#f5f7fa"/>
+  <rect x="70" y="130" width="380" height="300" rx="10" fill="none" stroke-width="8"/>
+  
+  <line x1="100" y1="180" x2="100" y2="360" stroke="#5d6672" stroke-width="4"/>
+  <line x1="100" y1="360" x2="420" y2="360" stroke="#5d6672" stroke-width="4"/>
+  <path d="M100 190 L200 230 L300 250 L420 330" fill="none" stroke="#c45a5a" stroke-width="6"/>
+  <path d="M100 190 L420 330" fill="none" stroke="#7fae7a" stroke-width="4" stroke-dasharray="10 8"/></g><g><rect x="110" y="916" width="300" height="44" rx="12" fill="#000000" opacity="0.35" stroke="none"/><text x="260" y="946" font-family="monospace" font-size="24" fill="#ffffff" opacity="0.75" text-anchor="middle">board · sprint</text></g></svg>

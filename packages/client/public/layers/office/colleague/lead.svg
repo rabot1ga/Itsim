@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000"><defs>
+  <linearGradient id="wallGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#a6abb5"/><stop offset="1" stop-color="#898e99"/>
+  </linearGradient>
+  <linearGradient id="floorGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#5f5f5f"/><stop offset="1" stop-color="#424242"/>
+  </linearGradient>
+  <linearGradient id="glassGrad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#ddeaf7"/><stop offset="1" stop-color="#a9c6e0"/>
+  </linearGradient>
+  <linearGradient id="woodGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#b98d60"/><stop offset="1" stop-color="#8a6238"/>
+  </linearGradient>
+  <linearGradient id="steelGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#8b93a3"/><stop offset="1" stop-color="#5d6672"/>
+  </linearGradient>
+</defs><g stroke="#1e2430" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+  <ellipse cx="500" cy="770" rx="70" ry="16" fill="#000000" opacity="0.15" stroke="none"/>
+  <rect x="472" y="620" width="24" height="140" fill="#3a4356"/>
+  <rect x="504" y="620" width="24" height="140" fill="#3a4356"/>
+  <path d="M440 470 h120 v150 h-120 Z" fill="#3d5a80"/>
+  <rect x="440" y="470" width="120" height="150" fill="#2b3f5c" opacity="0.25" stroke="none"/>
+  <circle cx="500" cy="410" r="44" fill="#b9b0a4"/>
+  <circle cx="486" cy="406" r="5" fill="#222" stroke="none"/>
+  <circle cx="514" cy="406" r="5" fill="#222" stroke="none"/>
+  <path d="M488 428 Q500 436 512 428" fill="none" stroke="#222" stroke-width="4"/>
+  <rect x="492" y="470" width="16" height="70" fill="#c45a5a" stroke="none"/></g><g><rect x="350" y="916" width="300" height="44" rx="12" fill="#000000" opacity="0.35" stroke="none"/><text x="500" y="946" font-family="monospace" font-size="24" fill="#ffffff" opacity="0.75" text-anchor="middle">lead</text></g></svg>

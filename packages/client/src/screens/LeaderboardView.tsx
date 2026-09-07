@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
+import { Spinner, EmptyState } from '../components/ui';
 
 /**
  * Leaderboard — real ratings from persisted player states.
@@ -58,6 +59,7 @@ export const LeaderboardView: React.FC = () => {
       </p>
 
       <div className="space-y-1.5">
+        {!loaded && <Spinner label="Считаем рейтинг…" />}
         {rows.map((row) => (
           <div
             key={row.rank}
@@ -84,11 +86,7 @@ export const LeaderboardView: React.FC = () => {
           </div>
         ))}
         {loaded && rows.length === 0 && (
-          <div className="game-card text-center py-8">
-            <div className="text-3xl mb-2">🏜</div>
-            <p className="text-slate-400 text-sm">Пока пусто</p>
-            <p className="text-slate-500 text-xs mt-1">Сыграй первый день — и попадёшь в топ!</p>
-          </div>
+          <EmptyState icon="🏜" title="Пока пусто" hint="Сыграй первый день — и попадёшь в топ!" />
         )}
       </div>
     </div>

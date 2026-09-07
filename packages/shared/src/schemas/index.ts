@@ -417,7 +417,7 @@ export const LayerSlotSchema = z.object({
 });
 
 export const LayerManifestSchema = z.object({
-  collection: z.enum(['avatar', 'room']),
+  collection: z.enum(['avatar', 'room', 'office']),
   version: z.number().int().positive(),
   resolution: z.object({ width: z.number().int().positive(), height: z.number().int().positive() }),
   slots: z.array(LayerSlotSchema).min(1),

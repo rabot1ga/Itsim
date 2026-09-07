@@ -62,11 +62,26 @@ export async function contentRoutes(app: FastifyInstance) {
   });
 
   /**
-   * GET /api/content/layers — avatar/room layer manifests (DESIGN.md 2)
+   * GET /api/content/layers — avatar/room/office layer manifests (DESIGN.md 2)
    */
   app.get('/layers', async () => {
-    const { avatarLayers, roomLayers } = getContent();
-    return { avatar: avatarLayers, room: roomLayers };
+    const { avatarLayers, roomLayers, officeLayers } = getContent();
+    return { avatar: avatarLayers, room: roomLayers, office: officeLayers };
+  });
+
+  /**
+   * GET /api/content/npcs — colleagues for the office screen (docs/design.md §11)
+   */
+  app.get('/npcs', async () => {
+    const { npcs } = getContent();
+    return {
+      npcs: npcs.map((n: any) => ({
+        id: n.id,
+        name: n.name,
+        role: n.role,
+        description: n.description,
+      })),
+    };
   });
 
   /**

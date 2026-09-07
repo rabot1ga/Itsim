@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { LayerManifest, GeneticTraits, GeneticsConfig } from '@itsim/shared';
+import { haptic } from '../../lib/telegram';
 import { Composition, buildLayerStack } from './layers';
 
 /**
@@ -22,6 +23,56 @@ const GRADE_LABELS: Record<string, string> = {
   cto: 'CTO',
 };
 
+/** Share frame themes (docs/design.md §15.10) — picked in UI, drawn on canvas. */
+export type ShareFrame = 'minimal' | 'neon' | 'gold' | 'meme';
+
+const FRAMES: { id: ShareFrame; name: string; need?: { ach: string; label: string } }[] = [
+  { id: 'minimal', name: '⬜ Минимализм' },
+  { id: 'neon', name: '🌈 Неон' },
+  { id: 'gold', name: '🥇 Золото', need: { ach: 'first_million', label: 'Первый миллион' } },
+  { id: 'meme', name: '🐸 Мем', need: { ach: 'events_50', label: '50 событий' } },
+];
+
+function loadFrame(): ShareFrame {
+  try {
+    const saved = localStorage.getItem('itsim_share_frame');
+    if (saved && FRAMES.some((f) => f.id === saved)) return saved as ShareFrame;
+  } catch {
+    /* private mode */
+  }
+  return 'minimal';
+}
+
+function drawFrame(ctx: CanvasRenderingContext2D, frame: ShareFrame, player: any): void {
+  if (frame === 'neon') {
+    const g = ctx.createLinearGradient(0, 0, W, H);
+    g.addColorStop(0, '#38bdf8');
+    g.addColorStop(1, '#e879f9');
+    ctx.strokeStyle = g;
+    ctx.lineWidth = 18;
+    ctx.strokeRect(9, 9, W - 18, H - 18);
+  } else if (frame === 'gold') {
+    ctx.strokeStyle = '#f4d35e';
+    ctx.lineWidth = 10;
+    ctx.strokeRect(14, 14, W - 28, H - 28);
+    ctx.lineWidth = 4;
+    ctx.strokeRect(36, 36, W - 72, H - 72);
+  } else if (frame === 'meme') {
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, W, 150);
+    ctx.fillRect(0, H - 150, W, 150);
+    ctx.fillStyle = '#111111';
+    ctx.textAlign = 'center';
+    ctx.font = 'bold 62px Impact, sans-serif';
+    ctx.fillText(`КОГДА СТАЛ ${(GRADE_LABELS[player.grade] ?? player.grade).toUpperCase()}`, W / 2, 102);
+    ctx.fillText(`ЗА ${player.currentDay} ДНЕЙ`, W / 2, H - 52);
+  } else {
+    ctx.strokeStyle = 'rgba(148, 163, 184, 0.5)';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(2, 2, W - 4, H - 4);
+  }
+}
+
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -39,7 +90,8 @@ async function renderCanvas(
   traits: GeneticTraits,
   geneticsConfig: GeneticsConfig,
   composition: Composition,
-  player: any
+  player: any,
+  frame: ShareFrame
 ): Promise<void> {
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('Canvas 2D unavailable');
@@ -50,10 +102,10 @@ async function renderCanvas(
     {
       body: 'body_base',
       eyes: traits.eyeShape,
-      hair: traits.hairStyle,
-      beard: traits.beard,
-      top: traits.top,
-      accessory: composition.avatarAccessory ?? traits.accessory,
+      hair: player?.avatar?.hair ?? traits.hairStyle,
+      beard: player?.avatar?.beard ?? traits.beard,
+      top: player?.avatar?.top ?? traits.top,
+      accessory: player?.avatar?.accessory ?? composition.avatarAccessory ?? traits.accessory,
     },
     traits,
     geneticsConfig
@@ -112,6 +164,9 @@ async function renderCanvas(
   ctx.fillStyle = '#64748b';
   ctx.font = '30px sans-serif';
   ctx.fillText('IT Life Simulator · t.me/itsim_bot', W / 2, cardY + 240);
+
+  // 4. Frame theme
+  drawFrame(ctx, frame, player);
 }
 
 function formatMoney(amount: number): string {
@@ -132,23 +187,45 @@ export const ShareCard: React.FC<{
   const [dataUrl, setDataUrl] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [frame, setFrame] = useState<ShareFrame>(loadFrame);
 
-  const generate = async () => {
+  const generate = async (useFrame: ShareFrame = frame) => {
     setBusy(true);
     setError(null);
+    haptic('tap');
     try {
       const canvas = canvasRef.current!;
-      await renderCanvas(canvas, roomManifest, avatarManifest, traits, geneticsConfig, composition, player);
+      await renderCanvas(canvas, roomManifest, avatarManifest, traits, geneticsConfig, composition, player, useFrame);
       setDataUrl(canvas.toDataURL('image/png'));
+      haptic('success');
     } catch (err: any) {
+      haptic('error');
       setError(err.message || 'Не удалось сгенерировать карточку');
     } finally {
       setBusy(false);
     }
   };
 
+  const pickFrame = (f: (typeof FRAMES)[number]) => {
+    const locked = f.need && !(player?.achievements ?? []).includes(f.need.ach);
+    if (locked) {
+      haptic('error');
+      setError(`🔒 Рамка «${f.name}» — ачивка «${f.need!.label}»`);
+      return;
+    }
+    haptic('selection');
+    setFrame(f.id);
+    try {
+      localStorage.setItem('itsim_share_frame', f.id);
+    } catch {
+      /* private mode */
+    }
+    void generate(f.id);
+  };
+
   const share = () => {
     if (!dataUrl) return;
+    haptic('medium');
     const tg = (window as any).Telegram?.WebApp;
     if (tg?.switchInlineQuery) {
       // Opens a share picker in Telegram (chat/user selection)
@@ -162,24 +239,46 @@ export const ShareCard: React.FC<{
     }
   };
 
+  const achs: string[] = player?.achievements ?? [];
+
   return (
     <div className="game-card">
       <h3 className="section-title mb-2">📸 Карточка для шеринга</h3>
       <canvas ref={canvasRef} width={W} height={H} style={{ display: 'none' }} />
       {dataUrl && <img src={dataUrl} alt="Шар-карточка" className="rounded-lg border border-slate-700 mb-2" />}
       {error && <p className="text-xs text-red-300 mb-2">⚠️ {error}</p>}
+      <div className="grid grid-cols-4 gap-1.5 mb-2">
+        {FRAMES.map((f) => {
+          const locked = f.need && !achs.includes(f.need.ach);
+          return (
+            <button
+              key={f.id}
+              onClick={() => pickFrame(f)}
+              disabled={busy}
+              title={locked ? `🔒 ${f.need!.label}` : f.name}
+              className={`px-1 py-2 text-[11px] leading-tight rounded-lg border transition-all ${
+                frame === f.id
+                  ? 'bg-primary-600/30 border-primary-400 text-slate-100'
+                  : 'bg-slate-800/60 border-slate-700 text-slate-300'
+              } ${locked ? 'opacity-50' : ''}`}
+            >
+              {locked ? `🔒 ${f.name}` : f.name}
+            </button>
+          );
+        })}
+      </div>
       <div className="flex gap-2">
         <button
-          onClick={generate}
+          onClick={() => generate()}
           disabled={busy}
-          className="flex-1 px-3 py-2 text-sm bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white rounded-lg"
+          className="flex-1 px-3 py-2.5 text-sm bg-primary-600 hover:bg-primary-700 active:scale-[0.98] disabled:opacity-50 text-white rounded-xl touch-target font-medium transition-all"
         >
           {busy ? 'Рендерим…' : 'Сгенерировать'}
         </button>
         <button
           onClick={share}
           disabled={!dataUrl}
-          className="flex-1 px-3 py-2 text-sm bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-lg"
+          className="flex-1 px-3 py-2.5 text-sm bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] disabled:opacity-50 text-white rounded-xl touch-target font-medium transition-all"
         >
           Поделиться в Telegram
         </button>

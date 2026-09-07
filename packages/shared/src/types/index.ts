@@ -191,6 +191,39 @@ export interface PixelManifest {
   entries: PixelManifestEntry[];
 }
 
+// ---- Room customization (docs/design.md §12.2) ----
+
+export type RoomSlotId =
+  | 'bg'
+  | 'window'
+  | 'decor'
+  | 'desk'
+  | 'setup'
+  | 'chair'
+  | 'atmosphere'
+  | 'pet';
+
+export type AvatarSlotId = 'hair' | 'beard' | 'top' | 'accessory';
+
+/**
+ * Wardrobe overrides (docs/design.md §12.5) — layered-manifest entry ids.
+ * Missing/null = genetic. Eyes stay genetic (bloodline), everything else changeable.
+ */
+export interface AvatarCustomization {
+  hair?: string | null;
+  beard?: string | null;
+  top?: string | null;
+  accessory?: string | null;
+}
+
+/** Player overrides on top of the automatic room composition (housing + items + genetics). */
+export interface RoomCustomization {
+  /** explicit entry per slot; missing/null = automatic */
+  slots: Partial<Record<RoomSlotId, string | null>>;
+  /** wallColor palette id override (a repaint); missing = genetic */
+  wallColor?: string;
+}
+
 // ---- Player State ----
 
 export interface PlayerState {
@@ -227,6 +260,10 @@ export interface PlayerState {
   walletAddress?: string;
   genetics?: GeneticTraits;
   crossBonuses?: ActiveCrossBonus[];
+  /** room editor overrides (docs/design.md §12.2); missing = fully automatic room */
+  room?: RoomCustomization;
+  /** wardrobe overrides (docs/design.md §12.5); missing = genetic look */
+  avatar?: AvatarCustomization;
 
   // Skills
   skills: Record<SkillId, SkillLevel>;
@@ -660,7 +697,7 @@ export interface LayerSlot {
 }
 
 export interface LayerManifest {
-  collection: 'avatar' | 'room';
+  collection: 'avatar' | 'room' | 'office';
   version: number;
   resolution: { width: number; height: number };
   slots: LayerSlot[];

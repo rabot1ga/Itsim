@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000"><defs>
+  <linearGradient id="skinGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#969696"/><stop offset="1" stop-color="#767676"/>
+  </linearGradient>
+  <linearGradient id="hairGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#5c5c5c"/><stop offset="1" stop-color="#3c3c3c"/>
+  </linearGradient>
+  <linearGradient id="wallGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#a6abb5"/><stop offset="1" stop-color="#898e99"/>
+  </linearGradient>
+  <linearGradient id="floorGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#5f5f5f"/><stop offset="1" stop-color="#424242"/>
+  </linearGradient>
+  <linearGradient id="glassGrad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#ddeaf7"/><stop offset="1" stop-color="#a9c6e0"/>
+  </linearGradient>
+  <linearGradient id="woodGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#b98d60"/><stop offset="1" stop-color="#8a6238"/>
+  </linearGradient>
+  <linearGradient id="steelGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#8b93a3"/><stop offset="1" stop-color="#5d6672"/>
+  </linearGradient>
+</defs><g stroke="#1e2430" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+  <polygon points="175,380 110,500 240,500" fill="#2f6b3a"/>
+  <polygon points="175,440 95,580 255,580" fill="#2a6134"/>
+  <polygon points="175,510 80,660 270,660" fill="#26592e"/>
+  <rect x="160" y="660" width="30" height="44" fill="#6b4f35"/>
+  <rect x="120" y="704" width="110" height="22" rx="6" fill="#8a6238"/>
+  <circle cx="175" cy="420" r="9" fill="#ff5a5a" stroke="none"/>
+  <circle cx="150" cy="480" r="9" fill="#ffd43b" stroke="none"/>
+  <circle cx="200" cy="480" r="9" fill="#38bdf8" stroke="none"/>
+  <circle cx="130" cy="560" r="9" fill="#e879f9" stroke="none"/>
+  <circle cx="175" cy="560" r="9" fill="#ff5a5a" stroke="none"/>
+  <circle cx="220" cy="560" r="9" fill="#ffd43b" stroke="none"/>
+  <circle cx="150" cy="620" r="9" fill="#38bdf8" stroke="none"/>
+  <circle cx="200" cy="620" r="9" fill="#e879f9" stroke="none"/>
+  <polygon points="175,352 162,382 188,382" fill="#ffd43b"/></g></svg>

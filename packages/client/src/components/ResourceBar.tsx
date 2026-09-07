@@ -48,7 +48,7 @@ export const ResourceBar: React.FC = () => {
   const gradeMeta = GRADE_META[player.grade] ?? GRADE_META.unemployed;
 
   return (
-    <div className="bg-slate-900/90 backdrop-blur-md border-b border-slate-700/70 px-3 py-2 space-y-2">
+    <div className="bg-slate-900/90 backdrop-blur-md border-b border-slate-700/70 px-3 pt-2 pb-2 space-y-2 safe-area-pt shrink-0">
       {/* Day, grade, rating */}
       <div className="flex items-center justify-between gap-2">
         <span className="text-xs text-slate-400 font-medium whitespace-nowrap">
@@ -70,7 +70,7 @@ export const ResourceBar: React.FC = () => {
         <ResourceChip icon="❤️" value={player.health} max={100} color="bg-emerald-500" lowPulse />
         <ResourceChip icon="🔥" value={player.motivation} max={100} color="bg-amber-500" lowPulse />
         <ResourceChip icon="⭐" value={player.reputation} max={100} color="bg-violet-500" />
-        <div className="flex-1 min-w-0 rounded-lg bg-emerald-950/40 border border-emerald-700/40 px-2 py-1 flex items-center justify-center">
+        <div className="flex-1 min-w-0 rounded-lg bg-emerald-950/40 border border-emerald-700/40 px-1.5 py-1 flex items-center justify-center">
           <span className="text-[11px] font-bold text-emerald-300 tabular-nums whitespace-nowrap">
             💰 {formatMoney(player.money ?? 0)}
           </span>

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000"><defs>
+  <linearGradient id="wallGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#a6abb5"/><stop offset="1" stop-color="#898e99"/>
+  </linearGradient>
+  <linearGradient id="floorGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#5f5f5f"/><stop offset="1" stop-color="#424242"/>
+  </linearGradient>
+  <linearGradient id="glassGrad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#ddeaf7"/><stop offset="1" stop-color="#a9c6e0"/>
+  </linearGradient>
+  <linearGradient id="woodGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#b98d60"/><stop offset="1" stop-color="#8a6238"/>
+  </linearGradient>
+  <linearGradient id="steelGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#8b93a3"/><stop offset="1" stop-color="#5d6672"/>
+  </linearGradient>
+</defs><ellipse cx="610" cy="890" rx="300" ry="14" fill="#000000" opacity="0.14" stroke="none"/><g stroke="#1e2430" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+  <rect x="300" y="670" width="620" height="28" rx="8" fill="url(#woodGrad)"/>
+  <rect x="320" y="698" width="24" height="180" fill="#6d5638"/>
+  <rect x="876" y="698" width="24" height="180" fill="#6d5638"/>
+  <rect x="370" y="570" width="170" height="92" rx="6" fill="#2b3342"/>
+  <rect x="555" y="570" width="170" height="92" rx="6" fill="#2b3342"/>
+  <rect x="745" y="600" width="120" height="62" rx="6" fill="#3a4356"/>
+  <rect x="300" y="730" width="180" height="140" rx="8" fill="#5d6672"/></g><g><rect x="460" y="916" width="300" height="44" rx="12" fill="#000000" opacity="0.35" stroke="none"/><text x="610" y="946" font-family="monospace" font-size="24" fill="#ffffff" opacity="0.75" text-anchor="middle">my desk · senior battlestation</text></g></svg>

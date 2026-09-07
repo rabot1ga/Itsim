@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayerManifest, GeneticTraits, GeneticsConfig } from '@itsim/shared';
+import { LayerManifest, GeneticTraits, GeneticsConfig, AvatarCustomization } from '@itsim/shared';
 import { Composition, buildLayerStack } from './layers';
 import { ProceduralAvatar } from './ProceduralAvatar';
 import { PixelAvatar } from './PixelAvatar';
@@ -10,6 +10,15 @@ import { PixelAvatarData } from './pixelAvatar';
  * Fixed slots (bg/window/decor/desk/chair/setup/atmosphere/pet) stacked
  * by zOrder. Owned items and cross-collection bonuses override slots.
  */
+/** One head slot: the fanciest owned accessory wins */
+function petAccessory(wear?: string[]): string | null {
+  if (!wear || wear.length === 0) return null;
+  if (wear.includes('pet_crown')) return '👑';
+  if (wear.includes('pet_glasses')) return '🕶️';
+  if (wear.includes('pet_bow')) return '🎀';
+  return null;
+}
+
 export const RoomRenderer: React.FC<{
   roomManifest: LayerManifest;
   avatarManifest: LayerManifest;
@@ -19,8 +28,23 @@ export const RoomRenderer: React.FC<{
   composition: Composition;
   /** when a pixel pack is loaded, it replaces the layered avatar in the room */
   pixelAvatar?: PixelAvatarData | null;
-}> = ({ roomManifest, avatarManifest, traits, geneticsConfig, housingLevel, composition, pixelAvatar }) => {
+  /** wardrobe overrides for the layered fallback avatar */
+  avatarCustom?: AvatarCustomization | null;
+  /** owned pet accessory item ids (pet_bow / pet_glasses / pet_crown) */
+  petWear?: string[];
+  /** pet was fed today → happy bubble */
+  petFed?: boolean;
+}> = ({ roomManifest, avatarManifest, traits, geneticsConfig, housingLevel, composition, pixelAvatar, avatarCustom, petWear, petFed }) => {
   const layers = buildLayerStack(roomManifest, composition, traits, geneticsConfig);
+
+  // Wardrobe wins; owned headphones still auto-equip when the slot is untouched.
+  const avatarOverrides: Record<string, string> = {
+    ...(avatarCustom?.hair ? { hair: avatarCustom.hair } : {}),
+    ...(avatarCustom?.beard ? { beard: avatarCustom.beard } : {}),
+    ...(avatarCustom?.top ? { top: avatarCustom.top } : {}),
+  };
+  const accessory = avatarCustom?.accessory ?? composition.avatarAccessory;
+  if (accessory) avatarOverrides.accessory = accessory;
 
   return (
     <div className="relative w-full aspect-square overflow-hidden rounded-2xl border border-slate-700 bg-slate-800">
@@ -30,10 +54,24 @@ export const RoomRenderer: React.FC<{
           src={layer.file}
           alt=""
           draggable={false}
-          className="absolute inset-0 w-full h-full select-none"
+          className={`absolute inset-0 w-full h-full select-none ${layer.slotId === 'pet' ? 'animate-pet-bob' : ''}`}
           style={{ filter: layer.filter ?? 'none' }}
         />
       ))}
+
+      {/* Pet accessories + mood bubble (pets live at ~x88% y70% of the canvas) */}
+      {composition.pet && composition.pet !== 'pet_none' && (
+        <>
+          {petAccessory(petWear) && (
+            <span className="absolute left-[79%] top-[53%] text-3xl select-none drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]">
+              {petAccessory(petWear)}
+            </span>
+          )}
+          {petFed && (
+            <span className="absolute left-[87%] top-[60%] text-xl select-none animate-float">😋</span>
+          )}
+        </>
+      )}
 
       {/* The avatar stands in front of the desk */}
       <div className="absolute left-[8%] bottom-[16%] w-[34%]">
@@ -44,7 +82,7 @@ export const RoomRenderer: React.FC<{
             manifest={avatarManifest}
             traits={traits}
             geneticsConfig={geneticsConfig}
-            compositionOverrides={composition.avatarAccessory ? { accessory: composition.avatarAccessory } : undefined}
+            compositionOverrides={avatarOverrides}
           />
         )}
       </div>
@@ -66,8 +104,10 @@ export function buildRoomComposition(opts: {
   housingLevel: number;
   items: string[];
   crossLayers: { layerId: string; slotId: string }[];
+  /** room editor overrides (custom > cross-collection > automatic) */
+  custom?: { slots?: Record<string, string | null>; wallColor?: string };
 }): Composition {
-  const { traits, housingLevel, items, crossLayers } = opts;
+  const { traits, housingLevel, items, crossLayers, custom } = opts;
 
   const itemLayer = (...ids: string[]) => ids.find((id) => items.includes(id));
 
@@ -125,6 +165,13 @@ export function buildRoomComposition(opts: {
   composition.avatarAccessory = itemLayer('sony_headphones', 'cheap_headphones')
     ? 'acc_headphones'
     : null;
+
+  // Room editor: explicit player choice wins over everything automatic
+  if (custom?.slots) {
+    for (const [slotId, entryId] of Object.entries(custom.slots)) {
+      if (entryId) composition[slotId] = entryId;
+    }
+  }
 
   return composition;
 }

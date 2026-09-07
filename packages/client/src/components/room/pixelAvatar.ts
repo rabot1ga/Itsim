@@ -4,10 +4,12 @@ import {
   PixelColorScheme,
   PixelComposition,
   PixelGeneratorConfig,
+  AvatarCustomization,
   buildPixelComposition,
   combinationFromSeed,
   renderPixelArt,
   resolveExcludes,
+  pixelWardrobeCombo,
 } from '@itsim/shared';
 
 /**
@@ -72,7 +74,11 @@ export function packToFile(pack: PixelPack): PixelArtFile {
  * Trait-driven slots win; everything else is drawn from the player seed, which
  * keeps the avatar stable across days and reproducible across devices.
  */
-export function buildAvatarData(pack: PixelPack, traits: GeneticTraits): PixelAvatarData {
+export function buildAvatarData(
+  pack: PixelPack,
+  traits: GeneticTraits,
+  wardrobe?: AvatarCustomization | null
+): PixelAvatarData {
   const file = packToFile(pack);
   const config = pack.generatorConfig ?? { format: 1, categories: [], colorSchemes: [] };
   const seeded = combinationFromSeed(file, config, traits.seed);
@@ -87,6 +93,14 @@ export function buildAvatarData(pack: PixelPack, traits: GeneticTraits): PixelAv
       source[category] = 'trait';
     } else {
       source[category] = 'seed';
+    }
+  }
+
+  // Wardrobe overrides win over genetics (but still obey excludes, e.g. hood > hair)
+  if (wardrobe) {
+    const over = pixelWardrobeCombo(wardrobe);
+    for (const [category, value] of Object.entries(over)) {
+      if (value) combo[category] = value;
     }
   }
 

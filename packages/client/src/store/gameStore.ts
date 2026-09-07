@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { haptic } from '../lib/telegram';
 
 export type Screen = 'menu' | 'game' | 'loading';
 
@@ -152,12 +153,19 @@ export const useGameStore = create<GameState>((set, get) => ({
         });
       }
       if (!res.ok) {
+        haptic('error');
         set({ error: res.data?.error || 'Действие не выполнено' });
         return false;
       }
+      // Feel the action: purchases thud, offers celebrate, the rest just tap.
+      if (actionId === 'accept_offer') haptic('success');
+      else if (actionId === 'buy_item' || actionId === 'upgrade_housing') haptic('medium');
+      else if (actionId === 'customize_room' || actionId === 'customize_avatar') haptic('selection');
+      else haptic('tap');
       return true;
     } catch (err) {
       console.error('Action error:', err);
+      haptic('error');
       set({ error: 'Сервер недоступен' });
       return false;
     }
@@ -177,10 +185,14 @@ export const useGameStore = create<GameState>((set, get) => ({
         });
       }
       if (!res.ok) {
+        haptic('error');
         set({ error: res.data?.error || 'Не удалось завершить день' });
+      } else {
+        haptic('medium');
       }
     } catch (err) {
       console.error('Advance day error:', err);
+      haptic('error');
       set({ error: 'Сервер недоступен' });
     }
   },
@@ -192,13 +204,16 @@ export const useGameStore = create<GameState>((set, get) => ({
         body: JSON.stringify({ eventId, choiceIndex }),
       });
       if (res.data?.state) {
+        haptic('selection');
         set({ player: res.data.state, activeEvent: null, error: null });
       }
       if (!res.ok) {
+        haptic('error');
         set({ error: res.data?.error || 'Выбор не принят' });
       }
     } catch (err) {
       console.error('Event choice error:', err);
+      haptic('error');
       set({ error: 'Сервер недоступен' });
     }
   },
@@ -235,14 +250,17 @@ export const useGameStore = create<GameState>((set, get) => ({
         body: JSON.stringify({ address }),
       });
       if (res.ok && res.data?.state) {
+        haptic('success');
         set({ player: res.data.state, error: null });
         await get().loadNft();
         return true;
       }
+      haptic('error');
       set({ error: res.data?.error || 'Не удалось привязать кошелёк' });
       return false;
     } catch (err) {
       console.error('bindWallet error:', err);
+      haptic('error');
       set({ error: 'Сервер недоступен' });
       return false;
     }
@@ -269,9 +287,11 @@ export const useGameStore = create<GameState>((set, get) => ({
         body: JSON.stringify({ perkId }),
       });
       if (res.data?.state) {
+        haptic('success');
         set({ player: res.data.state, error: null });
         return true;
       }
+      haptic('error');
       set({ error: res.data?.error || 'Не удалось открыть перк' });
       return false;
     } catch (err) {
@@ -288,9 +308,11 @@ export const useGameStore = create<GameState>((set, get) => ({
         body: JSON.stringify({ skillId }),
       });
       if (res.data?.state) {
+        haptic('selection');
         set({ player: res.data.state, error: null });
         return true;
       }
+      haptic('error');
       set({ error: res.data?.error || 'Не удалось выбрать навык' });
       return false;
     } catch (err) {
