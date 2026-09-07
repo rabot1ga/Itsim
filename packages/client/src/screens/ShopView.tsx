@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
+import { Spinner, EmptyState } from '../components/ui';
 
 const HOUSING = [
   { level: 0, name: 'Общага', cost: 5000, bonus: 'базовое' },
@@ -33,14 +34,21 @@ export const ShopView: React.FC = () => {
   const player = useGameStore((s) => s.player);
   const performAction = useGameStore((s) => s.performAction);
   const [items, setItems] = useState<ShopItem[]>([]);
+  const [loaded, setLoaded] = useState(false);
   const [roomManifest, setRoomManifest] = useState<any>(null);
   const [avatarManifest, setAvatarManifest] = useState<any>(null);
 
   useEffect(() => {
     fetch('/api/content/items')
       .then((r) => r.json())
-      .then((data) => setItems(data.items ?? []))
-      .catch(() => setItems([]));
+      .then((data) => {
+        setItems(data.items ?? []);
+        setLoaded(true);
+      })
+      .catch(() => {
+        setItems([]);
+        setLoaded(true);
+      });
     // Layer manifests power the "how it looks" thumbnails (DESIGN.md 3.2: layerId)
     fetch('/api/content/layers')
       .then((r) => r.json())
@@ -77,6 +85,14 @@ export const ShopView: React.FC = () => {
         <span className="text-sm text-emerald-400">{formatMoney(player.money ?? 0)}</span>
       </div>
 
+      {!loaded && <Spinner label="Открываем магазин…" />}
+      {loaded && items.length === 0 && (
+        <EmptyState
+          icon="🏚"
+          title="Полки пустые"
+          hint="Не удалось загрузить товары. Проверь соединение и зайди позже."
+        />
+      )}
       <div className="grid grid-cols-1 gap-3">
         {items.map((item) => {
           const owned = alreadyOwned(item.id);

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
+import { Spinner } from '../components/ui';
 
 /**
  * Achievements screen — all 17 achievements with earned state and
@@ -144,11 +145,7 @@ export const AchievementsView: React.FC = () => {
             </div>
           );
         })}
-        {achievements.length === 0 && (
-          <div className="game-card text-center py-8">
-            <p className="text-slate-400 text-sm">Загрузка достижений...</p>
-          </div>
-        )}
+        {achievements.length === 0 && <Spinner label="Загрузка достижений…" />}
       </div>
     </div>
   );

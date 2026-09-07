@@ -250,14 +250,17 @@ export const useGameStore = create<GameState>((set, get) => ({
         body: JSON.stringify({ address }),
       });
       if (res.ok && res.data?.state) {
+        haptic('success');
         set({ player: res.data.state, error: null });
         await get().loadNft();
         return true;
       }
+      haptic('error');
       set({ error: res.data?.error || 'Не удалось привязать кошелёк' });
       return false;
     } catch (err) {
       console.error('bindWallet error:', err);
+      haptic('error');
       set({ error: 'Сервер недоступен' });
       return false;
     }

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { RoomRenderer, buildRoomComposition } from '../components/room/RoomRenderer';
 import { RoomEditor, entryName } from '../components/room/RoomEditor';
+import { RoomSkeleton, EmptyState } from '../components/ui';
 import { Wardrobe } from '../components/room/Wardrobe';
 import { ShareCard } from '../components/room/ShareCard';
 import { haptic } from '../lib/telegram';
@@ -109,9 +110,7 @@ export const RoomView: React.FC = () => {
           petFed={!!player.petFedToday}
         />
       ) : (
-        <div className="aspect-square rounded-2xl bg-slate-800 flex items-center justify-center text-slate-500">
-          Загрузка комнаты…
-        </div>
+        <RoomSkeleton />
       )}
 
       {/* Pet status */}
@@ -225,9 +224,12 @@ export const RoomView: React.FC = () => {
       <div className="game-card">
         <h3 className="section-title mb-2">🔗 NFT-предметы (мок)</h3>
         {(inventory ?? []).length === 0 ? (
-          <p className="text-xs text-slate-500">
-            Пока пусто. Купи NFT-предмет в магазине (Herman Miller, MacBook…) — он смонтится в кошелёк.
-          </p>
+          <EmptyState
+            bare
+            icon="🖼"
+            title="NFT пока нет"
+            hint="Загляни в магазин (Herman Miller, MacBook…) — покупка смонтится в кошелёк."
+          />
         ) : (
           <div className="space-y-1.5">
             {(inventory ?? []).map((nft: any) => (

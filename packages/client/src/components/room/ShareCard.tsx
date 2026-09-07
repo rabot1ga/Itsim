@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { LayerManifest, GeneticTraits, GeneticsConfig } from '@itsim/shared';
+import { haptic } from '../../lib/telegram';
 import { Composition, buildLayerStack } from './layers';
 
 /**
@@ -191,11 +192,14 @@ export const ShareCard: React.FC<{
   const generate = async (useFrame: ShareFrame = frame) => {
     setBusy(true);
     setError(null);
+    haptic('tap');
     try {
       const canvas = canvasRef.current!;
       await renderCanvas(canvas, roomManifest, avatarManifest, traits, geneticsConfig, composition, player, useFrame);
       setDataUrl(canvas.toDataURL('image/png'));
+      haptic('success');
     } catch (err: any) {
+      haptic('error');
       setError(err.message || 'Не удалось сгенерировать карточку');
     } finally {
       setBusy(false);
@@ -205,9 +209,11 @@ export const ShareCard: React.FC<{
   const pickFrame = (f: (typeof FRAMES)[number]) => {
     const locked = f.need && !(player?.achievements ?? []).includes(f.need.ach);
     if (locked) {
+      haptic('error');
       setError(`🔒 Рамка «${f.name}» — ачивка «${f.need!.label}»`);
       return;
     }
+    haptic('selection');
     setFrame(f.id);
     try {
       localStorage.setItem('itsim_share_frame', f.id);
@@ -219,6 +225,7 @@ export const ShareCard: React.FC<{
 
   const share = () => {
     if (!dataUrl) return;
+    haptic('medium');
     const tg = (window as any).Telegram?.WebApp;
     if (tg?.switchInlineQuery) {
       // Opens a share picker in Telegram (chat/user selection)

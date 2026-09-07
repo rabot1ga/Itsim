@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { InterviewPanel } from '../components/InterviewPanel';
+import { Spinner } from '../components/ui';
 
 interface GateInfo {
   grade: string;
@@ -122,6 +123,15 @@ export const CareerView: React.FC = () => {
       )}
 
       {/* Job offers */}
+      {offers.length === 0 && !player.job && !application && (
+        <div className="game-card !py-3 flex items-center gap-3">
+          <span className="text-2xl">📭</span>
+          <p className="text-xs text-slate-400 leading-relaxed">
+            Офферов пока нет — откликнись на вакансии ниже. HR любят настойчивых
+            (и прокачанные навыки).
+          </p>
+        </div>
+      )}
       {offers.length > 0 && (
         <div className="game-card border-l-4 border-emerald-500 animate-pop-in">
           <h3 className="section-title mb-2">📩 Офферы</h3>
@@ -218,18 +228,14 @@ export const CareerView: React.FC = () => {
               </div>
             );
           })}
-          {!gates.length && (
-            <p className="text-xs text-slate-500">Грейды ещё не загружены.</p>
-          )}
+          {!gates.length && <Spinner label="Грейды загружаются…" />}
         </div>
       </div>
 
       {/* Companies */}
       <div className="game-card">
         <h3 className="section-title mb-2">🏢 Компании</h3>
-        {companies.length === 0 && (
-          <p className="text-xs text-slate-500">Загрузка компаний...</p>
-        )}
+        {companies.length === 0 && <Spinner label="Загрузка компаний…" />}
         <div className="space-y-2">
           {companies.map((c) => {
             const canApply = !player.job && (!application || ['rejected', 'accepted'].includes(application.status));
