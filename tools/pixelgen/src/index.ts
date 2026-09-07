@@ -358,6 +358,25 @@ function cmdValidate(args: Args): number {
   return okFile && okSchema && okRender && okCombo ? 0 : 1;
 }
 
+/**
+ * Which index of the enumeration each batch slot uses. `spread` (default) walks
+ * the space with a step coprime to its size: the map i → i·step mod total is a
+ * bijection, so a batch of N stays collision-free *and* varies every category at
+ * once instead of changing only the fastest one (which makes QA sheets useless).
+ */
+export function enumerateIndex(i: number, total: number, order: string, limit: number): number {
+  if (total <= 0) return 0;
+  if (order === 'linear') return i % total;
+  const want = Math.max(1, Math.floor(total / Math.max(1, limit)));
+  let step = want;
+  while (gcd(step, total) !== 1) step++;
+  return (i * step) % total;
+}
+
+function gcd(a: number, b: number): number {
+  return b === 0 ? a : gcd(b, a % b);
+}
+
 function countOpaque(data: Uint8ClampedArray): number {
   let n = 0;
   for (let i = 3; i < data.length; i += 4) if (data[i] !== 0) n++;
@@ -387,7 +406,7 @@ function cmdGenerate(args: Args): number {
     const c =
       mode === 'seeded' && seeds
         ? seeds[i]
-        : combinationAt(file, cfg, ((bool(flags, 'wrap') ? i : i * Math.max(1, Math.floor(total / limit)))) % Math.max(1, total));
+        : combinationAt(file, cfg, enumerateIndex(i, total, str(flags, 'order', 'spread')!, limit));
     if (!c) break;
     if (mode !== 'seeded' && dedupe) {
       if (seen.has(c.key)) {

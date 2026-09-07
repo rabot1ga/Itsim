@@ -174,7 +174,7 @@ npm run pixelgen:demo                        # 48 персонажей + спр�
 ```
 
 Флаги: `--limit`, `--scale`, `--seed`, `--dedupe`, `--sheet`, `--pad`, `--preview-each=<category>`,
-`--json-per-file`, `--format=png|none`, `--no-gallery`, `--no-verify-png`, `--scheme=<id>`,
+`--json-per-file`, `--order=spread|linear`, `--format=png|none`, `--no-gallery`, `--no-verify-png`, `--scheme=<id>`,
 `--out=<dir>`, `--run=<dir>`. Каталоги: `PIXEL_CONTENT_DIR`, `PIXEL_OUT_DIR` (по умолчанию
 `packages/content/pixel` и `artifacts/pixel`).
 
