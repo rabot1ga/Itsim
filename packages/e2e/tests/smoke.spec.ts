@@ -14,7 +14,7 @@ async function startFreshGame(page: Page): Promise<void> {
   await page.goto('/');
 }
 
-const energyMeter = (page: Page) => page.locator('div[title^="Энергия:"]');
+const energyMeter = (page: Page) => page.locator('[title^="Энергия:"]').first();
 
 async function resolveStory(page: Page): Promise<void> {
   const card = page.locator('.story-card');
@@ -34,6 +34,10 @@ test('fresh run: three actions → end of day → buy cosmetics → telemetry', 
   // state loads with the daily check-in (+300 ₽); HUD shows a full battery
   await expect(energyMeter(page)).toHaveAttribute('title', /^Энергия: 10\/10$/);
 
+  // Study actions moved from «Главная» to the «Обучение» tab.
+  const nav = page.getByRole('navigation', { name: 'Основная навигация' });
+  await nav.getByRole('button', { name: 'Обучение', exact: true }).click();
+
   // Real random events may interrupt any action, not only end-of-day.
   for (const [name, energyCost] of [
     ['YouTube туториалы', 2],
@@ -48,16 +52,14 @@ test('fresh run: three actions → end of day → buy cosmetics → telemetry', 
   }
 
   // ── end of day: server rolls day 1, day 2 opens with a fresh battery ────
+  await nav.getByRole('button', { name: 'Главная', exact: true }).click();
   await page.getByRole('button', { name: /^Завершить день / }).click();
   await expect(energyMeter(page)).toHaveAttribute('title', /^Энергия: 10\/10$/);
   await resolveStory(page);
   await expect(page.getByRole('button', { name: /^Завершить день 2/ })).toBeVisible();
 
   // ── shop: buy a cheap decor item (Кактус на стол, 500 ₽) ────────────────
-  await page
-    .getByRole('navigation', { name: 'Основная навигация' })
-    .getByRole('button', { name: 'Магазин', exact: true })
-    .click();
+  await nav.getByRole('button', { name: 'Магазин', exact: true }).click();
   await page
     .getByRole('group', { name: 'Категории товаров' })
     .getByRole('button', { name: 'Для дома', exact: true })

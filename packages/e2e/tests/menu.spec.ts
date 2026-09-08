@@ -12,16 +12,16 @@ for (const width of [320, 390, 480]) {
       'Главная',
       'Работа',
       'Обучение',
+      'Отдых',
       'Магазин',
-      'Друзья',
     ]);
-    await expect(page.getByRole('region', { name: 'Персонаж и основной навык' })).toBeVisible();
+    await expect(page.getByRole('region', { name: 'Персонаж и состояние' })).toBeVisible();
     const room = page.getByRole('region', { name: 'Твоя комната' });
     await expect(room.getByRole('img')).toBeVisible();
     expect(await room.getByRole('img').evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(
       true
     );
-    for (const name of ['Работа', 'Обучение', 'Магазин', 'Друзья']) {
+    for (const name of ['Работа', 'Обучение', 'Отдых', 'Магазин']) {
       await nav.getByRole('button', { name, exact: true }).click();
       await expect(nav.getByRole('button', { name, exact: true })).toHaveAttribute('aria-current', 'true');
       expect(
@@ -31,10 +31,13 @@ for (const width of [320, 390, 480]) {
         })
       ).toBe(false);
     }
-    await expect(page.getByRole('article', { name: 'Саня', exact: true })).toBeVisible();
+    // Друзья moved behind «⋮» when «Отдых» took the fifth tab.
     await page.getByRole('button', { name: 'Меню', exact: true }).click();
     const sheet = page.getByRole('dialog', { name: 'Меню', exact: true });
     await expect(sheet.getByRole('button', { name: /Настройки/ })).toBeVisible();
+    await sheet.getByRole('button', { name: /Друзья/ }).click();
+    await expect(page.getByRole('article', { name: 'Саня', exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Меню', exact: true }).click();
     await sheet.getByRole('button', { name: /Профиль/ }).click();
     await expect(page.getByRole('heading', { name: 'Профиль' })).toBeVisible();
     await page.getByRole('button', { name: 'На главную', exact: true }).click();
@@ -47,6 +50,7 @@ test('learning and shop keep reference-sized rows, not giant cards', async ({ pa
   await page.goto('/');
   const nav = page.getByRole('navigation', { name: 'Основная навигация' });
   await nav.getByRole('button', { name: 'Обучение', exact: true }).click();
+  await page.getByRole('tab', { name: /Направления/ }).click();
   const skill = page.getByRole('button', { name: 'JavaScript', exact: true });
   await expect(skill).toBeVisible();
   expect((await skill.boundingBox())!.height).toBeLessThanOrEqual(90);

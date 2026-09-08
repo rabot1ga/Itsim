@@ -3,6 +3,8 @@ import { useGameStore } from '../store/gameStore';
 import { haptic } from '../lib/telegram';
 import { canUnlockPerk, archetypeToView, type ArchetypeDef } from '@itsim/shared';
 import { EmojiToken, ScreenTitle, SectionTitle, Spinner, ResChip } from '../components/ui';
+import { ActionGrid, toTile } from '../components/ActionGrid';
+import { STUDY_ACTIONS } from './actionCatalogue';
 import { SkillList, BRANCH_META, type SkillInfo } from './SkillList';
 
 /**
@@ -14,6 +16,11 @@ import { SkillList, BRANCH_META, type SkillInfo } from './SkillList';
  * by school, with progress bars and explicit locks, fits all 34 skills without
  * a tutorial. The routes ("archetypes"), soft skills and perks stay, because
  * they are progression, not navigation.
+ *
+ * Two halves, one switch: «Действия» is what you spend the day on, «Направления»
+ * is what that day goes into. Mixing them made the screen a scroll of unrelated
+ * decisions — choosing a course and choosing a career branch are not the same
+ * kind of choice.
  */
 
 interface SoftSkillMeta {
@@ -83,7 +90,6 @@ function describeRequires(requires: Record<string, number>, skills: SkillInfo[])
 
 export const SkillsView: React.FC = () => {
   const player = useGameStore((s) => s.player);
-  const setView = useGameStore((s) => s.setView);
   const setMainSkill = useGameStore((s) => s.setMainSkill);
   const unlockPerk = useGameStore((s) => s.unlockPerk);
   const chooseArchetype = useGameStore((s) => s.chooseArchetype);
@@ -97,7 +103,20 @@ export const SkillsView: React.FC = () => {
   const [loadError, setLoadError] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const [picking, setPicking] = useState(false);
+  const [mode, setMode] = useState<'actions' | 'tracks'>('actions');
+  const [studying, setStudying] = useState(false);
+  const performAction = useGameStore((s) => s.performAction);
   const pickLock = useRef(false);
+
+  const study = async (id: string) => {
+    if (studying) return;
+    setStudying(true);
+    try {
+      await performAction(id, { skillId: player?.mainSkillId || 'javascript' });
+    } finally {
+      setStudying(false);
+    }
+  };
 
   const pickSkill = async (id: string) => {
     if (pickLock.current) return;
@@ -176,168 +195,201 @@ export const SkillsView: React.FC = () => {
         </div>
       )}
 
-      {/* Which skill the study actions pump */}
+      {/* Which skill every study action pumps — the anchor for both halves */}
       <section className="card flex flex-wrap items-center justify-between gap-3">
         <div className="flex-1 min-w-[150px]">
           <p className="text-sm text-ink-300">
-            Основной: <span className="font-semibold text-white">{mainSkill?.name ?? 'не выбран'}</span>
+            Качаем: <span className="font-semibold text-white">{mainSkill?.name ?? 'навык не выбран'}</span>
           </p>
-          <p className="subtle mt-1">Опыт дают учебные действия на «Главной». Тапни навык, чтобы качать его.</p>
+          <p className="subtle mt-1">
+            {mainSkill
+              ? 'Учебные действия ниже дают опыт именно ему. Смени навык во вкладке «Направления».'
+              : 'Открой «Направления» и тапни навык — учёба пойдёт в него.'}
+          </p>
         </div>
-        <button className="btn btn-primary" onClick={() => setView('main')}>
-          Учиться
+        {mainSkill && <span className="chip chip-gold shrink-0">ур. {player.skills?.[mainSkill.id]?.level ?? 0}</span>}
+      </section>
+
+      <div className="segmented" role="tablist" aria-label="Режим обучения">
+        <button role="tab" aria-selected={mode === 'actions'} onClick={() => setMode('actions')}>
+          📖 Действия
         </button>
-      </section>
+        <button role="tab" aria-selected={mode === 'tracks'} onClick={() => setMode('tracks')}>
+          🧭 Направления
+        </button>
+      </div>
 
-      {!loaded && <Spinner label="Загружаем навыки…" />}
+      {mode === 'actions' && (
+        <>
+          <section aria-label="Учебные действия">
+            <ActionGrid
+              label="Учебные действия"
+              actions={STUDY_ACTIONS.map((a) => toTile(a, Boolean(player.job)))}
+              energy={player.energy ?? 0}
+              money={player.money ?? 0}
+              busy={studying}
+              onRun={study}
+            />
+            <p className="text-2xs text-ink-600 mt-1.5">
+              Дороже курс — быстрее опыт. «Английский» качает гибкий навык, а не основной.
+            </p>
+          </section>
 
-      {loadError && (
-        <div className="card" role="alert">
-          <p className="text-sm text-clay-300">Не удалось загрузить обучение.</p>
-          <button className="btn btn-secondary w-full mt-3" onClick={() => setAttempt((n) => n + 1)}>
-            Повторить загрузку
-          </button>
-        </div>
+          {/* Soft skills belong to the doing half: they grow from actions */}
+          <section className="card">
+            <SectionTitle>Гибкие навыки</SectionTitle>
+            <div className="grid grid-cols-3 gap-2 mt-3">
+              {SOFT_SKILLS.map((s) => {
+                const lvl = player.softSkills?.[s.key]?.level ?? 0;
+                return (
+                  <div key={s.key} className="well text-center px-2 py-2.5">
+                    <div className="text-base leading-none mb-1" aria-hidden="true">
+                      {s.emoji}
+                    </div>
+                    <div className="text-2xs text-ink-500 mb-1 leading-tight">{s.name}</div>
+                    <div className="num text-base font-bold text-ink-100">{lvl}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        </>
       )}
 
-      {loaded && !loadError && skills.length === 0 && <p className="card subtle">Каталог навыков пока пуст.</p>}
+      {mode === 'tracks' && (
+        <>
+          {!loaded && <Spinner label="Загружаем навыки…" />}
 
-      {loaded && !loadError && skills.length > 0 && (
-        <SkillList
-          skills={skills}
-          levels={player.skills ?? {}}
-          mainSkillId={player.mainSkillId}
-          busy={picking}
-          route={route}
-          onPick={pickSkill}
-        />
-      )}
+          {loadError && (
+            <div className="card" role="alert">
+              <p className="text-sm text-clay-300">Не удалось загрузить обучение.</p>
+              <button className="btn btn-secondary w-full mt-3" onClick={() => setAttempt((n) => n + 1)}>
+                Повторить загрузку
+              </button>
+            </div>
+          )}
 
-      {/* Curated routes: pick one and the list marks its milestones */}
-      <section className="card">
-        <SectionTitle>Пути-архетипы</SectionTitle>
-        {archViews.length === 0 ? (
-          <p className="subtle mt-2">
-            {!loaded
-              ? 'Загрузка путей…'
-              : loadError
-                ? 'Пути недоступны — повтори загрузку выше.'
-                : 'Пути пока не опубликованы.'}
-          </p>
-        ) : (
-          <div className="grid gap-2 mt-3">
-            {archViews.map((v) => {
-              const chosen = chosenArch?.id === v.id;
-              const doneCount = v.steps.filter((s) => s.done).length;
-              const next = v.steps.find((s) => !s.done) ?? null;
-              return (
-                <div key={v.id} className={`tile ${chosen ? 'is-chosen' : ''}`} data-selected={chosen}>
-                  <div className="flex items-center gap-2 min-w-0">
-                    <EmojiToken>{ARCH_EMOJI[v.id] ?? '🧭'}</EmojiToken>
-                    <span className="flex-1 min-w-0 truncate text-sm font-semibold text-ink-100">{v.title}</span>
-                    {v.claimed ? (
-                      <ResChip tone="positive">бонус ✓</ResChip>
-                    ) : v.allDone ? (
-                      <ResChip tone="gold">готов</ResChip>
-                    ) : chosen ? (
-                      <ResChip tone="gold">выбран</ResChip>
-                    ) : null}
-                  </div>
-                  <div className="flex items-center gap-2 mt-2">
-                    <span className="meter flex-1">
-                      <span
-                        style={{
-                          width: `${v.steps.length ? (doneCount / v.steps.length) * 100 : 0}%`,
-                          background: 'var(--gold)',
-                        }}
-                      />
-                    </span>
-                    <span className="num text-xs font-bold text-ink-300 shrink-0">
-                      {doneCount}/{v.steps.length}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 mt-2">
-                    {next ? (
-                      <span className="subtle truncate">
-                        дальше: {next.skillName} → ур. {next.target}
-                      </span>
-                    ) : (
-                      <span className="text-xs text-gold-300">весь путь пройден</span>
-                    )}
-                    <span className="flex-1" />
-                    {!v.claimed && v.allDone ? (
-                      <button onClick={() => claimArchetype(v.id)} className="btn btn-primary btn-sm">
-                        Забрать бонус
-                      </button>
-                    ) : !v.allDone ? (
+          {loaded && !loadError && skills.length === 0 && <p className="card subtle">Каталог навыков пока пуст.</p>}
+
+          {loaded && !loadError && skills.length > 0 && (
+            <SkillList
+              skills={skills}
+              levels={player.skills ?? {}}
+              mainSkillId={player.mainSkillId}
+              busy={picking}
+              route={route}
+              onPick={pickSkill}
+            />
+          )}
+
+          {/* Curated routes: pick one and the list marks its milestones */}
+          <section className="card">
+            <SectionTitle>Пути-архетипы</SectionTitle>
+            {archViews.length === 0 ? (
+              <p className="subtle mt-2">
+                {!loaded
+                  ? 'Загрузка путей…'
+                  : loadError
+                    ? 'Пути недоступны — повтори загрузку выше.'
+                    : 'Пути пока не опубликованы.'}
+              </p>
+            ) : (
+              <div className="grid gap-2 mt-3">
+                {archViews.map((v) => {
+                  const chosen = chosenArch?.id === v.id;
+                  const doneCount = v.steps.filter((s) => s.done).length;
+                  const next = v.steps.find((s) => !s.done) ?? null;
+                  return (
+                    <div key={v.id} className={`tile ${chosen ? 'is-chosen' : ''}`} data-selected={chosen}>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <EmojiToken>{ARCH_EMOJI[v.id] ?? '🧭'}</EmojiToken>
+                        <span className="flex-1 min-w-0 truncate text-sm font-semibold text-ink-100">{v.title}</span>
+                        {v.claimed ? (
+                          <ResChip tone="positive">бонус ✓</ResChip>
+                        ) : v.allDone ? (
+                          <ResChip tone="gold">готов</ResChip>
+                        ) : chosen ? (
+                          <ResChip tone="gold">выбран</ResChip>
+                        ) : null}
+                      </div>
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className="meter flex-1">
+                          <span
+                            style={{
+                              width: `${v.steps.length ? (doneCount / v.steps.length) * 100 : 0}%`,
+                              background: 'var(--gold)',
+                            }}
+                          />
+                        </span>
+                        <span className="num text-xs font-bold text-ink-300 shrink-0">
+                          {doneCount}/{v.steps.length}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 mt-2">
+                        {next ? (
+                          <span className="subtle truncate">
+                            дальше: {next.skillName} → ур. {next.target}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-gold-300">весь путь пройден</span>
+                        )}
+                        <span className="flex-1" />
+                        {!v.claimed && v.allDone ? (
+                          <button onClick={() => claimArchetype(v.id)} className="btn btn-primary btn-sm">
+                            Забрать бонус
+                          </button>
+                        ) : !v.allDone ? (
+                          <button
+                            onClick={() => chooseArchetype(chosen ? '' : v.id)}
+                            aria-pressed={chosen}
+                            className={`btn btn-sm ${chosen ? 'btn-secondary' : 'btn-ghost'}`}
+                          >
+                            {chosen ? 'Снять' : 'Следовать'}
+                          </button>
+                        ) : null}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+
+          {/* Perks */}
+          <section className="card">
+            <SectionTitle>Перки</SectionTitle>
+            <div className="space-y-2 mt-3">
+              {perks.map((perk) => {
+                const owned = (player.perks ?? []).includes(perk.id);
+                const canUnlock = !owned && canUnlockPerk(player, perk.requires, branchOf);
+                return (
+                  <div key={perk.id} className="tile flex items-center gap-3" data-selected={owned}>
+                    <EmojiToken>{PERK_EMOJI[perk.id] ?? '✨'}</EmojiToken>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold text-ink-100">{perk.name}</span>
+                        {owned && <ResChip tone="positive">открыт</ResChip>}
+                      </div>
+                      <p className="text-xs text-ink-500 mt-0.5 leading-relaxed">{perk.flavor}</p>
+                      <p className="text-2xs text-ink-600 mt-0.5">Требует: {describeRequires(perk.requires, skills)}</p>
+                    </div>
+                    {!owned && (
                       <button
-                        onClick={() => chooseArchetype(chosen ? '' : v.id)}
-                        aria-pressed={chosen}
-                        className={`btn btn-sm ${chosen ? 'btn-secondary' : 'btn-ghost'}`}
+                        onClick={() => unlockPerk(perk.id)}
+                        disabled={!canUnlock}
+                        className={`btn btn-sm shrink-0 ${canUnlock ? 'btn-primary' : 'btn-secondary'}`}
                       >
-                        {chosen ? 'Снять' : 'Следовать'}
+                        Открыть
                       </button>
-                    ) : null}
+                    )}
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </section>
-
-      {/* Soft skills */}
-      <section className="card">
-        <SectionTitle>Гибкие навыки</SectionTitle>
-        <div className="grid grid-cols-3 gap-2 mt-3">
-          {SOFT_SKILLS.map((s) => {
-            const lvl = player.softSkills?.[s.key]?.level ?? 0;
-            return (
-              <div key={s.key} className="well text-center px-2 py-2.5">
-                <div className="text-base leading-none mb-1" aria-hidden="true">
-                  {s.emoji}
-                </div>
-                <div className="text-2xs text-ink-500 mb-1 leading-tight">{s.name}</div>
-                <div className="num text-base font-bold text-ink-100">{lvl}</div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Perks */}
-      <section className="card">
-        <SectionTitle>Перки</SectionTitle>
-        <div className="space-y-2 mt-3">
-          {perks.map((perk) => {
-            const owned = (player.perks ?? []).includes(perk.id);
-            const canUnlock = !owned && canUnlockPerk(player, perk.requires, branchOf);
-            return (
-              <div key={perk.id} className="tile flex items-center gap-3" data-selected={owned}>
-                <EmojiToken>{PERK_EMOJI[perk.id] ?? '✨'}</EmojiToken>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-ink-100">{perk.name}</span>
-                    {owned && <ResChip tone="positive">открыт</ResChip>}
-                  </div>
-                  <p className="text-xs text-ink-500 mt-0.5 leading-relaxed">{perk.flavor}</p>
-                  <p className="text-2xs text-ink-600 mt-0.5">Требует: {describeRequires(perk.requires, skills)}</p>
-                </div>
-                {!owned && (
-                  <button
-                    onClick={() => unlockPerk(perk.id)}
-                    disabled={!canUnlock}
-                    className={`btn btn-sm shrink-0 ${canUnlock ? 'btn-primary' : 'btn-secondary'}`}
-                  >
-                    Открыть
-                  </button>
-                )}
-              </div>
-            );
-          })}
-          {perks.length === 0 && <p className="subtle">Загрузка перков…</p>}
-        </div>
-      </section>
+                );
+              })}
+              {perks.length === 0 && <p className="subtle">Загрузка перков…</p>}
+            </div>
+          </section>
+        </>
+      )}
     </div>
   );
 };

@@ -34,8 +34,12 @@ async function endDay(page: Page): Promise<void> {
   await page.getByRole('button', { name: /^Завершить день / }).click();
   const card = page.locator('.story-card');
   if (await card.isVisible()) {
-    await card.locator('button:not(:disabled)').first().click();
-    await expect(card).toHaveCount(0);
+    await card.locator('.story-choice:not(:disabled)').first().click();
+    // The choice turns into a result card that waits for a deliberate tap.
+    const done = page.getByRole('button', { name: 'Продолжить' });
+    await expect(done).toBeVisible({ timeout: 15_000 });
+    await done.click();
+    await expect(page.locator('.story-card')).toHaveCount(0);
   }
 }
 
@@ -72,7 +76,9 @@ test('take a project, finish its tasks and deliver it for real money', async ({ 
   await expect(board(page).getByRole('article', { name: /^Активный проект/ })).toHaveCount(0);
   expect(await money()).toBe(before + 35000);
   await expect(board(page).getByRole('article', { name: 'Сайт-визитка' })).toContainText('Уже сдавался');
-  await expect(board(page).getByRole('article', { name: 'Сайт-визитка' }).getByRole('button', { name: 'Взять', exact: true })).toBeEnabled();
+  await expect(
+    board(page).getByRole('article', { name: 'Сайт-визитка' }).getByRole('button', { name: 'Взять', exact: true })
+  ).toBeEnabled();
 });
 
 test('a missed deadline drops the project and costs reputation', async ({ page }) => {

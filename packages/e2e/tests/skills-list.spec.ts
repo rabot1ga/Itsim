@@ -13,6 +13,7 @@ for (const width of [320, 390, 480]) {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');
     await page.getByRole('button', { name: 'Обучение', exact: true }).click();
+    await page.getByRole('tab', { name: /Направления/ }).click();
 
     const list = page.getByRole('region', { name: 'Список навыков' });
     await expect(list).toBeVisible();
@@ -51,6 +52,7 @@ test('learning catalogue retries after HTTP error', async ({ page }) => {
   });
   await page.goto('/');
   await page.getByRole('button', { name: 'Обучение', exact: true }).click();
+  await page.getByRole('tab', { name: /Направления/ }).click();
   await expect(page.getByText('Не удалось загрузить обучение.', { exact: true })).toBeVisible();
   fail = false;
   await page.getByRole('button', { name: 'Повторить загрузку' }).click();

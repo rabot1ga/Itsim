@@ -88,7 +88,11 @@ export const ResourceBar: React.FC = () => {
         )}
         <span className="wallet-spacer" />
         {!home && (
-          <span className="wallet-pill is-dim num" aria-label="Энергия">
+          <span
+            className="wallet-pill is-dim num"
+            aria-label="Энергия"
+            title={`Энергия: ${Math.round(player.energy ?? 0)}/${player.maxEnergy ?? 10}`}
+          >
             <span aria-hidden="true">⚡</span>
             {Math.round(player.energy ?? 0)} / {player.maxEnergy ?? 10}
           </span>

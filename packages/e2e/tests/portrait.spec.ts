@@ -14,12 +14,17 @@ for (const width of [320, 390, 480]) {
     // Real free wardrobe actions, no injected player state or fake responses.
     const looks: string[] = [];
     for (const colour of ['#2b2320', '#d7a94b']) {
-      const saved = page.waitForResponse((r) => r.url().endsWith('/api/game/action') && r.request().method() === 'POST');
+      const saved = page.waitForResponse(
+        (r) => r.url().endsWith('/api/game/action') && r.request().method() === 'POST'
+      );
       await page.getByRole('button', { name: colour, exact: true }).click();
       const response = await saved;
       expect(response.ok()).toBe(true);
       expect((await response.json()).state.avatar.hairColor).toBe(colour);
-      await page.getByRole('navigation', { name: 'Основная навигация' }).getByRole('button', { name: 'Главная', exact: true }).click();
+      await page
+        .getByRole('navigation', { name: 'Основная навигация' })
+        .getByRole('button', { name: 'Главная', exact: true })
+        .click();
       await expect(portrait).toHaveCount(1);
       looks.push((await portrait.getAttribute('href'))!);
       if (colour === '#2b2320') {
@@ -28,7 +33,10 @@ for (const width of [320, 390, 480]) {
         await page.getByRole('button', { name: 'Гардероб', exact: true }).click();
       }
     }
-    await page.getByRole('navigation', { name: 'Основная навигация' }).getByRole('button', { name: 'Главная', exact: true }).click();
+    await page
+      .getByRole('navigation', { name: 'Основная навигация' })
+      .getByRole('button', { name: 'Главная', exact: true })
+      .click();
     await expect(portrait).toHaveCount(1);
     expect(looks[0]).not.toBe(looks[1]);
     const updated = await portrait.getAttribute('href');
@@ -37,10 +45,12 @@ for (const width of [320, 390, 480]) {
     await expect(portrait).toHaveAttribute('href', updated!);
     await page.getByRole('button', { name: 'Открыть профиль', exact: true }).click();
     await expect(portrait).toHaveAttribute('href', updated!);
-    expect(await page.evaluate(() => {
-      const area = document.getElementById('game-scroll')!;
-      return area.scrollWidth > area.clientWidth;
-    })).toBe(false);
+    expect(
+      await page.evaluate(() => {
+        const area = document.getElementById('game-scroll')!;
+        return area.scrollWidth > area.clientWidth;
+      })
+    ).toBe(false);
   });
 }
 

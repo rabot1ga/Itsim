@@ -834,7 +834,8 @@ select {
   font-weight: 600;
   white-space: nowrap;
 }
-.segmented button[aria-pressed='true'] {
+.segmented button[aria-pressed='true'],
+.segmented button[aria-selected='true'] {
   border-color: transparent;
   background: rgba(var(--rgb-green) / 0.15);
   color: var(--green);
@@ -1541,36 +1542,16 @@ select {
   flex-shrink: 0;
 }
 
-.quick-actions {
+/* Action tiles: two per row on a phone, one on a very narrow screen. */
+.action-grid {
   display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
 }
-.quick-actions > button {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  width: 100%;
-  min-height: 46px;
-  padding: 0 14px;
-  border-radius: var(--radius-tile);
-  background: var(--surface-alt);
-  border: 1px solid var(--line);
-  font-size: 14px;
-  font-weight: 600;
-  text-align: left;
-}
-.quick-actions > button:disabled {
-  opacity: 0.45;
-}
-.quick-actions > button > span:last-child {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-mute);
-  white-space: nowrap;
+@media (max-width: 340px) {
+  .action-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .career-company {

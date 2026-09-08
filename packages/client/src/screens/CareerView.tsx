@@ -4,6 +4,8 @@ import { InterviewPanel } from '../components/InterviewPanel';
 import { Spinner, ScreenTitle, SectionTitle, ResChip } from '../components/ui';
 import { ProjectBoard } from '../components/ProjectBoard';
 import { CareerPressureCard } from '../components/CareerPressureCard';
+import { ActionGrid, toTile } from '../components/ActionGrid';
+import { SIDE_JOB_EMOJI, WORK_ACTIONS, formatMoney as formatCash, type SideJobInfo } from './actionCatalogue';
 
 interface GateInfo {
   grade: string;
@@ -60,6 +62,7 @@ export const CareerView: React.FC = () => {
   const acceptOffer = useGameStore((s) => s.acceptOffer);
   const declineOffer = useGameStore((s) => s.declineOffer);
   const [companies, setCompanies] = useState<CompanyInfo[]>([]);
+  const [sideJobs, setSideJobs] = useState<Record<string, SideJobInfo>>({});
   const [gates, setGates] = useState<GateInfo[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [loadError, setLoadError] = useState(false);
@@ -79,6 +82,13 @@ export const CareerView: React.FC = () => {
     }
   };
   const outlook = useGameStore((s) => s.careerOutlook);
+
+  useEffect(() => {
+    fetch('/api/content/side-jobs')
+      .then((r) => r.json())
+      .then((data) => setSideJobs(data.sideJobs ?? {}))
+      .catch(() => setSideJobs({}));
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -147,25 +157,52 @@ export const CareerView: React.FC = () => {
 
       <ProjectBoard />
 
-      <section className="quick-actions" aria-label="Быстрые действия">
-        <SectionTitle className="mb-1">Быстрые действия</SectionTitle>
-        {[
-          { id: 'work_task', name: 'Рабочая задача', energy: 4, job: true },
-          { id: 'pet_project', name: 'Развивать пет-проект', energy: 3, job: false },
-          { id: 'freelance', name: 'Фриланс-заказ', energy: 4, job: false },
-        ].map((action) => (
-          <button
-            key={action.id}
-            disabled={busy || player.energy < action.energy || (action.job && !player.job)}
-            onClick={() => act(() => performAction(action.id, { skillId: player.mainSkillId || 'javascript' }))}
-          >
-            <span>{action.name}</span>
-            <span>
-              {action.job && !player.job ? 'Нужна работа' : <ResChip tone="blue">−{action.energy} ⚡</ResChip>}→
-            </span>
-          </button>
-        ))}
+      <section aria-label="Рабочие действия">
+        <SectionTitle className="mb-2">Действия</SectionTitle>
+        <ActionGrid
+          label="Рабочие действия"
+          actions={WORK_ACTIONS.map((a) => toTile(a, Boolean(player.job)))}
+          energy={player.energy ?? 0}
+          money={player.money ?? 0}
+          busy={busy}
+          onRun={(id) => act(() => performAction(id, { skillId: player.mainSkillId || 'javascript' }))}
+        />
       </section>
+
+      {/* Non-IT gigs: money now, at the price of health and mood */}
+      {Object.keys(sideJobs).length > 0 && (
+        <section aria-label="Подработки не в IT">
+          <SectionTitle className="mb-2">Подработки не в IT</SectionTitle>
+          <ActionGrid
+            label="Подработки"
+            energy={player.energy ?? 0}
+            money={player.money ?? 0}
+            busy={busy}
+            onRun={(jobId) => act(() => performAction('side_job', { jobId }))}
+            actions={Object.entries(sideJobs).map(([jobId, job]) => {
+              const skillLevel = player.skills?.[player.mainSkillId ?? 'javascript']?.level ?? 0;
+              const tooEarly = (player.currentDay ?? 0) < (job.minDay ?? 1);
+              const minSkillMet = skillLevel >= (job.minSkill ?? 0);
+              const payout = job.payment + (job.paymentPerSkill ? Math.round(skillLevel * job.paymentPerSkill) : 0);
+              return {
+                id: jobId,
+                emoji: SIDE_JOB_EMOJI[jobId] ?? '📦',
+                name: job.name,
+                energy: job.energy,
+                locked: !minSkillMet || tooEarly,
+                lockLabel: !minSkillMet ? `навык ${job.minSkill}+` : `с ${job.minDay} дня`,
+                gain: (
+                  <ResChip tone="positive">
+                    +{formatCash(payout)}
+                    {job.paymentVar ? '±' : ''} ₽
+                  </ResChip>
+                ),
+              };
+            })}
+          />
+          <p className="text-2xs text-ink-600 mt-1.5">Одна подработка в день. Здоровье и настроение — по курсу.</p>
+        </section>
+      )}
 
       {/* Office entry */}
       {player.job && (

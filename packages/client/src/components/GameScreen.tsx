@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { haptic } from '../lib/telegram';
 import { ProfileView } from '../screens/ProfileView';
@@ -6,6 +6,7 @@ import { FriendsView } from '../screens/FriendsView';
 import { DayView } from '../screens/DayView';
 import { OfficeView } from '../screens/OfficeView';
 import { SkillsView } from '../screens/SkillsView';
+import { RestView } from '../screens/RestView';
 import { CareerView } from '../screens/CareerView';
 import { ShopView } from '../screens/ShopView';
 import { RoomView } from '../screens/RoomView';
@@ -18,19 +19,26 @@ import { PetView } from '../screens/PetView';
 import { SettingsView } from '../screens/SettingsView';
 import { PixelIcon } from './pixel/PixelIcon';
 import { GainStream } from './GainStream';
+import { EventCard, EventOutcomeCard, type EventChoice } from './EventCard';
 
-/** The reference's five destinations stay visible; everything else lives in «⋮». */
+/**
+ * Five destinations stay visible; everything else lives in «⋮».
+ *
+ * «Отдых» took the fifth slot from «Друзья»: rest is a daily decision, the
+ * friends roster is a place you visit — it opens from «Отдых» and from «⋮».
+ */
 const TABS = [
   { view: 'main', icon: 'house', label: 'Главная' },
   { view: 'career', icon: 'briefcase', label: 'Работа' },
   { view: 'skills', icon: 'book', label: 'Обучение' },
+  { view: 'rest', icon: 'heart', label: 'Отдых' },
   { view: 'shop', icon: 'bag', label: 'Магазин' },
-  { view: 'friends', icon: 'people', label: 'Друзья' },
 ] as const;
 
 /** «⋮» menu — a list of rows, because a list is scanned in one second. */
 const MORE = [
   { view: 'profile', emoji: '👤', label: 'Профиль', hint: 'Статистика, опыт, достижения' },
+  { view: 'friends', emoji: '👥', label: 'Друзья', hint: 'Знакомые, связи, приглашения' },
   { view: 'room', emoji: '🏠', label: 'Дом', hint: 'Комната, декор, гардероб' },
   { view: 'achievements', emoji: '🎯', label: 'Цели', hint: 'Цели, ачивки и награды' },
   { view: 'leaderboard', emoji: '🏆', label: 'Топ игроков', hint: 'Рейтинг по карьере и репутации' },
@@ -45,6 +53,24 @@ const MORE = [
 export const GameScreen: React.FC = () => {
   const { currentView, setView, advanceDay, loadNft, moreOpen, setMoreOpen } = useGameStore();
   const player = useGameStore((s) => s.player);
+  const activeEvent = useGameStore((s) => s.activeEvent);
+  const chooseEvent = useGameStore((s) => s.chooseEvent);
+  const error = useGameStore((s) => s.error);
+  /** the choice just made, kept on screen as a receipt until dismissed */
+  const [outcome, setOutcome] = useState<{ title: string; tags: string[]; choice: EventChoice } | null>(null);
+
+  /**
+   * An event can arrive from any action, not only from ending the day — so it
+   * is rendered above every tab. Otherwise studying on «Обучение» would hand
+   * the server an event nobody can answer.
+   */
+  const decide = async (event: any, index: number) => {
+    const choice = event.choices?.[index];
+    await chooseEvent(event.id, index);
+    if (!useGameStore.getState().activeEvent && choice) {
+      setOutcome({ title: event.title, tags: event.tags ?? [], choice });
+    }
+  };
 
   /** an offer on the table is the one thing worth a marker in the nav */
   const offerWaiting = Boolean(player?.pendingOffers?.length);
@@ -59,6 +85,31 @@ export const GameScreen: React.FC = () => {
   }, [currentView, loadNft]);
 
   const renderView = () => {
+    if (activeEvent && player) {
+      return (
+        <EventCard
+          key={activeEvent.id}
+          eventId={activeEvent.id}
+          title={activeEvent.title}
+          description={activeEvent.description}
+          tags={activeEvent.tags ?? []}
+          choices={activeEvent.choices ?? []}
+          player={player}
+          error={error}
+          onChoose={(i) => decide(activeEvent, i)}
+        />
+      );
+    }
+    if (outcome) {
+      return (
+        <EventOutcomeCard
+          title={outcome.title}
+          tags={outcome.tags}
+          choice={outcome.choice}
+          onDismiss={() => setOutcome(null)}
+        />
+      );
+    }
     switch (currentView) {
       case 'profile':
         return <ProfileView />;
@@ -68,6 +119,8 @@ export const GameScreen: React.FC = () => {
         return <DayView onAdvanceDay={handleAdvanceDay} />;
       case 'skills':
         return <SkillsView />;
+      case 'rest':
+        return <RestView />;
       case 'career':
         return <CareerView />;
       case 'shop':
