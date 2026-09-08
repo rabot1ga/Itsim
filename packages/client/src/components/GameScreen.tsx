@@ -12,6 +12,7 @@ import { RoomView } from '../screens/RoomView';
 import { AchievementsView } from '../screens/AchievementsView';
 import { LeaderboardView } from '../screens/LeaderboardView';
 import { EndingView } from '../screens/EndingView';
+import { MiningView } from '../screens/MiningView';
 import { PixelIcon } from './pixel/PixelIcon';
 import { GainStream } from './GainStream';
 
@@ -30,6 +31,7 @@ const MORE = [
   { view: 'achievements', icon: 'trophy', label: 'Цели', hint: 'Цели, достижения и прогресс' },
   { view: 'leaderboard', icon: 'chart', label: 'Топ', hint: 'Рейтинг игроков' },
   { view: 'office', icon: 'people', label: 'Офис', hint: 'Команда и задачи' },
+  { view: 'mining', icon: 'coin', label: 'Майнинг', hint: 'Ферма, хешрейт, прогноз' },
   { view: 'endings', icon: 'trophy', label: 'Финалы', hint: 'Шесть финалов карьеры и прогресс' },
 ] as const;
 
@@ -73,6 +75,8 @@ export const GameScreen: React.FC = () => {
         return <EndingView />;
       case 'office':
         return <OfficeView />;
+      case 'mining':
+        return <MiningView />;
       default:
         return <DayView onAdvanceDay={handleAdvanceDay} />;
     }
