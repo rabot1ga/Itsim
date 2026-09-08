@@ -101,6 +101,30 @@ describe('App', () => {
     }
   });
 
+  it('keeps «Завершить день» docked outside the scroll area on every working tab', async () => {
+    localStorage.setItem('itsim_onboarded_v1', '1');
+    render(<App />);
+    const nav = await screen.findByRole('navigation', { name: 'Основная навигация' });
+    // the store is a module singleton — the previous test may have parked it elsewhere
+    fireEvent.click(within(nav).getByRole('button', { name: 'Главная' }));
+
+    // The dock is a sibling of the scroll area, not the last card inside it —
+    // that is the whole point: no scrolling to end the day.
+    const dock = await screen.findByRole('button', { name: /Завершить день/ });
+    expect(document.getElementById('game-scroll')?.contains(dock)).toBe(false);
+
+    for (const label of ['Работа', 'Обучение', 'Отдых', 'Магазин']) {
+      fireEvent.click(within(nav).getByRole('button', { name: label }));
+      expect(await screen.findByRole('button', { name: /Завершить день/ })).toBeTruthy();
+    }
+
+    // Side screens are for looking around, so the turn button steps aside.
+    fireEvent.click(await screen.findByRole('button', { name: 'Меню' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Меню' });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Настройки' }));
+    await waitFor(() => expect(screen.queryByRole('button', { name: /Завершить день/ })).toBeNull());
+  });
+
   it('mounts without crashing and reaches the game screen', async () => {
     const { container, queryByText } = render(<App />);
     await waitFor(() => expect(container.querySelector('#root, div')).toBeTruthy());

@@ -144,6 +144,8 @@ export function eventArtwork(tags: string[], title = '', eventId = ''): string {
       [/сервер|продакш|взлом|server/, 'server'],
       [/\bbug\b|баг|ошибка в код/, 'bug'],
       [/ваканс|оффер|предложение.*работ/, 'offer'],
+      [/контракт|подписал|подряд/, 'contract'],
+      [/фриланс|заказчик|биржа заказ|клиент/, 'freelance'],
       [/похвал|соцсет|лайк|пост.*вирус/, 'social'],
       [/скидка на тех|магазин|ноутбук|новый пк/, 'shop'],
       [/дожд|болез|простуд|выходно|отпуск|выгор/, 'rest'],
@@ -152,6 +154,7 @@ export function eventArtwork(tags: string[], title = '', eventId = ''): string {
   }
   if (!scene) {
     if (tags.includes('pets')) scene = 'pet';
+    else if (tags.includes('freelance')) scene = 'freelance';
     else if (tags.some((tag) => ['health', 'mental', 'rest', 'weather'].includes(tag))) scene = 'rest';
     else if (tags.some((tag) => ['social', 'friend', 'family'].includes(tag))) scene = 'social';
     else if (tags.some((tag) => ['career', 'interview'].includes(tag))) scene = 'offer';

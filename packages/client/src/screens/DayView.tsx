@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { HomeRoomCard } from '../components/HomeRoomCard';
 import { CareerPressureCard } from '../components/CareerPressureCard';
@@ -6,11 +6,6 @@ import { SprintCard } from '../components/SprintCard';
 import { SectionTitle } from '../components/ui';
 import { formatMoney } from './actionCatalogue';
 import { tipForDay } from './dayTips';
-import { hideMainButton, isMainButtonSupported, setMainButtonProgress, showMainButton } from '../lib/telegram';
-
-interface DayViewProps {
-  onAdvanceDay: () => void;
-}
 
 /** The four places a day is spent — the home screen only points at them. */
 const DESTINATIONS = [
@@ -156,47 +151,15 @@ const CheckInBanner: React.FC<{ checkIn: any }> = ({ checkIn }) => {
   );
 };
 
-export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
+export const DayView: React.FC = () => {
   const player = useGameStore((s) => s.player);
-  const activeEvent = useGameStore((s) => s.activeEvent);
   const error = useGameStore((s) => s.error);
   const clearError = useGameStore((s) => s.clearError);
   const performAction = useGameStore((s) => s.performAction);
   const setView = useGameStore((s) => s.setView);
   const checkIn = useGameStore((s) => s.checkIn);
   const mining = useGameStore((s) => s.mining);
-  const [finishing, setFinishing] = useState(false);
-  const useNativeCta = isMainButtonSupported();
-
-  const finishDay = useCallback(async () => {
-    if (finishing) return;
-    setFinishing(true);
-    setMainButtonProgress(true);
-    try {
-      await onAdvanceDay();
-    } finally {
-      setFinishing(false);
-      setMainButtonProgress(false);
-      // The day summary + new event render at the top — take the player there.
-      document.getElementById('game-scroll')?.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }, [finishing, onAdvanceDay]);
-
   const currentDay = player?.currentDay ?? 1;
-
-  // Native Telegram MainButton replaces the in-page button when available.
-  useEffect(() => {
-    if (!useNativeCta) return;
-    if (activeEvent) {
-      hideMainButton();
-      return;
-    }
-    const handler = () => {
-      void finishDay();
-    };
-    showMainButton(`Завершить день ${currentDay}`, handler);
-    return () => hideMainButton(handler);
-  }, [useNativeCta, finishDay, currentDay, activeEvent]);
 
   if (!player) return null;
 
@@ -330,22 +293,6 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
             Банк офлайн-дней: <span className="num">{player.bankedDays}</span> — использовать
           </span>
         </button>
-      )}
-
-      {/* End day — sticky fallback for non-Telegram browsers
-          (inside Telegram the native MainButton is used, see the effect above) */}
-      {!useNativeCta && (
-        <div className="day-end-action">
-          <button onClick={() => void finishDay()} disabled={finishing} className="btn btn-primary btn-lg w-full mt-2">
-            {finishing ? (
-              'Считаем день…'
-            ) : (
-              <>
-                Завершить день <span className="num">{player.currentDay ?? 1}</span> →
-              </>
-            )}
-          </button>
-        </div>
       )}
     </div>
   );

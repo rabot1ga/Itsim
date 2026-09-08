@@ -13,7 +13,14 @@ describe('event presentation', () => {
     expect(eventArtwork([], 'Сломался велосипед')).toBe('/art/story-v1/bicycle.webp');
   });
   it('keeps generic money requests out of the equipment sale scene', () => {
-    expect(eventArtwork(['money', 'freelance'], 'Постоянный клиент просит скидку')).toBe('/art/story-v1/night.webp');
+    expect(eventArtwork(['money'], 'Постоянный клиент просит скидку')).not.toBe('/art/story-v1/shop.webp');
+  });
+  it('gives the freelance loop its own scenes', () => {
+    expect(eventArtwork(['money', 'freelance'], 'Постоянный клиент просит скидку')).toBe(
+      '/art/story-v1/freelance.webp'
+    );
+    expect(eventArtwork(['work'], 'Фриланс-заказчик оказался скамом')).toBe('/art/story-v1/freelance.webp');
+    expect(eventArtwork(['work'], 'Контракт подписан')).toBe('/art/story-v1/contract.webp');
   });
   it('keeps gains and losses for each skill and NPC separate', () => {
     const rows = effectRows({ skill: { javascript: 5, python: -5 }, relation: { uni_friend: 2, hr_anna: -2 } });

@@ -20,6 +20,7 @@ import { SettingsView } from '../screens/SettingsView';
 import { PixelIcon } from './pixel/PixelIcon';
 import { GainStream } from './GainStream';
 import { EventCard, EventOutcomeCard, type EventChoice } from './EventCard';
+import { DayEndDock } from './DayEndDock';
 
 /**
  * Five destinations stay visible; everything else lives in «⋮».
@@ -57,8 +58,15 @@ const MORE = [
   { view: 'settings', emoji: '⚙️', label: 'Настройки' },
 ] as const;
 
+/**
+ * Tabs where a day is being spent, so the «Завершить день» dock belongs there.
+ * Side screens (профиль, дом, настройки…) stay quiet — you go there to look,
+ * not to burn the turn.
+ */
+const DOCK_VIEWS = new Set<string>(['main', 'career', 'skills', 'rest', 'shop', 'office', 'pet']);
+
 export const GameScreen: React.FC = () => {
-  const { currentView, setView, advanceDay, loadNft, moreOpen, setMoreOpen } = useGameStore();
+  const { currentView, setView, loadNft, moreOpen, setMoreOpen } = useGameStore();
   const player = useGameStore((s) => s.player);
   const activeEvent = useGameStore((s) => s.activeEvent);
   const chooseEvent = useGameStore((s) => s.chooseEvent);
@@ -81,10 +89,6 @@ export const GameScreen: React.FC = () => {
 
   /** an offer on the table is the one thing worth a marker in the nav */
   const offerWaiting = Boolean(player?.pendingOffers?.length);
-
-  const handleAdvanceDay = async () => {
-    await advanceDay();
-  };
 
   // Preload NFT info when opening the room or the wallet
   useEffect(() => {
@@ -123,7 +127,7 @@ export const GameScreen: React.FC = () => {
       case 'friends':
         return <FriendsView />;
       case 'main':
-        return <DayView onAdvanceDay={handleAdvanceDay} />;
+        return <DayView />;
       case 'skills':
         return <SkillsView />;
       case 'rest':
@@ -151,7 +155,7 @@ export const GameScreen: React.FC = () => {
       case 'settings':
         return <SettingsView />;
       default:
-        return <DayView onAdvanceDay={handleAdvanceDay} />;
+        return <DayView />;
     }
   };
 
@@ -202,6 +206,9 @@ export const GameScreen: React.FC = () => {
           </div>
         </>
       )}
+
+      {/* End of the turn — docked above the nav so it never needs scrolling to */}
+      <DayEndDock visible={DOCK_VIEWS.has(currentView) && !activeEvent && !outcome} />
 
       {/* Bottom navigation */}
       <nav className="tabbar" aria-label="Основная навигация">

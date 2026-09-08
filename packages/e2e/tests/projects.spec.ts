@@ -32,10 +32,7 @@ test.afterEach(async ({ request }) => {
 });
 
 async function endDay(page: Page): Promise<void> {
-  await page
-    .getByRole('navigation', { name: 'Основная навигация' })
-    .getByRole('button', { name: 'Главная', exact: true })
-    .click();
+  // The day-end CTA is docked above the tab bar, so «Работа» can close the day.
   await page.getByRole('button', { name: /^Завершить день / }).click();
   const card = page.locator('.story-card');
   if (await card.isVisible()) {
@@ -45,10 +42,6 @@ async function endDay(page: Page): Promise<void> {
     await done.click();
     await expect(page.locator('.story-card')).toHaveCount(0);
   }
-  await page
-    .getByRole('navigation', { name: 'Основная навигация' })
-    .getByRole('button', { name: 'Работа', exact: true })
-    .click();
   await expect(board(page)).toBeVisible();
 }
 

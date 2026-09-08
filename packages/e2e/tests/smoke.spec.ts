@@ -51,8 +51,9 @@ test('fresh run: three actions → end of day → buy cosmetics → telemetry', 
     await resolveStory(page);
   }
 
-  // ── end of day: server rolls day 1, day 2 opens with a fresh battery ────
-  await nav.getByRole('button', { name: 'Главная', exact: true }).click();
+  // ── end of day: the CTA is docked above the nav, so it works from any
+  //    working tab without scrolling to the bottom of «Главная» ────────────
+  await expect(page.getByRole('button', { name: /^Завершить день / })).toBeVisible();
   await page.getByRole('button', { name: /^Завершить день / }).click();
   await expect(energyMeter(page)).toHaveAttribute('title', /^Энергия: 10\/10$/);
   await resolveStory(page);

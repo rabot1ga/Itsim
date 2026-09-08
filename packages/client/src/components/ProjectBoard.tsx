@@ -103,6 +103,7 @@ export const ProjectBoard: React.FC = () => {
 
       {bid && (
         <article className="card card-sm panel-note panel-note-sky" aria-label="Отклик отправлен">
+          <img className="project-art" src="/art/story-v1/freelance.webp" alt="" width={384} height={230} />
           <p className="text-sm text-ink-100">
             <span aria-hidden="true">📨 </span>
             Отклик на «{bidDef?.title ?? 'заказ'}» отправлен
@@ -116,6 +117,7 @@ export const ProjectBoard: React.FC = () => {
 
       {active && activeDef && (
         <article className="project-active" aria-label={`Активный проект: ${activeDef.title}`}>
+          <img className="project-art" src="/art/story-v1/contract.webp" alt="" width={384} height={230} />
           <div className="project-active-head">
             <span className="text-lg leading-none" aria-hidden="true">
               {projectEmoji(activeDef.icon)}

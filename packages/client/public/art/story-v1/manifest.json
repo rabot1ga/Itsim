@@ -14,6 +14,14 @@
     {
       "name": "portrait.png",
       "sha256": "42eb81263fb64a01bce62689dcbe49a6e60ebbc8119a0aff468ecfe23fc4ebea"
+    },
+    {
+      "name": "freelance.png",
+      "sha256": "607e148b37ae09584762bb56f4fbddda9c23ad9d2f0ded82f1690545eb0605bb"
+    },
+    {
+      "name": "contract.png",
+      "sha256": "65d512a5edb5913402d71f11a1d49de85d68326b4a0a12a607e707affa6dbd83"
     }
   ],
   "files": [
@@ -125,7 +133,7 @@
     {
       "id": "parcel",
       "file": "/art/story-v1/parcel.webp",
-      "width": 384,
+      "width": 345,
       "height": 230,
       "bytes": 15200,
       "sha256": "d8d04f03ad3fb11d23a2b7fc822ecd7d97f2b558711a879f12d44502330bb617",
@@ -135,7 +143,8 @@
         "top": 770,
         "width": 406,
         "height": 238
-      }
+      },
+      "note": "shipped 345×230: the atlas crop for this scene is narrower than the others; manifest previously claimed 384 and failed validation"
     },
     {
       "id": "rest",
@@ -184,6 +193,34 @@
       "bytes": 3746,
       "sha256": "15879c14e9237f8716ed89128de61ab2097bcd5247ae79b7cbc17a7ef5dc27da",
       "source": "portrait.png"
+    },
+    {
+      "id": "freelance",
+      "file": "/art/story-v1/freelance.webp",
+      "width": 384,
+      "height": 230,
+      "bytes": 11708,
+      "sha256": "0af7d378ce23e54b83789f5c97741f503198e2122a65fbed5efba2f4bd0c857b",
+      "source": "freelance.png",
+      "crop": {
+        "fit": "cover",
+        "width": 384,
+        "height": 230
+      }
+    },
+    {
+      "id": "contract",
+      "file": "/art/story-v1/contract.webp",
+      "width": 384,
+      "height": 230,
+      "bytes": 13548,
+      "sha256": "e6841fdf4f12ff5e39d7c6b7fe1286a1266be448d20821b14effc924b19c4d89",
+      "source": "contract.png",
+      "crop": {
+        "fit": "cover",
+        "width": 384,
+        "height": 230
+      }
     }
   ],
   "updated": "2026-09-08"

@@ -40,3 +40,21 @@ Art brief: crisp retro adventure-game pixel clusters, ink/navy night backgrounds
 warm amber interior lamps, muted moss accents. Scene specifications are recorded
 in docs/ART-BRIEF-2026-09-08.md. Review images/provenance before public release;
 AI generation is not a legal guarantee of exclusivity.
+
+## Iteration 3 — 2026-09-09: биржа заказов
+
+Two new scenes were generated for the freelance-bid loop, in the same style and
+with the same developer (brown messy hair, square glasses, navy hoodie):
+
+| id          | Subject                                                                              | Used by                                             |
+| ----------- | ------------------------------------------------------------------------------------ | --------------------------------------------------- |
+| `freelance` | Ночной стол, отклик уходит к заказчику зелёным конвертом, песочные часы ожидания       | карточка «Отклик отправлен», события с тегом `freelance` |
+| `contract`  | Подписанный контракт с зелёной печатью, календарь с отмеченным дедлайном, тихий триумф | карточка активного проекта, события про контракт     |
+
+384×230 WebP, quality 88, cropped `fit: cover` from 1376×768 masters (masters are
+not committed — see `tools/art/add-story-scene.mjs`). No text, letters or digits
+are baked into either image. Manifest total: 14 files, 249 778 bytes.
+
+Also corrected in this pass: `parcel.webp` ships at 345×230, while the manifest
+claimed 384×230 — `validate-story-assets.mjs` failed on it. The manifest now
+records the real width; the image itself is untouched.
