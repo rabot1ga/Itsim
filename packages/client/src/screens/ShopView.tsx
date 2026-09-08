@@ -28,7 +28,7 @@ export const ShopView: React.FC = () => {
   const [loaded, setLoaded] = useState(false);
   const [loadError, setLoadError] = useState(false);
   const [attempt, setAttempt] = useState(0);
-  const [category, setCategory] = useState<ShopCategory>('all');
+  const [category, setCategory] = useState<ShopCategory>('equipment');
   const [busy, setBusy] = useState<string | null>(null);
   const lock = useRef(false);
   const [note, setNote] = useState<string | null>(null);
@@ -121,7 +121,20 @@ export const ShopView: React.FC = () => {
             return (
               <article key={item.id} className="panel shop-product" aria-label={item.name}>
                 <span className="shop-product-art">
-                  <IsoIcon sprite={spriteForItem(item.id, item.type)} size={48} />
+                  {item.type === 'headphones' ? (
+                    <img src="/reference-ui/headphones.svg" alt="" width={48} height={48} />
+                  ) : item.id === 'mechanical_keyboard' ? (
+                    <img src="/reference-ui/keyboard.webp" alt="" width={64} height={40} />
+                  ) : item.type === 'pc' || item.type === 'chair' ? (
+                    <img
+                      src={`/reference-ui/${item.type === 'pc' ? 'laptop' : 'chair'}.webp`}
+                      alt=""
+                      width={64}
+                      height={64}
+                    />
+                  ) : (
+                    <IsoIcon sprite={spriteForItem(item.id, item.type)} size={48} />
+                  )}
                 </span>
                 <div className="shop-product-copy">
                   <h3>{item.name}</h3>
@@ -136,18 +149,21 @@ export const ShopView: React.FC = () => {
                     <span className="text-xs text-moss-300">✓ куплено</span>
                   ) : (
                     <>
-                      <span className="num text-sm text-moss-300">{shopMoney(item.price)}</span>
                       <button
                         disabled={!affordable || busy !== null}
                         onClick={() => buy(item.id)}
-                        className="btn btn-primary text-xs"
+                        className="shop-price-button"
+                        aria-label="Купить"
+                        title={
+                          affordable
+                            ? `Купить за ${shopMoney(item.price)}`
+                            : `Не хватает ${shopMoney(item.price - (player.money ?? 0))}`
+                        }
                       >
-                        {busy === item.id ? 'Покупаем…' : 'Купить'}
+                        {busy === item.id ? 'Покупаем…' : shopMoney(item.price)}
                       </button>
                       {!affordable && (
-                        <span className="text-2xs text-ink-400">
-                          Не хватает {shopMoney(item.price - (player.money ?? 0))}
-                        </span>
+                        <span className="sr-only">Не хватает {shopMoney(item.price - (player.money ?? 0))}</span>
                       )}
                     </>
                   )}

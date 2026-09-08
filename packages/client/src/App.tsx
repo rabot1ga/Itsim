@@ -1,13 +1,12 @@
 import React, { useEffect } from 'react';
 import { useGameStore } from './store/gameStore';
 import { GameScreen } from './components/GameScreen';
-import { MainMenu } from './components/MainMenu';
 import { ResourceBar } from './components/ResourceBar';
 import { showBackButton, hideBackButton, applyTelegramChrome } from './lib/telegram';
 import { PixelText } from './components/pixel/PixelText';
 
 const App: React.FC = () => {
-  const { initialized, screen, currentView, moreOpen, setScreen, setView, setMoreOpen, initGame } = useGameStore();
+  const { initialized, screen, currentView, moreOpen, setView, setMoreOpen, initGame } = useGameStore();
 
   useEffect(() => {
     // Paint Telegram's own header/background in our ink so the app has no seams.
@@ -24,10 +23,8 @@ const App: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Native Telegram BackButton: «Ещё» sheet → (any tab → Day tab → main menu →
-  // hidden, app can close). Office is a Career sub-screen, so it goes back to
-  // Career. The sheet is a detour, so the first back press only closes it —
-  // it never throws the player out of their current tab.
+  // Native back: close overflow first, office → career, other tabs → home.
+  // Home has no intermediate landing page and can close normally in Telegram.
   useEffect(() => {
     if (!initialized || screen !== 'game') {
       hideBackButton();
@@ -39,9 +36,8 @@ const App: React.FC = () => {
       return () => hideBackButton(closeSheet);
     }
     if (currentView === 'main') {
-      const toMenu = () => setScreen('menu');
-      showBackButton(toMenu);
-      return () => hideBackButton(toMenu);
+      hideBackButton();
+      return;
     }
     if (currentView === 'office') {
       const toCareer = () => setView('career');
@@ -51,7 +47,7 @@ const App: React.FC = () => {
     const toMain = () => setView('main');
     showBackButton(toMain);
     return () => hideBackButton(toMain);
-  }, [initialized, screen, currentView, moreOpen, setScreen, setView, setMoreOpen]);
+  }, [initialized, screen, currentView, moreOpen, setView, setMoreOpen]);
 
   if (!initialized) {
     return (
@@ -76,9 +72,8 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="app-container">
-      {screen === 'menu' && <MainMenu />}
-      {screen === 'game' && (
+    <div className="app-container reference-app" data-ui-revision="06">
+      {(screen === 'game' || screen === 'menu') && (
         <>
           <ResourceBar />
           <GameScreen />

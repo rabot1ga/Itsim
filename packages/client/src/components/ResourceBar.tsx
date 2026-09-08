@@ -1,22 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
+import { xpToNext } from '@itsim/shared';
 import { PixelIcon } from './pixel/PixelIcon';
 
-/**
- * The HUD.
- *
- * In an idle game the top bar is not decoration — it is the scoreboard the
- * player checks after every single tap. So it follows the genre's rules:
- * one number is the hero (money), the numbers never move on the screen, they
- * are abbreviated once they get long, and each one gives a chunky bounce the
- * moment it changes (the floating +N labels come from GainStream).
- *
- * What is NOT here is as deliberate as what is. Reputation and the leaderboard
- * rating only matter in their own context, so they live there (career gate
- * card, «Топ», achievements), not in a bar that would shout about two gold
- * stars all day. The persistent row shows only what the player spends right
- * now: energy (action currency), health and motivation — the three vitals that
- * gate a decision this very tap.
+/** Reference 1.png: home portrait/XP + three stacked vitals; compact wallet on other tabs.
+ * The portrait is a default illustration; every numeric value comes from player state.
  */
 
 const GRADE_LABEL: Record<string, string> = {
@@ -29,9 +17,6 @@ const GRADE_LABEL: Record<string, string> = {
   architect: 'архитектор',
   cto: 'CTO',
 };
-
-/** Only the top of the ladder is gilded — everything else stays quiet on purpose. */
-const GRADE_GOLD = new Set(['architect', 'cto']);
 
 /** True for one animation frame after `value` changes — used to bounce a counter. */
 function usePop(value: number): boolean {
@@ -63,7 +48,7 @@ const Meter: React.FC<{
   const pop = usePop(Math.round(value));
 
   return (
-    <div className="flex-1 min-w-0" title={`${label}: ${Math.round(safeValue)}/${safeMax}`}>
+    <div className="vital-row flex-1 min-w-0" title={`${label}: ${Math.round(safeValue)}/${safeMax}`}>
       <div className="hud-meter-label">{label}</div>
       <div className="flex items-center gap-1 mb-1">
         <PixelIcon name={icon} size={11} className={low ? 'text-clay-400' : 'text-ink-400'} title={label} />
@@ -92,62 +77,90 @@ const Meter: React.FC<{
 
 export const ResourceBar: React.FC = () => {
   const player = useGameStore((s) => s.player);
-  const money = player?.money ?? 0;
-  const moneyPop = usePop(money);
-
+  const currentView = useGameStore((s) => s.currentView);
+  const setView = useGameStore((s) => s.setView);
+  const setMoreOpen = useGameStore((s) => s.setMoreOpen);
+  const moreOpen = useGameStore((s) => s.moreOpen);
+  const moneyPop = usePop(player?.money ?? 0);
   if (!player) return null;
-
-  const grade = GRADE_LABEL[player.grade] ?? player.grade;
-  const gilded = GRADE_GOLD.has(player.grade);
-
+  const home = !currentView || currentView === 'main';
+  const id = player.mainSkillId || 'javascript';
+  const skill = player.skills?.[id] ?? { level: 0, xp: 0 };
+  const maxed = skill.level >= 100;
+  const need = xpToNext(skill.level);
+  const pct = maxed ? 100 : Math.max(0, Math.min(100, (skill.xp / need) * 100));
+  const names: Record<string, string> = {
+    javascript: 'JavaScript',
+    python: 'Python',
+    react: 'React',
+    typescript: 'TypeScript',
+    sql: 'SQL',
+  };
   return (
-    <header className="game-hud shrink-0 bg-ink-900 border-b-2 border-ink-700 px-3 pt-2 pb-2.5 space-y-2 safe-area-pt">
-      <div className="flex items-center justify-between gap-2">
-        {/* The scoreboard: the day is context, money is the number the loop
-            is scored on — so it is the largest thing in the bar. */}
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="well flex items-baseline gap-1 px-1.5 py-1" title={`День ${player.currentDay ?? 1}`}>
-            <span className="text-2xs font-bold uppercase tracking-[0.09em] text-ink-500">Дн.</span>
-            <span className="num text-xs font-bold text-ink-200 leading-none">{player.currentDay ?? 1}</span>
-          </span>
-          <span className="flex items-center gap-1.5 min-w-0">
-            <PixelIcon name="coin" size={13} className="text-gold-300 shrink-0" />
-            <span className={`num text-lg font-bold text-white leading-none truncate ${moneyPop ? 'num-pop' : ''}`}>
-              {formatMoney(money)}
-            </span>
-          </span>
+    <header className={`reference-hud ${home ? 'reference-hud-home' : ''}`}>
+      <div className="miniapp-chrome">
+        <button aria-label="На главную" onClick={() => setView('main')}>
+          <PixelIcon name="chevron" size={12} className="rotate-90" />
+        </button>
+        <div>
+          IT Life<span>mini app</span>
         </div>
-
-        {/* Streak + grade — identity and the daily habit; never louder than money. */}
-        <span className="flex items-center gap-1.5 shrink-0 min-w-0">
-          {(player.dailyStreak ?? 0) >= 2 && (
-            <span
-              className="chip !text-ochre-300"
-              title={`Заходишь ${player.dailyStreak} дней подряд — награда за вход растёт`}
-            >
-              <PixelIcon name="flame" size={10} className="text-ochre-400" />
-              <span className="num">{player.dailyStreak}</span>
-            </span>
-          )}
-          <span className={`chip uppercase tracking-[0.06em] ${gilded ? 'text-gold-300' : 'text-ink-300'}`}>
-            {grade}
+        <button aria-label="Ещё" aria-expanded={Boolean(moreOpen)} onClick={() => setMoreOpen(!moreOpen)}>
+          <span aria-hidden="true">⋮</span>
+        </button>
+      </div>
+      {home ? (
+        <>
+          <section className="reference-identity" aria-label="Персонаж и основной навык">
+            <img src="/reference-ui/portrait.webp" alt="Стандартный портрет героя" width={66} height={66} />
+            <div>
+              <div className="reference-identity-meta">
+                <span>
+                  {names[id] ?? id} · ур. {skill.level}
+                </span>
+                <span className="num">День {player.currentDay ?? 1}</span>
+              </div>
+              <div
+                className="reference-xp"
+                role="progressbar"
+                aria-label="Опыт основного навыка"
+                aria-valuemin={0}
+                aria-valuemax={maxed ? 100 : need}
+                aria-valuenow={maxed ? 100 : Math.min(need, skill.xp)}
+              >
+                <span style={{ width: `${pct}%` }} />
+                <b>{maxed ? 'Максимум' : `${skill.xp} / ${need} XP`}</b>
+              </div>
+              <span className="reference-identity-caption">
+                {GRADE_LABEL[player.grade] ?? player.grade} · {player.money.toLocaleString('ru-RU')} ₽
+              </span>
+            </div>
+          </section>
+          <div className="reference-vitals">
+            <Meter
+              icon="bolt"
+              label="Энергия"
+              value={player.energy}
+              max={player.maxEnergy || 16}
+              color="var(--accent)"
+            />
+            <Meter icon="flame" label="Мотивация" value={player.motivation} max={100} color="var(--ochre)" />
+            <Meter icon="heart" label="Здоровье" value={player.health} max={100} color="var(--clay)" />
+          </div>
+        </>
+      ) : (
+        <div className="reference-wallet">
+          <span className={moneyPop ? 'num-pop' : ''}>
+            <PixelIcon name="coin" size={16} />
+            {player.money.toLocaleString('ru-RU')} ₽
           </span>
-        </span>
-      </div>
-
-      {/* Vitals the player spends this tap: energy gates actions, health and
-          motivation gate burnout. Reputation/rating live where they matter. */}
-      <div className="flex items-end gap-2.5">
-        <Meter icon="bolt" label="Энергия" value={player.energy} max={player.maxEnergy || 16} color="var(--accent)" />
-        <Meter icon="heart" label="Здоровье" value={player.health} max={100} color="var(--clay)" />
-        <Meter icon="flame" label="Мотивация" value={player.motivation} max={100} color="var(--ochre)" />
-      </div>
+          <span>
+            <PixelIcon name="bolt" size={13} />
+            {player.energy} / {player.maxEnergy}
+          </span>
+          <span>День {player.currentDay ?? 1}</span>
+        </div>
+      )}
     </header>
   );
 };
-
-function formatMoney(amount: number): string {
-  if (amount >= 1_000_000) return `${(amount / 1_000_000).toFixed(1)} млн ₽`;
-  if (amount >= 10_000) return `${Math.round(amount / 1000)} тыс ₽`;
-  return `${amount.toLocaleString('ru-RU')} ₽`;
-}

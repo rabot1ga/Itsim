@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { InterviewPanel } from '../components/InterviewPanel';
-import { Spinner, SpriteBadge } from '../components/ui';
+import { Spinner } from '../components/ui';
 import { PixelIcon } from '../components/pixel/PixelIcon';
 
 interface GateInfo {
@@ -54,6 +54,7 @@ interface CompanyInfo {
 export const CareerView: React.FC = () => {
   const player = useGameStore((s) => s.player);
   const setView = useGameStore((s) => s.setView);
+  const performAction = useGameStore((s) => s.performAction);
   const applyToCompany = useGameStore((s) => s.applyToCompany);
   const acceptOffer = useGameStore((s) => s.acceptOffer);
   const declineOffer = useGameStore((s) => s.declineOffer);
@@ -111,8 +112,8 @@ export const CareerView: React.FC = () => {
   return (
     <div className="space-y-4 animate-fade-in">
       <h2 className="flex items-center gap-2 text-base font-semibold text-white">
-        <SpriteBadge sprite="whiteboard" size={32} />
-        Карьера
+        <PixelIcon name="briefcase" size={20} className="text-ochre-300" />
+        Работа
       </h2>
 
       {error && (
@@ -146,6 +147,27 @@ export const CareerView: React.FC = () => {
         )}
       </div>
 
+      <section className="reference-work-actions" aria-label="Рабочие действия">
+        <h3>Активные задачи</h3>
+        {[
+          { id: 'work_task', name: 'Рабочая задача', energy: 4, job: true },
+          { id: 'pet_project', name: 'Развивать пет-проект', energy: 3, job: false },
+          { id: 'freelance', name: 'Фриланс-заказ', energy: 4, job: false },
+        ].map((action) => (
+          <button
+            key={action.id}
+            disabled={busy || player.energy < action.energy || (action.job && !player.job)}
+            onClick={() => act(() => performAction(action.id, { skillId: player.mainSkillId || 'javascript' }))}
+          >
+            <span>{action.name}</span>
+            <span>
+              {action.job && !player.job ? 'Нужна работа' : `−${action.energy} энергии`}{' '}
+              <PixelIcon name="arrow" size={10} />
+            </span>
+          </button>
+        ))}
+      </section>
+
       {/* Office entry */}
       {player.job && (
         <button onClick={() => setView('office')} className="tile w-full flex items-center gap-3">
@@ -161,14 +183,6 @@ export const CareerView: React.FC = () => {
       )}
 
       {/* Job offers */}
-      {offers.length === 0 && !player.job && !application && (
-        <div className="panel flex items-center gap-3">
-          <PixelIcon name="box" size={18} className="text-ink-600" />
-          <p className="text-xs text-ink-400 leading-relaxed">
-            Офферов пока нет — откликнись на вакансии ниже. HR любят настойчивых (и прокачанные навыки).
-          </p>
-        </div>
-      )}
       {offers.length > 0 && (
         <div className="panel panel-note panel-note-moss animate-pop-in">
           <h3 className="section-title mb-2">Офферы</h3>
@@ -268,7 +282,7 @@ export const CareerView: React.FC = () => {
                   <button
                     disabled={busy}
                     onClick={() => act(() => applyToCompany(c.id))}
-                    className="btn btn-primary w-full mt-2 text-sm"
+                    className="btn btn-primary career-apply text-xs"
                   >
                     Откликнуться
                   </button>

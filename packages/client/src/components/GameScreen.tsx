@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { haptic } from '../lib/telegram';
+import { FriendsView } from '../screens/FriendsView';
 import { DayView } from '../screens/DayView';
 import { OfficeView } from '../screens/OfficeView';
 import { SkillsView } from '../screens/SkillsView';
@@ -12,26 +13,22 @@ import { LeaderboardView } from '../screens/LeaderboardView';
 import { PixelIcon } from './pixel/PixelIcon';
 import { GainStream } from './GainStream';
 
-/**
- * Four tabs carry the loop: the day, what you learn, where you work, where you
- * live. Everything you visit once in a while lives behind «Ещё» — seven equal
- * tabs made every one of them look equally unimportant.
- */
+/** The reference's five destinations stay visible; secondary screens live in the header menu. */
 const TABS = [
-  { view: 'main', icon: 'calendar', label: 'День' },
-  { view: 'skills', icon: 'book', label: 'Навыки' },
-  { view: 'career', icon: 'briefcase', label: 'Карьера' },
-  { view: 'room', icon: 'house', label: 'Дом' },
+  { view: 'main', icon: 'house', label: 'Главная' },
+  { view: 'career', icon: 'briefcase', label: 'Работа' },
+  { view: 'skills', icon: 'book', label: 'Обучение' },
+  { view: 'shop', icon: 'bag', label: 'Магазин' },
+  { view: 'friends', icon: 'people', label: 'Друзья' },
 ] as const;
 
 const MORE = [
+  { view: 'room', icon: 'house', label: 'Дом', hint: 'Предметы, расстановка и внешность' },
   { view: 'shop', icon: 'bag', label: 'Магазин', hint: 'Техника, мебель, жильё' },
   { view: 'achievements', icon: 'trophy', label: 'Трофеи', hint: 'Ачивки и челленджи' },
   { view: 'leaderboard', icon: 'chart', label: 'Топ', hint: 'Рейтинг игроков' },
   { view: 'office', icon: 'people', label: 'Офис', hint: 'Команда и задачи' },
 ] as const;
-
-const MORE_VIEWS: string[] = MORE.map((m) => m.view);
 
 export const GameScreen: React.FC = () => {
   const { currentView, setView, setScreen, advanceDay, loadNft, moreOpen, setMoreOpen } = useGameStore();
@@ -51,6 +48,8 @@ export const GameScreen: React.FC = () => {
 
   const renderView = () => {
     switch (currentView) {
+      case 'friends':
+        return <FriendsView />;
       case 'main':
         return <DayView onAdvanceDay={handleAdvanceDay} />;
       case 'skills':
@@ -163,10 +162,11 @@ export const GameScreen: React.FC = () => {
                 className="btn btn-secondary w-full mt-2"
                 onClick={() => {
                   setMoreOpen(false);
-                  setScreen('menu');
+                  setView('main');
+                  setScreen('game');
                 }}
               >
-                Главное меню
+                На главную
               </button>
             </div>
           </div>
@@ -174,7 +174,7 @@ export const GameScreen: React.FC = () => {
       )}
 
       {/* Bottom navigation */}
-      <nav className="tabbar safe-area-pb">
+      <nav className="tabbar safe-area-pb" aria-label="Основная навигация">
         {TABS.map((tab) => (
           <NavButton
             key={tab.view}
@@ -185,15 +185,6 @@ export const GameScreen: React.FC = () => {
             onClick={() => nav(tab.view)}
           />
         ))}
-        <NavButton
-          icon="plus"
-          label="Ещё"
-          active={moreOpen || MORE_VIEWS.includes(currentView)}
-          onClick={() => {
-            haptic('selection');
-            setMoreOpen(!moreOpen);
-          }}
-        />
       </nav>
     </div>
   );

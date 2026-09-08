@@ -50,7 +50,12 @@ export const SkillList: React.FC<SkillListProps> = ({ skills, levels, mainSkillI
   const [expanded, setExpanded] = useState(false);
   const [branch, setBranch] = useState('all');
   const branches = [...new Set(skills.map((skill) => skill.branch))];
-  const visible = skills.filter(
+  const ordered = [...skills].sort(
+    (a, b) =>
+      Number(missingRequirements(a, levels, skills).length > 0) -
+      Number(missingRequirements(b, levels, skills).length > 0)
+  );
+  const visible = ordered.filter(
     (skill) =>
       (branch === 'all' || skill.branch === branch) &&
       `${skill.name} ${skill.id}`.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase())
@@ -58,29 +63,32 @@ export const SkillList: React.FC<SkillListProps> = ({ skills, levels, mainSkillI
 
   return (
     <section aria-label="Список навыков" className="skill-list">
-      <div className="skill-list-filters">
-        <label>
-          Найти навык
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="JavaScript, Python…"
-          />
-        </label>
-        <label>
-          Направление
-          <select value={branch} onChange={(e) => setBranch(e.target.value)}>
-            <option value="all">Все направления</option>
-            {branches.map((name) => (
-              <option key={name} value={name}>
-                {name}
-              </option>
-            ))}
-          </select>
-        </label>
-      </div>
-      <p className="text-xs text-ink-400" role="status">
+      <details className="skill-search">
+        <summary>Поиск и направления</summary>
+        <div className="skill-list-filters">
+          <label>
+            Найти навык
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="JavaScript, Python…"
+            />
+          </label>
+          <label>
+            Направление
+            <select value={branch} onChange={(e) => setBranch(e.target.value)}>
+              <option value="all">Все направления</option>
+              {branches.map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+      </details>
+      <p className="skill-result-count text-xs text-ink-400" role="status">
         Показано {expanded ? visible.length : Math.min(8, visible.length)} из {visible.length} · всего {skills.length}
       </p>
       {visible.length === 0 && (
@@ -113,17 +121,18 @@ export const SkillList: React.FC<SkillListProps> = ({ skills, levels, mainSkillI
             className={`skill-list-row ${main ? 'is-main' : ''} ${locked ? 'is-locked' : ''}`}
             aria-label={skill.name}
           >
-            <span className="skill-list-symbol" aria-hidden="true">
-              {locked ? <PixelIcon name="lock" size={20} /> : (SYMBOLS[skill.id] ?? skill.name.slice(0, 2))}
+            <span className={`skill-list-symbol symbol-${skill.id}`} aria-hidden="true">
+              {SYMBOLS[skill.id] ?? skill.name.slice(0, 2)}
             </span>
             <div className="skill-list-copy">
               <div className="skill-list-title">
                 <h3>{skill.name}</h3>
-                <span className="text-xs text-ink-400">Уровень {level}</span>
+                {main && <span className="skill-main-mark">Основной</span>}
+                {locked && <PixelIcon name="lock" size={12} className="text-ink-500" />}
               </div>
               {milestone && <p className="text-2xs text-gold-300">Веха пути · цель: ур. {milestone.target}</p>}
               <div className="skill-list-progress-label">
-                <span>{maxed ? 'Максимальный уровень' : 'До следующего уровня'}</span>
+                <span>{maxed ? 'Максимальный уровень' : `Уровень ${level}`}</span>
                 <span className="num">{maxed ? `${level} / ${skill.maxLevel}` : `${xp} / ${need} XP`}</span>
               </div>
               <div
@@ -138,14 +147,15 @@ export const SkillList: React.FC<SkillListProps> = ({ skills, levels, mainSkillI
               </div>
               {locked && <p className="skill-list-requirements">Нужно: {requirements.join(' · ')}</p>}
               <div className="skill-list-action">
-                <span className="text-2xs text-ink-400">{skill.branch}</span>
                 <button
-                  className={`btn ${main ? 'btn-secondary' : 'btn-primary'}`}
+                  className="skill-row-select"
                   disabled={locked || busy || main}
                   aria-pressed={main}
                   onClick={() => onPick(skill.id)}
                 >
-                  {main ? 'Основной навык' : locked ? 'Заблокирован' : 'Сделать основным'}
+                  <span className="sr-only">
+                    {main ? 'Основной навык' : locked ? 'Заблокирован' : 'Сделать основным'}
+                  </span>
                 </button>
               </div>
             </div>

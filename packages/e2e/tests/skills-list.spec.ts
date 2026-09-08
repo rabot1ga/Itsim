@@ -5,11 +5,13 @@ for (const width of [320, 390, 480]) {
     await page.setViewportSize({ width, height: 844 });
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');
-    await page.getByRole('button', { name: /^(Начать игру|Продолжить)/ }).click();
-    await page.getByRole('button', { name: 'Навыки', exact: true }).click();
+    await page.getByRole('button', { name: 'Обучение', exact: true }).click();
     const modes = page.getByRole('group', { name: 'Вид навыков' });
     await expect(modes.getByRole('button', { name: 'Список', exact: true })).toHaveAttribute('aria-pressed', 'true');
     const list = page.getByRole('region', { name: 'Список навыков' });
+
+    await page.getByText('Поиск и направления', { exact: true }).click();
+    await page.getByLabel('Найти навык').fill('React');
     await expect(list.getByRole('article', { name: 'React', exact: true }).getByRole('button')).toBeDisabled();
     await page.getByLabel('Найти навык').fill('Python');
     await expect(list.getByRole('article')).toHaveCount(1);
@@ -27,8 +29,7 @@ for (const width of [320, 390, 480]) {
     await modes.getByRole('button', { name: 'Карта', exact: true }).click();
     await expect(list).toHaveCount(0);
     await page.reload();
-    await page.getByRole('button', { name: /^(Начать игру|Продолжить)/ }).click();
-    await page.getByRole('button', { name: 'Навыки', exact: true }).click();
+    await page.getByRole('button', { name: 'Обучение', exact: true }).click();
     await expect(modes.getByRole('button', { name: 'Карта', exact: true })).toHaveAttribute('aria-pressed', 'true');
     await modes.getByRole('button', { name: 'Список', exact: true }).click();
     await expect(list).toBeVisible();
@@ -42,8 +43,7 @@ test('learning catalogue retries after HTTP error', async ({ page }) => {
     else await route.continue();
   });
   await page.goto('/');
-  await page.getByRole('button', { name: /^(Начать игру|Продолжить)/ }).click();
-  await page.getByRole('button', { name: 'Навыки', exact: true }).click();
+  await page.getByRole('button', { name: 'Обучение', exact: true }).click();
   await expect(page.getByText('Не удалось загрузить обучение.', { exact: true })).toBeVisible();
   fail = false;
   await page.getByRole('button', { name: 'Повторить загрузку' }).click();

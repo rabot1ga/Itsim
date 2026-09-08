@@ -12,8 +12,6 @@ import { test, expect, Page } from '@playwright/test';
 
 async function startFreshGame(page: Page): Promise<void> {
   await page.goto('/');
-  await expect(page.getByRole('button', { name: /^Начать игру/ })).toBeVisible();
-  await page.getByRole('button', { name: /^Начать игру/ }).click();
 }
 
 const energyMeter = (page: Page) => page.locator('div[title^="Энергия:"]');
@@ -44,6 +42,10 @@ test('fresh run: three actions → end of day → buy cosmetics → telemetry', 
   await page
     .getByRole('dialog', { name: 'Ещё', exact: true })
     .getByRole('button', { name: /^Магазин/ })
+    .click();
+  await page
+    .getByRole('group', { name: 'Категории товаров' })
+    .getByRole('button', { name: 'Для дома', exact: true })
     .click();
   const plantRow = page.locator('.panel').filter({ hasText: 'Кактус на стол' });
   await expect(plantRow.getByRole('button', { name: /^Купить$/ })).toBeVisible();

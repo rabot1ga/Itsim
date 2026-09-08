@@ -11,8 +11,6 @@ import { test, expect, Page } from '@playwright/test';
 
 async function startFreshGame(page: Page): Promise<void> {
   await page.goto('/');
-  await expect(page.getByRole('button', { name: /^Начать игру/ })).toBeVisible();
-  await page.getByRole('button', { name: /^Начать игру/ }).click();
 }
 
 test('archetype routes: choose → gold chain on map → clear → guarded claim', async ({ page, request }) => {
@@ -28,7 +26,7 @@ test('archetype routes: choose → gold chain on map → clear → guarded claim
   expect(body.archetypes[0].id).toBe('frontend');
   expect(body.archetypes[0].nodes.map((n: any) => n.skillId)).toEqual(['javascript', 'typescript', 'react', 'nextjs']);
 
-  await page.getByRole('button', { name: /^Навыки$/ }).click();
+  await page.getByRole('button', { name: /^Обучение$/ }).click();
   await page.getByRole('group', { name: 'Вид навыков' }).getByRole('button', { name: 'Карта', exact: true }).click();
 
   // ── the routes rail renders with progress derived from live levels ──────

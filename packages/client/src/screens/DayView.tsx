@@ -287,6 +287,7 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
 
   return (
     <div className="space-y-4 animate-fade-in">
+      <HomeRoomCard />
       {/* Daily check-in reward — once per real day */}
       {checkIn && <CheckInBanner checkIn={checkIn} />}
 
@@ -313,7 +314,6 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
         </button>
       )}
 
-      <HomeRoomCard />
       <OnboardingTip day={currentDay} />
 
       {/* Yesterday's log — one line, expandable */}
@@ -491,7 +491,7 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
       {/* End day — sticky fallback for non-Telegram browsers
           (inside Telegram the native MainButton is used, see the effect above) */}
       {!useNativeCta && (
-        <div className="sticky-cta">
+        <div className="day-end-action">
           <button onClick={() => void finishDay()} disabled={finishing} className="btn btn-primary btn-lg w-full mt-2">
             {finishing ? (
               'Считаем день…'

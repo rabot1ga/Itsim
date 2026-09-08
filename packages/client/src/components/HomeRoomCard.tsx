@@ -1,40 +1,28 @@
 import React from 'react';
 import { useGameStore } from '../store/gameStore';
-import { IsoRoom } from './iso/IsoRoom';
 import { PixelIcon } from './pixel/PixelIcon';
 
-/** The actual saved room, not a reference screenshot or a second player state. */
+/** Frontal reference illustration. The live saved layout remains in the room editor. */
 export const HomeRoomCard: React.FC = () => {
   const player = useGameStore((state) => state.player);
   const setView = useGameStore((state) => state.setView);
   if (!player) return null;
 
   return (
-    <section className="home-room-card" aria-label="Твоя комната">
-      <div className="home-room-heading">
-        <div>
-          <span className="home-room-kicker">Твой маленький IT-мир</span>
-          <h2>Комната</h2>
-        </div>
-        <button className="btn btn-secondary" onClick={() => setView('room')}>
-          Обустроить <PixelIcon name="arrow" size={10} />
+    <section className="reference-room" aria-label="Твоя комната">
+      <div className="reference-room-heading">
+        <h2>Комната</h2>
+        <button onClick={() => setView('room')} aria-label="Обустроить комнату">
+          Обустроить <PixelIcon name="arrow" size={9} />
         </button>
       </div>
-      <IsoRoom player={player} className="home-room-scene" />
-      <div className="home-room-shortcuts">
-        <button onClick={() => setView('career')}>
-          <PixelIcon name="briefcase" size={13} />
-          Работа
-        </button>
-        <button onClick={() => setView('skills')}>
-          <PixelIcon name="book" size={13} />
-          Учёба
-        </button>
-        <button onClick={() => setView('shop')}>
-          <PixelIcon name="bag" size={13} />
-          Магазин
-        </button>
-      </div>
+      <img
+        src="/reference-ui/room.webp"
+        alt="Иллюстрация комнаты разработчика: стол, компьютер, кресло и окно в ночной город"
+        width={280}
+        height={205}
+      />
+      <span className="reference-room-caption">Эскиз комнаты · твои предметы и расстановка — в редакторе</span>
     </section>
   );
 };

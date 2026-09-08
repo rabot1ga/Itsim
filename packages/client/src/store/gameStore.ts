@@ -192,14 +192,14 @@ export const useGameStore = create<GameState>((set, get) => ({
         costOfDay: stateRes.data.costOfDay ?? null,
         checkIn: stateRes.data.checkIn ?? null,
         sprint: stateRes.data.sprint ?? null,
-        screen: stateRes.data.isNew ? 'game' : 'menu',
+        screen: 'game',
       });
     } catch (err: any) {
       console.error('Init error:', err);
-      // For demo/dev: show menu anyway
+      // Existing demo fallback: open the home screen even when API initialization fails.
       set({
         initialized: true,
-        screen: 'menu',
+        screen: 'game',
         player: {
           currentDay: 1,
           grade: 'unemployed',

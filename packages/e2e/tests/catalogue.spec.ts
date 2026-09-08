@@ -9,13 +9,15 @@ test('shop recovers after HTTP failure and career has reachable vacancies', asyn
     else await route.continue();
   });
   await page.goto('/');
-  await page.getByRole('button', { name: /^(Начать игру|Продолжить)/ }).click();
-  await page.getByRole('region', { name: 'Твоя комната' }).getByRole('button', { name: 'Магазин' }).click();
+  await page
+    .getByRole('navigation', { name: 'Основная навигация' })
+    .getByRole('button', { name: 'Магазин', exact: true })
+    .click();
   await expect(page.getByText('Магазин недоступен', { exact: true })).toBeVisible();
   fail = false;
   await page.getByRole('button', { name: 'Повторить загрузку' }).click();
   await expect(page.getByRole('article', { name: 'Бюджетный ПК', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Карьера', exact: true }).click();
+  await page.getByRole('button', { name: 'Работа', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Доступные компании' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Откликнуться' }).first()).toBeVisible();
   expect(

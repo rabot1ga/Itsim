@@ -3,7 +3,7 @@ import { useGameStore } from '../store/gameStore';
 import { haptic } from '../lib/telegram';
 import { xpToNext, canUnlockPerk, archetypeToView, type ArchetypeDef } from '@itsim/shared';
 import { PixelIcon } from '../components/pixel/PixelIcon';
-import { EmojiToken, SpriteBadge } from '../components/ui';
+import { EmojiToken } from '../components/ui';
 import { SkillList, type SkillInfo } from './SkillList';
 import { KEYSTONE_H, KEYSTONE_W, layoutGalaxy, NODE_H, NODE_W } from './skillTreeLayout';
 
@@ -232,26 +232,13 @@ export const SkillsView: React.FC = () => {
 
       <div className="flex items-center justify-between">
         <h2 className="flex items-center gap-2 text-base font-semibold text-white">
-          <SpriteBadge sprite="bookshelf" size={32} />
+          <PixelIcon name="book" size={20} className="text-sky-300" />
           Обучение
         </h2>
         <span className="num text-xs text-ink-500">{totalLevels} уровней</span>
       </div>
 
-      {/* Selecting a focus is not a study action; keep that distinction visible. */}
-      <div className="panel flex flex-wrap items-center justify-between gap-2 !py-2">
-        <div className="flex-1 min-w-[140px]">
-          <p className="text-sm text-ink-200">
-            Основной: <span className="font-semibold text-white">{mainSkill?.name ?? 'не выбран'}</span>
-          </p>
-          <p className="text-2xs text-ink-400 mt-1">Опыт дают учебные действия во вкладке «День».</p>
-        </div>
-        <button className="btn btn-secondary text-xs" onClick={() => setView('main')}>
-          Учиться
-        </button>
-      </div>
-
-      <div className="catalogue-filters" role="group" aria-label="Вид навыков">
+      <div className="skill-view-switch" role="group" aria-label="Вид навыков">
         <button aria-pressed={mode === 'list'} onClick={() => changeMode('list')}>
           Список
         </button>
@@ -299,6 +286,19 @@ export const SkillsView: React.FC = () => {
             onPick={pickSkill}
           />
         ))}
+
+      {/* Selecting a focus is not a study action; keep that distinction visible. */}
+      <div className="panel flex flex-wrap items-center justify-between gap-2 !py-2">
+        <div className="flex-1 min-w-[140px]">
+          <p className="text-sm text-ink-200">
+            Основной: <span className="font-semibold text-white">{mainSkill?.name ?? 'не выбран'}</span>
+          </p>
+          <p className="text-2xs text-ink-400 mt-1">Опыт дают учебные действия во вкладке «День».</p>
+        </div>
+        <button className="btn btn-secondary text-xs" onClick={() => setView('main')}>
+          Учиться
+        </button>
+      </div>
 
       {/* Legend — one line, never a subsection */}
       {mode === 'map' && (
