@@ -5,6 +5,7 @@ import { Spinner, ScreenTitle, SectionTitle, ResChip } from '../components/ui';
 import { ProjectBoard } from '../components/ProjectBoard';
 import { CareerPressureCard } from '../components/CareerPressureCard';
 import { ActionGrid, toTile } from '../components/ActionGrid';
+import { NavLinks } from '../components/NavLinks';
 import { SIDE_JOB_EMOJI, WORK_ACTIONS, formatMoney as formatCash, type SideJobInfo } from './actionCatalogue';
 
 interface GateInfo {
@@ -56,7 +57,6 @@ interface CompanyInfo {
 
 export const CareerView: React.FC = () => {
   const player = useGameStore((s) => s.player);
-  const setView = useGameStore((s) => s.setView);
   const performAction = useGameStore((s) => s.performAction);
   const applyToCompany = useGameStore((s) => s.applyToCompany);
   const acceptOffer = useGameStore((s) => s.acceptOffer);
@@ -204,23 +204,24 @@ export const CareerView: React.FC = () => {
         </section>
       )}
 
-      {/* Office entry */}
-      {player.job && (
-        <button onClick={() => setView('office')} className="tile w-full flex items-center gap-3">
-          <span className="tile-icon" aria-hidden="true">
-            🖥
-          </span>
-          <span className="flex-1 min-w-0">
-            <span className="block text-sm font-medium text-ink-100">Мой офис</span>
-            <span className="block text-xs text-ink-500 truncate">
-              {player.job.position} · команда, задачи и настроение дня
-            </span>
-          </span>
-          <span className="text-ink-500 shrink-0" aria-hidden="true">
-            →
-          </span>
-        </button>
-      )}
+      {/* The rest of the career lives one tap away, not in the «⋮» menu */}
+      <NavLinks
+        title="Карьера дальше"
+        links={[
+          ...(player.job
+            ? [
+                {
+                  view: 'office',
+                  emoji: '🖥',
+                  label: 'Мой офис',
+                  hint: `${player.job.position} · команда, задачи и настроение дня`,
+                },
+              ]
+            : []),
+          { view: 'endings', emoji: '🏁', label: 'Финалы', hint: 'шесть способов завершить карьеру' },
+          { view: 'leaderboard', emoji: '🏆', label: 'Топ игроков', hint: 'кто и как быстро растёт' },
+        ]}
+      />
 
       {/* Promotion pressure: cost of the day + what the next grade really needs */}
       <CareerPressureCard />

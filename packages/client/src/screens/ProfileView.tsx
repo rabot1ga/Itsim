@@ -16,9 +16,13 @@ const GRADES: Record<string, string> = {
 };
 
 const LINKS: Array<{ view: string; emoji: string; label: string }> = [
-  { view: 'room', emoji: '🏠', label: 'Комната и гардероб' },
   { view: 'achievements', emoji: '🎯', label: 'Цели и достижения' },
+  { view: 'leaderboard', emoji: '🏆', label: 'Топ игроков' },
+  { view: 'room', emoji: '🏠', label: 'Комната и гардероб' },
+  { view: 'friends', emoji: '👥', label: 'Друзья и знакомые' },
+  { view: 'wallet', emoji: '💼', label: 'Кошелёк и NFT' },
   { view: 'career', emoji: '💼', label: 'Карьерный рост' },
+  { view: 'endings', emoji: '🏁', label: 'Финалы' },
   { view: 'settings', emoji: '⚙️', label: 'Настройки' },
 ];
 
@@ -93,7 +97,7 @@ export const ProfileView: React.FC = () => {
 
       <div className="profile-links">
         {LINKS.map((link) => (
-          <button key={link.view} className="btn btn-secondary w-full justify-start" onClick={() => setView(link.view)}>
+          <button key={link.view} className="btn btn-secondary justify-start" onClick={() => setView(link.view)}>
             <span aria-hidden="true">{link.emoji}</span>
             {link.label}
           </button>

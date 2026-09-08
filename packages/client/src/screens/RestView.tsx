@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { ActionGrid, toTile } from '../components/ActionGrid';
 import { ScreenTitle, SectionTitle, StatBar } from '../components/ui';
+import { NavLinks } from '../components/NavLinks';
 import { actionsOf } from './actionCatalogue';
 import { inviteLink, openTelegramLink, haptic } from '../lib/telegram';
 
@@ -127,6 +128,13 @@ export const RestView: React.FC = () => {
           {player.petFedToday ? 'Питомец сыт до завтра' : 'Покормить питомца · 500 ₽'}
         </button>
       )}
+
+      <NavLinks
+        links={[
+          { view: 'room', emoji: '🏠', label: 'Дом', hint: 'комната, декор, гардероб' },
+          { view: 'pet', emoji: '🐾', label: 'Питомец', hint: 'еда, настроение, аксессуары' },
+        ]}
+      />
 
       {/* Friends: the roster lives on its own screen, the invite lives here */}
       <section className="card">

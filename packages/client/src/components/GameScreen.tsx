@@ -35,19 +35,26 @@ const TABS = [
   { view: 'shop', icon: 'bag', label: 'Магазин' },
 ] as const;
 
-/** «⋮» menu — a list of rows, because a list is scanned in one second. */
+/**
+ * «⋮» — an index, not a home for orphans.
+ *
+ * Every destination below also has a contextual door: офис и финалы — на
+ * «Работе», майнинг и кошелёк — в «Магазине», питомец и дом — на «Отдыхе»,
+ * цели и топ — в «Профиле», профиль — по портрету в HUD. The sheet stays as a
+ * compact grid for the times you know where you want to go.
+ */
 const MORE = [
-  { view: 'profile', emoji: '👤', label: 'Профиль', hint: 'Статистика, опыт, достижения' },
-  { view: 'friends', emoji: '👥', label: 'Друзья', hint: 'Знакомые, связи, приглашения' },
-  { view: 'room', emoji: '🏠', label: 'Дом', hint: 'Комната, декор, гардероб' },
-  { view: 'achievements', emoji: '🎯', label: 'Цели', hint: 'Цели, ачивки и награды' },
-  { view: 'leaderboard', emoji: '🏆', label: 'Топ игроков', hint: 'Рейтинг по карьере и репутации' },
-  { view: 'office', emoji: '🖥', label: 'Офис', hint: 'Команда, задачи, настроение' },
-  { view: 'mining', emoji: '⛏', label: 'Майнинг', hint: 'Ферма, доход, прогноз' },
-  { view: 'wallet', emoji: '💼', label: 'Кошелёк', hint: 'NFT-инвентарь и Solana' },
-  { view: 'pet', emoji: '🐾', label: 'Питомец', hint: 'Еда, настроение, аксессуары' },
-  { view: 'endings', emoji: '🏁', label: 'Финалы', hint: 'Шесть путей завершить карьеру' },
-  { view: 'settings', emoji: '⚙️', label: 'Настройки', hint: 'Уведомления, звук, данные' },
+  { view: 'profile', emoji: '👤', label: 'Профиль' },
+  { view: 'room', emoji: '🏠', label: 'Дом' },
+  { view: 'friends', emoji: '👥', label: 'Друзья' },
+  { view: 'pet', emoji: '🐾', label: 'Питомец' },
+  { view: 'achievements', emoji: '🎯', label: 'Цели' },
+  { view: 'leaderboard', emoji: '🏆', label: 'Топ' },
+  { view: 'office', emoji: '🖥', label: 'Офис' },
+  { view: 'mining', emoji: '⛏', label: 'Майнинг' },
+  { view: 'wallet', emoji: '💼', label: 'Кошелёк' },
+  { view: 'endings', emoji: '🏁', label: 'Финалы' },
+  { view: 'settings', emoji: '⚙️', label: 'Настройки' },
 ] as const;
 
 export const GameScreen: React.FC = () => {
@@ -174,7 +181,7 @@ export const GameScreen: React.FC = () => {
           />
           <div role="dialog" aria-modal="true" aria-label="Меню" className="sheet animate-slide-up safe-area-pb">
             <div className="sheet-grip" />
-            <div className="sheet-list">
+            <div className="menu-grid">
               {MORE.map((item) => {
                 const isCurrent = currentView === item.view;
                 return (
@@ -182,20 +189,12 @@ export const GameScreen: React.FC = () => {
                     key={item.view}
                     onClick={() => nav(item.view)}
                     aria-current={isCurrent ? 'true' : undefined}
-                    className="menu-row"
+                    className="menu-tile"
                   >
                     <span className="emoji" aria-hidden="true">
                       {item.emoji}
                     </span>
-                    <span className="menu-row-copy">
-                      <span className="menu-row-title">{item.label}</span>
-                      <span className="menu-row-hint">{item.hint}</span>
-                    </span>
-                    {isCurrent ? (
-                      <span className="menu-row-mark">здесь</span>
-                    ) : (
-                      <PixelIcon name="chevron" size={9} className="menu-row-chevron -rotate-90" />
-                    )}
+                    <span className="menu-tile-label">{item.label}</span>
                   </button>
                 );
               })}

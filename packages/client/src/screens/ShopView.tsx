@@ -11,6 +11,7 @@ import {
   type ShopCategoryDef,
 } from './shopCatalogue';
 import { Spinner, EmptyState, ScreenTitle, SectionTitle } from '../components/ui';
+import { NavLinks } from '../components/NavLinks';
 import { StarsShop } from '../components/StarsShop';
 import { IsoIcon, spriteForItem, HOUSING_SPRITE } from '../components/iso/IsoIcon';
 
@@ -325,6 +326,13 @@ export const ShopView: React.FC = () => {
           })}
         </div>
       </div>
+
+      <NavLinks
+        links={[
+          { view: 'mining', emoji: '⛏', label: 'Майнинг-ферма', hint: 'оборудование, доход и прогноз' },
+          { view: 'wallet', emoji: '💼', label: 'Кошелёк', hint: 'Solana, NFT и Telegram Stars' },
+        ]}
+      />
     </div>
   );
 };

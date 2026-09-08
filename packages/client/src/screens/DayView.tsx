@@ -296,7 +296,11 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
 
       {/* Mining farm (passive income) */}
       {mining && (
-        <section className="card animate-pop-in">
+        <button
+          onClick={() => setView('mining')}
+          aria-label="Майнинг-ферма"
+          className="card animate-pop-in w-full text-left"
+        >
           <div className="flex items-center justify-between mb-1.5">
             <span className="flex items-center gap-1.5 text-sm font-semibold text-ink-100">
               <span aria-hidden="true">⛏</span>
@@ -313,9 +317,9 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
             </span>
           </div>
           <p className="text-2xs text-ink-600 mt-1.5">
-            Курс {mining.price.toFixed(1)} ₽/MH · доход начисляется в конце дня
+            Курс {mining.price.toFixed(1)} ₽/MH · доход начисляется в конце дня · открыть ферму →
           </p>
-        </section>
+        </button>
       )}
 
       {/* Banked offline days */}
