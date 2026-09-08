@@ -634,6 +634,7 @@ CI — [`ci/github-actions-ci.yml`](ci/github-actions-ci.yml) (скопируй�
 | [SPEC.md](SPEC.md)                               | ТЗ v2.0: стек, сервер-авторитет, офлайн-энергия, контент как данные, карьерные гейты, пиксельная генерация |
 | [DESIGN.md](DESIGN.md)                           | процедурная генерация (комбинаторика + тинтинг + on-chain seed) и Solana-интеграция                        |
 | [docs/design.md](docs/design.md)                 | дизайн-документ клиента: 13 экранов (5 вкладок + MORE), комната/офис/гардероб/питомец/майнинг/кошелёк/финалы, полировка под TMA, роадмап §15 |
+| [docs/design-system.md](docs/design-system.md)   | **design system**: кнопки (10 типов × 5 состояний), меню (5+9), UX-флоу, EventCard, копирайт, a11y, чек-лист нового экрана |
 | [docs/ui.md](docs/ui.md)                         | визуальная система: палитра, иконки, навигация, «мир пиксельный» (хром — см. ui-card-system.md)            |
 | [docs/ui-card-system.md](docs/ui-card-system.md) | P0.7: карточная система UI — токены геометрии, примитивы, `EventCard`, референсы `design-references/`      |
 | [docs/iso.md](docs/iso.md)                       | изометрический слой: проекция 2:1, библиотека спрайтов, конвейер `tools/isogen`, перекраска по ролям       |
