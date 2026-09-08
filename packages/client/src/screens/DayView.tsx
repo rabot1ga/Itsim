@@ -22,7 +22,17 @@ interface SideJobInfo {
 }
 
 /** Feedable pets — cosmetic accessories (pet_bow/...) are not dinner guests */
-const REAL_PETS = ['pet_cat', 'pet_dog', 'pet_cactus', 'pet_robo', 'pet_spider', 'pet_bulldog', 'pet_parrot', 'pet_hamster', 'pet_fish'];
+const REAL_PETS = [
+  'pet_cat',
+  'pet_dog',
+  'pet_cactus',
+  'pet_robo',
+  'pet_spider',
+  'pet_bulldog',
+  'pet_parrot',
+  'pet_hamster',
+  'pet_fish',
+];
 
 const ACTIONS = [
   // Study
@@ -92,6 +102,37 @@ const CostRow: React.FC<{ energy: number; cost?: number; children?: React.ReactN
     {children}
   </div>
 );
+
+/**
+ * Yesterday's narration is context, not a decision — so it is one quiet line
+ * that opens on tap instead of a tall panel pushing today's choices down.
+ */
+const YesterdayLog: React.FC<{ text: string }> = ({ text }) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <section className="panel">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="w-full flex items-center gap-2 text-left touch-target !min-h-[32px]"
+      >
+        <PixelIcon name="clock" size={11} className="text-ink-500 shrink-0" />
+        <span className="text-2xs font-bold uppercase tracking-[0.09em] text-ink-500 shrink-0">Вчера</span>
+        {!open && <span className="flex-1 min-w-0 truncate text-xs text-ink-400">{text.replace(/\n/g, ' · ')}</span>}
+        <PixelIcon
+          name="chevron"
+          size={9}
+          className={`text-ink-600 shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+        />
+      </button>
+      <div className={`accordion-body ${open ? 'open' : ''}`}>
+        <div className="accordion-inner">
+          <p className="text-sm text-ink-300 leading-relaxed whitespace-pre-line pt-1">{text}</p>
+        </div>
+      </div>
+    </section>
+  );
+};
 
 export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
   const player = useGameStore((s) => s.player);
@@ -187,12 +228,8 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
         </button>
       )}
 
-      {/* Yesterday's log */}
-      {player._lastEvent && (
-        <section className="panel panel-note whitespace-pre-line">
-          <p className="text-sm text-ink-300 leading-relaxed">{player._lastEvent}</p>
-        </section>
-      )}
+      {/* Yesterday's log — one line, expandable */}
+      {player._lastEvent && <YesterdayLog text={player._lastEvent} />}
 
       {/* Mining farm (passive income) */}
       {mining && (
@@ -215,6 +252,43 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
           <p className="text-2xs text-ink-600 mt-1.5">
             Курс {mining.price.toFixed(1)} ₽/MH · доход начисляется в конце дня
           </p>
+        </section>
+      )}
+
+      {/* Goal of the day — a target above the toolbox reads as direction,
+          a target buried under it reads as homework */}
+      {player.dailyChallenge && (
+        <section className={`panel panel-note ${player.dailyChallenge.done ? 'panel-note-moss' : 'panel-note-sky'}`}>
+          <div className="flex items-center justify-between gap-2 mb-1">
+            <span className="flex items-center gap-1.5 text-2xs font-bold uppercase tracking-[0.09em] text-ink-400">
+              <PixelIcon name="target" size={11} className={player.dailyChallenge.done ? 'text-moss-300' : ''} />
+              Задание дня
+            </span>
+            {player.dailyChallenge.done ? (
+              <span className="flex items-center gap-1 text-2xs font-bold text-moss-300 uppercase tracking-[0.06em]">
+                <PixelIcon name="check" size={10} />
+                выполнено
+              </span>
+            ) : (
+              <span className="num text-2xs text-ink-500">
+                {player.dailyChallenge.progress}/{player.dailyChallenge.count}
+              </span>
+            )}
+          </div>
+          <p className="text-sm text-ink-200">{CHALLENGE_TEXT[player.dailyChallenge.id] ?? 'Выполни задание'}</p>
+          {!player.dailyChallenge.done && (
+            <div className="meter mt-2">
+              <span
+                style={{
+                  width: `${Math.min(
+                    100,
+                    (player.dailyChallenge.progress / Math.max(1, player.dailyChallenge.count)) * 100
+                  )}%`,
+                  background: 'var(--sky)',
+                }}
+              />
+            </div>
+          )}
         </section>
       )}
 
@@ -290,42 +364,6 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
             })}
           </div>
           <p className="text-2xs text-ink-600 mt-1.5">Одна подработка в день. Здоровье и мотивация — по курсу.</p>
-        </section>
-      )}
-
-      {/* Daily challenge */}
-      {player.dailyChallenge && (
-        <section className={`panel panel-note ${player.dailyChallenge.done ? 'panel-note-moss' : 'panel-note-sky'}`}>
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="flex items-center gap-1.5 text-2xs font-semibold uppercase tracking-[0.09em] text-ink-400">
-              <PixelIcon name="target" size={11} />
-              Задание дня
-            </span>
-            {player.dailyChallenge.done ? (
-              <span className="flex items-center gap-1 text-2xs font-semibold text-moss-300">
-                <PixelIcon name="check" size={10} />
-                выполнено
-              </span>
-            ) : (
-              <span className="num text-2xs text-ink-500">
-                {player.dailyChallenge.progress}/{player.dailyChallenge.count}
-              </span>
-            )}
-          </div>
-          <p className="text-sm text-ink-200">{CHALLENGE_TEXT[player.dailyChallenge.id] ?? 'Выполни задание'}</p>
-          {!player.dailyChallenge.done && (
-            <div className="meter mt-2">
-              <span
-                style={{
-                  width: `${Math.min(
-                    100,
-                    (player.dailyChallenge.progress / Math.max(1, player.dailyChallenge.count)) * 100
-                  )}%`,
-                  background: 'var(--sky)',
-                }}
-              />
-            </div>
-          )}
         </section>
       )}
 
