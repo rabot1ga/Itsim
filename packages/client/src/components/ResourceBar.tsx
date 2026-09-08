@@ -1,6 +1,16 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { PixelIcon } from './pixel/PixelIcon';
+
+/**
+ * The HUD.
+ *
+ * In an idle game the top bar is not decoration — it is the scoreboard the
+ * player checks after every single tap. So it follows the genre's rules:
+ * the numbers never move on the screen, they are always visible, they are
+ * abbreviated once they get long, and each one gives a chunky bounce the
+ * moment it changes (the floating +N labels come from GainStream).
+ */
 
 const GRADE_LABEL: Record<string, string> = {
   unemployed: 'без работы',
@@ -16,6 +26,22 @@ const GRADE_LABEL: Record<string, string> = {
 /** Only the top of the ladder is gilded — everything else stays quiet on purpose. */
 const GRADE_GOLD = new Set(['architect', 'cto']);
 
+/** True for one animation frame after `value` changes — used to bounce a counter. */
+function usePop(value: number): boolean {
+  const [pop, setPop] = useState(false);
+  const previous = useRef(value);
+
+  useEffect(() => {
+    if (previous.current === value) return;
+    previous.current = value;
+    setPop(true);
+    const t = setTimeout(() => setPop(false), 240);
+    return () => clearTimeout(t);
+  }, [value]);
+
+  return pop;
+}
+
 const Meter: React.FC<{
   icon: string;
   label: string;
@@ -25,29 +51,22 @@ const Meter: React.FC<{
 }> = ({ icon, label, value, max, color }) => {
   const pct = Math.max(0, Math.min(100, (value / max) * 100));
   const low = pct < 25;
+  const pop = usePop(Math.round(value));
 
   return (
     <div className="flex-1 min-w-0" title={`${label}: ${Math.round(value)}/${max}`}>
       <div className="flex items-center gap-1 mb-1">
-        <PixelIcon
-          name={icon}
-          size={11}
-          className={low ? 'text-clay-400' : 'text-ink-400'}
-          title={label}
-        />
+        <PixelIcon name={icon} size={11} className={low ? 'text-clay-400' : 'text-ink-400'} title={label} />
         <span
-          className={`num text-xs font-semibold leading-none ${
-            low ? 'text-clay-300' : 'text-ink-200'
+          className={`num text-xs font-bold leading-none ${low ? 'text-clay-300' : 'text-ink-100'} ${
+            pop ? 'num-pop' : ''
           }`}
         >
           {Math.round(value)}
         </span>
       </div>
       <div className="meter">
-        <span
-          className={low ? 'animate-pulse-soft' : ''}
-          style={{ width: `${pct}%`, background: color }}
-        />
+        <span className={low ? 'animate-pulse-soft' : ''} style={{ width: `${pct}%`, background: color }} />
       </div>
     </div>
   );
@@ -55,6 +74,8 @@ const Meter: React.FC<{
 
 export const ResourceBar: React.FC = () => {
   const player = useGameStore((s) => s.player);
+  const money = player?.money ?? 0;
+  const moneyPop = usePop(money);
 
   if (!player) return null;
 
@@ -62,14 +83,19 @@ export const ResourceBar: React.FC = () => {
   const gilded = GRADE_GOLD.has(player.grade);
 
   return (
-    <header className="shrink-0 bg-ink-900 border-b border-ink-700 px-3 pt-2 pb-2.5 space-y-2 safe-area-pt">
+    <header className="shrink-0 bg-ink-900 border-b-2 border-ink-700 px-3 pt-2 pb-2.5 space-y-2 safe-area-pt">
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-baseline gap-1.5 min-w-0">
-          <span className="text-2xs font-semibold uppercase tracking-[0.09em] text-ink-500">
-            День
+        {/* Day and balance: the two numbers the whole loop is scored on */}
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="well flex items-baseline gap-1.5 px-2 py-1">
+            <span className="text-2xs font-bold uppercase tracking-[0.09em] text-ink-500">Дн.</span>
+            <span className="num text-sm font-bold text-white leading-none">{player.currentDay ?? 1}</span>
           </span>
-          <span className="num text-base font-semibold text-white leading-none">
-            {player.currentDay ?? 1}
+          <span className="well flex items-center gap-1.5 px-2 py-1">
+            <PixelIcon name="coin" size={11} className="text-gold-300" />
+            <span className={`num text-sm font-bold text-white leading-none ${moneyPop ? 'num-pop' : ''}`}>
+              {formatMoney(money)}
+            </span>
           </span>
         </div>
 
@@ -80,48 +106,17 @@ export const ResourceBar: React.FC = () => {
               <span className="num">{player.ratingScore}</span>
             </span>
           )}
-          <span
-            className={`chip uppercase tracking-[0.06em] ${
-              gilded ? 'text-gold-300 border-gold-700' : 'text-ink-200'
-            }`}
-          >
+          <span className={`chip uppercase tracking-[0.06em] ${gilded ? 'text-gold-300' : 'text-ink-200'}`}>
             {grade}
           </span>
         </div>
       </div>
 
       <div className="flex items-end gap-2.5">
-        <Meter
-          icon="bolt"
-          label="Энергия"
-          value={player.energy}
-          max={player.maxEnergy || 16}
-          color="var(--sky)"
-        />
+        <Meter icon="bolt" label="Энергия" value={player.energy} max={player.maxEnergy || 16} color="var(--sky)" />
         <Meter icon="heart" label="Здоровье" value={player.health} max={100} color="var(--moss)" />
-        <Meter
-          icon="flame"
-          label="Мотивация"
-          value={player.motivation}
-          max={100}
-          color="var(--ochre)"
-        />
-        <Meter
-          icon="star"
-          label="Репутация"
-          value={player.reputation}
-          max={100}
-          color="var(--gold)"
-        />
-
-        <div className="text-right shrink-0 pl-1">
-          <div className="text-2xs uppercase tracking-[0.09em] text-ink-500 leading-none mb-1">
-            Баланс
-          </div>
-          <div className="num text-sm font-semibold text-white leading-none">
-            {formatMoney(player.money ?? 0)}
-          </div>
-        </div>
+        <Meter icon="flame" label="Мотивация" value={player.motivation} max={100} color="var(--ochre)" />
+        <Meter icon="star" label="Репутация" value={player.reputation} max={100} color="var(--gold)" />
       </div>
     </header>
   );

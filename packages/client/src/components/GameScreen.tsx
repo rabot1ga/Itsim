@@ -10,6 +10,7 @@ import { RoomView } from '../screens/RoomView';
 import { AchievementsView } from '../screens/AchievementsView';
 import { LeaderboardView } from '../screens/LeaderboardView';
 import { PixelIcon } from './pixel/PixelIcon';
+import { GainStream } from './GainStream';
 
 /**
  * Four tabs carry the loop: the day, what you learn, where you work, where you
@@ -34,7 +35,11 @@ const MORE_VIEWS: string[] = MORE.map((m) => m.view);
 
 export const GameScreen: React.FC = () => {
   const { currentView, setView, advanceDay, loadNft } = useGameStore();
+  const player = useGameStore((s) => s.player);
   const [moreOpen, setMoreOpen] = useState(false);
+
+  /** an offer on the table is the one thing worth a marker in the nav */
+  const offerWaiting = Boolean(player?.pendingOffers?.length);
 
   const handleAdvanceDay = async () => {
     await advanceDay();
@@ -81,6 +86,9 @@ export const GameScreen: React.FC = () => {
 
   return (
     <div className="relative flex-1 flex flex-col overflow-hidden">
+      {/* Whatever the last action paid out, on its way up the screen */}
+      <GainStream />
+
       {/* Content area */}
       <div id="game-scroll" className="flex-1 overflow-y-auto p-3 space-y-3">
         {renderView()}
@@ -118,10 +126,7 @@ export const GameScreen: React.FC = () => {
                   </button>
                 ))}
               </div>
-              <button
-                onClick={() => setMoreOpen(false)}
-                className="btn btn-ghost w-full mt-2 !min-h-[40px] text-sm"
-              >
+              <button onClick={() => setMoreOpen(false)} className="btn btn-ghost w-full mt-2 !min-h-[40px] text-sm">
                 Закрыть
               </button>
             </div>
@@ -137,6 +142,7 @@ export const GameScreen: React.FC = () => {
             icon={tab.icon}
             label={tab.label}
             active={currentView === tab.view && !moreOpen}
+            dot={tab.view === 'career' && offerWaiting}
             onClick={() => nav(tab.view)}
           />
         ))}
@@ -158,10 +164,13 @@ const NavButton: React.FC<{
   icon: string;
   label: string;
   active: boolean;
+  /** something is waiting behind this tab */
+  dot?: boolean;
   onClick: () => void;
-}> = ({ icon, label, active, onClick }) => (
+}> = ({ icon, label, active, dot, onClick }) => (
   <button onClick={onClick} className="tabbar-item" data-active={active} aria-current={active}>
-    <PixelIcon name={icon} size={18} />
+    {dot && <span className="tabbar-dot" aria-hidden="true" />}
+    <PixelIcon name={icon} size={20} />
     <span className="tabbar-label">{label}</span>
   </button>
 );

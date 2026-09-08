@@ -79,8 +79,7 @@ body,
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
-    Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   font-size: 15px;
   line-height: 1.4;
   background-color: var(--bg);
@@ -175,59 +174,70 @@ select {
 
 /* ── Surfaces ────────────────────────────────────────────────────────────── */
 
-.game-card,
-.panel {
-  background: var(--surface);
-  border: 0;
+/*
+ * Every surface is a 9-slice frame drawn in tools/uigen: 2px outline, one lit
+ * pixel row under the top edge, notched corners. The middle bands are a single
+ * flat colour, so stretching them cannot blur anything.
+ */
+.panel,
+.game-card {
+  background: none;
+  border: 4px solid transparent;
+  border-image: url('/ui/panel.png') 4 fill stretch;
   border-radius: 0;
-  padding: 12px;
-  box-shadow:
-    0 -2px 0 0 var(--line),
-    0 2px 0 0 var(--line),
-    -2px 0 0 0 var(--line),
-    2px 0 0 0 var(--line),
-    inset 0 1px 0 0 var(--edge-light),
-    inset 0 -1px 0 0 var(--edge-shadow);
+  padding: 8px;
+  image-rendering: pixelated;
 }
 
 /* Interactive panel (action tiles, list rows) */
 .tile {
-  background: var(--surface);
-  border: 0;
+  background: none;
+  border: 4px solid transparent;
+  border-image: url('/ui/panel.png') 4 fill stretch;
   border-radius: 0;
-  padding: 10px;
+  padding: 6px;
   text-align: left;
-  box-shadow:
-    0 -2px 0 0 var(--line),
-    0 2px 0 0 var(--line),
-    -2px 0 0 0 var(--line),
-    2px 0 0 0 var(--line),
-    inset 0 1px 0 0 var(--edge-light),
-    inset 0 -1px 0 0 var(--edge-shadow);
-  transition:
-    box-shadow 0.12s ease,
-    background-color 0.12s ease,
-    transform 0.06s ease;
+  image-rendering: pixelated;
+  transition: transform 0.06s steps(2, end);
 }
 .tile:not(:disabled):hover {
-  background: var(--surface-2);
-  box-shadow:
-    0 -2px 0 0 var(--line-strong),
-    0 2px 0 0 var(--line-strong),
-    -2px 0 0 0 var(--line-strong),
-    2px 0 0 0 var(--line-strong),
-    inset 0 1px 0 0 var(--edge-light),
-    inset 0 -1px 0 0 var(--edge-shadow);
+  border-image-source: url('/ui/panel-hi.png');
 }
 /* pressing a plate pushes it into the board */
 .tile:not(:disabled):active {
   transform: translateY(2px);
-  box-shadow:
-    0 -2px 0 0 var(--gold-deep),
-    0 2px 0 0 var(--gold-deep),
-    -2px 0 0 0 var(--gold-deep),
-    2px 0 0 0 var(--gold-deep),
-    inset 0 1px 0 0 var(--edge-shadow);
+  border-image-source: url('/ui/panel-gold.png');
+}
+.tile[data-selected='true'] {
+  border-image-source: url('/ui/panel-gold.png');
+}
+
+/*
+ * An action tile is the clicker's button: thumb-sized, the icon on its own
+ * recessed plate, the price underneath. Unaffordable ones stay in place and
+ * fade — moving buttons around is how players mis-tap.
+ */
+.tile-action {
+  min-height: 78px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px;
+}
+.tile-icon {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid transparent;
+  border-image: url('/ui/well.png') 4 fill stretch;
+  image-rendering: pixelated;
+  color: var(--sky);
+}
+.tile:disabled .tile-icon {
+  color: var(--text-faint);
 }
 .tile:disabled {
   opacity: 0.4;
@@ -255,16 +265,11 @@ select {
 
 /* A recess in the plate: darker, with the light edge at the bottom instead. */
 .well {
-  background: var(--well);
-  border: 0;
+  background: none;
+  border: 4px solid transparent;
+  border-image: url('/ui/well.png') 4 fill stretch;
   border-radius: 0;
-  box-shadow:
-    0 -2px 0 0 var(--line),
-    0 2px 0 0 var(--line),
-    -2px 0 0 0 var(--line),
-    2px 0 0 0 var(--line),
-    inset 0 2px 0 0 rgba(0, 0, 0, 0.45),
-    inset 0 -1px 0 0 var(--edge-light);
+  image-rendering: pixelated;
 }
 
 .divider {
@@ -328,8 +333,9 @@ select {
 /* ── Controls ────────────────────────────────────────────────────────────── */
 
 /*
- * Buttons are physical keys: a plate with a 3px shoulder underneath. Pressing
- * one moves it down onto its shoulder, which is the whole animation budget.
+ * Buttons are physical keys: a 9-slice plate on a 3px shoulder. Pressing one
+ * swaps in the pressed frame and drops it 2px onto the shoulder — the whole
+ * animation budget, and it lands inside the 50ms a tap has to feel instant.
  */
 .btn {
   display: inline-flex;
@@ -337,132 +343,93 @@ select {
   justify-content: center;
   gap: 8px;
   min-height: var(--tap);
-  padding: 0 16px;
+  padding: 0 14px 3px;
+  border: 4px solid transparent;
+  border-width: 4px 4px 5px;
   border-radius: 0;
-  border: 0;
+  background: none;
+  image-rendering: pixelated;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.01em;
-  position: relative;
   transition:
-    background-color 0.12s ease,
-    box-shadow 0.09s ease,
-    transform 0.06s ease,
+    transform 0.05s steps(2, end),
     opacity 0.12s ease;
 }
 .btn:disabled {
-  opacity: 0.4;
+  opacity: 0.42;
   cursor: not-allowed;
 }
 .btn:not(:disabled):active {
-  transform: translateY(3px);
+  transform: translateY(2px);
+  padding-bottom: 1px;
+  padding-top: 2px;
 }
 .btn.w-full {
   display: flex;
 }
 
+/* The screen's main commitment — «Начать игру», «Завершить день». */
+.btn-lg {
+  min-height: 56px;
+  padding: 0 18px 3px;
+  font-size: 15px;
+}
+.btn-lg:not(:disabled):active {
+  padding-bottom: 1px;
+  padding-top: 2px;
+}
+
 /* The one loud thing on screen: the accent CTA. Dark text on lamp-gold. */
 .btn-primary {
-  background: var(--gold);
+  border-image: url('/ui/btn-gold.png') 4 4 5 4 fill stretch;
   color: #171c25;
-  box-shadow:
-    0 3px 0 0 var(--gold-deep),
-    0 -2px 0 0 var(--gold),
-    -2px 0 0 0 var(--gold),
-    2px 0 0 0 var(--gold),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.35);
-}
-.btn-primary:not(:disabled):hover {
-  background: #ffe07a;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
 }
 .btn-primary:not(:disabled):active {
-  box-shadow:
-    0 0 0 0 var(--gold-deep),
-    0 -2px 0 0 var(--gold),
-    -2px 0 0 0 var(--gold),
-    2px 0 0 0 var(--gold),
-    inset 0 2px 0 0 rgba(0, 0, 0, 0.25);
+  border-image-source: url('/ui/btn-gold-down.png');
 }
 
 .btn-secondary {
-  background: var(--surface);
+  border-image: url('/ui/btn-dark.png') 4 4 5 4 fill stretch;
   color: var(--text);
-  box-shadow:
-    0 3px 0 0 #0d1118,
-    0 -2px 0 0 var(--line-strong),
-    -2px 0 0 0 var(--line-strong),
-    2px 0 0 0 var(--line-strong),
-    inset 0 1px 0 0 var(--edge-light);
-}
-.btn-secondary:not(:disabled):hover {
-  background: var(--surface-2);
 }
 .btn-secondary:not(:disabled):active {
-  box-shadow:
-    0 0 0 0 #0d1118,
-    0 -2px 0 0 var(--line-strong),
-    -2px 0 0 0 var(--line-strong),
-    2px 0 0 0 var(--line-strong),
-    inset 0 2px 0 0 var(--edge-shadow);
+  border-image-source: url('/ui/btn-dark-down.png');
 }
 
+/* No shoulder: the quietest control on the screen. */
 .btn-ghost {
-  background: transparent;
+  border-width: 4px;
+  padding-bottom: 0;
+  border-image: url('/ui/panel.png') 4 fill stretch;
   color: var(--text-dim);
-  box-shadow:
-    0 -2px 0 0 var(--line),
-    0 2px 0 0 var(--line),
-    -2px 0 0 0 var(--line),
-    2px 0 0 0 var(--line);
 }
 .btn-ghost:not(:disabled):hover {
   color: var(--text);
-  box-shadow:
-    0 -2px 0 0 var(--line-strong),
-    0 2px 0 0 var(--line-strong),
-    -2px 0 0 0 var(--line-strong),
-    2px 0 0 0 var(--line-strong);
+  border-image-source: url('/ui/panel-hi.png');
 }
 .btn-ghost:not(:disabled):active {
   transform: none;
+  padding: 0 14px;
+  border-image-source: url('/ui/panel-gold.png');
 }
 
 .btn-success {
-  background: var(--moss);
+  border-image: url('/ui/btn-moss.png') 4 4 5 4 fill stretch;
   color: #16211a;
-  box-shadow:
-    0 3px 0 0 #4e7a4a,
-    0 -2px 0 0 var(--moss),
-    -2px 0 0 0 var(--moss),
-    2px 0 0 0 var(--moss),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.28);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 .btn-success:not(:disabled):active {
-  box-shadow:
-    0 0 0 0 #4e7a4a,
-    0 -2px 0 0 var(--moss),
-    -2px 0 0 0 var(--moss),
-    2px 0 0 0 var(--moss),
-    inset 0 2px 0 0 rgba(0, 0, 0, 0.25);
+  border-image-source: url('/ui/btn-moss-down.png');
 }
 
 .btn-danger {
-  background: var(--clay);
+  border-image: url('/ui/btn-clay.png') 4 4 5 4 fill stretch;
   color: #1a1112;
-  box-shadow:
-    0 3px 0 0 #8b3b3e,
-    0 -2px 0 0 var(--clay),
-    -2px 0 0 0 var(--clay),
-    2px 0 0 0 var(--clay),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.25);
 }
 .btn-danger:not(:disabled):active {
-  box-shadow:
-    0 0 0 0 #8b3b3e,
-    0 -2px 0 0 var(--clay),
-    -2px 0 0 0 var(--clay),
-    2px 0 0 0 var(--clay),
-    inset 0 2px 0 0 rgba(0, 0, 0, 0.25);
+  border-image-source: url('/ui/btn-clay-down.png');
 }
 
 /* ── Chips, badges, meters ───────────────────────────────────────────────── */
@@ -524,8 +491,15 @@ select {
 
 /* ── Bottom navigation ───────────────────────────────────────────────────── */
 
+/*
+ * Five destinations, thumb-sized, always in the same order. The active one is
+ * a lit plate rather than a coloured word: at a glance you see *where you are*
+ * before you read anything.
+ */
 .tabbar {
   display: flex;
+  gap: 2px;
+  padding: 4px 4px 0;
   background: var(--bg-raise);
   border-top: 2px solid var(--line);
   box-shadow: inset 0 2px 0 0 rgba(0, 0, 0, 0.35);
@@ -534,34 +508,43 @@ select {
   position: relative;
   flex: 1;
   min-width: 0;
-  min-height: 50px;
-  padding: 7px 0 6px;
+  min-height: 54px;
+  padding: 6px 0 5px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  gap: 5px;
+  border: 4px solid transparent;
   color: var(--text-faint);
-  transition: color 0.12s ease;
+  image-rendering: pixelated;
+  transition:
+    color 0.12s ease,
+    transform 0.06s steps(2, end);
 }
-/* the active tab sits on a lit plate, like a switched-on lamp in the room */
 .tabbar-item[data-active='true'] {
   color: var(--gold);
-  background: rgba(244, 211, 94, 0.07);
+  border-image: url('/ui/panel-gold.png') 4 fill stretch;
 }
-.tabbar-item[data-active='true']::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  width: 20px;
-  height: 3px;
-  background: var(--gold);
+.tabbar-item:not([data-active='true']):active {
+  transform: translateY(2px);
+  color: var(--text-dim);
 }
-
 .tabbar-label {
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.02em;
   line-height: 1;
+}
+/* unread / actionable marker, e.g. an offer waiting in Career */
+.tabbar-dot {
+  position: absolute;
+  top: 6px;
+  right: 50%;
+  margin-right: -16px;
+  width: 6px;
+  height: 6px;
+  background: var(--clay);
 }
 
 /* ── Accordion (skill branches) ──────────────────────────────────────────── */
@@ -659,6 +642,78 @@ select {
   .tile,
   .btn {
     transition: none;
+  }
+}
+
+/* ── Payout feedback ─────────────────────────────────────────────────────── */
+
+/*
+ * Numbers that changed fly up out of the resource bar. Pixel games step their
+ * animations instead of easing them, so the motion is quantised too.
+ */
+.gain-stream {
+  position: absolute;
+  top: 4px;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  pointer-events: none;
+}
+.gain-float {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  background: rgba(17, 21, 28, 0.85);
+  border: 2px solid var(--line);
+  animation: gainRise 1s steps(12, end) forwards;
+}
+@keyframes gainRise {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(-10px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-22px);
+  }
+}
+
+/* A counter that just changed gives one chunky bounce. */
+@keyframes numPop {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.22);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.num-pop {
+  display: inline-block;
+  animation: numPop 0.24s steps(4, end);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gain-float,
+  .num-pop {
+    animation: none;
   }
 }
 

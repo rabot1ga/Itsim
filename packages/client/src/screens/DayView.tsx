@@ -2,12 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { CareerPressureCard } from '../components/CareerPressureCard';
 import { PixelIcon } from '../components/pixel/PixelIcon';
-import {
-  hideMainButton,
-  isMainButtonSupported,
-  setMainButtonProgress,
-  showMainButton,
-} from '../lib/telegram';
+import { hideMainButton, isMainButtonSupported, setMainButtonProgress, showMainButton } from '../lib/telegram';
 
 interface DayViewProps {
   onAdvanceDay: () => void;
@@ -183,10 +178,7 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
 
       {/* Error */}
       {error && (
-        <button
-          onClick={clearError}
-          className="panel panel-note panel-note-clay w-full text-left animate-pop-in"
-        >
+        <button onClick={clearError} className="panel panel-note panel-note-clay w-full text-left animate-pop-in">
           <p className="flex items-start gap-2 text-sm text-clay-300">
             <PixelIcon name="warn" size={12} className="mt-0.5" />
             <span>{error}</span>
@@ -241,15 +233,15 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
                   key={action.id}
                   onClick={() => handleAction(action.id)}
                   disabled={!enabled}
-                  className="tile"
+                  className="tile tile-action"
                 >
-                  <div className="flex items-start gap-2 mb-1.5">
-                    <PixelIcon name={action.icon} size={14} className="text-ink-300 mt-0.5" />
-                    <span className="text-sm font-medium text-ink-100 leading-tight">
-                      {action.name}
-                    </span>
-                  </div>
-                  <CostRow energy={action.energy} cost={action.cost} />
+                  <span className="tile-icon">
+                    <PixelIcon name={action.icon} size={16} />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-semibold text-ink-100 leading-tight mb-1.5">{action.name}</span>
+                    <CostRow energy={action.energy} cost={action.cost} />
+                  </span>
                 </button>
               );
             })}
@@ -266,56 +258,44 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
               const skillLevel = player.skills?.[player.mainSkillId ?? 'javascript']?.level ?? 0;
               const enabled = canAct(job.energy) && (player.currentDay ?? 0) >= (job.minDay ?? 1);
               const minSkillMet = skillLevel >= (job.minSkill ?? 0);
-              const payout =
-                job.payment +
-                (job.paymentPerSkill ? Math.round(skillLevel * job.paymentPerSkill) : 0);
+              const payout = job.payment + (job.paymentPerSkill ? Math.round(skillLevel * job.paymentPerSkill) : 0);
               return (
                 <button
                   key={jobId}
                   onClick={() => performAction('side_job', { jobId })}
                   disabled={!enabled || !minSkillMet}
                   title={!minSkillMet ? `Нужен навык ${job.minSkill}+` : job.name}
-                  className="tile"
+                  className="tile tile-action"
                 >
-                  <div className="flex items-start gap-2 mb-1.5">
-                    <PixelIcon
-                      name={SIDE_JOB_ICONS[jobId] ?? 'box'}
-                      size={14}
-                      className="text-ink-300 mt-0.5"
-                    />
-                    <span className="text-sm font-medium text-ink-100 leading-tight">
-                      {job.name}
-                    </span>
-                  </div>
-                  <CostRow energy={job.energy}>
-                    <span className="num text-moss-300">
-                      +{formatMoney(payout)}
-                      {job.paymentVar ? '±' : ''} ₽
-                    </span>
-                    {!minSkillMet && (
-                      <span className="flex items-center gap-1 text-ink-600">
-                        <PixelIcon name="lock" size={9} />
-                        <span className="num">{job.minSkill}+</span>
+                  <span className="tile-icon">
+                    <PixelIcon name={SIDE_JOB_ICONS[jobId] ?? 'box'} size={16} />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-semibold text-ink-100 leading-tight mb-1.5">{job.name}</span>
+                    <CostRow energy={job.energy}>
+                      <span className="num text-moss-300">
+                        +{formatMoney(payout)}
+                        {job.paymentVar ? '±' : ''} ₽
                       </span>
-                    )}
-                  </CostRow>
+                      {!minSkillMet && (
+                        <span className="flex items-center gap-1 text-ink-600">
+                          <PixelIcon name="lock" size={9} />
+                          <span className="num">{job.minSkill}+</span>
+                        </span>
+                      )}
+                    </CostRow>
+                  </span>
                 </button>
               );
             })}
           </div>
-          <p className="text-2xs text-ink-600 mt-1.5">
-            Одна подработка в день. Здоровье и мотивация — по курсу.
-          </p>
+          <p className="text-2xs text-ink-600 mt-1.5">Одна подработка в день. Здоровье и мотивация — по курсу.</p>
         </section>
       )}
 
       {/* Daily challenge */}
       {player.dailyChallenge && (
-        <section
-          className={`panel panel-note ${
-            player.dailyChallenge.done ? 'panel-note-moss' : 'panel-note-sky'
-          }`}
-        >
+        <section className={`panel panel-note ${player.dailyChallenge.done ? 'panel-note-moss' : 'panel-note-sky'}`}>
           <div className="flex items-center justify-between mb-1.5">
             <span className="flex items-center gap-1.5 text-2xs font-semibold uppercase tracking-[0.09em] text-ink-400">
               <PixelIcon name="target" size={11} />
@@ -332,9 +312,7 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
               </span>
             )}
           </div>
-          <p className="text-sm text-ink-200">
-            {CHALLENGE_TEXT[player.dailyChallenge.id] ?? 'Выполни задание'}
-          </p>
+          <p className="text-sm text-ink-200">{CHALLENGE_TEXT[player.dailyChallenge.id] ?? 'Выполни задание'}</p>
           {!player.dailyChallenge.done && (
             <div className="meter mt-2">
               <span
@@ -365,10 +343,7 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
 
       {/* Banked offline days */}
       {(player.bankedDays ?? 0) > 0 && (
-        <button
-          onClick={() => performAction('use_banked_day')}
-          className="btn btn-secondary w-full text-sm"
-        >
+        <button onClick={() => performAction('use_banked_day')} className="btn btn-secondary w-full text-sm">
           <PixelIcon name="clock" size={12} className="text-gold-300" />
           <span>
             Банк офлайн-дней: <span className="num">{player.bankedDays}</span> — использовать
@@ -380,11 +355,7 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
           (inside Telegram the native MainButton is used, see the effect above) */}
       {!useNativeCta && (
         <div className="sticky-cta">
-          <button
-            onClick={() => void finishDay()}
-            disabled={finishing}
-            className="btn btn-primary w-full text-base mt-2"
-          >
+          <button onClick={() => void finishDay()} disabled={finishing} className="btn btn-primary btn-lg w-full mt-2">
             {finishing ? (
               'Считаем день…'
             ) : (

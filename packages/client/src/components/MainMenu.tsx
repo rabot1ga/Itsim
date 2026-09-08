@@ -10,18 +10,12 @@ export const MainMenu: React.FC = () => {
 
   const hasProgress = player && (player.currentDay ?? 1) > 1;
 
-
-
   return (
     <div className="flex-1 flex flex-col items-center justify-between p-6 overflow-y-auto">
       <div className="flex-1 flex flex-col items-center justify-center w-full max-w-[300px]">
         {/* Hero — your own room with you standing in it */}
         <div className="w-full animate-fade-in">
-          {player ? (
-            <IsoRoom player={player} />
-          ) : (
-            <div className="aspect-[4/3] border-2 border-ink-700 bg-ink-800" />
-          )}
+          {player ? <IsoRoom player={player} /> : <div className="aspect-[4/3] border-2 border-ink-700 bg-ink-800" />}
         </div>
 
         {/* Wordmark */}
@@ -29,14 +23,12 @@ export const MainMenu: React.FC = () => {
           <PixelText scale={4} className="text-gold-300">
             IT LIFE
           </PixelText>
-          <span className="text-2xs font-semibold uppercase tracking-[0.42em] text-ink-500 pl-1">
-            Simulator
-          </span>
+          <span className="text-2xs font-semibold uppercase tracking-[0.42em] text-ink-500 pl-1">Simulator</span>
         </h1>
 
         {/* One line of context: where you left off, or what this is */}
         {hasProgress ? (
-          <p className="flex items-center gap-2 text-xs text-ink-400 mt-4">
+          <p className="well flex items-center gap-2 text-xs text-ink-400 mt-4 px-3 py-2">
             <span className="num">День {player.currentDay}</span>
             <span className="text-ink-700">·</span>
             <span className="text-ink-200 font-semibold">{gradeLabel(player.grade)}</span>
@@ -55,7 +47,7 @@ export const MainMenu: React.FC = () => {
             haptic('medium');
             setScreen('game');
           }}
-          className="btn btn-primary w-full text-base mt-6"
+          className="btn btn-primary btn-lg w-full mt-6"
         >
           <PixelIcon name="play" size={13} />
           {hasProgress ? `Продолжить · день ${player.currentDay}` : 'Начать игру'}
@@ -93,11 +85,7 @@ export const MainMenu: React.FC = () => {
   );
 };
 
-const MenuLink: React.FC<{ icon: string; label: string; onClick: () => void }> = ({
-  icon,
-  label,
-  onClick,
-}) => (
+const MenuLink: React.FC<{ icon: string; label: string; onClick: () => void }> = ({ icon, label, onClick }) => (
   <button
     onClick={() => {
       haptic('selection');

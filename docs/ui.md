@@ -107,9 +107,12 @@
 | `.eyebrow` / `.section-title` | заголовок секции: 11px, caps, трекинг, пунктирная пиксельная линия справа |
 | `.divider` | разделитель: пунктир 2px через 2px |
 | `.btn[-primary\|-secondary\|-ghost\|-success\|-danger]` | кнопки; `-primary` золотая, на экране одна |
+| `.btn-lg` | главное обязательство экрана: «Начать игру», «Завершить день» (56px) |
+| `.tile-action` / `.tile-icon` | действие дня: иконка на вдавленной плашке, цена под названием |
+| `.gain-stream` / `.gain-float` / `.num-pop` | выплата: `+N` улетает вверх, изменившийся счётчик подпрыгивает |
 | `.chip`, `.stat-pill` | метки и мини-статусы |
 | `.meter` + `<span>` внутри | прогресс 4px; заливка разбита маской на пиксельные ячейки 3px через 1px |
-| `.tabbar`, `.tabbar-item`, `.tabbar-label` | нижняя навигация; активная — золотая с 2px-риской сверху |
+| `.tabbar`, `.tabbar-item`, `.tabbar-label`, `.tabbar-dot` | нижняя навигация 54px; активная вкладка — золотая плашка `panel-gold`; точка = что-то ждёт (оффер) |
 | `.accordion-body/.accordion-inner/.accordion-chevron` | раскрытие через `grid-template-rows` (без прыжков высоты) |
 | `.sticky-cta` | закреплённая кнопка внизу, когда MainButton недоступен |
 | `.animate-fade-in / -pop-in / -slide-up / -pulse-soft` | разрешённые анимации |
@@ -120,6 +123,32 @@
 
 Фон приложения — не заливка, а тот же дизеринг, которым затенены стены: точка
 `rgba(233,237,244,.028)` с шагом 4px.
+
+### 9-slice рамки (`public/ui/`, генератор `tools/uigen/build.mjs`)
+
+Панели и кнопки — не CSS-бордеры, а нарисованные попиксельно PNG, растянутые
+через `border-image`. Плашки 12×12 со slice 4 (`panel`, `panel-hi`,
+`panel-gold`, `well`), кнопки 12×14 со slice `4 4 5 4` — нижние 3px это
+«плечо», на которое клавиша садится при нажатии (`btn-{gold,dark,moss,clay}`
+плюс кадр `-down`). Правило 9-slice: тянущаяся середина обязана быть
+однородной, иначе блик размажется — поэтому весь декор живёт в углах.
+
+```css
+.panel { border: 4px solid transparent; border-image: url('/ui/panel.png') 4 fill stretch; }
+.btn-primary { border-width: 4px 4px 5px; border-image: url('/ui/btn-gold.png') 4 4 5 4 fill stretch; }
+.btn-primary:active { border-image-source: url('/ui/btn-gold-down.png'); transform: translateY(2px); }
+```
+
+Перегенерация: `node tools/uigen/build.mjs`.
+
+### Обратная связь как в кликерах
+
+Жанр держится на трёх правилах, и UI им следует: отклик на тап меньше 50 мс
+(нажатие кнопки — смена кадра, `steps(2,end)`), выплата показывается там, куда
+смотрит игрок (`diffGains` в сторе сравнивает состояние до/после действия,
+`GainStream` пускает `+120 ₽`, `−3` энергии и новые уровни навыков вверх
+экрана), а счётчик, который изменился, подпрыгивает до 1.22× (`usePop` в
+`ResourceBar`). Всё это выключается при `prefers-reduced-motion`.
 
 ### Спрайты игры в меню
 
