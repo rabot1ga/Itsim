@@ -41,6 +41,7 @@ import {
   checkAchievements,
   totalSkillLevels,
   clamp,
+  checkEndings,
   GRADE_SALARIES,
   GRADE_ENERGY,
   GRADE_REQUIREMENTS,
@@ -1930,6 +1931,30 @@ function applyAction(
       const res = runCtoElection(state, content);
       if (res.error) return { error: res.error };
       return { message: res.message };
+    }
+
+    // ---- Endings (P1.12) — claim a positive ending; terminals just unlock New Life ----
+    case 'claim_ending': {
+      const endingId = String(params?.endingId ?? '');
+      if (!endingId) return { error: 'endingId обязателен' };
+      const list = checkEndings(state, content.balance);
+      const target = list.find((e) => e.id === endingId);
+      if (!target) return { error: 'Такого финала нет' };
+      if (state.careerEnding) return { error: 'Финал уже зафиксирован. Начни новую жизнь — там' };
+      if (!target.available) return { error: target.missing ?? 'Условия не выполнены' };
+      // Map endingId → CareerEnding
+      const map: Record<string, any> = {
+        cto: 'corporate_god',
+        exit: 'exit',
+        free_artist: 'free_artist',
+        teacher: 'teacher',
+        burnout: 'burnout',
+        left_it: 'left_it',
+      };
+      state.careerEnding = map[endingId];
+      // For terminals, free the player from the job so New Life is reachable
+      if (endingId === 'burnout' || endingId === 'left_it') state.job = null;
+      return { message: `🏁 Финал зафиксирован: ${target.title}` };
     }
 
     // ---- Shop ----
