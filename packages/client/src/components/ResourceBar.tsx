@@ -7,9 +7,16 @@ import { PixelIcon } from './pixel/PixelIcon';
  *
  * In an idle game the top bar is not decoration — it is the scoreboard the
  * player checks after every single tap. So it follows the genre's rules:
- * the numbers never move on the screen, they are always visible, they are
- * abbreviated once they get long, and each one gives a chunky bounce the
+ * one number is the hero (money), the numbers never move on the screen, they
+ * are abbreviated once they get long, and each one gives a chunky bounce the
  * moment it changes (the floating +N labels come from GainStream).
+ *
+ * What is NOT here is as deliberate as what is. Reputation and the leaderboard
+ * rating only matter in their own context, so they live there (career gate
+ * card, «Топ», achievements), not in a bar that would shout about two gold
+ * stars all day. The persistent row shows only what the player spends right
+ * now: energy (action currency), health and motivation — the three vitals that
+ * gate a decision this very tap.
  */
 
 const GRADE_LABEL: Record<string, string> = {
@@ -85,38 +92,33 @@ export const ResourceBar: React.FC = () => {
   return (
     <header className="shrink-0 bg-ink-900 border-b-2 border-ink-700 px-3 pt-2 pb-2.5 space-y-2 safe-area-pt">
       <div className="flex items-center justify-between gap-2">
-        {/* Day and balance: the two numbers the whole loop is scored on */}
+        {/* The scoreboard: the day is context, money is the number the loop
+            is scored on — so it is the largest thing in the bar. */}
         <div className="flex items-center gap-2 min-w-0">
-          <span className="well flex items-baseline gap-1.5 px-2 py-1">
+          <span className="well flex items-baseline gap-1 px-1.5 py-1" title={`День ${player.currentDay ?? 1}`}>
             <span className="text-2xs font-bold uppercase tracking-[0.09em] text-ink-500">Дн.</span>
-            <span className="num text-sm font-bold text-white leading-none">{player.currentDay ?? 1}</span>
+            <span className="num text-xs font-bold text-ink-200 leading-none">{player.currentDay ?? 1}</span>
           </span>
-          <span className="well flex items-center gap-1.5 px-2 py-1">
-            <PixelIcon name="coin" size={11} className="text-gold-300" />
-            <span className={`num text-sm font-bold text-white leading-none ${moneyPop ? 'num-pop' : ''}`}>
+          <span className="flex items-center gap-1.5 min-w-0">
+            <PixelIcon name="coin" size={13} className="text-gold-300 shrink-0" />
+            <span className={`num text-lg font-bold text-white leading-none truncate ${moneyPop ? 'num-pop' : ''}`}>
               {formatMoney(money)}
             </span>
           </span>
         </div>
 
-        <div className="flex items-center gap-1.5 min-w-0">
-          {player.ratingScore !== undefined && (
-            <span className="chip" title="Рейтинг для лидерборда">
-              <PixelIcon name="star" size={10} className="text-gold-300" />
-              <span className="num">{player.ratingScore}</span>
-            </span>
-          )}
-          <span className={`chip uppercase tracking-[0.06em] ${gilded ? 'text-gold-300' : 'text-ink-200'}`}>
-            {grade}
-          </span>
-        </div>
+        {/* Grade — identity, not a resource; never louder than money. */}
+        <span className={`chip uppercase tracking-[0.06em] shrink-0 ${gilded ? 'text-gold-300' : 'text-ink-300'}`}>
+          {grade}
+        </span>
       </div>
 
+      {/* Vitals the player spends this tap: energy gates actions, health and
+          motivation gate burnout. Reputation/rating live where they matter. */}
       <div className="flex items-end gap-2.5">
         <Meter icon="bolt" label="Энергия" value={player.energy} max={player.maxEnergy || 16} color="var(--sky)" />
         <Meter icon="heart" label="Здоровье" value={player.health} max={100} color="var(--moss)" />
         <Meter icon="flame" label="Мотивация" value={player.motivation} max={100} color="var(--ochre)" />
-        <Meter icon="star" label="Репутация" value={player.reputation} max={100} color="var(--gold)" />
       </div>
     </header>
   );

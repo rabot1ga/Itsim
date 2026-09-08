@@ -118,27 +118,43 @@ export const GameScreen: React.FC = () => {
                   Закрыть
                 </button>
               </div>
-              <div className="grid grid-cols-2 gap-2">
-                {MORE.map((item) => {
+              {/* A hub is a list, not a shelf: one destination per row with its
+                  icon anchored left, so a glance scans four real places instead
+                  of four identical tiles. */}
+              <div className="max-h-[min(420px,58vh)] overflow-y-auto -mx-1 px-1">
+                {MORE.map((item, i) => {
                   const isCurrent = currentView === item.view;
                   return (
                     <button
                       key={item.view}
                       onClick={() => nav(item.view)}
-                      className={`tile flex items-start gap-2.5 ${isCurrent ? 'panel-note panel-note-gold' : ''}`}
+                      aria-current={isCurrent ? 'true' : undefined}
+                      className={`group flex w-full items-center gap-3 text-left min-h-[52px] py-2 border-b border-ink-800 last:border-0 ${
+                        i > 0 ? 'mt-0.5' : ''
+                      } ${isCurrent ? '' : 'active:bg-ink-800/60'}`}
                     >
-                      <PixelIcon
-                        name={item.icon}
-                        size={15}
-                        className={isCurrent ? 'text-gold-300 mt-0.5' : 'text-ink-300 mt-0.5'}
-                      />
-                      <span className="min-w-0">
-                        <span className="flex items-center gap-1.5">
-                          <span className="block text-sm font-semibold text-ink-100">{item.label}</span>
-                          {isCurrent && <PixelIcon name="check" size={9} className="text-moss-400" />}
-                        </span>
+                      {/* the notch: where you are right now */}
+                      {isCurrent && <span className="self-stretch w-[3px] shrink-0 bg-gold-300" aria-hidden="true" />}
+                      <span
+                        className={`w-9 h-9 shrink-0 flex items-center justify-center border-2 bg-ink-800 ${
+                          isCurrent
+                            ? 'border-gold-700 text-gold-300'
+                            : 'border-ink-700 text-ink-300 group-hover:border-ink-600'
+                        }`}
+                      >
+                        <PixelIcon name={item.icon} size={16} />
+                      </span>
+                      <span className="flex-1 min-w-0">
+                        <span className="flex items-center gap-2 text-sm font-semibold text-ink-100">{item.label}</span>
                         <span className="block text-2xs text-ink-500 leading-tight mt-0.5">{item.hint}</span>
                       </span>
+                      {isCurrent ? (
+                        <span className="text-2xs font-bold uppercase tracking-[0.08em] text-gold-300 shrink-0">
+                          здесь
+                        </span>
+                      ) : (
+                        <PixelIcon name="chevron" size={9} className="text-ink-600 -rotate-90 shrink-0" />
+                      )}
                     </button>
                   );
                 })}

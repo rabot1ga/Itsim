@@ -516,11 +516,16 @@ select {
   justify-content: center;
   gap: 5px;
   border: 4px solid transparent;
-  color: var(--text-faint);
+  color: var(--text-mute);
   image-rendering: pixelated;
   transition:
     color 0.12s ease,
     transform 0.06s steps(2, end);
+}
+@media (hover: hover) {
+  .tabbar-item:hover:not([data-active='true']) {
+    color: var(--text-dim);
+  }
 }
 .tabbar-item[data-active='true'] {
   color: var(--gold);
@@ -528,12 +533,12 @@ select {
 }
 .tabbar-item:not([data-active='true']):active {
   transform: translateY(2px);
-  color: var(--text-dim);
+  color: var(--text);
 }
 .tabbar-label {
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
   line-height: 1;
 }
 /* unread / actionable marker, e.g. an offer waiting in Career */
