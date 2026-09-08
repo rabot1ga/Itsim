@@ -5,10 +5,13 @@ import { PlayerPortrait } from './PlayerPortrait';
 import { StatBar } from './ui';
 
 /**
- * Top chrome — deliberately shallow so the screen below gets the pixels:
- * one strip with money, day, the «⋮» menu (plus a back arrow away from home),
- * and — on the home screen — a single HUD card where the vitals sit next to
- * the portrait as compact meters instead of three full-width bars.
+ * Top chrome — deliberately shallow so the screen below gets the pixels.
+ *
+ * On «Главной» there is exactly one plaque: the money, the day and the «⋮»
+ * menu moved inside the HUD card, next to the portrait, level, XP and vitals.
+ * Two stacked strips ate ~140px before the first real card; the merged one
+ * costs ~90px and still says the same things. Other screens keep the plain
+ * strip — there the back arrow and the energy pill are the whole HUD.
  */
 
 const GRADE_LABEL: Record<string, string> = {
@@ -69,25 +72,23 @@ export const ResourceBar: React.FC = () => {
   const coins = Math.round(player.meta?.coins ?? player.metaCoins ?? 0);
 
   return (
-    <header className="topbar">
-      <div className="topbar-row">
-        {!home && (
+    <header className={`topbar ${home ? 'is-home' : ''}`}>
+      {!home && (
+        <div className="topbar-row">
           <button className="topbar-btn" aria-label="На главную" onClick={() => setView('main')}>
             ‹
           </button>
-        )}
-        <span className={`wallet-pill num ${moneyPop ? 'num-pop' : ''}`} aria-label="Деньги">
-          <span aria-hidden="true">💰</span>
-          {Math.round(player.money ?? 0).toLocaleString('ru-RU')} ₽
-        </span>
-        {coins > 0 && (
-          <span className="wallet-pill is-gold num" aria-label="Монеты">
-            <span aria-hidden="true">🪙</span>
-            {coins.toLocaleString('ru-RU')}
+          <span className={`wallet-pill num ${moneyPop ? 'num-pop' : ''}`} aria-label="Деньги">
+            <span aria-hidden="true">💰</span>
+            {Math.round(player.money ?? 0).toLocaleString('ru-RU')} ₽
           </span>
-        )}
-        <span className="wallet-spacer" />
-        {!home && (
+          {coins > 0 && (
+            <span className="wallet-pill is-gold num" aria-label="Монеты">
+              <span aria-hidden="true">🪙</span>
+              {coins.toLocaleString('ru-RU')}
+            </span>
+          )}
+          <span className="wallet-spacer" />
           <span
             className="wallet-pill is-dim num"
             aria-label="Энергия"
@@ -96,30 +97,49 @@ export const ResourceBar: React.FC = () => {
             <span aria-hidden="true">⚡</span>
             {Math.round(player.energy ?? 0)} / {player.maxEnergy ?? 10}
           </span>
-        )}
-        <span className="wallet-pill is-dim num">День {player.currentDay ?? 1}</span>
-        <button
-          className="topbar-btn"
-          aria-label="Меню"
-          aria-expanded={Boolean(moreOpen)}
-          onClick={() => setMoreOpen(!moreOpen)}
-        >
-          ⋮
-        </button>
-      </div>
+          <span className="wallet-pill is-dim num">День {player.currentDay ?? 1}</span>
+          <button
+            className="topbar-btn"
+            aria-label="Меню"
+            aria-expanded={Boolean(moreOpen)}
+            onClick={() => setMoreOpen(!moreOpen)}
+          >
+            ⋮
+          </button>
+        </div>
+      )}
 
       {home && (
         <section className="hud" aria-label="Персонаж и состояние">
           <button className="hud-portrait" aria-label="Открыть профиль" onClick={() => setView('profile')}>
-            <PlayerPortrait player={player} size={60} />
+            <PlayerPortrait player={player} size={56} />
           </button>
           <div className="hud-identity-copy">
             <div className="hud-level-row">
               <span className="hud-level">
                 lvl {skill.level}
-                <small>{SKILL_NAMES[id] ?? id}</small>
+                <small>{GRADE_LABEL[player.grade] ?? player.grade}</small>
               </span>
-              <span className="hud-day">{GRADE_LABEL[player.grade] ?? player.grade}</span>
+              <span className="wallet-spacer" />
+              <span className={`wallet-pill num ${moneyPop ? 'num-pop' : ''}`} aria-label="Деньги">
+                <span aria-hidden="true">💰</span>
+                {Math.round(player.money ?? 0).toLocaleString('ru-RU')} ₽
+              </span>
+              {coins > 0 && (
+                <span className="wallet-pill is-gold num" aria-label="Монеты">
+                  <span aria-hidden="true">🪙</span>
+                  {coins.toLocaleString('ru-RU')}
+                </span>
+              )}
+              <span className="wallet-pill is-dim num">День {player.currentDay ?? 1}</span>
+              <button
+                className="topbar-btn hud-menu"
+                aria-label="Меню"
+                aria-expanded={Boolean(moreOpen)}
+                onClick={() => setMoreOpen(!moreOpen)}
+              >
+                ⋮
+              </button>
             </div>
             <div
               className="hud-xp"
@@ -130,7 +150,9 @@ export const ResourceBar: React.FC = () => {
               aria-valuenow={maxed ? 100 : Math.min(need, skill.xp)}
             >
               <i style={{ width: `${pct}%` }} />
-              <b className="num">{maxed ? 'Максимум' : `${skill.xp} / ${need} XP`}</b>
+              <b className="num">
+                {SKILL_NAMES[id] ?? id} · {maxed ? 'Максимум' : `${skill.xp} / ${need} XP`}
+              </b>
             </div>
             <div className="hud-vitals">
               <StatBar compact resource="energy" value={player.energy} max={player.maxEnergy || 10} />

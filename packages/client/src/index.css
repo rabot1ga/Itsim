@@ -192,6 +192,12 @@ select {
   background: var(--bg-raise);
   border-bottom: 1px solid var(--line);
 }
+/* On «Главной» the strip is folded into the HUD card, so the header itself
+   stops drawing chrome: one plaque instead of two stacked bars. */
+.topbar.is-home {
+  background: transparent;
+  border-bottom: 0;
+}
 .topbar-row {
   min-height: 46px;
   display: flex;
@@ -260,6 +266,21 @@ select {
     padding: 0 7px;
     font-size: 12px;
   }
+  .hud-vitals {
+    gap: 6px;
+  }
+  .hud-level small {
+    display: none;
+  }
+  /* 320px phones: the portrait gives up the pixels the status pills need */
+  .hud-portrait {
+    width: 48px;
+    height: 48px;
+  }
+  .hud-portrait > * {
+    width: 100%;
+    height: 100%;
+  }
 }
 
 /* ── HUD (home) ──────────────────────────────────────────────────────────── */
@@ -267,17 +288,17 @@ select {
 .hud {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin: 0 10px 10px;
-  padding: 10px 12px;
+  gap: 10px;
+  margin: 8px 10px 8px;
+  padding: 9px 10px;
   border-radius: var(--radius-card);
   background: var(--surface);
   border: 1px solid var(--line);
   box-shadow: var(--shadow-card);
 }
 .hud-portrait {
-  width: 60px;
-  height: 60px;
+  width: 56px;
+  height: 56px;
   flex-shrink: 0;
   border-radius: var(--radius-tile);
   overflow: hidden;
@@ -292,26 +313,37 @@ select {
 }
 .hud-level-row {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+/* The «⋮» sits in the card now — smaller than in the standalone strip. */
+.hud-menu {
+  width: 28px;
+  height: 28px;
+  font-size: 18px;
+  margin-right: -4px;
 }
 .hud-level {
   font-size: 14px;
   font-weight: 700;
   color: var(--green);
 }
+.hud-level {
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Money never truncates; the level label gives up its pixels first. */
+.hud-level-row .wallet-pill {
+  flex-shrink: 0;
+}
 .hud-level small {
   color: var(--text-mute);
   font-weight: 600;
   font-size: 11px;
   margin-left: 6px;
-}
-.hud-day {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-mute);
-  white-space: nowrap;
 }
 .hud-xp {
   position: relative;
@@ -342,7 +374,7 @@ select {
 .hud-vitals {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 .hud-vitals .stat-bar {
   flex: 1;
