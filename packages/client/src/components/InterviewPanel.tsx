@@ -120,7 +120,7 @@ export const InterviewPanel: React.FC = () => {
   // Network/server failures used to be swallowed: the state existed but was
   // never rendered, so a failed request looked like a frozen button.
   const errorNote = error ? (
-    <div className="mb-3 flex items-start gap-2 px-3 py-2 rounded-lg text-xs border border-clay-700 bg-clay-900/40 text-clay-200">
+    <div className="mb-3 flex items-start gap-2 px-3 py-2 text-xs border-2 border-clay-700 bg-clay-900/40 text-clay-200">
       <PixelIcon name="warn" size={11} className="mt-0.5" />
       {error}
     </div>
@@ -205,7 +205,7 @@ export const InterviewPanel: React.FC = () => {
         {result && (
           <div className="mt-3 animate-fade-in">
             <div
-              className={`px-3 py-2.5 rounded-lg text-xs leading-relaxed border ${
+              className={`px-3 py-2.5 text-xs leading-relaxed border ${
                 result.correct
                   ? 'bg-moss-900/30 border-moss-700 text-moss-200'
                   : 'bg-ochre-900/30 border-ochre-700 text-ochre-200'

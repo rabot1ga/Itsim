@@ -1,5 +1,6 @@
 import React from 'react';
 import { PixelIcon } from './pixel/PixelIcon';
+import { IsoIcon } from './iso/IsoIcon';
 
 /**
  * Shared feedback states (docs/design.md §14, §15 п.8):
@@ -31,17 +32,31 @@ export const Spinner: React.FC<{ label?: string; className?: string }> = ({
 
 /** Pulsing placeholder block (skeleton). */
 export const Skeleton: React.FC<{ className?: string }> = ({ className = '' }) => (
-  <div className={`animate-pulse-soft bg-ink-800 rounded-lg ${className}`} aria-hidden="true" />
+  <div className={`animate-pulse-soft bg-ink-800 ${className}`} aria-hidden="true" />
 );
 
 /** Room-shaped skeleton: square + hint (DESIGN.md §14 «скелетон-квадрат»). */
 export const RoomSkeleton: React.FC = () => (
   <div className="animate-fade-in" role="status" aria-label="Загрузка комнаты">
-    <div className="aspect-square rounded-xl border border-ink-700 bg-ink-800 flex flex-col items-center justify-center gap-3">
+    <div className="aspect-square border-2 border-ink-700 bg-ink-800 flex flex-col items-center justify-center gap-3">
       <PixelIcon name="house" size={36} className="text-ink-600" />
       <span className="text-xs text-ink-500">Загрузка комнаты…</span>
     </div>
   </div>
+);
+
+/**
+ * A screen's emblem: one of the room's own sprites on a dark plate. Every tab
+ * is headed by the object it is about — the shop by a crate, skills by the
+ * bookshelf — so the menus and the room speak the same language.
+ */
+export const SpriteBadge: React.FC<{ sprite: string; size?: number }> = ({ sprite, size = 36 }) => (
+  <span
+    className="shrink-0 inline-flex items-end justify-center bg-ink-900 border-2 border-ink-700 p-0.5"
+    style={{ width: size, height: size }}
+  >
+    <IsoIcon sprite={sprite} size={size - 8} />
+  </span>
 );
 
 /**
@@ -71,7 +86,7 @@ export const EmojiToken: React.FC<{ children: React.ReactNode; className?: strin
   className = '',
 }) => (
   <span
-    className={`inline-flex items-center justify-center shrink-0 w-7 h-7 rounded-md border border-ink-700 bg-ink-900 text-[14px] leading-none ${className}`}
+    className={`inline-flex items-center justify-center shrink-0 w-7 h-7 border-2 border-ink-700 bg-ink-900 text-[14px] leading-none ${className}`}
     style={{ filter: 'saturate(0.8)' }}
     aria-hidden="true"
   >

@@ -1,4 +1,4 @@
-import { Point, RoomSize, TILE, TileSize, Viewport, tilePolygon, toScreen, wallPolygons } from './geometry';
+import { Point, RoomSize, TILE, TileSize, Viewport, tilePolygon, toScreen, unit, wallPolygons } from './geometry';
 import { RoomPalette } from './scene';
 
 /**
@@ -29,6 +29,7 @@ export function shellPolygons(
   tile: TileSize = TILE
 ): ShellPoly[] {
   const polys: ShellPoly[] = [];
+  const k = unit(tile);
   const walls = wallPolygons(vp, size, tile);
   const pattern = palette.floorPattern ?? 'tiles';
 
@@ -37,7 +38,7 @@ export function shellPolygons(
   polys.push({ points: walls.right, fill: palette.wallRight });
 
   // a lit strip along the top of each wall: cheap, and it reads as daylight
-  const trim = (from: Point, to: Point, thickness = 3): Point[] => [
+  const trim = (from: Point, to: Point, thickness = 3 * k): Point[] => [
     from,
     to,
     { x: to.x, y: to.y + thickness },
@@ -74,7 +75,7 @@ export function shellPolygons(
     const from = toScreen(vp, 0, gy, tile);
     const to = toScreen(vp, size.w, gy, tile);
     polys.push({
-      points: [from, to, { x: to.x, y: to.y + 1 }, { x: from.x, y: from.y + 1 }],
+      points: [from, to, { x: to.x, y: to.y + k }, { x: from.x, y: from.y + k }],
       fill: palette.floorLine,
       opacity,
     });
@@ -83,7 +84,7 @@ export function shellPolygons(
     const from = toScreen(vp, gx, 0, tile);
     const to = toScreen(vp, gx, size.d, tile);
     polys.push({
-      points: [from, to, { x: to.x, y: to.y + 1 }, { x: from.x, y: from.y + 1 }],
+      points: [from, to, { x: to.x, y: to.y + k }, { x: from.x, y: from.y + k }],
       fill: palette.floorLine,
       opacity,
     });
@@ -97,7 +98,7 @@ export function shellPolygons(
       const from = toScreen(vp, gx, gy, tile);
       const to = toScreen(vp, gx, gy + 1, tile);
       polys.push({
-        points: [from, to, { x: to.x + 1, y: to.y }, { x: from.x + 1, y: from.y }],
+        points: [from, to, { x: to.x + k, y: to.y }, { x: from.x + k, y: from.y }],
         fill: palette.floorLine,
         opacity: 0.4,
       });
@@ -109,8 +110,8 @@ export function shellPolygons(
 
   // skirting board where the walls meet the floor
   const skirt = (from: Point, to: Point): Point[] => [
-    { x: from.x, y: from.y - 4 },
-    { x: to.x, y: to.y - 4 },
+    { x: from.x, y: from.y - 4 * k },
+    { x: to.x, y: to.y - 4 * k },
     to,
     from,
   ];

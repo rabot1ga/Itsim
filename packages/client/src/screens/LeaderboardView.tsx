@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useGameStore, apiRequest } from '../store/gameStore';
-import { Spinner, EmptyState } from '../components/ui';
+import { Spinner, EmptyState, SpriteBadge } from '../components/ui';
 import { PixelIcon } from '../components/pixel/PixelIcon';
 
 /**
@@ -43,7 +43,7 @@ const Row: React.FC<{ row: LeaderRow }> = ({ row }) => (
     }`}
   >
     <span
-      className={`num w-7 h-7 shrink-0 grid place-items-center rounded-md border text-xs font-semibold ${
+      className={`num w-7 h-7 shrink-0 grid place-items-center border text-xs font-semibold ${
         RANK_TONE[row.rank - 1] ?? 'text-ink-500 border-ink-700'
       }`}
     >
@@ -97,7 +97,7 @@ export const LeaderboardView: React.FC = () => {
     <div className="space-y-4 animate-fade-in">
       <div className="flex items-center justify-between">
         <h2 className="flex items-center gap-2 text-base font-semibold text-white">
-          <PixelIcon name="chart" size={14} className="text-gold-300" />
+          <SpriteBadge sprite="presentation_board" size={32} />
           Лидерборд
         </h2>
         {player?.ratingScore !== undefined && (

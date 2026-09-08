@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { InterviewPanel } from '../components/InterviewPanel';
-import { Spinner } from '../components/ui';
+import { Spinner, SpriteBadge } from '../components/ui';
 import { PixelIcon } from '../components/pixel/PixelIcon';
 
 interface GateInfo {
@@ -80,7 +80,7 @@ export const CareerView: React.FC = () => {
   return (
     <div className="space-y-4 animate-fade-in">
       <h2 className="flex items-center gap-2 text-base font-semibold text-white">
-        <PixelIcon name="briefcase" size={14} className="text-gold-300" />
+        <SpriteBadge sprite="whiteboard" size={32} />
         Карьера
       </h2>
 
@@ -213,7 +213,7 @@ export const CareerView: React.FC = () => {
             return (
               <div
                 key={g.grade}
-                className={`rounded-md px-2 py-1.5 border ${
+                className={` px-2 py-1.5 border ${
                   isNext ? 'border-gold-700 bg-gold-900/15' : 'border-transparent'
                 }`}
               >

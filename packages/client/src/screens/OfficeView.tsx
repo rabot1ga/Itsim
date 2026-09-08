@@ -5,7 +5,7 @@ import { CareerPressureCard } from '../components/CareerPressureCard';
 import { IsoOffice } from '../components/iso/IsoOffice';
 import { officeMoodOf } from '../components/room/OfficeRenderer';
 import { PixelIcon } from '../components/pixel/PixelIcon';
-import { EmojiToken } from '../components/ui';
+import { EmojiToken, SpriteBadge } from '../components/ui';
 
 /**
  * Office (docs/design.md §11) — a skin over the same work actions, rendered with
@@ -121,7 +121,7 @@ export const OfficeView: React.FC = () => {
       </div>
 
       <h2 className="flex items-center gap-2 text-base font-semibold text-white -mt-2">
-        <PixelIcon name="briefcase" size={14} className="text-gold-300" />
+        <SpriteBadge sprite="desk_office" size={32} />
         {company?.name ?? 'Мой офис'}
       </h2>
 
@@ -150,7 +150,7 @@ export const OfficeView: React.FC = () => {
           player={player}
         />
       ) : (
-        <div className="aspect-square rounded-xl border border-ink-700 bg-ink-800 flex items-center justify-center text-sm text-ink-500">
+        <div className="aspect-square border-2 border-ink-700 bg-ink-800 flex items-center justify-center text-sm text-ink-500">
           Открываем офис…
         </div>
       )}

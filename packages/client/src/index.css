@@ -6,11 +6,14 @@
    IT Life Simulator — interface system
    Colours come from the game's own sprites (see tailwind.config.js).
    Rules of the house:
-     · flat surfaces, one hairline border, no glass/blur/glow/gradients;
+     · the menus are built like the rooms: flat plates with a 2px dark frame,
+       notched corners and one lit pixel edge on top — no radii, no blur, no
+       gradients, no glow;
      · one warm accent (gold) for "act on this", everything else is quiet;
      · numbers are tabular and monospaced-by-feature, never jump while ticking;
-     · radii: 10px panels · 8px controls · 3px meters — nothing else;
-     · 12px pixel icons instead of emoji, so every device draws the same screen.
+     · pixel icons and the game's own isometric sprites instead of emoji, so
+       every device draws the same screen;
+     · everything sits on a 2px grid, because the art does too.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 :root {
@@ -36,9 +39,29 @@
   --ochre: #d99a4e;
   --clay: #c2565a;
 
-  --radius-panel: 10px;
-  --radius-control: 8px;
+  /* The art has no round corners, so neither does the interface. Corners are
+     notched instead: the frame is drawn with four offset shadows, which leaves
+     the corner pixel empty exactly like a hand-drawn sprite frame. */
+  --radius-panel: 0px;
+  --radius-control: 0px;
   --tap: 44px;
+
+  --frame: 2px;
+  --edge-light: rgba(255, 255, 255, 0.05);
+  --edge-shadow: rgba(0, 0, 0, 0.35);
+}
+
+/* A pixel-art plate: 2px frame, notched corners, lit top edge. */
+.pixel-frame {
+  border: 0;
+  border-radius: 0;
+  box-shadow:
+    0 calc(-1 * var(--frame)) 0 0 var(--line),
+    0 var(--frame) 0 0 var(--line),
+    calc(-1 * var(--frame)) 0 0 0 var(--line),
+    var(--frame) 0 0 0 var(--line),
+    inset 0 1px 0 0 var(--edge-light),
+    inset 0 -1px 0 0 var(--edge-shadow);
 }
 
 * {
@@ -60,7 +83,10 @@ body {
     Arial, sans-serif;
   font-size: 15px;
   line-height: 1.4;
-  background: var(--bg);
+  background-color: var(--bg);
+  /* the same 1px dither the walls are shaded with, at a whisper */
+  background-image: radial-gradient(rgba(233, 237, 244, 0.028) 1px, transparent 1px);
+  background-size: 4px 4px;
   color: var(--text);
   -webkit-font-smoothing: antialiased;
   -webkit-text-size-adjust: 100%;
@@ -108,8 +134,8 @@ select {
 
 @media (min-width: 560px) {
   .app-container {
-    border-left: 1px solid var(--line);
-    border-right: 1px solid var(--line);
+    border-left: 2px solid var(--line);
+    border-right: 2px solid var(--line);
   }
 }
 
@@ -152,38 +178,64 @@ select {
 .game-card,
 .panel {
   background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-panel);
+  border: 0;
+  border-radius: 0;
   padding: 12px;
+  box-shadow:
+    0 -2px 0 0 var(--line),
+    0 2px 0 0 var(--line),
+    -2px 0 0 0 var(--line),
+    2px 0 0 0 var(--line),
+    inset 0 1px 0 0 var(--edge-light),
+    inset 0 -1px 0 0 var(--edge-shadow);
 }
 
 /* Interactive panel (action tiles, list rows) */
 .tile {
   background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-panel);
+  border: 0;
+  border-radius: 0;
   padding: 10px;
   text-align: left;
+  box-shadow:
+    0 -2px 0 0 var(--line),
+    0 2px 0 0 var(--line),
+    -2px 0 0 0 var(--line),
+    2px 0 0 0 var(--line),
+    inset 0 1px 0 0 var(--edge-light),
+    inset 0 -1px 0 0 var(--edge-shadow);
   transition:
-    border-color 0.12s ease,
+    box-shadow 0.12s ease,
     background-color 0.12s ease,
     transform 0.06s ease;
 }
 .tile:not(:disabled):hover {
-  border-color: var(--line-strong);
   background: var(--surface-2);
+  box-shadow:
+    0 -2px 0 0 var(--line-strong),
+    0 2px 0 0 var(--line-strong),
+    -2px 0 0 0 var(--line-strong),
+    2px 0 0 0 var(--line-strong),
+    inset 0 1px 0 0 var(--edge-light),
+    inset 0 -1px 0 0 var(--edge-shadow);
 }
+/* pressing a plate pushes it into the board */
 .tile:not(:disabled):active {
-  transform: translateY(1px);
-  border-color: var(--gold-deep);
+  transform: translateY(2px);
+  box-shadow:
+    0 -2px 0 0 var(--gold-deep),
+    0 2px 0 0 var(--gold-deep),
+    -2px 0 0 0 var(--gold-deep),
+    2px 0 0 0 var(--gold-deep),
+    inset 0 1px 0 0 var(--edge-shadow);
 }
 .tile:disabled {
   opacity: 0.4;
 }
 
-/* Attention panel: a 2px left rule instead of a coloured glow */
+/* Attention panel: a 3px left rule instead of a coloured glow */
 .panel-note {
-  border-left: 2px solid var(--line-strong);
+  border-left: 3px solid var(--line-strong);
 }
 .panel-note-gold {
   border-left-color: var(--gold);
@@ -201,15 +253,24 @@ select {
   border-left-color: var(--ochre);
 }
 
+/* A recess in the plate: darker, with the light edge at the bottom instead. */
 .well {
   background: var(--well);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-control);
+  border: 0;
+  border-radius: 0;
+  box-shadow:
+    0 -2px 0 0 var(--line),
+    0 2px 0 0 var(--line),
+    -2px 0 0 0 var(--line),
+    2px 0 0 0 var(--line),
+    inset 0 2px 0 0 rgba(0, 0, 0, 0.45),
+    inset 0 -1px 0 0 var(--edge-light);
 }
 
 .divider {
-  height: 1px;
-  background: var(--line);
+  height: 2px;
+  background-image: linear-gradient(90deg, var(--line) 0 2px, transparent 2px 4px);
+  background-size: 4px 2px;
 }
 
 /* ── Type ────────────────────────────────────────────────────────────────── */
@@ -227,12 +288,13 @@ select {
 .eyebrow::after {
   content: '';
   flex: 1;
-  height: 1px;
-  background: var(--line);
+  height: 2px;
+  background-image: linear-gradient(90deg, var(--line) 0 2px, transparent 2px 4px);
+  background-size: 4px 2px;
   margin-left: 2px;
 }
 
-/* Legacy name kept so old markup keeps working, now the same quiet eyebrow. */
+/* the rule after a section title is a dotted pixel run, not a hairline */
 .section-title {
   display: flex;
   align-items: center;
@@ -246,8 +308,9 @@ select {
 .section-title::after {
   content: '';
   flex: 1;
-  height: 1px;
-  background: var(--line);
+  height: 2px;
+  background-image: linear-gradient(90deg, var(--line) 0 2px, transparent 2px 4px);
+  background-size: 4px 2px;
   margin-left: 2px;
 }
 
@@ -264,6 +327,10 @@ select {
 
 /* ── Controls ────────────────────────────────────────────────────────────── */
 
+/*
+ * Buttons are physical keys: a plate with a 3px shoulder underneath. Pressing
+ * one moves it down onto its shoulder, which is the whole animation budget.
+ */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -271,14 +338,15 @@ select {
   gap: 8px;
   min-height: var(--tap);
   padding: 0 16px;
-  border-radius: var(--radius-control);
-  border: 1px solid transparent;
+  border-radius: 0;
+  border: 0;
   font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.01em;
+  position: relative;
   transition:
     background-color 0.12s ease,
-    border-color 0.12s ease,
+    box-shadow 0.09s ease,
     transform 0.06s ease,
     opacity 0.12s ease;
 }
@@ -287,7 +355,7 @@ select {
   cursor: not-allowed;
 }
 .btn:not(:disabled):active {
-  transform: translateY(1px);
+  transform: translateY(3px);
 }
 .btn.w-full {
   display: flex;
@@ -297,42 +365,104 @@ select {
 .btn-primary {
   background: var(--gold);
   color: #171c25;
-  border-color: var(--gold);
+  box-shadow:
+    0 3px 0 0 var(--gold-deep),
+    0 -2px 0 0 var(--gold),
+    -2px 0 0 0 var(--gold),
+    2px 0 0 0 var(--gold),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.35);
 }
 .btn-primary:not(:disabled):hover {
   background: #ffe07a;
-  border-color: #ffe07a;
+}
+.btn-primary:not(:disabled):active {
+  box-shadow:
+    0 0 0 0 var(--gold-deep),
+    0 -2px 0 0 var(--gold),
+    -2px 0 0 0 var(--gold),
+    2px 0 0 0 var(--gold),
+    inset 0 2px 0 0 rgba(0, 0, 0, 0.25);
 }
 
 .btn-secondary {
   background: var(--surface);
   color: var(--text);
-  border-color: var(--line-strong);
+  box-shadow:
+    0 3px 0 0 #0d1118,
+    0 -2px 0 0 var(--line-strong),
+    -2px 0 0 0 var(--line-strong),
+    2px 0 0 0 var(--line-strong),
+    inset 0 1px 0 0 var(--edge-light);
 }
 .btn-secondary:not(:disabled):hover {
   background: var(--surface-2);
+}
+.btn-secondary:not(:disabled):active {
+  box-shadow:
+    0 0 0 0 #0d1118,
+    0 -2px 0 0 var(--line-strong),
+    -2px 0 0 0 var(--line-strong),
+    2px 0 0 0 var(--line-strong),
+    inset 0 2px 0 0 var(--edge-shadow);
 }
 
 .btn-ghost {
   background: transparent;
   color: var(--text-dim);
-  border-color: var(--line);
+  box-shadow:
+    0 -2px 0 0 var(--line),
+    0 2px 0 0 var(--line),
+    -2px 0 0 0 var(--line),
+    2px 0 0 0 var(--line);
 }
 .btn-ghost:not(:disabled):hover {
   color: var(--text);
-  border-color: var(--line-strong);
+  box-shadow:
+    0 -2px 0 0 var(--line-strong),
+    0 2px 0 0 var(--line-strong),
+    -2px 0 0 0 var(--line-strong),
+    2px 0 0 0 var(--line-strong);
+}
+.btn-ghost:not(:disabled):active {
+  transform: none;
 }
 
 .btn-success {
   background: var(--moss);
   color: #16211a;
-  border-color: var(--moss);
+  box-shadow:
+    0 3px 0 0 #4e7a4a,
+    0 -2px 0 0 var(--moss),
+    -2px 0 0 0 var(--moss),
+    2px 0 0 0 var(--moss),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.28);
+}
+.btn-success:not(:disabled):active {
+  box-shadow:
+    0 0 0 0 #4e7a4a,
+    0 -2px 0 0 var(--moss),
+    -2px 0 0 0 var(--moss),
+    2px 0 0 0 var(--moss),
+    inset 0 2px 0 0 rgba(0, 0, 0, 0.25);
 }
 
 .btn-danger {
   background: var(--clay);
   color: #1a1112;
-  border-color: var(--clay);
+  box-shadow:
+    0 3px 0 0 #8b3b3e,
+    0 -2px 0 0 var(--clay),
+    -2px 0 0 0 var(--clay),
+    2px 0 0 0 var(--clay),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.25);
+}
+.btn-danger:not(:disabled):active {
+  box-shadow:
+    0 0 0 0 #8b3b3e,
+    0 -2px 0 0 var(--clay),
+    -2px 0 0 0 var(--clay),
+    2px 0 0 0 var(--clay),
+    inset 0 2px 0 0 rgba(0, 0, 0, 0.25);
 }
 
 /* ── Chips, badges, meters ───────────────────────────────────────────────── */
@@ -342,8 +472,13 @@ select {
   align-items: center;
   gap: 4px;
   padding: 2px 7px;
-  border-radius: 5px;
-  border: 1px solid var(--line);
+  border-radius: 0;
+  border: 0;
+  box-shadow:
+    0 -1px 0 0 var(--line),
+    0 1px 0 0 var(--line),
+    -1px 0 0 0 var(--line),
+    1px 0 0 0 var(--line);
   background: var(--surface-2);
   color: var(--text-dim);
   font-size: 11px;
@@ -357,23 +492,29 @@ select {
   align-items: center;
   gap: 4px;
   padding: 2px 7px;
-  border-radius: 5px;
+  border-radius: 0;
   font-size: 11px;
   font-weight: 600;
   line-height: 16px;
 }
 
+/* Meters read like a row of pixels: 4px cells with a 1px gap between them. */
 .meter {
-  height: 3px;
+  height: 4px;
   background: var(--well);
-  border-radius: 2px;
+  border-radius: 0;
   overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.5);
 }
 .meter > span {
   display: block;
   height: 100%;
-  border-radius: 2px;
+  border-radius: 0;
   transition: width 0.25s ease;
+  -webkit-mask-image: linear-gradient(90deg, #000 0 3px, transparent 3px 4px);
+  mask-image: linear-gradient(90deg, #000 0 3px, transparent 3px 4px);
+  -webkit-mask-size: 4px 100%;
+  mask-size: 4px 100%;
 }
 
 /* Legacy hook used by the old resource bar. */
@@ -386,7 +527,8 @@ select {
 .tabbar {
   display: flex;
   background: var(--bg-raise);
-  border-top: 1px solid var(--line);
+  border-top: 2px solid var(--line);
+  box-shadow: inset 0 2px 0 0 rgba(0, 0, 0, 0.35);
 }
 .tabbar-item {
   position: relative;
@@ -401,17 +543,20 @@ select {
   color: var(--text-faint);
   transition: color 0.12s ease;
 }
+/* the active tab sits on a lit plate, like a switched-on lamp in the room */
 .tabbar-item[data-active='true'] {
   color: var(--gold);
+  background: rgba(244, 211, 94, 0.07);
 }
 .tabbar-item[data-active='true']::before {
   content: '';
   position: absolute;
   top: 0;
-  width: 18px;
-  height: 2px;
+  width: 20px;
+  height: 3px;
   background: var(--gold);
 }
+
 .tabbar-label {
   font-size: 10px;
   font-weight: 600;

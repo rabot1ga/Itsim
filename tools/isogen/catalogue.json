@@ -1,8 +1,8 @@
 {
   "tile": {
-    "w": 32,
-    "h": 16,
-    "wallH": 72
+    "w": 64,
+    "h": 32,
+    "wallH": 144
   },
   "note": "tiles = [w, d] footprint on the floor grid; wall items give tilesW along the wall. Ids are stable: the renderer and the scene builder reference them.",
   "sprites": [

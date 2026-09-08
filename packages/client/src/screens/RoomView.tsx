@@ -4,7 +4,7 @@ import { buildRoomComposition } from '../components/room/RoomRenderer';
 import { IsoRoom } from '../components/iso/IsoRoom';
 import { IsoRoomEditor } from '../components/iso/IsoRoomEditor';
 import { entryName } from '../components/room/RoomEditor';
-import { EmptyState } from '../components/ui';
+import { EmptyState, SpriteBadge } from '../components/ui';
 import { Wardrobe } from '../components/room/Wardrobe';
 import { ShareCard } from '../components/room/ShareCard';
 import { haptic } from '../lib/telegram';
@@ -89,7 +89,7 @@ export const RoomView: React.FC = () => {
     <div className="space-y-4 animate-fade-in">
       <div className="flex items-center justify-between">
         <h2 className="flex items-center gap-2 text-base font-semibold text-white">
-          <PixelIcon name="house" size={14} className="text-gold-300" />
+          <SpriteBadge sprite="bed" size={32} />
           Дом
         </h2>
         {traits && (
@@ -188,7 +188,7 @@ export const RoomView: React.FC = () => {
               value={walletInput}
               onChange={(e) => setWalletInput(e.target.value)}
               placeholder="Base58 адрес…"
-              className="flex-1 min-w-0 bg-ink-800 border border-ink-700 rounded-xl px-3 py-2.5 text-base text-ink-200"
+              className="flex-1 min-w-0 bg-ink-800 border-2 border-ink-700 px-3 py-2.5 text-base text-ink-200"
               inputMode="text"
               autoComplete="off"
               autoCapitalize="none"
@@ -199,7 +199,7 @@ export const RoomView: React.FC = () => {
             <button
               onClick={handleBind}
               disabled={walletInput.trim().length < 32}
-              className="px-4 py-2.5 text-sm bg-sky-600 hover:bg-sky-700 active:scale-95 disabled:opacity-50 text-white rounded-xl touch-target font-medium shrink-0 transition-all"
+              className="px-4 py-2.5 text-sm bg-sky-600 hover:bg-sky-700 active:scale-95 disabled:opacity-50 text-white touch-target font-medium shrink-0 transition-all"
             >
               Привязать
             </button>
@@ -223,7 +223,7 @@ export const RoomView: React.FC = () => {
         ) : (
           <div className="space-y-1.5">
             {(inventory ?? []).map((nft: any) => (
-              <div key={nft.name} className="flex items-center justify-between bg-ink-800/60 rounded-lg px-3 py-2">
+              <div key={nft.name} className="flex items-center justify-between bg-ink-800/60 px-3 py-2">
                 <div>
                   <p className="text-xs text-ink-200">{nft.name}</p>
                   <p className="text-[10px] font-mono text-ink-500">
@@ -254,7 +254,7 @@ export const RoomView: React.FC = () => {
                       : [...(heldCollections ?? []), c.collectionId]
                   )
                 }
-                className={`w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl border text-left transition-all touch-target active:scale-[0.98] ${
+                className={`w-full flex items-center justify-between gap-2 px-3 py-2.5 border text-left transition-all touch-target active:scale-[0.98] ${
                   held ? 'border-moss-500/50 bg-moss-800/20' : 'border-ink-700 bg-ink-800/50'
                 }`}
               >

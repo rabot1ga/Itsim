@@ -1,9 +1,10 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { layout, viewport, DrawCall, SpriteMeta, PlacedItem } from './geometry';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { layout, viewport, spriteTransform, DrawCall, SpriteMeta, PlacedItem } from './geometry';
 import { buildRoomScene, ScenePlayer } from './scene';
 import { shellPolygons, pointsAttr } from './shell';
 import { characterLook, petLook } from './palette';
 import { recolourSprite, variantKey } from './recolor';
+import { useRenderMode } from './useRenderMode';
 
 /**
  * Isometric room — the player's flat, drawn from generated pixel sprites.
@@ -147,11 +148,13 @@ export const IsoRoom: React.FC<{
   }, [manifest, player, character, extras]);
 
   const variants = useSpriteVariants(view?.calls ?? [], manifest?.sprites ?? {});
+  const svgRef = useRef<SVGSVGElement>(null);
+  const rendering = useRenderMode(svgRef, view?.vp.width ?? 0);
 
   if (!view || !manifest) {
     return (
       <div
-        className={`w-full rounded-xl border border-ink-700 bg-ink-800 animate-pulse-soft ${className ?? ''}`}
+        className={`w-full border-2 border-ink-700 bg-ink-800 animate-pulse-soft ${className ?? ''}`}
         style={{ aspectRatio: '4 / 3' }}
       />
     );
@@ -161,9 +164,10 @@ export const IsoRoom: React.FC<{
 
   return (
     <svg
+      ref={svgRef}
       viewBox={`0 0 ${vp.width} ${vp.height}`}
-      className={`w-full rounded-xl border border-ink-700 bg-ink-900 ${className ?? ''}`}
-      style={{ imageRendering: 'pixelated', shapeRendering: 'crispEdges' }}
+      className={`w-full border-2 border-ink-700 bg-ink-900 ${className ?? ''}`}
+      style={{ imageRendering: rendering, shapeRendering: 'crispEdges' }}
       role="img"
       aria-label="Комната игрока"
     >
@@ -181,8 +185,8 @@ export const IsoRoom: React.FC<{
             y={c.y}
             width={c.w}
             height={c.h}
-            style={{ imageRendering: 'pixelated' }}
-            transform={c.flip ? `translate(${2 * c.x + c.w} 0) scale(-1 1)` : undefined}
+            style={{ imageRendering: rendering }}
+            transform={spriteTransform(c)}
           />
         );
       })}

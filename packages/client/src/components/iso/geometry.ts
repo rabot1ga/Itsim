@@ -2,7 +2,9 @@
  * Isometric room geometry — pure math, no DOM.
  *
  * The room is a grid of `w × d` floor tiles drawn in 2:1 dimetric projection
- * (a tile is 32×16 px at 1×). Grid axis `gx` runs down-right, `gy` runs
+ * (a tile is 64×32 px — twice the classic 32×16, so the sprites keep the detail
+ * they were drawn with; offsets in scene code are still written in 32px units
+ * and scaled by `unit()`). Grid axis `gx` runs down-right, `gy` runs
  * down-left, so the back corner of the room is (0, 0).
  *
  * Everything here is deliberately framework-free: the React canvas renderer and
@@ -16,9 +18,16 @@ export interface TileSize {
   wallH: number;
 }
 
-export const TILE: TileSize = { w: 32, h: 16, wallH: 72 };
+export const TILE: TileSize = { w: 64, h: 32, wallH: 144 };
 
-/** Pixel margin around the room box inside the canvas. */
+/**
+ * Authoring unit. Placement offsets (how far below the ceiling a poster hangs,
+ * how high a lamp sits on a desk) are written against a 32px tile, so one
+ * number keeps working if the art is ever rebuilt at a different resolution.
+ */
+export const unit = (tile: TileSize = TILE): number => tile.w / 32;
+
+/** Pixel margin around the room box inside the canvas, in 32px-tile units. */
 export const MARGIN = { x: 6, top: 10, bottom: 8 };
 
 export interface RoomSize {
@@ -42,12 +51,13 @@ export interface Viewport {
 
 /** Canvas size and origin for a room of the given tile size. */
 export function viewport(size: RoomSize, tile: TileSize = TILE): Viewport {
-  const width = (size.w + size.d) * (tile.w / 2) + MARGIN.x * 2;
-  const height = (size.w + size.d) * (tile.h / 2) + tile.wallH + MARGIN.top + MARGIN.bottom;
+  const k = unit(tile);
+  const width = (size.w + size.d) * (tile.w / 2) + MARGIN.x * k * 2;
+  const height = (size.w + size.d) * (tile.h / 2) + tile.wallH + (MARGIN.top + MARGIN.bottom) * k;
   return {
     width,
     height,
-    origin: { x: MARGIN.x + size.d * (tile.w / 2), y: MARGIN.top + tile.wallH },
+    origin: { x: MARGIN.x * k + size.d * (tile.w / 2), y: MARGIN.top * k + tile.wallH },
   };
 }
 
@@ -110,6 +120,12 @@ export interface SpriteMeta {
   kind: 'floor' | 'wall' | 'char' | 'flat';
   tiles?: [number, number];
   tilesW?: number;
+  /**
+   * Which wall the art was drawn for (measured at build time from the slope of
+   * its top edge). `flat` art was drawn head-on and gets sheared into the wall
+   * plane instead of mirrored.
+   */
+  face?: 'left' | 'right' | 'flat';
   /** shading ramps that may be recoloured, by role (see recolor.ts) */
   roles?: Record<string, string[]>;
 }
@@ -149,6 +165,12 @@ export interface DrawCall {
   w: number;
   h: number;
   flip: boolean;
+  /**
+   * Shear the sprite into a wall plane: +1 tilts it down to the right (right
+   * wall), −1 down to the left (left wall), 0 leaves it alone. The slope is
+   * always tile.h / tile.w = 1/2.
+   */
+  shear?: -1 | 0 | 1;
   /** painter's order: bigger is drawn later */
   depth: number;
   /** role → colour overrides, applied by the renderer */
@@ -177,13 +199,17 @@ export function layout(
     if (item.kind === 'wall') {
       const tilesW = meta.tilesW ?? 1;
       const centre = wallPoint(vp, item.side, item.along + tilesW / 2, tile.wallH, tile);
+      // Mirror the art only when it faces the other wall; head-on art is
+      // sheared into place instead.
+      const face = meta.face ?? 'right';
       calls.push({
         sprite: item.sprite,
         x: Math.round(centre.x - meta.w / 2),
-        y: Math.round(centre.y + item.top),
+        y: Math.round(centre.y + item.top * unit(tile)),
         w: meta.w,
         h: meta.h,
-        flip: item.flip ?? item.side === 'left',
+        flip: item.flip ?? (face !== 'flat' && face !== item.side),
+        shear: face === 'flat' ? (item.side === 'right' ? 1 : -1) : 0,
         // walls are always behind everything standing on the floor
         depth: -1000 + item.along,
         colours: item.colours,
@@ -197,7 +223,7 @@ export function layout(
     calls.push({
       sprite: item.sprite,
       x: Math.round(centreX - meta.w / 2),
-      y: Math.round(front - meta.h - (item.lift ?? 0)),
+      y: Math.round(front - meta.h - (item.lift ?? 0) * unit(tile)),
       w: meta.w,
       h: meta.h,
       flip: item.flip ?? false,
@@ -207,4 +233,21 @@ export function layout(
   }
 
   return calls.sort((a, b) => a.depth - b.depth);
+}
+
+/**
+ * How a draw call is oriented on screen, as an SVG transform.
+ *
+ * Mirroring hangs art on the opposite wall; shearing tilts head-on art (a
+ * poster drawn flat) into the wall plane, at the projection's own 1:2 slope.
+ */
+export function spriteTransform(c: DrawCall): string | undefined {
+  if (c.flip) return `translate(${2 * c.x + c.w} 0) scale(-1 1)`;
+  if (c.shear) {
+    const cx = c.x + c.w / 2;
+    const cy = c.y + c.h / 2;
+    // atan(1/2) — the slope of every horizontal line in this projection
+    return `translate(${cx} ${cy}) skewY(${c.shear * 26.565}) translate(${-cx} ${-cy})`;
+  }
+  return undefined;
 }

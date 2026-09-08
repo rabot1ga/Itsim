@@ -109,7 +109,7 @@ export const OfficeRenderer: React.FC<{
   const layers = buildLayerStack(officeManifest, composition, null, null);
 
   return (
-    <div className="relative w-full aspect-square overflow-hidden rounded-2xl border border-ink-700 bg-ink-800">
+    <div className="relative w-full aspect-square overflow-hidden border-2 border-ink-700 bg-ink-800">
       {layers.map((layer) => (
         <img
           key={layer.slotId}
@@ -143,7 +143,7 @@ export const OfficeRenderer: React.FC<{
       )}
 
       {/* Mood badge */}
-      <div className="absolute top-2 left-2 px-2 py-1 rounded-lg bg-black/50 text-[10px] text-ink-200 font-medium">
+      <div className="absolute top-2 left-2 px-2 py-1 bg-black/50 text-[10px] text-ink-200 font-medium">
         {OFFICE_MOOD_META[mood].label}
       </div>
     </div>

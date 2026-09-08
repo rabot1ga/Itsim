@@ -1,14 +1,14 @@
 {
   "tile": {
-    "w": 32,
-    "h": 16,
-    "wallH": 72
+    "w": 64,
+    "h": 32,
+    "wallH": 144
   },
   "sprites": {
     "bed": {
       "file": "/iso/bed.png",
-      "w": 66,
-      "h": 57,
+      "w": 131,
+      "h": 113,
       "kind": "floor",
       "tiles": [
         2,
@@ -17,8 +17,8 @@
     },
     "desk_wood": {
       "file": "/iso/desk_wood.png",
-      "w": 43,
-      "h": 47,
+      "w": 86,
+      "h": 93,
       "kind": "floor",
       "tiles": [
         2,
@@ -27,8 +27,8 @@
     },
     "chair_office": {
       "file": "/iso/chair_office.png",
-      "w": 23,
-      "h": 36,
+      "w": 46,
+      "h": 72,
       "kind": "floor",
       "tiles": [
         1,
@@ -37,8 +37,8 @@
     },
     "bookshelf": {
       "file": "/iso/bookshelf.png",
-      "w": 25,
-      "h": 41,
+      "w": 50,
+      "h": 81,
       "kind": "floor",
       "tiles": [
         1,
@@ -47,8 +47,8 @@
     },
     "plant_monstera": {
       "file": "/iso/plant_monstera.png",
-      "w": 25,
-      "h": 34,
+      "w": 50,
+      "h": 67,
       "kind": "floor",
       "tiles": [
         1,
@@ -57,8 +57,8 @@
     },
     "nightstand": {
       "file": "/iso/nightstand.png",
-      "w": 22,
-      "h": 35,
+      "w": 45,
+      "h": 72,
       "kind": "floor",
       "tiles": [
         1,
@@ -67,8 +67,8 @@
     },
     "rug_rolled": {
       "file": "/iso/rug_rolled.png",
-      "w": 43,
-      "h": 29,
+      "w": 86,
+      "h": 59,
       "kind": "floor",
       "tiles": [
         2,
@@ -77,15 +77,16 @@
     },
     "corkboard": {
       "file": "/iso/corkboard.png",
-      "w": 48,
-      "h": 62,
+      "w": 102,
+      "h": 132,
       "kind": "wall",
-      "tilesW": 2
+      "tilesW": 2,
+      "face": "left"
     },
     "box": {
       "file": "/iso/box.png",
-      "w": 20,
-      "h": 20,
+      "w": 40,
+      "h": 40,
       "kind": "floor",
       "tiles": [
         1,
@@ -94,8 +95,8 @@
     },
     "pc_tower": {
       "file": "/iso/pc_tower.png",
-      "w": 22,
-      "h": 30,
+      "w": 44,
+      "h": 60,
       "kind": "floor",
       "tiles": [
         1,
@@ -104,8 +105,8 @@
     },
     "desk_dual": {
       "file": "/iso/desk_dual.png",
-      "w": 68,
-      "h": 62,
+      "w": 136,
+      "h": 124,
       "kind": "floor",
       "tiles": [
         3,
@@ -114,8 +115,8 @@
     },
     "tv_stand": {
       "file": "/iso/tv_stand.png",
-      "w": 41,
-      "h": 49,
+      "w": 82,
+      "h": 97,
       "kind": "floor",
       "tiles": [
         2,
@@ -124,8 +125,8 @@
     },
     "arcade": {
       "file": "/iso/arcade.png",
-      "w": 23,
-      "h": 36,
+      "w": 46,
+      "h": 71,
       "kind": "floor",
       "tiles": [
         1,
@@ -134,8 +135,8 @@
     },
     "server_rack": {
       "file": "/iso/server_rack.png",
-      "w": 23,
-      "h": 33,
+      "w": 46,
+      "h": 67,
       "kind": "floor",
       "tiles": [
         1,
@@ -144,8 +145,8 @@
     },
     "fridge": {
       "file": "/iso/fridge.png",
-      "w": 24,
-      "h": 34,
+      "w": 47,
+      "h": 67,
       "kind": "floor",
       "tiles": [
         1,
@@ -154,8 +155,8 @@
     },
     "beanbag": {
       "file": "/iso/beanbag.png",
-      "w": 27,
-      "h": 26,
+      "w": 54,
+      "h": 52,
       "kind": "floor",
       "tiles": [
         1,
@@ -164,8 +165,8 @@
     },
     "box_open": {
       "file": "/iso/box_open.png",
-      "w": 21,
-      "h": 23,
+      "w": 42,
+      "h": 45,
       "kind": "floor",
       "tiles": [
         1,
@@ -174,8 +175,8 @@
     },
     "chair_gaming": {
       "file": "/iso/chair_gaming.png",
-      "w": 24,
-      "h": 42,
+      "w": 47,
+      "h": 83,
       "kind": "floor",
       "tiles": [
         1,
@@ -184,8 +185,8 @@
     },
     "laptop_table": {
       "file": "/iso/laptop_table.png",
-      "w": 25,
-      "h": 32,
+      "w": 50,
+      "h": 64,
       "kind": "floor",
       "tiles": [
         1,
@@ -194,8 +195,8 @@
     },
     "boxes": {
       "file": "/iso/boxes.png",
-      "w": 22,
-      "h": 22,
+      "w": 44,
+      "h": 45,
       "kind": "floor",
       "tiles": [
         1,
@@ -204,36 +205,40 @@
     },
     "window": {
       "file": "/iso/window.png",
-      "w": 45,
-      "h": 62,
+      "w": 98,
+      "h": 134,
       "kind": "wall",
-      "tilesW": 3
+      "tilesW": 3,
+      "face": "left"
     },
     "poster": {
       "file": "/iso/poster.png",
-      "w": 26,
-      "h": 47,
+      "w": 51,
+      "h": 92,
       "kind": "wall",
-      "tilesW": 1
+      "tilesW": 1,
+      "face": "left"
     },
     "shelf_plants": {
       "file": "/iso/shelf_plants.png",
-      "w": 51,
-      "h": 38,
+      "w": 102,
+      "h": 77,
       "kind": "wall",
-      "tilesW": 2
+      "tilesW": 2,
+      "face": "left"
     },
     "shelf_books": {
       "file": "/iso/shelf_books.png",
-      "w": 51,
-      "h": 44,
+      "w": 102,
+      "h": 89,
       "kind": "wall",
-      "tilesW": 2
+      "tilesW": 2,
+      "face": "right"
     },
     "sofa": {
       "file": "/iso/sofa.png",
-      "w": 48,
-      "h": 40,
+      "w": 96,
+      "h": 79,
       "kind": "floor",
       "tiles": [
         2,
@@ -242,8 +247,8 @@
     },
     "floor_lamp": {
       "file": "/iso/floor_lamp.png",
-      "w": 19,
-      "h": 47,
+      "w": 38,
+      "h": 94,
       "kind": "floor",
       "tiles": [
         1,
@@ -252,8 +257,8 @@
     },
     "coffee_table": {
       "file": "/iso/coffee_table.png",
-      "w": 26,
-      "h": 23,
+      "w": 51,
+      "h": 45,
       "kind": "floor",
       "tiles": [
         1,
@@ -262,8 +267,8 @@
     },
     "palm": {
       "file": "/iso/palm.png",
-      "w": 26,
-      "h": 41,
+      "w": 52,
+      "h": 83,
       "kind": "floor",
       "tiles": [
         1,
@@ -272,8 +277,8 @@
     },
     "pet_bed": {
       "file": "/iso/pet_bed.png",
-      "w": 27,
-      "h": 20,
+      "w": 54,
+      "h": 40,
       "kind": "floor",
       "tiles": [
         1,
@@ -282,8 +287,8 @@
     },
     "armchair": {
       "file": "/iso/armchair.png",
-      "w": 28,
-      "h": 27,
+      "w": 56,
+      "h": 54,
       "kind": "floor",
       "tiles": [
         1,
@@ -292,8 +297,8 @@
     },
     "whiteboard": {
       "file": "/iso/whiteboard.png",
-      "w": 37,
-      "h": 47,
+      "w": 75,
+      "h": 95,
       "kind": "floor",
       "tiles": [
         2,
@@ -302,531 +307,481 @@
     },
     "neon_bolt": {
       "file": "/iso/neon_bolt.png",
-      "w": 22,
-      "h": 44,
+      "w": 45,
+      "h": 90,
       "kind": "wall",
-      "tilesW": 1
+      "tilesW": 1,
+      "face": "right"
     },
     "char_base": {
       "file": "/iso/char_base.png",
-      "w": 16,
-      "h": 46,
+      "w": 32,
+      "h": 92,
       "kind": "char"
     },
     "char_tshirt": {
       "file": "/iso/char_tshirt.png",
-      "w": 16,
-      "h": 46,
+      "w": 32,
+      "h": 92,
       "kind": "char"
     },
     "char_shirt": {
       "file": "/iso/char_shirt.png",
-      "w": 16,
-      "h": 46,
+      "w": 32,
+      "h": 92,
       "kind": "char"
     },
     "char_long": {
       "file": "/iso/char_long.png",
-      "w": 18,
-      "h": 46,
+      "w": 36,
+      "h": 92,
       "kind": "char"
     },
     "char_a00": {
       "file": "/iso/char_a00.png",
-      "w": 25,
-      "h": 46,
+      "w": 50,
+      "h": 92,
       "kind": "char",
       "roles": {
         "hair": [
-          "#251f30",
-          "#373342"
+          "#1b1522",
+          "#2d2936",
+          "#393949"
         ],
         "skin": [
-          "#a37460",
-          "#c37f65",
-          "#dfa081",
-          "#f6bf96"
+          "#754c3f",
+          "#cc8d70",
+          "#fac498"
         ],
         "top": [
-          "#8f8f93",
-          "#9b9a9d",
-          "#f5b688"
+          "#99999c",
+          "#f2b387"
         ]
       }
     },
     "char_a01": {
       "file": "/iso/char_a01.png",
-      "w": 22,
-      "h": 45,
+      "w": 45,
+      "h": 92,
       "kind": "char",
       "roles": {
         "hair": [
-          "#685855",
-          "#716564"
+          "#695956"
         ],
         "skin": [
-          "#a5553d",
-          "#b07966",
-          "#dd997a",
-          "#f4b888",
-          "#f3c8a4"
+          "#9f6852",
+          "#ac917b",
+          "#d79371",
+          "#f4b989"
         ],
         "top": [
-          "#6e8d52"
+          "#6d8b51"
         ],
         "bottom": [
-          "#3b4458"
+          "#394358"
         ]
       }
     },
     "char_a02": {
       "file": "/iso/char_a02.png",
-      "w": 23,
-      "h": 46,
+      "w": 46,
+      "h": 92,
       "kind": "char",
       "roles": {
-        "hair": [
-          "#966548"
-        ],
         "skin": [
-          "#6f4c42",
-          "#bf7a5c",
-          "#dd936f",
-          "#f3b687",
-          "#e9c6ac"
+          "#5c4032",
+          "#ad7c66",
+          "#d28f6c",
+          "#f1b484",
+          "#f9c297"
         ],
-        "shoes": [
-          "#8f9098",
-          "#fdfcfd"
-        ],
-        "top": [
-          "#216c3a",
-          "#3a964a"
+        "hair": [
+          "#956245"
         ],
         "bottom": [
-          "#3c4667"
+          "#3d4765"
+        ],
+        "top": [
+          "#236c3a",
+          "#399749"
         ]
       }
     },
     "char_a03": {
       "file": "/iso/char_a03.png",
-      "w": 26,
-      "h": 46,
+      "w": 52,
+      "h": 92,
       "kind": "char",
       "roles": {
         "hair": [
-          "#472318",
-          "#623522"
+          "#351814",
+          "#542c1d"
         ],
         "skin": [
-          "#7c462c",
-          "#ccb7b3"
+          "#72412b",
+          "#aa6f5a"
         ],
         "top": [
-          "#243a6f",
-          "#4061a7",
-          "#d08a70",
-          "#f4b68d"
-        ],
-        "bottom": [
-          "#3d3c5d"
+          "#4062a8",
+          "#d59072",
+          "#f5b88e",
+          "#f5ede7"
         ]
       }
     },
     "char_a04": {
       "file": "/iso/char_a04.png",
-      "w": 21,
-      "h": 46,
+      "w": 42,
+      "h": 91,
       "kind": "char",
       "roles": {
-        "skin": [
-          "#5e3429",
-          "#7a4e33",
-          "#936f52",
-          "#af7f67",
-          "#d99270",
-          "#f3b488",
-          "#f6bf9a"
-        ],
         "hair": [
-          "#482619",
-          "#f8f3f4"
+          "#46281d",
+          "#f9f8f6"
+        ],
+        "skin": [
+          "#633d28",
+          "#7f5238",
+          "#9d7556",
+          "#d79070",
+          "#f4b78b"
         ],
         "top": [
-          "#182e50",
-          "#5889c0"
+          "#40689b",
+          "#5788bf"
         ]
       }
     },
     "char_a05": {
       "file": "/iso/char_a05.png",
-      "w": 26,
-      "h": 46,
+      "w": 52,
+      "h": 92,
       "kind": "char",
       "roles": {
         "hair": [
-          "#212020"
+          "#1c1717",
+          "#b1a9a2"
         ],
         "skin": [
-          "#6c3f30",
-          "#8b5035",
-          "#8c786f",
-          "#fce2cb",
-          "#fcf6e7"
+          "#653a2d",
+          "#8a4f35",
+          "#9c644b",
+          "#eecfc0",
+          "#fef6e7"
         ],
         "top": [
-          "#8b1822",
-          "#9e191f"
+          "#9b1920"
         ]
       }
     },
     "char_a06": {
       "file": "/iso/char_a06.png",
-      "w": 25,
-      "h": 47,
+      "w": 49,
+      "h": 91,
       "kind": "char",
       "roles": {
         "hair": [
-          "#421e16",
-          "#6a3b23"
+          "#462119",
+          "#6d3b22"
         ],
         "skin": [
-          "#9b5443",
-          "#bd7a5e",
-          "#df9d7c"
+          "#7b5e54",
+          "#b6765c",
+          "#de9c7b"
         ],
         "top": [
-          "#7a7f83",
-          "#a5aeb5",
-          "#f8b890",
-          "#c8d1d6",
-          "#f8fbfc"
+          "#93989d",
+          "#bec4c9",
+          "#f9b991"
         ],
         "bottom": [
-          "#393e4c"
+          "#373b4a"
         ]
       }
     },
     "char_a07": {
       "file": "/iso/char_a07.png",
-      "w": 26,
-      "h": 45,
+      "w": 53,
+      "h": 92,
       "kind": "char",
       "roles": {
-        "top": [
-          "#9e7b5b",
-          "#d4b690",
-          "#f4b58d"
-        ],
-        "hair": [
-          "#ba802e",
-          "#fada60"
+        "bottom": [
+          "#2a283f"
         ],
         "skin": [
-          "#764827",
-          "#b59270",
-          "#d78b69",
-          "#fcf0e8"
+          "#5f412a",
+          "#f6b68c"
         ],
-        "bottom": [
-          "#273143"
+        "top": [
+          "#896340",
+          "#a27f5d",
+          "#c3916f",
+          "#d4b58d"
+        ],
+        "hair": [
+          "#ba7b34",
+          "#e4ba51",
+          "#fada5e",
+          "#fcf5ee"
         ]
       }
     },
     "char_a08": {
       "file": "/iso/char_a08.png",
-      "w": 27,
-      "h": 46,
+      "w": 54,
+      "h": 91,
       "kind": "char",
       "roles": {
-        "top": [
-          "#880d16",
-          "#ad1019",
-          "#96573b"
-        ],
-        "skin": [
-          "#764536"
-        ],
         "bottom": [
-          "#374353"
+          "#364150"
+        ],
+        "top": [
+          "#4d1715",
+          "#7a0712",
+          "#ab1019",
+          "#743e2d",
+          "#975639"
         ],
         "shoes": [
-          "#929c9c",
-          "#dbdedf"
+          "#7c797a"
         ]
       }
     },
     "char_a09": {
       "file": "/iso/char_a09.png",
-      "w": 30,
-      "h": 46,
+      "w": 60,
+      "h": 92,
       "kind": "char",
       "roles": {
         "hair": [
-          "#3b0531",
-          "#580052",
-          "#452214",
-          "#65361c"
-        ],
-        "skin": [
-          "#915435",
-          "#cc8555"
-        ],
-        "top": [
-          "#abb7bf",
-          "#f4b184",
-          "#dcdfe0",
-          "#fdfefd"
+          "#452215",
+          "#5a2f1a",
+          "#6c3a1c"
         ],
         "bottom": [
-          "#202836",
-          "#334151"
+          "#2f3847"
+        ],
+        "skin": [
+          "#6f5b55",
+          "#985c35",
+          "#cd8a59"
+        ],
+        "top": [
+          "#8b8f93",
+          "#b7c0c5",
+          "#f3b384",
+          "#f6f7f8"
         ]
       }
     },
     "char_a10": {
       "file": "/iso/char_a10.png",
-      "w": 24,
-      "h": 47,
+      "w": 47,
+      "h": 92,
       "kind": "char",
       "roles": {
         "hair": [
-          "#2b0d27",
-          "#321d32",
-          "#402d3b",
-          "#523d4a"
-        ],
-        "top": [
-          "#a3a2ae",
-          "#f5b388",
-          "#f7bf9a",
-          "#cdcbd1",
-          "#f5f4f6"
+          "#321b32",
+          "#463240",
+          "#5c454b"
         ],
         "skin": [
-          "#9e685a",
-          "#c88162",
-          "#dea88c"
+          "#8f6c63",
+          "#bf7f65",
+          "#e19e7a",
+          "#fcc298"
+        ],
+        "top": [
+          "#b4b3c1",
+          "#f5b488",
+          "#efeff1"
         ]
       }
     },
     "char_a11": {
       "file": "/iso/char_a11.png",
-      "w": 27,
-      "h": 46,
+      "w": 54,
+      "h": 92,
       "kind": "char",
       "roles": {
         "hair": [
-          "#60112c",
-          "#851826",
-          "#aa2320",
-          "#c4382e",
-          "#ffffff"
-        ],
-        "skin": [
-          "#bb6b5a",
-          "#d98d6e",
-          "#f4b488"
+          "#861725",
+          "#a92322",
+          "#c23e37"
         ],
         "top": [
-          "#3f647c"
+          "#426881",
+          "#cd866b",
+          "#f3b489"
         ],
         "bottom": [
-          "#e55e76"
+          "#e55f76"
         ]
       }
     },
     "char_a12": {
       "file": "/iso/char_a12.png",
-      "w": 20,
-      "h": 45,
+      "w": 41,
+      "h": 92,
       "kind": "char",
       "roles": {
-        "hair": [
-          "#530150",
-          "#282726",
-          "#fcf4ee"
-        ],
         "skin": [
-          "#6b4533",
-          "#945538",
-          "#9d6046",
-          "#cf8264"
-        ],
-        "bottom": [
-          "#494838",
-          "#676550"
+          "#665c48",
+          "#985539",
+          "#c28371"
         ],
         "top": [
-          "#700813",
-          "#9d1722",
-          "#b6121a"
+          "#680711",
+          "#940d18",
+          "#b5111a"
         ]
       }
     },
     "char_a13": {
       "file": "/iso/char_a13.png",
-      "w": 22,
-      "h": 45,
+      "w": 45,
+      "h": 93,
       "kind": "char",
       "roles": {
         "skin": [
-          "#864b3a",
-          "#be745b",
-          "#d78d71",
-          "#daaf91",
-          "#f1b185",
-          "#f3b891",
-          "#f7ccae"
-        ],
-        "hair": [
-          "#fffbfb"
+          "#7f4d40",
+          "#9f6e5a",
+          "#c57c62",
+          "#da9172",
+          "#f0b186",
+          "#f9c098"
         ],
         "top": [
-          "#383a49"
+          "#383b48"
+        ],
+        "hair": [
+          "#f9f2ed"
         ]
       }
     },
     "char_a14": {
       "file": "/iso/char_a14.png",
-      "w": 25,
-      "h": 46,
+      "w": 50,
+      "h": 91,
       "kind": "char",
       "roles": {
+        "bottom": [
+          "#332f42"
+        ],
         "hair": [
-          "#54291d",
-          "#7a432b"
+          "#4f261b",
+          "#6a3825"
         ],
         "skin": [
-          "#a3614b",
-          "#d48f6f",
-          "#f3b38a",
-          "#eee3db"
+          "#905439",
+          "#c48668",
+          "#f2b188"
         ],
         "top": [
-          "#9c9c9f",
-          "#bcc0c6",
-          "#f8c936",
-          "#fdfdfd"
-        ],
-        "bottom": [
-          "#33324a"
+          "#726c6d",
+          "#9fa0a3",
+          "#f2c73a",
+          "#ced1d3",
+          "#fafafa"
         ]
       }
     },
     "char_a15": {
       "file": "/iso/char_a15.png",
-      "w": 22,
-      "h": 45,
+      "w": 45,
+      "h": 92,
       "kind": "char",
       "roles": {
         "hair": [
-          "#401f18",
-          "#6e3d2a"
-        ],
-        "bottom": [
-          "#302147",
-          "#3d4d6f",
-          "#8eaecc"
+          "#4a271d"
         ],
         "skin": [
-          "#976452",
-          "#c67d62",
-          "#da9c7e",
-          "#efbb9b"
+          "#774736",
+          "#9f7263",
+          "#d58e6f",
+          "#f2b388"
+        ],
+        "bottom": [
+          "#3f4e6e"
         ],
         "top": [
-          "#407ebe",
-          "#f3b287",
-          "#ccd4dc",
-          "#f6fdfe"
+          "#3e7dbe",
+          "#94adc5",
+          "#f4f7fa"
         ]
       }
     },
     "char_a16": {
       "file": "/iso/char_a16.png",
-      "w": 21,
-      "h": 47,
+      "w": 41,
+      "h": 91,
       "kind": "char",
       "roles": {
         "hair": [
-          "#342420",
-          "#fbf5f1"
+          "#3c251e"
         ],
         "skin": [
-          "#c3836b",
-          "#eaa67e",
-          "#f1b287",
-          "#f3c3a2"
+          "#694639",
+          "#b5755d",
+          "#d99574",
+          "#f1b387",
+          "#f8ede5"
         ],
         "top": [
-          "#3c4157",
-          "#a6583d"
+          "#3b4256",
+          "#a1573c"
         ],
         "bottom": [
-          "#4c6168"
+          "#4f6168"
         ]
       }
     },
     "char_a17": {
       "file": "/iso/char_a17.png",
-      "w": 21,
-      "h": 46,
+      "w": 42,
+      "h": 92,
       "kind": "char",
       "roles": {
         "hair": [
-          "#401528",
-          "#653b28",
-          "#fffaf4"
-        ],
-        "skin": [
-          "#865236",
-          "#cb8765",
-          "#eca97e",
-          "#f1b287",
-          "#f3c0a2"
+          "#4d2c21",
+          "#6d412c",
+          "#f4ede7"
         ],
         "top": [
-          "#212a3b",
-          "#a6684b"
+          "#945f45"
+        ],
+        "skin": [
+          "#b37557",
+          "#d29674",
+          "#f1b286"
         ],
         "bottom": [
-          "#333f4b",
-          "#4a606f"
+          "#4a5f6e"
         ]
       }
     },
     "char_a18": {
       "file": "/iso/char_a18.png",
-      "w": 21,
-      "h": 46,
+      "w": 42,
+      "h": 92,
       "kind": "char",
       "roles": {
-        "hair": [
-          "#3b0038",
-          "#403c3b"
-        ],
-        "top": [
-          "#1f1f1f"
-        ],
         "skin": [
-          "#9a6854",
-          "#b37f68",
-          "#dc9473",
-          "#cba08e",
-          "#f1b186",
-          "#f2bb95",
-          "#f8d0b0"
+          "#7a5246",
+          "#a26d58",
+          "#bd896e",
+          "#edaf85",
+          "#fbc297"
         ],
-        "bottom": [
-          "#4e4d4c"
+        "hair": [
+          "#f4f2ef"
         ]
       }
     },
     "pet_cat": {
       "file": "/iso/pet_cat.png",
-      "w": 20,
-      "h": 24,
+      "w": 40,
+      "h": 48,
       "kind": "floor",
       "tiles": [
         1,
@@ -834,25 +789,23 @@
       ],
       "roles": {
         "coat": [
-          "#241410",
-          "#42221c",
-          "#5e1365",
-          "#5a311a",
-          "#63381b",
-          "#6e4324",
-          "#794c2c",
-          "#8f6035",
-          "#936436",
-          "#996839",
-          "#c89361",
-          "#ce9b6c"
+          "#3a231f",
+          "#573422",
+          "#663e24",
+          "#754a29",
+          "#835630",
+          "#926336",
+          "#9b6a3a",
+          "#a7774f",
+          "#be8b5a",
+          "#cf9a67"
         ]
       }
     },
     "pet_dog": {
       "file": "/iso/pet_dog.png",
-      "w": 20,
-      "h": 26,
+      "w": 40,
+      "h": 52,
       "kind": "floor",
       "tiles": [
         1,
@@ -860,26 +813,24 @@
       ],
       "roles": {
         "coat": [
-          "#30142a",
-          "#470250",
-          "#512d1a",
-          "#643e2f",
-          "#834d26",
-          "#895f32",
-          "#a5754b",
-          "#ca893a",
-          "#d59644",
-          "#cd9d60",
-          "#e2b254",
-          "#ebbb4d",
-          "#eac46f"
+          "#322324",
+          "#563828",
+          "#704b2d",
+          "#926735",
+          "#ad783b",
+          "#bd8b41",
+          "#d19643",
+          "#dda849",
+          "#e8b64b",
+          "#ecbc4d",
+          "#f7c652"
         ]
       }
     },
     "pet_bulldog": {
       "file": "/iso/pet_bulldog.png",
-      "w": 20,
-      "h": 22,
+      "w": 40,
+      "h": 45,
       "kind": "floor",
       "tiles": [
         1,
@@ -887,25 +838,23 @@
       ],
       "roles": {
         "coat": [
-          "#3b0543",
-          "#402018",
-          "#56311e",
-          "#683c21",
-          "#784c2b",
-          "#8c5c31",
-          "#83614a",
-          "#946436",
-          "#966b45",
-          "#af7c4c",
-          "#c68f5c",
-          "#ca9562"
+          "#1d1421",
+          "#382220",
+          "#4b2f25",
+          "#5f3822",
+          "#6f4426",
+          "#7a5132",
+          "#8a5c34",
+          "#956538",
+          "#b17d4d",
+          "#c89360"
         ]
       }
     },
     "pet_cactus": {
       "file": "/iso/pet_cactus.png",
-      "w": 20,
-      "h": 31,
+      "w": 40,
+      "h": 62,
       "kind": "floor",
       "tiles": [
         1,
@@ -913,26 +862,22 @@
       ],
       "roles": {
         "coat": [
-          "#331a1a",
-          "#560b5d",
-          "#42261f",
-          "#5d3b2e",
-          "#693b1e",
-          "#77462b",
-          "#844c29",
-          "#476c49",
-          "#5d8157",
-          "#6f955f",
-          "#b97546",
-          "#739b5e",
-          "#93b361"
+          "#3b2420",
+          "#663a21",
+          "#406447",
+          "#834c29",
+          "#557b51",
+          "#a5653a",
+          "#70975e",
+          "#c27b49",
+          "#86a962"
         ]
       }
     },
     "pet_robo": {
       "file": "/iso/pet_robo.png",
-      "w": 20,
-      "h": 28,
+      "w": 40,
+      "h": 55,
       "kind": "floor",
       "tiles": [
         1,
@@ -940,25 +885,23 @@
       ],
       "roles": {
         "coat": [
-          "#1c1833",
-          "#232b3b",
-          "#283443",
-          "#373f47",
-          "#425162",
-          "#4a5f72",
-          "#4e6378",
-          "#54697e",
-          "#6a829a",
-          "#b97b44",
-          "#d89b3d",
-          "#f2c954"
+          "#141a2e",
+          "#212b3b",
+          "#293544",
+          "#353f4d",
+          "#414d5c",
+          "#4d6176",
+          "#566c82",
+          "#69839b",
+          "#a88249",
+          "#e6b54c"
         ]
       }
     },
     "pet_spider": {
       "file": "/iso/pet_spider.png",
-      "w": 20,
-      "h": 17,
+      "w": 40,
+      "h": 33,
       "kind": "floor",
       "tiles": [
         1,
@@ -966,25 +909,20 @@
       ],
       "roles": {
         "coat": [
-          "#320441",
-          "#1b1a22",
-          "#202433",
-          "#4f0b58",
-          "#292d36",
-          "#343439",
-          "#3c3b38",
-          "#43403b",
-          "#664c38",
-          "#7b5332",
-          "#845a37",
-          "#7a5d48"
+          "#221f28",
+          "#272a34",
+          "#3d2d29",
+          "#393837",
+          "#4d4035",
+          "#634833",
+          "#7c5636"
         ]
       }
     },
     "pet_parrot": {
       "file": "/iso/pet_parrot.png",
-      "w": 20,
-      "h": 41,
+      "w": 40,
+      "h": 82,
       "kind": "floor",
       "tiles": [
         1,
@@ -992,27 +930,24 @@
       ],
       "roles": {
         "coat": [
-          "#530d5c",
-          "#2d3e56",
-          "#663c22",
-          "#7d5435",
-          "#556e59",
-          "#5d7686",
-          "#a56a3a",
-          "#6986a2",
-          "#749964",
-          "#7c96b2",
-          "#97a47a",
-          "#9cb6cd",
-          "#dcb956",
-          "#c1c2aa"
+          "#22212e",
+          "#3c4b56",
+          "#684026",
+          "#935d33",
+          "#577269",
+          "#6a87a1",
+          "#ad7940",
+          "#769966",
+          "#99b4cc",
+          "#cdbd7b",
+          "#eac04d"
         ]
       }
     },
     "pet_fish": {
       "file": "/iso/pet_fish.png",
-      "w": 20,
-      "h": 24,
+      "w": 40,
+      "h": 47,
       "kind": "floor",
       "tiles": [
         1,
@@ -1020,26 +955,24 @@
       ],
       "roles": {
         "coat": [
-          "#45064d",
-          "#1e2231",
-          "#293647",
-          "#633a20",
-          "#355454",
-          "#97673b",
-          "#687786",
-          "#6387a2",
-          "#729b67",
-          "#6f93b1",
-          "#81a6c2",
-          "#99bed5",
-          "#e3bb62"
+          "#1e2234",
+          "#31414b",
+          "#694228",
+          "#4f6557",
+          "#536d82",
+          "#95653a",
+          "#789765",
+          "#6e90ab",
+          "#84a9c1",
+          "#dfb555",
+          "#9dc3da"
         ]
       }
     },
     "pet_hamster": {
       "file": "/iso/pet_hamster.png",
-      "w": 20,
-      "h": 21,
+      "w": 40,
+      "h": 42,
       "kind": "floor",
       "tiles": [
         1,
@@ -1047,27 +980,25 @@
       ],
       "roles": {
         "coat": [
-          "#2e1433",
-          "#4c4e6b",
-          "#915f39",
-          "#6c8fae",
-          "#ba804d",
-          "#7498b7",
-          "#8c9caa",
-          "#cf8f6b",
-          "#84a7c4",
-          "#92b3cf",
-          "#9ebed7",
-          "#e5ba8a",
-          "#aecde2",
-          "#c7e2f3"
+          "#3c445a",
+          "#6a442e",
+          "#986842",
+          "#64758a",
+          "#7090ac",
+          "#be8350",
+          "#80a1bd",
+          "#91b1cb",
+          "#9ebed6",
+          "#e1b086",
+          "#accce2",
+          "#c3e0f2"
         ]
       }
     },
     "wardrobe": {
       "file": "/iso/wardrobe.png",
-      "w": 35,
-      "h": 62,
+      "w": 69,
+      "h": 122,
       "kind": "floor",
       "tiles": [
         2,
@@ -1076,8 +1007,8 @@
     },
     "dresser": {
       "file": "/iso/dresser.png",
-      "w": 35,
-      "h": 40,
+      "w": 69,
+      "h": 78,
       "kind": "floor",
       "tiles": [
         2,
@@ -1086,8 +1017,8 @@
     },
     "kitchen_counter": {
       "file": "/iso/kitchen_counter.png",
-      "w": 37,
-      "h": 33,
+      "w": 75,
+      "h": 66,
       "kind": "floor",
       "tiles": [
         2,
@@ -1096,8 +1027,8 @@
     },
     "kitchen_sink": {
       "file": "/iso/kitchen_sink.png",
-      "w": 37,
-      "h": 33,
+      "w": 75,
+      "h": 67,
       "kind": "floor",
       "tiles": [
         2,
@@ -1106,8 +1037,8 @@
     },
     "dishwasher": {
       "file": "/iso/dishwasher.png",
-      "w": 22,
-      "h": 24,
+      "w": 44,
+      "h": 48,
       "kind": "floor",
       "tiles": [
         1,
@@ -1116,8 +1047,8 @@
     },
     "stove": {
       "file": "/iso/stove.png",
-      "w": 22,
-      "h": 28,
+      "w": 44,
+      "h": 55,
       "kind": "floor",
       "tiles": [
         1,
@@ -1126,8 +1057,8 @@
     },
     "dining_table": {
       "file": "/iso/dining_table.png",
-      "w": 51,
-      "h": 50,
+      "w": 102,
+      "h": 99,
       "kind": "floor",
       "tiles": [
         2,
@@ -1136,8 +1067,8 @@
     },
     "mirror": {
       "file": "/iso/mirror.png",
-      "w": 20,
-      "h": 38,
+      "w": 40,
+      "h": 76,
       "kind": "floor",
       "tiles": [
         1,
@@ -1146,8 +1077,8 @@
     },
     "bench": {
       "file": "/iso/bench.png",
-      "w": 22,
-      "h": 28,
+      "w": 45,
+      "h": 57,
       "kind": "floor",
       "tiles": [
         1,
@@ -1156,8 +1087,8 @@
     },
     "basket": {
       "file": "/iso/basket.png",
-      "w": 16,
-      "h": 19,
+      "w": 32,
+      "h": 38,
       "kind": "floor",
       "tiles": [
         1,
@@ -1166,8 +1097,8 @@
     },
     "side_cabinet": {
       "file": "/iso/side_cabinet.png",
-      "w": 19,
-      "h": 23,
+      "w": 38,
+      "h": 46,
       "kind": "floor",
       "tiles": [
         1,
@@ -1176,22 +1107,24 @@
     },
     "cabinets_long": {
       "file": "/iso/cabinets_long.png",
-      "w": 64,
-      "h": 62,
+      "w": 138,
+      "h": 134,
       "kind": "wall",
-      "tilesW": 3
+      "tilesW": 3,
+      "face": "left"
     },
     "cabinets": {
       "file": "/iso/cabinets.png",
-      "w": 48,
-      "h": 45,
+      "w": 96,
+      "h": 91,
       "kind": "wall",
-      "tilesW": 2
+      "tilesW": 2,
+      "face": "left"
     },
     "guitar": {
       "file": "/iso/guitar.png",
-      "w": 19,
-      "h": 40,
+      "w": 38,
+      "h": 81,
       "kind": "floor",
       "tiles": [
         1,
@@ -1200,8 +1133,8 @@
     },
     "cat_tower": {
       "file": "/iso/cat_tower.png",
-      "w": 22,
-      "h": 36,
+      "w": 45,
+      "h": 74,
       "kind": "floor",
       "tiles": [
         1,
@@ -1210,8 +1143,8 @@
     },
     "dumbbells": {
       "file": "/iso/dumbbells.png",
-      "w": 29,
-      "h": 32,
+      "w": 58,
+      "h": 64,
       "kind": "floor",
       "tiles": [
         2,
@@ -1220,8 +1153,8 @@
     },
     "pizza_boxes": {
       "file": "/iso/pizza_boxes.png",
-      "w": 16,
-      "h": 14,
+      "w": 32,
+      "h": 29,
       "kind": "floor",
       "tiles": [
         1,
@@ -1230,8 +1163,8 @@
     },
     "skateboard": {
       "file": "/iso/skateboard.png",
-      "w": 18,
-      "h": 41,
+      "w": 35,
+      "h": 80,
       "kind": "floor",
       "tiles": [
         1,
@@ -1240,36 +1173,40 @@
     },
     "wall_clock": {
       "file": "/iso/wall_clock.png",
-      "w": 13,
-      "h": 15,
+      "w": 27,
+      "h": 32,
       "kind": "wall",
-      "tilesW": 1
+      "tilesW": 1,
+      "face": "right"
     },
     "diploma": {
       "file": "/iso/diploma.png",
-      "w": 18,
-      "h": 24,
+      "w": 35,
+      "h": 47,
       "kind": "wall",
-      "tilesW": 1
+      "tilesW": 1,
+      "face": "right"
     },
     "string_lights": {
       "file": "/iso/string_lights.png",
-      "w": 77,
-      "h": 44,
+      "w": 154,
+      "h": 88,
       "kind": "wall",
-      "tilesW": 3
+      "tilesW": 3,
+      "face": "flat"
     },
     "hoop": {
       "file": "/iso/hoop.png",
-      "w": 38,
-      "h": 54,
+      "w": 77,
+      "h": 109,
       "kind": "wall",
-      "tilesW": 2
+      "tilesW": 2,
+      "face": "right"
     },
     "desk_office": {
       "file": "/iso/desk_office.png",
-      "w": 54,
-      "h": 53,
+      "w": 109,
+      "h": 107,
       "kind": "floor",
       "tiles": [
         2,
@@ -1278,8 +1215,8 @@
     },
     "meeting_table": {
       "file": "/iso/meeting_table.png",
-      "w": 91,
-      "h": 65,
+      "w": 182,
+      "h": 131,
       "kind": "floor",
       "tiles": [
         4,
@@ -1288,8 +1225,8 @@
     },
     "water_cooler": {
       "file": "/iso/water_cooler.png",
-      "w": 22,
-      "h": 49,
+      "w": 45,
+      "h": 100,
       "kind": "floor",
       "tiles": [
         1,
@@ -1298,8 +1235,8 @@
     },
     "printer": {
       "file": "/iso/printer.png",
-      "w": 24,
-      "h": 33,
+      "w": 48,
+      "h": 66,
       "kind": "floor",
       "tiles": [
         1,
@@ -1308,8 +1245,8 @@
     },
     "filing_cabinet": {
       "file": "/iso/filing_cabinet.png",
-      "w": 24,
-      "h": 38,
+      "w": 48,
+      "h": 75,
       "kind": "floor",
       "tiles": [
         1,
@@ -1318,8 +1255,8 @@
     },
     "reception": {
       "file": "/iso/reception.png",
-      "w": 72,
-      "h": 60,
+      "w": 144,
+      "h": 120,
       "kind": "floor",
       "tiles": [
         3,
@@ -1328,8 +1265,8 @@
     },
     "office_sofa": {
       "file": "/iso/office_sofa.png",
-      "w": 43,
-      "h": 37,
+      "w": 86,
+      "h": 74,
       "kind": "floor",
       "tiles": [
         2,
@@ -1338,8 +1275,8 @@
     },
     "presentation_board": {
       "file": "/iso/presentation_board.png",
-      "w": 41,
-      "h": 51,
+      "w": 82,
+      "h": 102,
       "kind": "floor",
       "tiles": [
         2,
@@ -1348,8 +1285,8 @@
     },
     "coffee_machine": {
       "file": "/iso/coffee_machine.png",
-      "w": 24,
-      "h": 28,
+      "w": 48,
+      "h": 56,
       "kind": "floor",
       "tiles": [
         1,
@@ -1358,8 +1295,8 @@
     },
     "pet_cat_sleep": {
       "file": "/iso/pet_cat_sleep.png",
-      "w": 19,
-      "h": 13,
+      "w": 38,
+      "h": 27,
       "kind": "floor",
       "tiles": [
         1,
@@ -1367,26 +1304,23 @@
       ],
       "roles": {
         "coat": [
-          "#350932",
-          "#600f5e",
-          "#51351e",
-          "#71513e",
-          "#8e5c32",
-          "#8c6649",
-          "#996436",
-          "#a16d3e",
-          "#ca796f",
-          "#c88c4c",
-          "#cd904f",
-          "#c99561",
-          "#f3c775"
+          "#23181b",
+          "#432e23",
+          "#5d3f2a",
+          "#765232",
+          "#8d5e39",
+          "#a26d3d",
+          "#b37c44",
+          "#c9796b",
+          "#ca8e4d",
+          "#daa05b"
         ]
       }
     },
     "pet_dog_sleep": {
       "file": "/iso/pet_dog_sleep.png",
-      "w": 26,
-      "h": 14,
+      "w": 53,
+      "h": 28,
       "kind": "floor",
       "tiles": [
         2,
@@ -1394,25 +1328,22 @@
       ],
       "roles": {
         "coat": [
-          "#29130a",
-          "#430544",
-          "#583828",
-          "#725037",
-          "#895a31",
-          "#91623a",
-          "#a47850",
-          "#ad8664",
-          "#c3874e",
+          "#33231f",
+          "#422727",
+          "#563929",
+          "#6e4b31",
+          "#885d37",
+          "#9d6b40",
+          "#b47d49",
           "#c48b53",
-          "#c68d54",
-          "#c8915c"
+          "#d09357"
         ]
       }
     },
     "pet_bulldog_sleep": {
       "file": "/iso/pet_bulldog_sleep.png",
-      "w": 26,
-      "h": 18,
+      "w": 53,
+      "h": 36,
       "kind": "floor",
       "tiles": [
         2,
@@ -1420,27 +1351,25 @@
       ],
       "roles": {
         "coat": [
-          "#2b1224",
-          "#45004c",
-          "#4c3b30",
-          "#6e472a",
-          "#805230",
-          "#5c6e7f",
-          "#926845",
-          "#a16c3d",
-          "#a08063",
-          "#7f94a6",
-          "#b1a59a",
-          "#adb9c2",
-          "#cabfb0",
-          "#c3d1d7"
+          "#23181c",
+          "#353339",
+          "#583b27",
+          "#764e2f",
+          "#515962",
+          "#916138",
+          "#a26e3e",
+          "#707f8c",
+          "#889fb1",
+          "#ac9782",
+          "#b0babe",
+          "#c4d3d9"
         ]
       }
     },
     "pet_cat_eat": {
       "file": "/iso/pet_cat_eat.png",
-      "w": 20,
-      "h": 14,
+      "w": 40,
+      "h": 29,
       "kind": "floor",
       "tiles": [
         1,
@@ -1448,27 +1377,22 @@
       ],
       "roles": {
         "coat": [
-          "#452313",
-          "#590e4c",
-          "#35304b",
-          "#64442c",
-          "#465b70",
-          "#7a593e",
-          "#865557",
-          "#946238",
-          "#a47141",
-          "#798098",
-          "#a97f5c",
-          "#bc8048",
-          "#ce8f4f",
-          "#d6a36f"
+          "#33221a",
+          "#3f5368",
+          "#4a6177",
+          "#7e5433",
+          "#986438",
+          "#aa7543",
+          "#be854c",
+          "#7a96ad",
+          "#ce9151"
         ]
       }
     },
     "pet_dog_eat": {
       "file": "/iso/pet_dog_eat.png",
-      "w": 21,
-      "h": 19,
+      "w": 42,
+      "h": 37,
       "kind": "floor",
       "tiles": [
         1,
@@ -1476,26 +1400,24 @@
       ],
       "roles": {
         "coat": [
-          "#2d0b28",
-          "#541e44",
-          "#453226",
-          "#563b27",
-          "#7c4050",
-          "#45576b",
-          "#735137",
-          "#88603f",
-          "#a36f40",
-          "#997a60",
-          "#b58154",
-          "#c58a53",
-          "#90abc3"
+          "#362420",
+          "#342e3a",
+          "#5e3f2a",
+          "#40556b",
+          "#7c5332",
+          "#566d84",
+          "#97653c",
+          "#6a859d",
+          "#b07947",
+          "#c48952",
+          "#d29459"
         ]
       }
     },
     "pet_cat_play": {
       "file": "/iso/pet_cat_play.png",
-      "w": 20,
-      "h": 18,
+      "w": 40,
+      "h": 37,
       "kind": "floor",
       "tiles": [
         1,
@@ -1503,26 +1425,25 @@
       ],
       "roles": {
         "coat": [
-          "#470b4e",
-          "#3d2611",
-          "#593d2c",
-          "#4a5e7d",
-          "#986037",
-          "#8a6942",
-          "#577a99",
-          "#a36f3d",
-          "#b48958",
-          "#83a6c5",
-          "#d5964a",
-          "#d79e5e",
-          "#f0c874"
+          "#1f151c",
+          "#2c3a50",
+          "#5a3e2b",
+          "#465f7a",
+          "#855d38",
+          "#a3703e",
+          "#6184a4",
+          "#bc8346",
+          "#7da0c0",
+          "#d3964c",
+          "#e1a155",
+          "#f6ca74"
         ]
       }
     },
     "pet_dog_play": {
       "file": "/iso/pet_dog_play.png",
-      "w": 21,
-      "h": 22,
+      "w": 42,
+      "h": 43,
       "kind": "floor",
       "tiles": [
         1,
@@ -1530,25 +1451,24 @@
       ],
       "roles": {
         "coat": [
-          "#734d31",
-          "#825531",
-          "#587255",
-          "#9e6d43",
+          "#261a1d",
+          "#4b3325",
+          "#6a472d",
+          "#4a633f",
+          "#815733",
+          "#93663b",
           "#a67141",
-          "#ad7948",
-          "#73966d",
-          "#7da167",
-          "#87a566",
-          "#d39752",
-          "#d49f63",
-          "#d7c165"
+          "#b47c47",
+          "#789f66",
+          "#d29854",
+          "#bfbd66"
         ]
       }
     },
     "pet_bowl": {
       "file": "/iso/pet_bowl.png",
-      "w": 13,
-      "h": 10,
+      "w": 26,
+      "h": 20,
       "kind": "floor",
       "tiles": [
         1,
@@ -1557,8 +1477,8 @@
     },
     "pet_bowl_full": {
       "file": "/iso/pet_bowl_full.png",
-      "w": 13,
-      "h": 10,
+      "w": 26,
+      "h": 19,
       "kind": "floor",
       "tiles": [
         1,

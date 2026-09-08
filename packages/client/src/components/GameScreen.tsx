@@ -95,8 +95,8 @@ export const GameScreen: React.FC = () => {
             className="absolute inset-0 z-20 bg-black/50 animate-fade-in"
           />
           <div className="absolute inset-x-0 bottom-0 z-30 animate-slide-up">
-            <div className="rounded-t-xl border-t border-x border-ink-700 bg-ink-900 p-3 pb-2">
-              <div className="h-1 w-9 rounded-full bg-ink-700 mx-auto mb-3" />
+            <div className="border-t-2 border-x-2 border-ink-700 bg-ink-900 p-3 pb-2">
+              <div className="h-1 w-9 bg-ink-700 mx-auto mb-3" />
               <div className="grid grid-cols-2 gap-2">
                 {MORE.map((item) => (
                   <button

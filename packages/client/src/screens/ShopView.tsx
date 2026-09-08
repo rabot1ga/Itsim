@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
-import { Spinner, EmptyState, EmojiToken } from '../components/ui';
+import { Spinner, EmptyState, SpriteBadge } from '../components/ui';
 import { StarsShop } from '../components/StarsShop';
 import { PixelIcon } from '../components/pixel/PixelIcon';
+import { IsoIcon, spriteForItem, HOUSING_SPRITE } from '../components/iso/IsoIcon';
 
 const HOUSING = [
   { level: 0, name: 'Общага', cost: 5000, bonus: 'базовое' },
@@ -11,15 +12,6 @@ const HOUSING = [
   { level: 3, name: 'Ипотека', cost: 40000, bonus: '+2 энергия, +10 мотивация' },
   { level: 4, name: 'Пентхаус', cost: 150000, bonus: '+3 энергия, +15 мотивация, +10 репутация' },
 ];
-
-const TYPE_ICONS: Record<string, string> = {
-  pc: '🖥️',
-  chair: '🪑',
-  headphones: '🎧',
-  coffee: '☕',
-  pet: '🐾',
-  other: '📦',
-};
 
 interface ShopItem {
   id: string;
@@ -37,8 +29,6 @@ export const ShopView: React.FC = () => {
   const performAction = useGameStore((s) => s.performAction);
   const [items, setItems] = useState<ShopItem[]>([]);
   const [loaded, setLoaded] = useState(false);
-  const [roomManifest, setRoomManifest] = useState<any>(null);
-  const [avatarManifest, setAvatarManifest] = useState<any>(null);
 
   useEffect(() => {
     fetch('/api/content/items')
@@ -51,29 +41,7 @@ export const ShopView: React.FC = () => {
         setItems([]);
         setLoaded(true);
       });
-    // Layer manifests power the "how it looks" thumbnails (DESIGN.md 3.2: layerId)
-    fetch('/api/content/layers')
-      .then((r) => r.json())
-      .then((data) => {
-        setRoomManifest(data.room ?? null);
-        setAvatarManifest(data.avatar ?? null);
-      })
-      .catch(() => {});
   }, []);
-
-  /** Find the visual for an item's layerId across room + avatar manifests. */
-  const layerVisual = (layerId?: string): { file: string; where: 'room' | 'avatar' } | null => {
-    if (!layerId) return null;
-    for (const [manifest, where] of [
-      [roomManifest, 'room'],
-      [avatarManifest, 'avatar'],
-    ] as const) {
-      const slot = manifest?.slots?.find((s: any) => s.entries?.some((e: any) => e.id === layerId));
-      const entry = slot?.entries?.find((e: any) => e.id === layerId);
-      if (entry?.file) return { file: entry.file, where };
-    }
-    return null;
-  };
 
   if (!player) return null;
 
@@ -84,7 +52,7 @@ export const ShopView: React.FC = () => {
     <div className="space-y-4 animate-fade-in">
       <div className="flex items-center justify-between">
         <h2 className="flex items-center gap-2 text-base font-semibold text-white">
-          <PixelIcon name="bag" size={14} className="text-gold-300" />
+          <SpriteBadge sprite="boxes" size={32} />
           Магазин
         </h2>
         <span className="num text-sm font-semibold text-moss-300">
@@ -106,7 +74,8 @@ export const ShopView: React.FC = () => {
         {items.map((item) => {
           const owned = alreadyOwned(item.id);
           const affordable = canAfford(item.price);
-          const visual = layerVisual(item.layerId);
+          // everything drawn in the room says so; pets get their own word
+          const where = item.type === 'pet' ? 'питомец' : 'в комнату';
 
           return (
             <div
@@ -115,33 +84,19 @@ export const ShopView: React.FC = () => {
                 owned ? 'panel-note panel-note-moss' : affordable ? '' : 'opacity-55'
               }`}
             >
-              {visual ? (
-                <img
-                  src={`/layers/${visual.file}`}
-                  alt=""
-                  draggable={false}
-                  className="w-14 h-14 rounded-lg border border-ink-700 bg-ink-900 object-cover shrink-0 select-none pixelated"
-                />
-              ) : (
-                <span className="w-14 shrink-0 flex justify-center">
-                  <EmojiToken className="!w-11 !h-11 !text-[18px]">
-                    {TYPE_ICONS[item.type] ?? '📦'}
-                  </EmojiToken>
-                </span>
-              )}
+              {/* the drawing that will actually land in the room */}
+              <span className="w-14 h-14 shrink-0 flex items-end justify-center bg-ink-900 border-2 border-ink-700 p-1">
+                <IsoIcon sprite={spriteForItem(item.id, item.type)} size={44} />
+              </span>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-sm font-medium text-ink-100">{item.name}</span>
                   {owned && <PixelIcon name="check" size={10} className="text-moss-400" />}
                 </div>
                 <p className="text-xs text-ink-500 leading-relaxed">{item.description}</p>
-                {(visual || item.nft) && (
+                {(where || item.nft) && (
                   <div className="flex gap-1 mt-1 flex-wrap">
-                    {visual && (
-                      <span className="chip">
-                        {visual.where === 'room' ? 'в комнату' : 'на персонажа'}
-                      </span>
-                    )}
+                    <span className="chip">{where}</span>
                     {item.nft && (
                       <span className="chip !text-gold-300 !border-gold-700">NFT</span>
                     )}
@@ -175,25 +130,17 @@ export const ShopView: React.FC = () => {
             const current = player.housingLevel === h.level;
             const isNext = player.housingLevel + 1 === h.level;
             const affordable = canAfford(h.cost);
-            const bgEntry = roomManifest?.slots
-              ?.find((s: any) => s.id === 'bg')
-              ?.entries?.find((e: any) => e.id === `bg_${h.level}`);
             return (
               <div
                 key={h.level}
-                className={`flex items-center justify-between gap-2 p-2 rounded-lg border ${
+                className={`flex items-center justify-between gap-2 p-2 border ${
                   current ? 'border-moss-700 bg-moss-900/25' : 'border-ink-700 bg-ink-900'
                 }`}
               >
                 <div className="flex items-center gap-2 min-w-0">
-                  {bgEntry?.file && (
-                    <img
-                      src={`/layers/${bgEntry.file}`}
-                      alt=""
-                      draggable={false}
-                      className="w-10 h-10 rounded-md border border-ink-700 bg-ink-900 object-cover shrink-0 select-none pixelated"
-                    />
-                  )}
+                  <span className="w-10 h-10 shrink-0 flex items-end justify-center bg-ink-900 border-2 border-ink-700 p-0.5">
+                    <IsoIcon sprite={HOUSING_SPRITE[h.level] ?? 'bed'} size={34} />
+                  </span>
                   <div className="min-w-0">
                     <span
                       className={`text-sm ${current ? 'text-moss-300 font-medium' : 'text-ink-200'}`}

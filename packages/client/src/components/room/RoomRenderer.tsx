@@ -49,7 +49,7 @@ export const RoomRenderer: React.FC<{
   if (accessory) avatarOverrides.accessory = accessory;
 
   return (
-    <div className="relative w-full aspect-square overflow-hidden rounded-2xl border border-ink-700 bg-ink-800">
+    <div className="relative w-full aspect-square overflow-hidden border-2 border-ink-700 bg-ink-800">
       {layers.map((layer) => (
         <img
           key={layer.slotId}
@@ -91,7 +91,7 @@ export const RoomRenderer: React.FC<{
       </div>
 
       {/* Housing level badge */}
-      <div className="absolute top-2 right-2 px-2 py-1 rounded-lg bg-black/50 text-[10px] text-ink-300 font-mono">
+      <div className="absolute top-2 right-2 px-2 py-1 bg-black/50 text-[10px] text-ink-300 font-mono">
         жильё {housingLevel}/4
       </div>
     </div>

@@ -84,7 +84,7 @@ export const Wardrobe: React.FC<{
               <div className="flex gap-1.5 overflow-x-auto pb-0.5">
                 <button
                   onClick={() => apply(slotId, null)}
-                  className={`shrink-0 h-8 px-2 rounded-md border text-2xs ${
+                  className={`shrink-0 h-8 px-2 border text-2xs ${
                     current ? 'border-ink-700 bg-ink-800 text-ink-400' : 'border-gold-300 bg-gold-300/10 text-gold-200'
                   }`}
                 >
@@ -95,7 +95,7 @@ export const Wardrobe: React.FC<{
                     key={colour}
                     onClick={() => apply(slotId, colour)}
                     aria-label={colour}
-                    className={`shrink-0 h-8 w-8 rounded-md border-2 transition-transform active:scale-95 ${
+                    className={`shrink-0 h-8 w-8 border-2 transition-transform active:scale-95 ${
                       current === colour ? 'border-gold-300 scale-105' : 'border-ink-700'
                     }`}
                     style={{ background: colour }}
@@ -130,7 +130,7 @@ export const Wardrobe: React.FC<{
               {/* Back to genetic */}
               <button
                 onClick={() => void apply(slotId, null)}
-                className={`snap-start shrink-0 w-[76px] rounded-lg border p-1.5 text-center transition-colors ${
+                className={`snap-start shrink-0 w-[76px] border p-1.5 text-center transition-colors ${
                   !override ? 'border-gold-700 bg-gold-900/20' : 'border-ink-700 bg-ink-900'
                 }`}
               >
@@ -153,7 +153,7 @@ export const Wardrobe: React.FC<{
                       void apply(slotId, entry.id);
                     }}
                     title={status.unlocked ? entryName(entry.id) : status.hint}
-                    className={`snap-start shrink-0 w-[76px] rounded-lg border p-1.5 text-center transition-colors ${
+                    className={`snap-start shrink-0 w-[76px] border p-1.5 text-center transition-colors ${
                       active
                         ? 'border-gold-700 bg-gold-900/20'
                         : status.unlocked
@@ -161,7 +161,7 @@ export const Wardrobe: React.FC<{
                           : 'border-ink-800 bg-ink-950'
                     }`}
                   >
-                    <span className="relative flex items-center justify-center h-11 rounded-md overflow-hidden bg-ink-800">
+                    <span className="relative flex items-center justify-center h-11 overflow-hidden bg-ink-800">
                       {entry.file ? (
                         <img
                           src={`/layers/${entry.file}`}

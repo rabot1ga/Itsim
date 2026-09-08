@@ -20,7 +20,7 @@ export const MainMenu: React.FC = () => {
           {player ? (
             <IsoRoom player={player} />
           ) : (
-            <div className="aspect-[4/3] rounded-xl border border-ink-700 bg-ink-800" />
+            <div className="aspect-[4/3] border-2 border-ink-700 bg-ink-800" />
           )}
         </div>
 

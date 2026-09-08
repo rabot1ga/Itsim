@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
-import { Spinner, EmojiToken } from '../components/ui';
+import { Spinner, EmojiToken, SpriteBadge } from '../components/ui';
 import { PixelIcon } from '../components/pixel/PixelIcon';
 
 /**
@@ -100,7 +100,7 @@ export const AchievementsView: React.FC = () => {
     <div className="space-y-4 animate-fade-in">
       <div className="flex items-center justify-between">
         <h2 className="flex items-center gap-2 text-base font-semibold text-white">
-          <PixelIcon name="trophy" size={14} className="text-gold-300" />
+          <SpriteBadge sprite="diploma" size={32} />
           Достижения
         </h2>
         <span className="num text-xs text-ink-500">

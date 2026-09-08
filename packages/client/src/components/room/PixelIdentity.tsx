@@ -34,7 +34,7 @@ export const PixelIdentity: React.FC<{ pack: PixelPack; data: PixelAvatarData; n
       </div>
 
       <div className="grid grid-cols-[96px_1fr] gap-3">
-        <PixelAvatar data={data} scale={6} className="rounded-lg border border-ink-700" background="#12141a" />
+        <PixelAvatar data={data} scale={6} className=" border-2 border-ink-700" background="#12141a" />
         <dl className="space-y-1 text-xs">
           {rows.map(({ cat, label, id }) => (
             <div key={cat} className="flex items-center justify-between gap-2">
@@ -42,7 +42,7 @@ export const PixelIdentity: React.FC<{ pack: PixelPack; data: PixelAvatarData; n
               <dd className="flex items-center gap-2">
                 <span className="text-ink-200">{label}</span>
                 <span
-                  className={`text-[9px] px-1 rounded ${
+                  className={`text-[9px] px-1 ${
                     data.source[cat] === 'trait' ? 'bg-moss-500/15 text-moss-300' : 'bg-ink-700/60 text-ink-400'
                   }`}
                   title={data.source[cat] === 'trait' ? 'взято из генотипа игрока' : 'вытянуто из seed'}
@@ -70,7 +70,7 @@ export const PixelIdentity: React.FC<{ pack: PixelPack; data: PixelAvatarData; n
                 <PixelAvatar
                   data={{ ...data, combo: combo.combo, scheme: combo.scheme, schemeId: combo.scheme.id }}
                   scale={2}
-                  className="rounded border border-ink-800"
+                  className="border-2 border-ink-800"
                 />
               </span>
             );

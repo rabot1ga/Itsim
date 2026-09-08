@@ -3,7 +3,7 @@ import { useGameStore } from '../store/gameStore';
 import { haptic } from '../lib/telegram';
 import { xpToNext, canUnlockPerk } from '@itsim/shared';
 import { PixelIcon } from '../components/pixel/PixelIcon';
-import { EmojiToken } from '../components/ui';
+import { EmojiToken, SpriteBadge } from '../components/ui';
 
 /**
  * Talent tree — rendered from content (skills.json) grouped by branch.
@@ -149,7 +149,7 @@ export const SkillsView: React.FC = () => {
 
       <div className="flex items-center justify-between">
         <h2 className="flex items-center gap-2 text-base font-semibold text-white">
-          <PixelIcon name="book" size={14} className="text-gold-300" />
+          <SpriteBadge sprite="bookshelf" size={32} />
           Навыки
         </h2>
         <span className="num text-xs text-ink-500">{totalLevels} уровней</span>
@@ -244,7 +244,7 @@ export const SkillsView: React.FC = () => {
                     onClick={() => isUnlocked && setMainSkill(s.id)}
                     disabled={!isUnlocked}
                     title={isUnlocked ? (isMain ? 'Основной навык' : 'Сделать основным') : s.flavor}
-                    className={`w-full flex items-center gap-2 text-left rounded-md px-2 py-2 min-h-[46px] border transition-colors ${
+                    className={`w-full flex items-center gap-2 text-left px-2 py-2 min-h-[46px] border transition-colors ${
                       isMain
                         ? 'border-gold-700 bg-gold-900/20'
                         : 'border-transparent hover:bg-ink-700/40'
@@ -300,7 +300,7 @@ export const SkillsView: React.FC = () => {
             return (
               <div
                 key={perk.id}
-                className={`flex items-center gap-2 p-2 rounded-lg border ${
+                className={`flex items-center gap-2 p-2 border ${
                   owned
                     ? 'border-moss-700 bg-moss-900/20'
                     : canUnlock

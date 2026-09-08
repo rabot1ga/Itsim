@@ -107,7 +107,7 @@ export const RoomEditor: React.FC<{
               {/* Back to automatic */}
               <button
                 onClick={() => void apply(slotId, null)}
-                className={`snap-start shrink-0 w-[76px] rounded-lg border p-1.5 text-center transition-colors ${
+                className={`snap-start shrink-0 w-[76px] border p-1.5 text-center transition-colors ${
                   !override ? 'border-gold-700 bg-gold-900/20' : 'border-ink-700 bg-ink-900'
                 }`}
               >
@@ -129,7 +129,7 @@ export const RoomEditor: React.FC<{
                       void apply(slotId, entry.id);
                     }}
                     title={status.unlocked ? entryName(entry.id) : status.hint}
-                    className={`snap-start shrink-0 w-[76px] rounded-lg border p-1.5 text-center transition-colors ${
+                    className={`snap-start shrink-0 w-[76px] border p-1.5 text-center transition-colors ${
                       active
                         ? 'border-gold-700 bg-gold-900/20'
                         : status.unlocked
@@ -137,7 +137,7 @@ export const RoomEditor: React.FC<{
                           : 'border-ink-800 bg-ink-950'
                     }`}
                   >
-                    <span className="relative flex items-center justify-center h-11 rounded-md overflow-hidden bg-ink-800">
+                    <span className="relative flex items-center justify-center h-11 overflow-hidden bg-ink-800">
                       {entry.file ? (
                         <img
                           src={`/layers/${entry.file}`}
@@ -183,12 +183,12 @@ export const RoomEditor: React.FC<{
                   key={p.id}
                   onClick={() => void apply('wallColor', p.id)}
                   title={p.name}
-                  className={`flex items-center gap-1.5 pl-1.5 pr-2.5 py-1.5 rounded-xl border transition-all active:scale-95 touch-target ${
+                  className={`flex items-center gap-1.5 pl-1.5 pr-2.5 py-1.5 border transition-all active:scale-95 touch-target ${
                     active ? 'border-moss-500/60 bg-moss-600/10' : 'border-ink-700 bg-ink-800/50'
                   }`}
                 >
                   <span
-                    className="w-6 h-6 rounded-full border border-black/40 shrink-0"
+                    className="w-6 h-6 border-2 border-black/40 shrink-0"
                     style={{ background: swatchColor(p) }}
                   />
                   <span className="text-[10px] text-ink-300">

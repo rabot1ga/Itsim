@@ -120,6 +120,13 @@ export async function drawIsoRoom(
       ctx.scale(-1, 1);
       ctx.drawImage(img, 0, 0, w, h);
       ctx.restore();
+    } else if (call.shear) {
+      // tilt head-on art into the wall plane, at the projection's 1:2 slope
+      ctx.save();
+      ctx.translate(x + w / 2, y + h / 2);
+      ctx.transform(1, call.shear * 0.5, 0, 1, 0, 0);
+      ctx.drawImage(img, -w / 2, -h / 2, w, h);
+      ctx.restore();
     } else {
       ctx.drawImage(img, x, y, w, h);
     }

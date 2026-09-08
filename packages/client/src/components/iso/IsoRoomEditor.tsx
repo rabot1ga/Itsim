@@ -41,11 +41,11 @@ export const IsoRoomEditor: React.FC<{
       onClick={onClick}
       disabled={disabled}
       title={title}
-      className={`shrink-0 w-[64px] rounded-lg border p-1.5 text-left transition-all active:scale-[0.97] ${
+      className={`shrink-0 w-[64px] border p-1.5 text-left transition-all active:scale-[0.97] ${
         active ? 'border-gold-300 bg-gold-300/10' : 'border-ink-700 bg-ink-800'
       } ${disabled ? 'opacity-40' : ''}`}
     >
-      <span className="flex h-6 w-full overflow-hidden rounded">
+      <span className="flex h-6 w-full overflow-hidden">
         {colours.map((c, i) => (
           <span key={i} className="flex-1" style={{ background: c }} />
         ))}

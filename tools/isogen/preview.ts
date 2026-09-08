@@ -50,7 +50,12 @@ const CASES: ScenePlayer[] = Array.from({ length: 8 }, (_, i) => ({
   petFedToday: i % 2 === 0,
 }));
 
-async function spriteBuffer(sprite: string, colours: Record<string, string> | undefined, flip: boolean) {
+async function spriteBuffer(
+  sprite: string,
+  colours: Record<string, string> | undefined,
+  flip: boolean,
+  shear: -1 | 0 | 1 = 0
+) {
   const meta = manifest.sprites[sprite];
   let img = sharp(path.join(PUBLIC, meta.file));
   if (colours && meta.roles) {
@@ -59,6 +64,9 @@ async function spriteBuffer(sprite: string, colours: Record<string, string> | un
     img = sharp(data, { raw: { width: info.width, height: info.height, channels: 4 } });
   }
   if (flip) img = img.flop();
+  // shear head-on wall art into the wall plane, like spriteTransform() does in
+  // the browser; sharp grows the canvas, the caller lifts it back by w/4
+  if (shear) img = img.affine([1, 0, shear * 0.5, 1], { interpolator: 'nearest', background: '#00000000' });
   return img.png().toBuffer();
 }
 
@@ -94,9 +102,9 @@ ${polys
   const composites = [];
   for (const call of layout(vp, items, manifest.sprites)) {
     composites.push({
-      input: await spriteBuffer(call.sprite, call.colours, call.flip),
+      input: await spriteBuffer(call.sprite, call.colours, call.flip, call.shear ?? 0),
       left: call.x,
-      top: call.y,
+      top: call.y - (call.shear ? Math.round(call.w / 4) : 0),
     });
   }
 

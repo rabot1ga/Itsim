@@ -43,7 +43,15 @@ async function figure(sprite: string, colours: Record<string, string>) {
     .toBuffer();
 }
 
-const cell = 34 * SCALE;
+/** cell size follows the tallest character in the manifest, whatever the grid */
+const cell =
+  Math.round(
+    Math.max(
+      ...Object.values(manifest.sprites)
+        .filter((m) => m.kind === 'char')
+        .map((m) => Math.max(m.w, m.h))
+    ) * 1.12
+  ) * SCALE;
 const petIds = ['pet_cat', 'pet_dog', 'pet_bulldog', 'pet_cactus', 'pet_robo', 'pet_spider'];
 
 const people = await Promise.all(
@@ -66,13 +74,13 @@ const sheet = await sharp({
   .composite([
     ...people.map((input, i) => ({
       input,
-      left: (i % COLS) * cell + 6,
+      left: (i % COLS) * cell + Math.round(cell * 0.16),
       top: Math.floor(i / COLS) * cell + 4,
     })),
     ...pets.map((input, i) => ({
       input,
-      left: i * cell + 6,
-      top: (rows - 1) * cell + 20,
+      left: i * cell + Math.round(cell * 0.16),
+      top: (rows - 1) * cell + Math.round(cell * 0.2),
     })),
   ])
   .png()

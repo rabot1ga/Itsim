@@ -202,7 +202,7 @@ export const ShareCard: React.FC<{
     <div className="game-card">
       <h3 className="section-title mb-2">Карточка для шеринга</h3>
       <canvas ref={canvasRef} width={W} height={H} style={{ display: 'none' }} />
-      {dataUrl && <img src={dataUrl} alt="Шар-карточка" className="rounded-lg border border-ink-700 mb-2" />}
+      {dataUrl && <img src={dataUrl} alt="Шар-карточка" className=" border-2 border-ink-700 mb-2" />}
       {error && <p className="text-xs text-clay-300 mb-2">⚠️ {error}</p>}
       <div className="grid grid-cols-4 gap-1.5 mb-2">
         {FRAMES.map((f) => {
@@ -213,7 +213,7 @@ export const ShareCard: React.FC<{
               onClick={() => pickFrame(f)}
               disabled={busy}
               title={locked ? `🔒 ${f.need!.label}` : f.name}
-              className={`px-1 py-2 text-[11px] leading-tight rounded-lg border transition-all ${
+              className={`px-1 py-2 text-[11px] leading-tight border transition-all ${
                 frame === f.id
                   ? 'bg-sky-600/30 border-sky-400 text-ink-100'
                   : 'bg-ink-800/60 border-ink-700 text-ink-300'
@@ -228,14 +228,14 @@ export const ShareCard: React.FC<{
         <button
           onClick={() => generate()}
           disabled={busy}
-          className="flex-1 px-3 py-2.5 text-sm bg-sky-600 hover:bg-sky-700 active:scale-[0.98] disabled:opacity-50 text-white rounded-xl touch-target font-medium transition-all"
+          className="flex-1 px-3 py-2.5 text-sm bg-sky-600 hover:bg-sky-700 active:scale-[0.98] disabled:opacity-50 text-white touch-target font-medium transition-all"
         >
           {busy ? 'Рендерим…' : 'Сгенерировать'}
         </button>
         <button
           onClick={share}
           disabled={!dataUrl}
-          className="flex-1 px-3 py-2.5 text-sm bg-moss-600 hover:bg-moss-700 active:scale-[0.98] disabled:opacity-50 text-white rounded-xl touch-target font-medium transition-all"
+          className="flex-1 px-3 py-2.5 text-sm bg-moss-600 hover:bg-moss-700 active:scale-[0.98] disabled:opacity-50 text-white touch-target font-medium transition-all"
         >
           Поделиться в Telegram
         </button>
