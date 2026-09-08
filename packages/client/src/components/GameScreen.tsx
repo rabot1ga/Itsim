@@ -11,6 +11,10 @@ import { ShopView } from '../screens/ShopView';
 import { RoomView } from '../screens/RoomView';
 import { AchievementsView } from '../screens/AchievementsView';
 import { LeaderboardView } from '../screens/LeaderboardView';
+import { EndingView } from '../screens/EndingView';
+import { MiningView } from '../screens/MiningView';
+import { WalletView } from '../screens/WalletView';
+import { PetView } from '../screens/PetView';
 import { PixelIcon } from './pixel/PixelIcon';
 import { GainStream } from './GainStream';
 
@@ -26,10 +30,13 @@ const TABS = [
 const MORE = [
   { view: 'profile', icon: 'person', label: 'Профиль', hint: 'Статистика, цели и гардероб' },
   { view: 'room', icon: 'house', label: 'Дом', hint: 'Предметы, расстановка и внешность' },
-  { view: 'shop', icon: 'bag', label: 'Магазин', hint: 'Техника, мебель, жильё' },
   { view: 'achievements', icon: 'trophy', label: 'Цели', hint: 'Цели, достижения и прогресс' },
   { view: 'leaderboard', icon: 'chart', label: 'Топ', hint: 'Рейтинг игроков' },
   { view: 'office', icon: 'people', label: 'Офис', hint: 'Команда и задачи' },
+  { view: 'mining', icon: 'coin', label: 'Майнинг', hint: 'Ферма, хешрейт, прогноз' },
+  { view: 'wallet', icon: 'box', label: 'Кошелёк', hint: 'NFT-инвентарь и Solana-кошелёк' },
+  { view: 'pet', icon: 'heart', label: 'Питомец', hint: 'Состояние, корм, мотивация' },
+  { view: 'endings', icon: 'trophy', label: 'Финалы', hint: 'Шесть финалов карьеры и прогресс' },
 ] as const;
 
 export const GameScreen: React.FC = () => {
@@ -68,8 +75,16 @@ export const GameScreen: React.FC = () => {
         return <AchievementsView />;
       case 'leaderboard':
         return <LeaderboardView />;
+      case 'endings':
+        return <EndingView />;
       case 'office':
         return <OfficeView />;
+      case 'mining':
+        return <MiningView />;
+      case 'wallet':
+        return <WalletView />;
+      case 'pet':
+        return <PetView />;
       default:
         return <DayView onAdvanceDay={handleAdvanceDay} />;
     }

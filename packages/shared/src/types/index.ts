@@ -259,6 +259,10 @@ export interface PlayerState {
   brokeDays?: number;
   /** last freelance payout — landlord income estimate for players without a job */
   freelanceLastPayment?: number;
+  /** soft skill: leadership (board votes, mentorship) */
+  leadership?: number;
+  /** number of juniors the player has mentored through office events */
+  mentoredJuniors?: number;
 
   // Procedural generation (DESIGN.md) — optional for backward compatibility
   walletAddress?: string;

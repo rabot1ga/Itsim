@@ -7,6 +7,7 @@ interface Friend {
   name: string;
   description: string;
   initialRelation: number;
+  avatar: string | null;
 }
 export const FriendsView: React.FC = () => {
   const player = useGameStore((s) => s.player);
@@ -52,12 +53,32 @@ export const FriendsView: React.FC = () => {
       )}
       {status === 'ready' &&
         people.map((person) => {
-          const relation = player?.relationships?.[person.id] ?? person.initialRelation;
+          const relation = player?.relationships?.[person.id] ?? person.initialRelation ?? 0;
+          // Try .webp first, fall back to the shared icon. The avatar field in
+          // npcs.json is the source filename (e.g. "teamlead.png"); we serve the
+          // optimised WebP twin in /art/npcs/.
+          const portrait = person.avatar ? `/art/npcs/${person.avatar.replace(/\.png$/i, '.webp')}` : null;
           return (
             <article className="reference-friend" key={person.id} aria-label={person.name}>
-              <span className="reference-friend-icon">
-                <PixelIcon name="people" size={25} />
-              </span>
+              {portrait ? (
+                <img
+                  className="reference-friend-portrait"
+                  src={portrait}
+                  width={48}
+                  height={48}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                  onError={(e) => {
+                    // Hide the broken <img> so the generic icon below shows through.
+                    (e.currentTarget as HTMLImageElement).style.display = 'none';
+                  }}
+                />
+              ) : (
+                <span className="reference-friend-icon">
+                  <PixelIcon name="people" size={25} />
+                </span>
+              )}
               <div>
                 <h3>{person.name}</h3>
                 <p>

@@ -1,7 +1,7 @@
 {
   "version": 1,
   "created": "2026-09-08",
-  "provenance": "AI-generated with user references for art direction; not crops of reference PNGs",
+  "provenance": "AI-generated with user references 1.png and 2.png for art direction; pixel-art adventure game aesthetic; not crops of reference PNGs",
   "masters": [
     {
       "name": "event-atlas.png",
@@ -67,8 +67,8 @@
       "file": "/art/story-v1/offer.webp",
       "width": 384,
       "height": 230,
-      "bytes": 12464,
-      "sha256": "1f6bdc7948638e5a2434b57aa3286a7a644035b6b4e060e05bcf832423c552b5",
+      "bytes": 11088,
+      "sha256": "0b1d3ed5f1433dd50d8cb9cf45fd3a8f90fb3883edd80b5881be7769ee8a4a84",
       "source": "event-atlas.png",
       "crop": {
         "left": 430,
@@ -82,8 +82,8 @@
       "file": "/art/story-v1/social.webp",
       "width": 384,
       "height": 230,
-      "bytes": 10646,
-      "sha256": "6e32db23940cd8098097df7357faa80fe58827b485bb726631abc3cf63216a8f",
+      "bytes": 11272,
+      "sha256": "f6ebf7d84c901b229cf063db92271a6fdd08831d0a1012aa3958638f0cc440d0",
       "source": "event-atlas.png",
       "crop": {
         "left": 12,
@@ -97,8 +97,8 @@
       "file": "/art/story-v1/shop.webp",
       "width": 384,
       "height": 230,
-      "bytes": 17972,
-      "sha256": "cc3375b17b4859d009ec8b2c1eda878cf69618a820e1205e639f01dda152b39c",
+      "bytes": 17890,
+      "sha256": "a1309d2bfce7265f81d64ea869e671921fa89b5d43562f0ac04ff908fad1a10b",
       "source": "event-atlas.png",
       "crop": {
         "left": 430,
@@ -112,8 +112,8 @@
       "file": "/art/story-v1/server.webp",
       "width": 384,
       "height": 230,
-      "bytes": 14244,
-      "sha256": "9288c6a2f6e81ba8f4b33566fda57cb06926cd3b21a37c02350b52cb6e282c85",
+      "bytes": 13352,
+      "sha256": "e7e29b1c81a478021528438df2c2ca99baa2b675e3a5194638f30e26dd544a2b",
       "source": "event-atlas.png",
       "crop": {
         "left": 12,
@@ -127,8 +127,8 @@
       "file": "/art/story-v1/parcel.webp",
       "width": 384,
       "height": 230,
-      "bytes": 12426,
-      "sha256": "66f45d6d8fed571d01f059de9837a797efb6c27fa87be9e2c2b4af91952d0a32",
+      "bytes": 15200,
+      "sha256": "d8d04f03ad3fb11d23a2b7fc822ecd7d97f2b558711a879f12d44502330bb617",
       "source": "event-atlas.png",
       "crop": {
         "left": 430,
@@ -157,8 +157,8 @@
       "file": "/art/story-v1/bug.webp",
       "width": 384,
       "height": 230,
-      "bytes": 13334,
-      "sha256": "707c79c3a58ac450f460ebd6094b90dc70546d7509c6cc0b0742613f530cb5a3",
+      "bytes": 11254,
+      "sha256": "29132eb9c205666735ec19ababa90740b4f16a73da00791ae82120d89e4645eb",
       "source": "event-atlas.png",
       "crop": {
         "left": 430,
@@ -185,5 +185,6 @@
       "sha256": "15879c14e9237f8716ed89128de61ab2097bcd5247ae79b7cbc17a7ef5dc27da",
       "source": "portrait.png"
     }
-  ]
+  ],
+  "updated": "2026-09-08"
 }

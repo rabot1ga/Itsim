@@ -24,3 +24,4 @@ export * from './isoLook';
 export * from './avatarCustom';
 export * from './pixelArt';
 export * from './pixelArtValidate';
+export * from './endings';

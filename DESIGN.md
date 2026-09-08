@@ -185,7 +185,7 @@ window.Telegram.WebApp.switchInlineQuery('Смотри, моя IT-берлога
 | Манифесты слоёв (HashLips-style: веса, совместимость, тинт) | `packages/content/layers/*.json` | ✅ реализовано |
 | Рендер слоистого аватара и комнаты с тинтингом | `packages/client/src/components/room/` | ✅ реализовано (ассеты-плейсхолдеры, заменяются художником) |
 | Metaplex-style metadata, валидация владения | `packages/shared/src/types` + `packages/server/src/services/nftProvider.ts` | ✅ мок-провайдер (без сети) |
-| Минт NFT при покупке предмета | `packages/server/src/routes/game.ts` (buy_item → mint) | ✅ мок |
+| Минт NFT при покупке предмета | `packages/server/src/routes/game/actions.ts` (buy_item → mint) | ✅ мок |
 | Cross-collection синергия (SMB/Mad Lads/DeGods) | `packages/content/cross_collections.json` | ✅ конфиг + мок-детект |
 | Шар-карточка (Canvas → PNG → Telegram) | `packages/client/src/components/room/ShareCard.tsx` | ✅ реализовано |
 | Реальный RPC (Helius), cNFT/pNFT минт, вторичный рынок | — | ⏳ требует кошелёк/RPC/ключи |

@@ -3,6 +3,16 @@ import { getContent } from '../services/contentService.js';
 
 export async function contentRoutes(app: FastifyInstance) {
   /**
+   * GET /api/content/balance — runtime tuning (XP curves, costs, endings, …)
+   *
+   * Public read; the client uses it to show live ending thresholds in the
+   * «Финалы» screen so the player sees what is still required.
+   */
+  app.get('/balance', async () => {
+    return { balance: getContent().balance };
+  });
+
+  /**
    * GET /api/content/manifest
    * Content manifest for client caching
    */
@@ -91,6 +101,8 @@ export async function contentRoutes(app: FastifyInstance) {
 
   /**
    * GET /api/content/npcs — colleagues for the office screen (docs/design.md §11)
+   * Returns the avatar filename too so the client can render individual portraits
+   * instead of a shared generic icon.
    */
   app.get('/npcs', async () => {
     const { npcs } = getContent();
@@ -100,6 +112,8 @@ export async function contentRoutes(app: FastifyInstance) {
         name: n.name,
         role: n.role,
         description: n.description,
+        avatar: typeof n.avatar === 'string' ? n.avatar : null,
+        initialRelation: typeof n.initialRelation === 'number' ? n.initialRelation : 0,
       })),
     };
   });

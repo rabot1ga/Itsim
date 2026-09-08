@@ -263,6 +263,9 @@ describe('balance content contract', () => {
 
   it('housing costs are ordered and have a savings cushion defined', () => {
     const housing = balance.housing as any[];
+    expect(housing.length).toBeGreaterThanOrEqual(5);
+    expect(housing[0].level).toBe(0);
+    expect(housing[housing.length - 1].level).toBe(4);
     for (const h of housing) {
       expect(h.saveMult, `level ${h.level}`).toBeGreaterThanOrEqual(1);
       expect(h.saveStreakDays, `level ${h.level}`).toBeGreaterThanOrEqual(0);
