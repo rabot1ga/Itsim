@@ -75,7 +75,7 @@ export const EXTRA_ENERGY_COSTS: Record<string, number> = {
   work_task: 4,
   work_overtime: 5,
   pet_project: 3,
-  freelance: 4,
+  freelance: 3,
   rest_sleep: 0,
   rest_walk: 1,
   rest_bar: 2,
@@ -83,7 +83,6 @@ export const EXTRA_ENERGY_COSTS: Record<string, number> = {
   rest_gym: 2,
   networking: 2,
   apply_job: 1,
-  take_project: 0,
   deliver_project: 0,
   drop_project: 0,
   cto_elect: 3,
@@ -323,13 +322,7 @@ export function xpGain(state: StoredState, content: any, base: number): number {
 export { applySoftXp, hashrateOfItems, careerLevelIndex };
 
 /** Re-exports of helpers that several route files need together */
-export {
-  branchShareXp,
-  GRADE_ENERGY,
-  GRADE_REQUIREMENTS,
-  HOUSING_COSTS,
-  weeklySalary,
-} from '@itsim/shared';
+export { branchShareXp, GRADE_ENERGY, GRADE_REQUIREMENTS, HOUSING_COSTS, weeklySalary } from '@itsim/shared';
 
 /**
  * Server-only helpers that used to live in `game.ts` and are reused by

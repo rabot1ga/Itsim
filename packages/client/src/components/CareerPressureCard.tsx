@@ -1,6 +1,5 @@
 import React, { useRef, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
-import { PixelIcon } from './pixel/PixelIcon';
 import { metaXpBonusPct } from '@itsim/shared';
 import { haptic } from '../lib/telegram';
 
@@ -65,10 +64,10 @@ export const CareerPressureCard: React.FC = () => {
   if (!cost && !showOutlook && !player.careerEnding) return null;
 
   return (
-    <section className="panel space-y-2.5">
+    <section className="card space-y-2.5">
       {player.careerEnding && (
         <>
-          <div className="border-l-[3px] border-l-gold-300 pl-2">
+          <div className="border-l-[3px] border-l-gold-300 pl-2.5">
             <div className="text-2xs font-semibold uppercase tracking-[0.09em] text-gold-300">
               Финал · {metaXpBonusPct(player.meta) > 0 ? `жизнь ${player.meta!.lives} завершена` : 'глава прожита'}
             </div>
@@ -85,7 +84,7 @@ export const CareerPressureCard: React.FC = () => {
             <div className="mt-2 space-y-1 text-xs leading-relaxed">
               {metaXpBonusPct(player.meta) > 0 && (
                 <p className="flex items-center gap-1.5 text-gold-300/90">
-                  <PixelIcon name="flame" size={10} className="shrink-0" />
+                  <span aria-hidden="true">🔥</span>
                   Мета-бонус: навсегда <span className="num">+{metaXpBonusPct(player.meta)}% XP</span>
                 </p>
               )}
@@ -97,11 +96,6 @@ export const CareerPressureCard: React.FC = () => {
               disabled={busy}
               className={`btn btn-secondary w-full text-sm mt-2.5 ${confirmLife ? '!text-clay-300' : ''}`}
             >
-              <PixelIcon
-                name={busy ? 'clock' : 'play'}
-                size={12}
-                className={confirmLife ? 'text-clay-300' : 'text-gold-300'}
-              />
               {busy
                 ? 'Начинаем…'
                 : confirmLife
@@ -127,17 +121,15 @@ export const CareerPressureCard: React.FC = () => {
             aria-expanded={costOpen}
             className="w-full flex items-center gap-2 text-left touch-target"
           >
-            <PixelIcon name="coin" size={12} className="text-ink-400 shrink-0" />
+            <span aria-hidden="true">🪙</span>
             <span className="flex-1 text-sm font-semibold text-ink-100">Стоимость дня</span>
             <span className={`num text-sm font-semibold ${cost.balanceDaily >= 0 ? 'text-moss-300' : 'text-clay-300'}`}>
               {cost.balanceDaily >= 0 ? '+' : ''}
               {fmt(cost.balanceDaily)}/день
             </span>
-            <PixelIcon
-              name="chevron"
-              size={9}
-              className={`text-ink-500 shrink-0 transition-transform duration-200 ${costOpen ? 'rotate-180' : ''}`}
-            />
+            <span aria-hidden="true" className={`accordion-chevron ${costOpen ? 'is-open' : ''}`}>
+              ▾
+            </span>
           </button>
 
           <div className={`accordion-body ${costOpen ? 'open' : ''}`}>
@@ -165,7 +157,7 @@ export const CareerPressureCard: React.FC = () => {
 
           {cost.broke && (
             <div className="text-xs text-ochre-300 pl-5">
-              Режим «гречка и лапша»: расходы урезаны, но мотивация тает. Нужен доход.
+              Режим «гречка и лапша»: расходы урезаны, но настроение тает. Нужен доход.
             </div>
           )}
         </div>
@@ -177,7 +169,7 @@ export const CareerPressureCard: React.FC = () => {
           <div>
             <div className="flex items-baseline justify-between gap-2">
               <span className="flex items-center gap-1.5 text-sm font-semibold text-ink-100">
-                <PixelIcon name="target" size={12} className="text-ink-400" />
+                <span aria-hidden="true">🎯</span>
                 {outlook!.kind === 'cto_election' ? outlook!.label : `До «${outlook!.label}»`}
               </span>
               {typeof outlook!.progress === 'number' && (
@@ -191,7 +183,7 @@ export const CareerPressureCard: React.FC = () => {
                   <span
                     style={{
                       width: `${Math.max(3, outlook!.progress)}%`,
-                      background: outlook!.ready ? 'var(--moss)' : 'var(--gold)',
+                      background: outlook!.ready ? 'var(--green)' : 'var(--gold)',
                     }}
                   />
                 </div>

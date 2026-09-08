@@ -38,6 +38,8 @@ interface TelegramWebApp {
   expand: () => void;
   /** Raw init data for server-side validation (empty in plain browsers). */
   initData?: string;
+  /** 'ios' | 'android' | 'tdesktop' | … — 'unknown' when the SDK runs outside Telegram. */
+  platform?: string;
   viewportHeight?: number;
   viewportStableHeight?: number;
   onEvent: (event: string, cb: () => void) => void;
@@ -67,11 +69,28 @@ export function isTelegram(): boolean {
   return !!window.Telegram?.WebApp;
 }
 
+/**
+ * Is this an actual Telegram client, or just our page with the SDK loaded?
+ *
+ * `index.html` always pulls telegram-web-app.js, so in a plain browser
+ * `window.Telegram.WebApp` exists anyway — with a full MainButton object whose
+ * `show()` resolves to nothing, because there is no Telegram chrome to draw
+ * it in. Trusting that object cost the browser build its «Завершить день»
+ * button. Outside a real client the SDK reports platform 'unknown' and empty
+ * initData; that pair is the honest signal.
+ */
+export function isTelegramRuntime(): boolean {
+  const tg = getTelegram();
+  if (!tg) return false;
+  if (tg.platform && tg.platform !== 'unknown') return true;
+  return Boolean(tg.initData);
+}
+
 let initialized = false;
 
 /** Call once at startup (main.tsx). Safe to call in a plain browser. */
 /** The app background (--bg in index.css) — Telegram's chrome is painted to match. */
-export const APP_INK = '#11151c';
+export const APP_INK = '#0d1117';
 
 /** Re-apply header/background colours (safe to call again after a theme change). */
 export function applyTelegramChrome(): void {
@@ -178,7 +197,7 @@ export function haptic(kind: HapticKind = 'tap'): void {
 // ---------------------------------------------------------------------------
 
 export function isMainButtonSupported(): boolean {
-  return !!getTelegram()?.MainButton;
+  return isTelegramRuntime() && !!getTelegram()?.MainButton;
 }
 
 export function showMainButton(text: string, onClick: () => void): void {
@@ -201,6 +220,15 @@ export function hideMainButton(onClick?: () => void): void {
     if (btn.isVisible) btn.hide();
   } catch {
     /* noop */
+  }
+}
+
+/** Did the client actually put the native button on screen? */
+export function isMainButtonVisible(): boolean {
+  try {
+    return Boolean(getTelegram()?.MainButton?.isVisible);
+  } catch {
+    return false;
   }
 }
 
@@ -264,4 +292,32 @@ export function openInvoice(url: string, callback?: (status: InvoiceStatus) => v
   }
   window.open(url, '_blank');
   callback?.('pending');
+}
+
+// ---------------------------------------------------------------------------
+// Sharing / invites
+// ---------------------------------------------------------------------------
+
+/**
+ * Open a t.me link (invite, share). Inside Telegram it uses the native
+ * navigation; in a browser it opens a tab so the flow stays testable.
+ */
+export function openTelegramLink(url: string): void {
+  const tg = getTelegram();
+  if (tg?.openTelegramLink) {
+    try {
+      tg.openTelegramLink(url);
+      return;
+    } catch {
+      /* fall through */
+    }
+  }
+  window.open(url, '_blank', 'noopener');
+}
+
+/** Invite deep link for the referral flow: `startapp=ref_<telegramId>`. */
+export function inviteLink(botName: string, telegramId: string | number): string {
+  const text = encodeURIComponent('Симулятор жизни айтишника — залетай, у меня уже своя квартира и кот.');
+  const target = encodeURIComponent(`https://t.me/${botName}?startapp=ref_${telegramId}`);
+  return `https://t.me/share/url?url=${target}&text=${text}`;
 }

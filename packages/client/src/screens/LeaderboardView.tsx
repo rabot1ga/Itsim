@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useGameStore, apiRequest } from '../store/gameStore';
-import { Spinner, EmptyState, SpriteBadge } from '../components/ui';
-import { PixelIcon } from '../components/pixel/PixelIcon';
+import { Spinner, EmptyState, ScreenTitle } from '../components/ui';
 
 /**
  * Leaderboard — real ratings from persisted player states.
@@ -33,41 +32,24 @@ const GRADE_LABELS: Record<string, string> = {
   cto: 'CTO',
 };
 
-/** Top three get a coloured rank plate (gold/silver/bronze); everybody else gets a quiet number. */
-const RANK_TONE: Record<number, string> = {
-  1: 'text-gold-300 border-gold-700',
-  2: 'text-ink-100 border-ink-500',
-  3: 'text-wood-300 border-wood-700',
-};
-const DEFAULT_RANK_TONE = 'text-ink-500 border-ink-700';
+/** Podium medals; everybody else gets a quiet number. */
+const MEDAL: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
 
 const Row: React.FC<{ row: LeaderRow }> = ({ row }) => (
-  <div
-    className={`panel !py-2.5 !px-3 flex items-center gap-3 ${
-      row.isYou ? 'panel-note panel-note-gold' : ''
-    }`}
-  >
-    <span
-      className={`num w-7 h-7 shrink-0 grid place-items-center border text-xs font-semibold ${
-        RANK_TONE[row.rank] ?? DEFAULT_RANK_TONE
-      }`}
-    >
-      {row.rank}
+  <div className={`lb-row ${row.isYou ? 'is-me' : ''}`}>
+    <span className="lb-rank num" aria-hidden="true">
+      {MEDAL[row.rank] ?? row.rank}
     </span>
     <div className="flex-1 min-w-0">
-      <div className="flex items-baseline gap-1.5 min-w-0">
-        <span
-          className={`text-sm font-medium truncate ${row.isYou ? 'text-gold-300' : 'text-ink-100'}`}
-        >
-          {row.name}
-        </span>
-        {row.isYou && <span className="text-2xs text-ink-500 shrink-0">ты</span>}
+      <div className="lb-name">
+        {row.name}
+        {row.isYou && <span className="text-2xs text-ink-500"> · ты</span>}
       </div>
-      <span className="text-2xs text-ink-500">
+      <span className="lb-meta">
         {GRADE_LABELS[row.grade] ?? row.grade} · <span className="num">день {row.day}</span>
       </span>
     </div>
-    <span className="num text-sm font-semibold text-white shrink-0">{row.rating}</span>
+    <span className="lb-score num">{row.rating} ⭐</span>
   </div>
 );
 
@@ -100,41 +82,25 @@ export const LeaderboardView: React.FC = () => {
 
   return (
     <div className="space-y-4 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <h2 className="flex items-center gap-2 text-base font-semibold text-white">
-          <SpriteBadge sprite="presentation_board" size={32} />
-          Лидерборд
-        </h2>
-        {player?.ratingScore !== undefined && (
-          <span className="chip">
-            <PixelIcon name="star" size={10} className="text-gold-300" />
-            <span className="num">{player.ratingScore}</span>
-          </span>
-        )}
-      </div>
-      <p className="text-xs text-ink-500 -mt-2 leading-relaxed">
-        Рейтинг считается по карьере, навыкам, деньгам, репутации, ачивкам и жилью
-      </p>
+      <ScreenTitle
+        emoji="🏆"
+        meta={player?.ratingScore !== undefined ? `твой рейтинг ${player.ratingScore} ⭐` : undefined}
+      >
+        Топ игроков
+      </ScreenTitle>
+      <p className="subtle -mt-2">Рейтинг считается по карьере, навыкам, деньгам, репутации, ачивкам и жилью.</p>
 
-      <div className="flex gap-1.5">
+      <div className="segmented" role="group" aria-label="Фильтр рейтинга">
         {[
           { id: false, label: 'Все' },
           { id: true, label: 'Без бустеров' },
         ].map((tab) => (
-          <button
-            key={String(tab.id)}
-            onClick={() => setHonestOnly(tab.id)}
-            className={`chip touch-target !px-3 ${
-              honestOnly === tab.id
-                ? '!bg-ink-700 !text-white !border-ink-600'
-                : '!text-ink-400'
-            }`}
-          >
+          <button key={String(tab.id)} aria-pressed={honestOnly === tab.id} onClick={() => setHonestOnly(tab.id)}>
             {tab.label}
           </button>
         ))}
         {total > 0 && (
-          <span className="chip !bg-transparent !border-transparent !text-ink-600 ml-auto">
+          <span className="chip ml-auto shrink-0">
             игроков: <span className="num">{total}</span>
           </span>
         )}
@@ -152,11 +118,7 @@ export const LeaderboardView: React.FC = () => {
           </>
         )}
         {loaded && rows.length === 0 && (
-          <EmptyState
-            icon="chart"
-            title="Пока пусто"
-            hint="Сыграй первый день — и попадёшь в топ."
-          />
+          <EmptyState emoji="📊" title="Пока пусто" hint="Сыграй первый день — и попадёшь в топ." />
         )}
       </div>
     </div>

@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { useGameStore } from '../store/gameStore';
-import { PixelIcon } from './pixel/PixelIcon';
 
 /**
  * Floating gains.
@@ -8,7 +7,7 @@ import { PixelIcon } from './pixel/PixelIcon';
  * The rule every idle game is built on: a tap must pay out where the player is
  * looking, inside the moment they tapped. The store diffs the state the server
  * sends back, and each number that moved flies up out of the resource bar for a
- * second — money, energy, motivation, a new skill level.
+ * second — money, energy, mood, a new skill level.
  */
 
 const GainLabel: React.FC<{ id: number; icon: string; text: string; tone: 'good' | 'bad' }> = ({
@@ -26,7 +25,7 @@ const GainLabel: React.FC<{ id: number; icon: string; text: string; tone: 'good'
 
   return (
     <span className={`gain-float ${tone === 'good' ? 'text-moss-300' : 'text-clay-300'}`}>
-      <PixelIcon name={icon} size={10} />
+      <span aria-hidden="true">{icon}</span>
       <span className="num">{text}</span>
     </span>
   );

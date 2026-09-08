@@ -10,7 +10,8 @@ import {
   type ShopItem,
   type ShopCategoryDef,
 } from './shopCatalogue';
-import { Spinner, EmptyState, SpriteBadge } from '../components/ui';
+import { Spinner, EmptyState, ScreenTitle, SectionTitle } from '../components/ui';
+import { NavLinks } from '../components/NavLinks';
 import { StarsShop } from '../components/StarsShop';
 import { IsoIcon, spriteForItem, HOUSING_SPRITE } from '../components/iso/IsoIcon';
 
@@ -30,7 +31,7 @@ type HousingDef = {
 function housingBonus(h: HousingDef): string {
   const parts: string[] = [];
   if (h.energyBonus) parts.push(`+${h.energyBonus} энергия`);
-  if (h.motivationBonus) parts.push(`+${h.motivationBonus} мотивация`);
+  if (h.motivationBonus) parts.push(`+${h.motivationBonus} настроение`);
   if (h.reputationBonus) parts.push(`+${h.reputationBonus} репутация`);
   return parts.length ? parts.join(', ') : 'базовое';
 }
@@ -38,11 +39,61 @@ function housingBonus(h: HousingDef): string {
 // Hard-coded fallback used only while /api/content/balance hasn't resolved.
 // The values mirror balance.json so the section is never empty.
 const FALLBACK_HOUSING: HousingDef[] = [
-  { level: 0, name: 'Общага', cost: 5000, energyBonus: 0, motivationBonus: 0, reputationBonus: 0, incomeGateMult: 0, saveMult: 1, saveStreakDays: 0 },
-  { level: 1, name: 'Однушка на окраине', cost: 25000, energyBonus: 1, motivationBonus: 0, reputationBonus: 0, incomeGateMult: 0, saveMult: 3, saveStreakDays: 25 },
-  { level: 2, name: 'Квартира в центре', cost: 50000, energyBonus: 2, motivationBonus: 5, reputationBonus: 0, incomeGateMult: 0, saveMult: 6, saveStreakDays: 40 },
-  { level: 3, name: 'Своя квартира (ипотека)', cost: 40000, energyBonus: 2, motivationBonus: 10, reputationBonus: 0, incomeGateMult: 18000, saveMult: 8, saveStreakDays: 55 },
-  { level: 4, name: 'Пентхаус', cost: 150000, energyBonus: 3, motivationBonus: 15, reputationBonus: 10, incomeGateMult: 0, saveMult: 10, saveStreakDays: 70 },
+  {
+    level: 0,
+    name: 'Общага',
+    cost: 5000,
+    energyBonus: 0,
+    motivationBonus: 0,
+    reputationBonus: 0,
+    incomeGateMult: 0,
+    saveMult: 1,
+    saveStreakDays: 0,
+  },
+  {
+    level: 1,
+    name: 'Однушка на окраине',
+    cost: 25000,
+    energyBonus: 1,
+    motivationBonus: 0,
+    reputationBonus: 0,
+    incomeGateMult: 0,
+    saveMult: 3,
+    saveStreakDays: 25,
+  },
+  {
+    level: 2,
+    name: 'Квартира в центре',
+    cost: 50000,
+    energyBonus: 2,
+    motivationBonus: 5,
+    reputationBonus: 0,
+    incomeGateMult: 0,
+    saveMult: 6,
+    saveStreakDays: 40,
+  },
+  {
+    level: 3,
+    name: 'Своя квартира (ипотека)',
+    cost: 40000,
+    energyBonus: 2,
+    motivationBonus: 10,
+    reputationBonus: 0,
+    incomeGateMult: 18000,
+    saveMult: 8,
+    saveStreakDays: 55,
+  },
+  {
+    level: 4,
+    name: 'Пентхаус',
+    cost: 150000,
+    energyBonus: 3,
+    motivationBonus: 15,
+    reputationBonus: 10,
+    incomeGateMult: 0,
+    saveMult: 10,
+    saveStreakDays: 70,
+  },
 ];
 
 export const ShopView: React.FC = () => {
@@ -125,16 +176,10 @@ export const ShopView: React.FC = () => {
 
   return (
     <div className="space-y-4 animate-fade-in">
-      <div className="shop-heading">
-        <h2 className="flex items-center gap-2 text-base font-semibold text-white">
-          <SpriteBadge sprite="boxes" size={32} />
-          Магазин
-        </h2>
-        <span className="num text-sm font-semibold text-moss-300" aria-label="Доступно денег">
-          {shopMoney(player.money ?? 0)}
-        </span>
-      </div>
-      <div className="catalogue-filters" role="group" aria-label="Категории товаров">
+      <ScreenTitle emoji="🛍" meta={<span className="num text-moss-300">{shopMoney(player.money ?? 0)}</span>}>
+        Магазин
+      </ScreenTitle>
+      <div className="segmented" role="group" aria-label="Категории товаров">
         {shopTabs.map((tab) => (
           <button key={tab.id} aria-pressed={category === tab.id} onClick={() => setCategory(tab.id)}>
             {tab.label}
@@ -142,26 +187,31 @@ export const ShopView: React.FC = () => {
         ))}
       </div>
       {note && (
-        <p role="status" className="panel text-sm text-moss-300">
+        <p role="status" className="card card-sm text-sm text-moss-300">
           {note}
         </p>
       )}
       {error && (
-        <p role="alert" className="panel text-sm text-clay-300">
+        <p role="alert" className="card card-sm text-sm text-clay-300">
           {error}
         </p>
       )}
       {!loaded && <Spinner label="Открываем магазин…" />}
       {loadError && (
-        <div className="panel">
-          <EmptyState icon="bag" title="Магазин недоступен" hint="Не удалось загрузить каталог. Попробуй ещё раз." />
+        <div className="card">
+          <EmptyState
+            emoji="🛍"
+            title="Магазин недоступен"
+            hint="Не удалось загрузить каталог. Попробуй ещё раз."
+            bare
+          />
           <button className="btn btn-secondary w-full" onClick={() => setAttempt((n) => n + 1)}>
             Повторить загрузку
           </button>
         </div>
       )}
       {loaded && !loadError && visible.length === 0 && (
-        <EmptyState icon="bag" title="Здесь пока пусто" hint="Загляни в другую категорию." />
+        <EmptyState emoji="📦" title="Здесь пока пусто" hint="Загляни в другую категорию." />
       )}
       {loaded && !loadError && (
         <div className="grid grid-cols-1 gap-2" aria-label="Товары">
@@ -169,7 +219,7 @@ export const ShopView: React.FC = () => {
             const owned = (player.items ?? []).includes(item.id);
             const affordable = canAfford(item.price);
             return (
-              <article key={item.id} className="panel shop-product" aria-label={item.name}>
+              <article key={item.id} className="card shop-product" aria-label={item.name}>
                 <span className="shop-product-art">
                   {item.type === 'headphones' ? (
                     <img src="/art/equipment/headphones.svg" alt="" width={48} height={48} />
@@ -199,18 +249,18 @@ export const ShopView: React.FC = () => {
                     <span className="text-xs text-moss-300">✓ куплено</span>
                   ) : (
                     <>
+                      <span className={`shop-price num ${affordable ? '' : 'is-short'}`}>{shopMoney(item.price)}</span>
                       <button
                         disabled={!affordable || busy !== null}
                         onClick={() => buy(item.id)}
-                        className="shop-price-button"
-                        aria-label="Купить"
+                        className={`btn btn-sm ${affordable ? 'btn-primary' : 'btn-secondary'}`}
                         title={
                           affordable
                             ? `Купить за ${shopMoney(item.price)}`
                             : `Не хватает ${shopMoney(item.price - (player.money ?? 0))}`
                         }
                       >
-                        {busy === item.id ? 'Покупаем…' : shopMoney(item.price)}
+                        {busy === item.id ? '…' : 'Купить'}
                       </button>
                       {!affordable && (
                         <span className="sr-only">Не хватает {shopMoney(item.price - (player.money ?? 0))}</span>
@@ -223,15 +273,15 @@ export const ShopView: React.FC = () => {
           })}
         </div>
       )}
-      <details className="panel shop-stars">
+      <details className="card shop-stars">
         <summary>Telegram Stars · косметика и поддержка</summary>
         <StarsShop />
       </details>
 
       {/* Housing section */}
-      <div className="game-card mt-3">
-        <h3 className="section-title mb-2">Жильё</h3>
-        <p className="text-xs text-ink-400 mb-3">
+      <div className="card mt-3">
+        <SectionTitle>Жильё</SectionTitle>
+        <p className="subtle my-3">
           Указан месячный платёж. Для переезда нужны запас денег, стабильный доход и время накопления — условия проверит
           сервер.
         </p>
@@ -243,12 +293,12 @@ export const ShopView: React.FC = () => {
             return (
               <div
                 key={h.level}
-                className={`flex items-center justify-between gap-2 p-2 border ${
-                  current ? 'border-moss-700 bg-moss-900/25' : 'border-ink-700 bg-ink-900'
+                className={`flex items-center justify-between gap-2 p-2.5 rounded-xl border ${
+                  current ? 'border-moss-500 bg-moss-900/30' : 'border-ink-700 bg-ink-950'
                 }`}
               >
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className="w-10 h-10 shrink-0 flex items-end justify-center bg-ink-900 border-2 border-ink-700 p-0.5">
+                  <span className="plate w-10 h-10 shrink-0 p-0.5">
                     <IsoIcon sprite={HOUSING_SPRITE[h.level] ?? 'bed'} size={34} />
                   </span>
                   <div className="min-w-0">
@@ -265,7 +315,7 @@ export const ShopView: React.FC = () => {
                     <button
                       disabled={!affordable || busy !== null}
                       onClick={() => buy('housing', 'upgrade_housing')}
-                      className={`btn !min-h-[34px] !px-3 text-xs ${affordable ? 'btn-primary' : 'btn-secondary'}`}
+                      className={`btn btn-sm ${affordable ? 'btn-primary' : 'btn-secondary'}`}
                     >
                       Переехать
                     </button>
@@ -276,6 +326,13 @@ export const ShopView: React.FC = () => {
           })}
         </div>
       </div>
+
+      <NavLinks
+        links={[
+          { view: 'mining', emoji: '⛏', label: 'Майнинг-ферма', hint: 'оборудование, доход и прогноз' },
+          { view: 'wallet', emoji: '💼', label: 'Кошелёк', hint: 'Solana, NFT и Telegram Stars' },
+        ]}
+      />
     </div>
   );
 };

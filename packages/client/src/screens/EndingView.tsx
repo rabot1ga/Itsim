@@ -1,7 +1,17 @@
 import React, { useMemo, useState } from 'react';
-import { useGameStore, apiRequest } from '../store/gameStore';
+import { useGameStore } from '../store/gameStore';
 import { checkEndings } from '@itsim/shared';
-import { PixelIcon } from '../components/pixel/PixelIcon';
+import { ScreenTitle } from '../components/ui';
+
+const ENDING_EMOJI: Record<string, string> = {
+  cto: '👑',
+  corporate_god: '👑',
+  exit: '🚀',
+  free_artist: '🎨',
+  teacher: '🎓',
+  burnout: '🔥',
+  left_it: '🚪',
+};
 
 /**
  * Endings — экран 6 финалов из ТЗ.
@@ -50,46 +60,50 @@ export const EndingView: React.FC = () => {
 
   return (
     <div className="space-y-4 animate-fade-in">
-      <h2 className="reference-screen-title">
-        <PixelIcon name="trophy" size={20} />
+      <ScreenTitle
+        emoji="🎬"
+        meta={
+          <span className="num">
+            {memories.length} / {endings.length || 6}
+          </span>
+        }
+      >
         Финалы карьеры
-      </h2>
-      <p className="text-xs text-ink-400 leading-relaxed">
-        Шесть финалов из ТЗ. Положительные открываются при выполнении условий;
-        отрицательные срабатывают сами, если долго игнорировать здоровье или деньги.
-        После любого финала доступна «Новая жизнь» с постоянным бонусом XP.
+      </ScreenTitle>
+      <p className="subtle">
+        Шесть финалов из ТЗ. Положительные открываются при выполнении условий; отрицательные срабатывают сами, если
+        долго игнорировать здоровье или деньги. После любого финала доступна «Новая жизнь» с постоянным бонусом XP.
       </p>
       {error && (
-        <p role="alert" className="panel text-sm text-clay-300">
+        <p role="alert" className="card card-sm text-sm text-clay-300">
           {error}
         </p>
       )}
       <div className="space-y-2">
         {endings.map((e) => {
-          const seen = memories.includes(e.id as any) || careerEnding === e.id || (careerEnding === 'corporate_god' && e.id === 'cto');
+          const seen =
+            memories.includes(e.id as any) ||
+            careerEnding === e.id ||
+            (careerEnding === 'corporate_god' && e.id === 'cto');
           return (
             <article
               key={e.id}
-              className={`panel ${e.available ? 'panel-note panel-note-gold' : 'panel-note panel-note-sky'}`}
+              className={`card ${e.available ? 'panel-note panel-note-gold' : 'panel-note panel-note-sky'}`}
               aria-label={e.title}
             >
               <div className="flex items-start gap-2 mb-1.5">
-                <PixelIcon
-                  name={e.id === 'burnout' || e.id === 'left_it' ? 'warn' : 'star'}
-                  size={14}
-                  className={e.available ? 'text-gold-300 mt-0.5' : 'text-sky-300 mt-0.5'}
-                />
+                <span className="text-base leading-none" aria-hidden="true">
+                  {ENDING_EMOJI[e.id] ?? (e.available ? '⭐' : '🔒')}
+                </span>
                 <h3 className="text-sm font-semibold text-ink-100 leading-tight flex-1">{e.title}</h3>
-                {seen && <span className="text-2xs text-gold-300 shrink-0">пройдено</span>}
+                {seen && <span className="chip chip-gold shrink-0">пройдено</span>}
               </div>
-              <p className="text-xs text-ink-400 leading-relaxed mb-2">{e.description}</p>
+              <p className="text-sm text-ink-300 leading-relaxed mb-2">{e.description}</p>
               {e.missing && !seen && <p className="text-2xs text-ochre-300 mb-2">{e.missing}</p>}
               <button
                 disabled={(!e.available && !seen) || !!busy}
                 onClick={() => claim(e.id)}
-                className={`btn w-full text-xs !min-h-[34px] ${
-                  e.available && !seen ? 'btn-primary' : 'btn-secondary'
-                }`}
+                className={`btn w-full ${e.available && !seen ? 'btn-primary' : 'btn-secondary'}`}
               >
                 {seen
                   ? 'Зафиксировано — начни новую жизнь'
@@ -102,12 +116,10 @@ export const EndingView: React.FC = () => {
             </article>
           );
         })}
-        {endings.length === 0 && (
-          <p className="text-xs text-ink-500">Условия финалов подгружаются…</p>
-        )}
+        {endings.length === 0 && <p className="subtle">Условия финалов подгружаются…</p>}
       </div>
       {meta && (
-        <p className="text-2xs text-ink-600 leading-relaxed">
+        <p className="subtle">
           Прожито жизней: {meta.lives ?? 0} · пройдено финалов: {memories.length} · лучший грейд:{' '}
           {meta.bestGrade ?? '—'} · глубочайший день: {meta.deepestDay ?? 0}
         </p>

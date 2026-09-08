@@ -22,7 +22,7 @@ import {
   findProject,
   floorAllowed,
   floorStyle,
-  freelancePayment,
+  bidChance,
   geneticTraitForSlot,
   isAvatarSlotId,
   isLookSlot,
@@ -42,7 +42,6 @@ import {
   REPAINT_COST,
   remainingTasks,
   roomEntryStatus,
-  startProject,
   wallPaint,
   weeklySalary,
   bumpSprintProgress,
@@ -301,21 +300,7 @@ function applyAction(
       return { message: '🚀 Пет-проект: ещё один TODO-трекер в портфолио. Репутация растёт' };
     }
 
-    // ---- Projects with deadlines (reference 1.png «Работа») ----
-    case 'take_project': {
-      const def = findProject(content.projects?.projects, String(params?.projectId ?? ''));
-      if (!def) return { error: 'Такого проекта нет в списке' };
-      const skillLevel = state.skills[state.mainSkillId]?.level ?? 0;
-      const blocked = projectBlockedReason(def, { activeProject: state.activeProject, skillLevel });
-      if (blocked) return { error: blocked };
-      state.activeProject = startProject(def, state.currentDay);
-      delta.activeProject = state.activeProject;
-      return {
-        message: `📁 Проект «${def.title}» взят. Дедлайн — день ${state.activeProject.deadlineDay}`,
-        delta,
-      };
-    }
-
+    // ---- Projects with deadlines: won by bidding, never handed out ----
     case 'project_task': {
       const active = state.activeProject;
       if (!active) return { error: 'Сначала возьми проект' };
@@ -373,39 +358,26 @@ function applyAction(
       return { message: `🚪 Проект брошен. Заказчик расстроен: −${penalty} репутации`, delta };
     }
 
-    // ---- Freelance ----
+    // ---- Freelance: answer an ad on the board, hear back in the morning ----
     case 'freelance': {
-      if (state.freelanceDoneToday) return { error: 'Сегодня уже был фриланс-заказ. Заказчики спят' };
-      const skillId = state.mainSkillId;
-      const level = state.skills[skillId]?.level ?? 0;
-      if (level < 3) return { error: 'Слишком мало опыта для фриланса — покачай навыки' };
-      const difficulty = level < 25 ? 'easy' : level < 50 ? 'medium' : 'hard';
-      const cooldown: number = { easy: 3, medium: 5, hard: 7 }[difficulty];
-      if (state.lastFreelanceDay !== undefined && state.currentDay - state.lastFreelanceDay < cooldown) {
-        return { error: 'Заказчики пока не вернулись с новыми проектами. Попробуй позже' };
-      }
-      let payment = freelancePayment(level, state.reputation, difficulty);
+      const def = findProject(content.projects?.projects, String(params?.projectId ?? ''));
+      if (!def) return { error: 'Такого заказа нет на бирже' };
+      if (state.freelanceDoneToday) return { error: 'Сегодня уже откликался. Заказчики тоже спят' };
+      const skillLevel = state.skills[state.mainSkillId]?.level ?? 0;
+      const blocked = projectBlockedReason(def, {
+        activeProject: state.activeProject,
+        skillLevel,
+        pendingBid: state.freelanceBid,
+      });
+      if (blocked) return { error: blocked };
 
-      // Cross-collection bonuses (DESIGN.md 3.3): e.g. SMB Gen2 → +5% freelance
-      const crossMult = (state.crossBonuses ?? [])
-        .filter((b) => b.type === 'freelance_mult')
-        .reduce((sum, b) => sum + b.value, 0);
-      const perkMult = Math.max(0, perkEffectSum(state, content, 'freelancePaymentMult') - 1);
-      const totalMult = 1 + crossMult + perkMult;
-      if (totalMult !== 1) {
-        payment = Math.round(payment * totalMult);
-      }
-      state.money += payment;
-      state.freelanceLastPayment = payment;
+      const chance = bidChance(def, { skillLevel, reputation: state.reputation });
+      state.freelanceBid = { projectId: def.id, day: state.currentDay, chance };
       state.freelanceDoneToday = true;
       state.lastFreelanceDay = state.currentDay;
-      const current = state.skills[skillId] ?? { level: 0, xp: 0 };
-      const next = applyXp(current, xpGain(state, content, 5), xpMotivation(state, content));
-      state.skills = { ...state.skills, [skillId]: next };
-      state.reputation = clamp(state.reputation + 0.2, 0, 100);
-      delta.money = payment;
+      delta.freelanceBid = state.freelanceBid;
       return {
-        message: `🛠 Фриланс-заказ выполнен: +${fmtMoney(payment)}. Отзыв: «всё ок, но правки уже в личке»`,
+        message: `📨 Отклик на «${def.title}» отправлен. Заказчик ответит утром — шанс ${Math.round(chance * 100)}%`,
         delta,
       };
     }

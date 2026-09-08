@@ -6,7 +6,7 @@ for (const width of [320, 390, 480]) {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');
 
-    for (const name of ['Энергия', 'Здоровье', 'Мотивация']) {
+    for (const name of ['Энергия', 'Здоровье', 'Настроение']) {
       const meter = page.getByRole('progressbar', { name, exact: true });
       await expect(meter).toBeVisible();
       expect(Number(await meter.getAttribute('aria-valuenow'))).toBeGreaterThanOrEqual(0);
@@ -41,7 +41,7 @@ for (const width of [320, 390, 480]) {
     ).toBe(false);
     await page.getByRole('button', { name: 'Главная', exact: true }).click();
     await expect(room).toBeVisible();
-    await room.getByRole('button', { name: 'Обустроить' }).click();
-    await expect(page.getByRole('heading', { name: 'Дом', exact: true })).toBeVisible();
+    await room.getByRole('button', { name: 'Обустроить комнату' }).click();
+    await expect(page.getByRole('heading', { name: 'Дом' })).toBeVisible();
   });
 }

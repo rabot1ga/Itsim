@@ -12,6 +12,8 @@ import { loadState, saveState } from '../../services/gameStore.js';
 import {
   applyEventEffects,
   applyMotivationDrift,
+  consolationPayment,
+  resolveBid,
   checkAchievements,
   findProject,
   gateFor,
@@ -26,6 +28,7 @@ import {
   projectDaysLeft,
   projectFailurePenalty,
   promotionChance,
+  startProject,
   reviewInterval,
   rollInterview,
   type Application,
@@ -234,12 +237,44 @@ function advanceDay(state: StoredState, content: any, messages: string[]) {
     state.health = clamp(state.health + dailyBonuses.health, 0, 100);
   }
 
+  // 8.4 Freelance bid: the client sleeps on it and answers in the morning
+  if (state.freelanceBid) {
+    const bid = state.freelanceBid;
+    state.freelanceBid = null;
+    const def = findProject(content.projects?.projects, bid.projectId);
+    if (!def) {
+      messages.push('📭 Заказ сняли с биржи ещё до ответа. Бывает');
+    } else if (state.activeProject) {
+      messages.push(`📭 «${def.title}»: пока ты ждал, взялся другой проект — заказчик ушёл`);
+    } else {
+      const outcome = resolveBid(bid.chance, rng());
+      if (outcome === 'won') {
+        state.activeProject = startProject(def, state.currentDay);
+        messages.push(`📁 Заказчик выбрал тебя: «${def.title}». Дедлайн — день ${state.activeProject.deadlineDay}`);
+      } else if (outcome === 'consolation') {
+        const crossMult = (state.crossBonuses ?? [])
+          .filter((b) => b.type === 'freelance_mult')
+          .reduce((sum, b) => sum + b.value, 0);
+        const perkMult = Math.max(0, perkEffectSum(state, content, 'freelancePaymentMult') - 1);
+        const pay = Math.round(consolationPayment(def) * (1 + crossMult + perkMult));
+        state.money += pay;
+        state.freelanceLastPayment = pay;
+        messages.push(`🛠 «${def.title}» ушёл другому, но тестовое задание оплатили: +${fmtMoney(pay)}`);
+      } else {
+        messages.push(`📭 «${def.title}»: заказчик выбрал исполнителя опытнее. Попробуй ещё раз`);
+      }
+    }
+  }
+
   // 8.5 Project deadline: an unfinished contract expires at the deadline day
   if (state.activeProject) {
     const def = findProject(content.projects?.projects, state.activeProject.id);
     if (!def) {
       state.activeProject = null;
-    } else if (projectDaysLeft(state.activeProject, state.currentDay) < 0 && !projectComplete(def, state.activeProject)) {
+    } else if (
+      projectDaysLeft(state.activeProject, state.currentDay) < 0 &&
+      !projectComplete(def, state.activeProject)
+    ) {
       const penalty = projectFailurePenalty(def);
       state.reputation = clamp(state.reputation - penalty, 0, 100);
       state.activeProject = null;

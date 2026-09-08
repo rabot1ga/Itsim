@@ -18,7 +18,6 @@ import {
 } from '@itsim/shared';
 import { useGameStore } from '../../store/gameStore';
 import { haptic } from '../../lib/telegram';
-import { PixelIcon } from '../pixel/PixelIcon';
 import { EmojiToken } from '../ui';
 
 /**
@@ -36,17 +35,40 @@ const SLOT_META: Record<AvatarSlotId, { icon: string; name: string; price?: stri
 };
 
 const ENTRY_NAMES: Record<string, string> = {
-  hair_buzzcut: 'Ёжик', hair_short: 'Короткие', hair_messy: 'Взъерошенные',
-  hair_long: 'Длинные', hair_bald: 'Лысый', hair_manbun: 'Пучок',
-  hair_curly: 'Кудри', hair_undercut: 'Андеркат', hair_spiky: 'Ирокез', hair_ponytail: 'Хвостик',
-  beard_none: 'Гладко', beard_stubble: 'Щетина', beard_goatee: 'Эспаньолка',
-  beard_full: 'Борода', beard_mustache: 'Усы',
-  top_hoodie_gray: 'Серое худи', top_hoodie_localhost: 'localhost', top_hoodie_corp: 'Корп. мерч',
-  top_tshirt: 'Футболка', top_shirt: 'Рубашка', top_jacket: 'Куртка', top_hoodie_cat: 'Кот-худи',
-  bottom_jeans: 'Джинсы', bottom_sweatpants: 'Спортивки', bottom_chinos: 'Чиносы',
-  bottom_shorts: 'Шорты', bottom_suit: 'Костюмные',
-  acc_none: 'Нет', acc_headphones: 'Наушники', acc_glasses: 'Очки',
-  acc_vr_headset: 'VR-шлем', acc_cap: 'Кепка', acc_medal: 'Медаль', acc_beanie: 'Шапка',
+  hair_buzzcut: 'Ёжик',
+  hair_short: 'Короткие',
+  hair_messy: 'Взъерошенные',
+  hair_long: 'Длинные',
+  hair_bald: 'Лысый',
+  hair_manbun: 'Пучок',
+  hair_curly: 'Кудри',
+  hair_undercut: 'Андеркат',
+  hair_spiky: 'Ирокез',
+  hair_ponytail: 'Хвостик',
+  beard_none: 'Гладко',
+  beard_stubble: 'Щетина',
+  beard_goatee: 'Эспаньолка',
+  beard_full: 'Борода',
+  beard_mustache: 'Усы',
+  top_hoodie_gray: 'Серое худи',
+  top_hoodie_localhost: 'localhost',
+  top_hoodie_corp: 'Корп. мерч',
+  top_tshirt: 'Футболка',
+  top_shirt: 'Рубашка',
+  top_jacket: 'Куртка',
+  top_hoodie_cat: 'Кот-худи',
+  bottom_jeans: 'Джинсы',
+  bottom_sweatpants: 'Спортивки',
+  bottom_chinos: 'Чиносы',
+  bottom_shorts: 'Шорты',
+  bottom_suit: 'Костюмные',
+  acc_none: 'Нет',
+  acc_headphones: 'Наушники',
+  acc_glasses: 'Очки',
+  acc_vr_headset: 'VR-шлем',
+  acc_cap: 'Кепка',
+  acc_medal: 'Медаль',
+  acc_beanie: 'Шапка',
 };
 
 function entryName(id: string): string {
@@ -130,11 +152,13 @@ export const Wardrobe: React.FC<{
               {/* Back to genetic */}
               <button
                 onClick={() => void apply(slotId, null)}
-                className={`snap-start shrink-0 w-[76px] border p-1.5 text-center transition-colors ${
-                  !override ? 'border-gold-700 bg-gold-900/20' : 'border-ink-700 bg-ink-900'
+                className={`snap-start shrink-0 w-[76px] rounded-xl border p-1.5 text-center transition-colors ${
+                  !override ? 'border-gold-500 bg-gold-900/20' : 'border-ink-700 bg-ink-950'
                 }`}
               >
-                <PixelIcon name="person" size={16} className="text-ink-300 mx-auto h-11" />
+                <span className="flex h-11 items-center justify-center text-lg" aria-hidden="true">
+                  🧬
+                </span>
                 <p className="text-2xs text-ink-300 mt-0.5">Своё</p>
               </button>
 
@@ -153,15 +177,15 @@ export const Wardrobe: React.FC<{
                       void apply(slotId, entry.id);
                     }}
                     title={status.unlocked ? entryName(entry.id) : status.hint}
-                    className={`snap-start shrink-0 w-[76px] border p-1.5 text-center transition-colors ${
+                    className={`snap-start shrink-0 w-[76px] rounded-xl border p-1.5 text-center transition-colors ${
                       active
-                        ? 'border-gold-700 bg-gold-900/20'
+                        ? 'border-gold-500 bg-gold-900/20'
                         : status.unlocked
-                          ? 'border-ink-700 bg-ink-900'
-                          : 'border-ink-800 bg-ink-950'
+                          ? 'border-ink-700 bg-ink-950'
+                          : 'border-ink-800 bg-ink-950/60'
                     }`}
                   >
-                    <span className="relative flex items-center justify-center h-11 overflow-hidden bg-ink-800">
+                    <span className="relative flex items-center justify-center h-11 overflow-hidden rounded-lg bg-ink-800">
                       {entry.file ? (
                         <img
                           src={`/layers/${entry.file}`}
@@ -170,14 +194,24 @@ export const Wardrobe: React.FC<{
                           className={`w-full h-full object-cover select-none pixelated ${status.unlocked ? '' : 'grayscale opacity-40'}`}
                         />
                       ) : (
-                        <PixelIcon name="lock" size={14} className="text-ink-600" />
+                        <span className="text-sm text-ink-600" aria-hidden="true">
+                          🔒
+                        </span>
                       )}
                       {!status.unlocked && (
-                        <span className="absolute inset-0 flex items-center justify-center"><PixelIcon name="lock" size={12} className="text-ink-300" /></span>
+                        <span className="absolute inset-0 flex items-center justify-center text-sm" aria-hidden="true">
+                          🔒
+                        </span>
                       )}
-                      {active && <PixelIcon name="check" size={9} className="absolute top-1 right-1 text-gold-300" />}
+                      {active && (
+                        <span className="absolute top-0.5 right-1 text-2xs text-gold-300" aria-hidden="true">
+                          ✓
+                        </span>
+                      )}
                     </span>
-                    <p className={`text-2xs mt-1 leading-tight truncate ${status.unlocked ? 'text-ink-300' : 'text-ink-500'}`}>
+                    <p
+                      className={`text-2xs mt-1 leading-tight truncate ${status.unlocked ? 'text-ink-300' : 'text-ink-500'}`}
+                    >
                       {entryName(entry.id)}
                     </p>
                     {!status.unlocked ? (

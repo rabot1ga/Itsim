@@ -1,7 +1,7 @@
 import React from 'react';
 import { useGameStore } from '../store/gameStore';
 import { PlayerPortrait } from '../components/PlayerPortrait';
-import { PixelIcon } from '../components/pixel/PixelIcon';
+import { ScreenTitle, SectionTitle, StatBar } from '../components/ui';
 import { xpToNext } from '@itsim/shared';
 
 const GRADES: Record<string, string> = {
@@ -15,83 +15,98 @@ const GRADES: Record<string, string> = {
   cto: 'CTO',
 };
 
-/** The profile block in reference 1.png, populated only from saved game state. */
+const LINKS: Array<{ view: string; emoji: string; label: string }> = [
+  { view: 'achievements', emoji: '🎯', label: 'Цели и достижения' },
+  { view: 'leaderboard', emoji: '🏆', label: 'Топ игроков' },
+  { view: 'room', emoji: '🏠', label: 'Комната и гардероб' },
+  { view: 'friends', emoji: '👥', label: 'Друзья и знакомые' },
+  { view: 'wallet', emoji: '💼', label: 'Кошелёк и NFT' },
+  { view: 'career', emoji: '💼', label: 'Карьерный рост' },
+  { view: 'endings', emoji: '🏁', label: 'Финалы' },
+  { view: 'settings', emoji: '⚙️', label: 'Настройки' },
+];
+
+/** The full-screen version of the reference profile card. */
 export const ProfileView: React.FC = () => {
   const player = useGameStore((s) => s.player);
   const setView = useGameStore((s) => s.setView);
   if (!player) return null;
+
   const mainId = player.mainSkillId ?? 'javascript';
   const skill = player.skills?.[mainId] ?? { level: 0, xp: 0 };
   const skills = Object.values(player.skills ?? {}) as Array<{ level: number }>;
-  const statRows = [
-    ['День жизни', String(player.currentDay ?? 1)],
-    ['Основной навык', `${mainId} · ур. ${skill.level}`],
-    ['Опыт навыка', skill.level >= 100 ? 'Максимум' : `${skill.xp} / ${xpToNext(skill.level)} XP`],
-    ['Репутация', Math.round(player.reputation ?? 0).toLocaleString('ru-RU')],
-    ['Навыков изучено', String(skills.filter((s) => s.level > 0).length)],
+  const need = xpToNext(skill.level);
+  const eventsSeen = Object.values(player.eventHistory ?? {}).reduce((sum: number, h: any) => sum + (h?.count ?? 0), 0);
+
+  const facts: Array<[string, string]> = [
+    ['Уровень', String(skill.level)],
+    ['Опыт', skill.level >= 100 ? 'Максимум' : `${skill.xp} / ${need} XP`],
+    ['Репутация', `${Math.round(player.reputation ?? 0).toLocaleString('ru-RU')} ⭐`],
     ['Достижения', String((player.achievements ?? []).length)],
+    ['Навыков изучено', String(skills.filter((s) => s.level > 0).length)],
     ['Предметы', String((player.items ?? []).length)],
+  ];
+
+  const stats: Array<[string, string]> = [
+    ['Дней в игре', String(player.currentDay ?? 1)],
+    ['Заработано всего', `${Math.round(player.totalEarned ?? player.money ?? 0).toLocaleString('ru-RU')} ₽`],
+    ['Событий пройдено', String(eventsSeen)],
     ['Прожито жизней', String(player.meta?.lives ?? 0)],
   ];
+
   return (
-    <div className="space-y-3">
-      <h2 className="reference-screen-title">
-        <PixelIcon name="person" size={20} />
-        Профиль
-      </h2>
-      <section className="profile-card" aria-label="Профиль персонажа">
-        <div className="profile-identity">
-          <PlayerPortrait player={player} size={80} />
-          <div>
-            <h3>Айтишник</h3>
-            <p>{GRADES[player.grade] ?? player.grade}</p>
-            <span>{player.job?.position ?? 'Карьера ещё впереди'}</span>
-          </div>
-        </div>
+    <div className="space-y-4 animate-fade-in">
+      <ScreenTitle emoji="👤">Профиль</ScreenTitle>
+
+      <section className="card profile-hero" aria-label="Профиль персонажа">
+        <PlayerPortrait player={player} size={96} />
+        <h3>Айтишник</h3>
+        <p>{GRADES[player.grade] ?? player.grade}</p>
+        <span className="subtle">{player.job?.position ?? 'Карьера ещё впереди'}</span>
+      </section>
+
+      <section className="card">
         <dl className="profile-stats">
-          {statRows.map(([label, value]) => (
+          {facts.map(([label, value]) => (
             <div key={label}>
               <dt>{label}</dt>
               <dd className="num">{value}</dd>
             </div>
           ))}
         </dl>
-        <div className="profile-money">
-          <PixelIcon name="coin" size={16} />
+        <div className="mt-3">
+          <StatBar resource="xp" label="Опыт навыка" value={skill.xp} max={need} />
+        </div>
+        <div className="profile-money num">
+          <span aria-hidden="true">💰</span>
           {(player.money ?? 0).toLocaleString('ru-RU')} ₽
         </div>
-        <button className="btn btn-secondary w-full" onClick={() => setView('room')}>
-          Комната и гардероб
-        </button>
       </section>
-      <section className="profile-card" aria-label="Цели и развитие">
-        <h3 className="flex items-center gap-2 text-sm">
-          <PixelIcon name="trophy" size={16} />
-          Цели и развитие
-        </h3>
-        <p className="text-xs text-ink-400 mt-2">
-          Проверь достижения и требования к следующему грейду. Выбери следующую цель для своего персонажа.
-        </p>
-        <div className="profile-links">
-          <button onClick={() => setView('achievements')}>
-            <PixelIcon name="target" size={13} />
-            Цели и достижения
-            <PixelIcon name="arrow" size={10} />
-          </button>
-          <button onClick={() => setView('career')}>
-            <PixelIcon name="briefcase" size={13} />
-            Карьерный рост
-            <PixelIcon name="arrow" size={10} />
-          </button>
-          <button onClick={() => setView('skills')}>
-            <PixelIcon name="book" size={13} />
-            Обучение
-            <PixelIcon name="arrow" size={10} />
-          </button>
-        </div>
+
+      <section className="card">
+        <SectionTitle>Статистика</SectionTitle>
+        <dl className="profile-stats mt-2">
+          {stats.map(([label, value]) => (
+            <div key={label}>
+              <dt>{label}</dt>
+              <dd className="num">{value}</dd>
+            </div>
+          ))}
+        </dl>
       </section>
-      <p className="text-2xs text-ink-400">
-        Портрет использует ту же внешность, что и комната: причёску, силуэт одежды и доступные цвета. Изменить их можно в гардеробе.
+
+      <div className="profile-links">
+        {LINKS.map((link) => (
+          <button key={link.view} className="btn btn-secondary justify-start" onClick={() => setView(link.view)}>
+            <span aria-hidden="true">{link.emoji}</span>
+            {link.label}
+          </button>
+        ))}
+      </div>
+
+      <p className="subtle">
+        Портрет использует ту же внешность, что и комната: причёску, силуэт одежды и цвета. Изменить их можно в
+        гардеробе.
       </p>
     </div>
   );

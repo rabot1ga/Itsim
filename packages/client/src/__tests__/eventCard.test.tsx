@@ -54,8 +54,8 @@ describe('reference event card', () => {
         onChoose={() => {}}
       />
     );
-    expect(screen.getByText('-6')).toBeTruthy();
-    expect(screen.getByText('-7 XP')).toBeTruthy();
+    expect(screen.getByText(/-6/)).toBeTruthy();
+    expect(screen.getByText(/-7 XP/)).toBeTruthy();
   });
 });
 

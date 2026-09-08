@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { haptic } from '../lib/telegram';
 import { ProfileView } from '../screens/ProfileView';
@@ -6,6 +6,7 @@ import { FriendsView } from '../screens/FriendsView';
 import { DayView } from '../screens/DayView';
 import { OfficeView } from '../screens/OfficeView';
 import { SkillsView } from '../screens/SkillsView';
+import { RestView } from '../screens/RestView';
 import { CareerView } from '../screens/CareerView';
 import { ShopView } from '../screens/ShopView';
 import { RoomView } from '../screens/RoomView';
@@ -15,56 +16,122 @@ import { EndingView } from '../screens/EndingView';
 import { MiningView } from '../screens/MiningView';
 import { WalletView } from '../screens/WalletView';
 import { PetView } from '../screens/PetView';
+import { SettingsView } from '../screens/SettingsView';
 import { PixelIcon } from './pixel/PixelIcon';
 import { GainStream } from './GainStream';
+import { EventCard, EventOutcomeCard, type EventChoice } from './EventCard';
+import { DayEndDock } from './DayEndDock';
 
-/** The reference's five destinations stay visible; secondary screens live in the header menu. */
+/**
+ * Five destinations stay visible; everything else lives in «⋮».
+ *
+ * «Отдых» took the fifth slot from «Друзья»: rest is a daily decision, the
+ * friends roster is a place you visit — it opens from «Отдых» and from «⋮».
+ */
 const TABS = [
   { view: 'main', icon: 'house', label: 'Главная' },
   { view: 'career', icon: 'briefcase', label: 'Работа' },
   { view: 'skills', icon: 'book', label: 'Обучение' },
+  { view: 'rest', icon: 'heart', label: 'Отдых' },
   { view: 'shop', icon: 'bag', label: 'Магазин' },
-  { view: 'friends', icon: 'people', label: 'Друзья' },
 ] as const;
 
+/**
+ * «⋮» — an index, not a home for orphans.
+ *
+ * Every destination below also has a contextual door: офис и финалы — на
+ * «Работе», майнинг и кошелёк — в «Магазине», питомец и дом — на «Отдыхе»,
+ * цели и топ — в «Профиле», профиль — по портрету в HUD. The sheet stays as a
+ * compact grid for the times you know where you want to go.
+ */
 const MORE = [
-  { view: 'profile', icon: 'person', label: 'Профиль', hint: 'Статистика, цели и гардероб' },
-  { view: 'room', icon: 'house', label: 'Дом', hint: 'Предметы, расстановка и внешность' },
-  { view: 'achievements', icon: 'trophy', label: 'Цели', hint: 'Цели, достижения и прогресс' },
-  { view: 'leaderboard', icon: 'chart', label: 'Топ', hint: 'Рейтинг игроков' },
-  { view: 'office', icon: 'people', label: 'Офис', hint: 'Команда и задачи' },
-  { view: 'mining', icon: 'coin', label: 'Майнинг', hint: 'Ферма, хешрейт, прогноз' },
-  { view: 'wallet', icon: 'box', label: 'Кошелёк', hint: 'NFT-инвентарь и Solana-кошелёк' },
-  { view: 'pet', icon: 'heart', label: 'Питомец', hint: 'Состояние, корм, мотивация' },
-  { view: 'endings', icon: 'trophy', label: 'Финалы', hint: 'Шесть финалов карьеры и прогресс' },
+  { view: 'profile', emoji: '👤', label: 'Профиль' },
+  { view: 'room', emoji: '🏠', label: 'Дом' },
+  { view: 'friends', emoji: '👥', label: 'Друзья' },
+  { view: 'pet', emoji: '🐾', label: 'Питомец' },
+  { view: 'achievements', emoji: '🎯', label: 'Цели' },
+  { view: 'leaderboard', emoji: '🏆', label: 'Топ' },
+  { view: 'office', emoji: '🖥', label: 'Офис' },
+  { view: 'mining', emoji: '⛏', label: 'Майнинг' },
+  { view: 'wallet', emoji: '💼', label: 'Кошелёк' },
+  { view: 'endings', emoji: '🏁', label: 'Финалы' },
+  { view: 'settings', emoji: '⚙️', label: 'Настройки' },
 ] as const;
+
+/**
+ * Tabs where a day is being spent, so the «Завершить день» dock belongs there.
+ * Side screens (профиль, дом, настройки…) stay quiet — you go there to look,
+ * not to burn the turn.
+ */
+const DOCK_VIEWS = new Set<string>(['main', 'career', 'skills', 'rest', 'shop', 'office', 'pet']);
 
 export const GameScreen: React.FC = () => {
-  const { currentView, setView, setScreen, advanceDay, loadNft, moreOpen, setMoreOpen } = useGameStore();
+  const { currentView, setView, loadNft, moreOpen, setMoreOpen } = useGameStore();
   const player = useGameStore((s) => s.player);
+  const activeEvent = useGameStore((s) => s.activeEvent);
+  const chooseEvent = useGameStore((s) => s.chooseEvent);
+  const error = useGameStore((s) => s.error);
+  /** the choice just made, kept on screen as a receipt until dismissed */
+  const [outcome, setOutcome] = useState<{ title: string; tags: string[]; choice: EventChoice } | null>(null);
+
+  /**
+   * An event can arrive from any action, not only from ending the day — so it
+   * is rendered above every tab. Otherwise studying on «Обучение» would hand
+   * the server an event nobody can answer.
+   */
+  const decide = async (event: any, index: number) => {
+    const choice = event.choices?.[index];
+    await chooseEvent(event.id, index);
+    if (!useGameStore.getState().activeEvent && choice) {
+      setOutcome({ title: event.title, tags: event.tags ?? [], choice });
+    }
+  };
 
   /** an offer on the table is the one thing worth a marker in the nav */
   const offerWaiting = Boolean(player?.pendingOffers?.length);
 
-  const handleAdvanceDay = async () => {
-    await advanceDay();
-  };
-
-  // Preload NFT info when opening the room
+  // Preload NFT info when opening the room or the wallet
   useEffect(() => {
-    if (currentView === 'room') loadNft();
+    if (currentView === 'room' || currentView === 'wallet') loadNft();
   }, [currentView, loadNft]);
 
   const renderView = () => {
+    if (activeEvent && player) {
+      return (
+        <EventCard
+          key={activeEvent.id}
+          eventId={activeEvent.id}
+          title={activeEvent.title}
+          description={activeEvent.description}
+          tags={activeEvent.tags ?? []}
+          choices={activeEvent.choices ?? []}
+          player={player}
+          error={error}
+          onChoose={(i) => decide(activeEvent, i)}
+        />
+      );
+    }
+    if (outcome) {
+      return (
+        <EventOutcomeCard
+          title={outcome.title}
+          tags={outcome.tags}
+          choice={outcome.choice}
+          onDismiss={() => setOutcome(null)}
+        />
+      );
+    }
     switch (currentView) {
       case 'profile':
         return <ProfileView />;
       case 'friends':
         return <FriendsView />;
       case 'main':
-        return <DayView onAdvanceDay={handleAdvanceDay} />;
+        return <DayView />;
       case 'skills':
         return <SkillsView />;
+      case 'rest':
+        return <RestView />;
       case 'career':
         return <CareerView />;
       case 'shop':
@@ -85,8 +152,10 @@ export const GameScreen: React.FC = () => {
         return <WalletView />;
       case 'pet':
         return <PetView />;
+      case 'settings':
+        return <SettingsView />;
       default:
-        return <DayView onAdvanceDay={handleAdvanceDay} />;
+        return <DayView />;
     }
   };
 
@@ -102,98 +171,47 @@ export const GameScreen: React.FC = () => {
       <GainStream />
 
       {/* Content area */}
-      <div id="game-scroll" className="flex-1 overflow-y-auto p-3 space-y-3">
+      <div id="game-scroll" className="flex-1 overflow-y-auto space-y-3">
         {renderView()}
       </div>
 
-      {/* «Ещё» sheet — a navigation detour, never a state you can get stuck in.
-          Closing it is one tap, one native back press (see App.tsx) or simply
-          picking a destination; setView in the store closes it for us. */}
+      {/* «⋮» sheet — a navigation detour, never a state you can get stuck in. */}
       {moreOpen && (
         <>
           <button
-            aria-label="Закрыть меню «Ещё»"
+            aria-label="Закрыть меню"
             onClick={() => setMoreOpen(false)}
-            className="absolute inset-0 z-20 bg-black/50 animate-fade-in"
+            className="sheet-backdrop animate-fade-in"
           />
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label="Ещё"
-            className="absolute inset-x-0 bottom-0 z-30 animate-slide-up"
-          >
-            <div className="border-t border-x border-ink-600 bg-ink-900 rounded-t-[20px] p-3 pb-2 safe-area-pb shadow-[0_-18px_44px_-24px_rgba(0,0,0,0.9)]">
-              <div className="h-1 w-9 bg-ink-700 mx-auto mb-3" />
-              <div className="flex items-center gap-2 mb-3">
-                <PixelIcon name="plus" size={12} className="text-gold-300" />
-                <span className="text-xs font-bold uppercase tracking-[0.12em] text-ink-300">Ещё</span>
-                <span className="flex-1 border-t border-dashed border-ink-700" />
-                <button
-                  onClick={() => setMoreOpen(false)}
-                  className="flex items-center gap-1.5 text-2xs text-ink-500 hover:text-ink-200 transition-colors touch-target px-1"
-                >
-                  <PixelIcon name="chevron" size={9} />
-                  Закрыть
-                </button>
-              </div>
-              {/* A hub is a list, not a shelf: one destination per row with its
-                  icon anchored left, so a glance scans four real places instead
-                  of four identical tiles. */}
-              <div className="max-h-[min(420px,58vh)] overflow-y-auto -mx-1 px-1">
-                {MORE.map((item, i) => {
-                  const isCurrent = currentView === item.view;
-                  return (
-                    <button
-                      key={item.view}
-                      onClick={() => nav(item.view)}
-                      aria-current={isCurrent ? 'true' : undefined}
-                      className={`group flex w-full items-center gap-3 text-left min-h-[52px] py-2 border-b border-ink-800 last:border-0 ${
-                        i > 0 ? 'mt-0.5' : ''
-                      } ${isCurrent ? '' : 'active:bg-ink-800/60'}`}
-                    >
-                      {/* the notch: where you are right now */}
-                      {isCurrent && <span className="self-stretch w-[3px] shrink-0 bg-gold-300" aria-hidden="true" />}
-                      <span
-                        className={`w-9 h-9 shrink-0 flex items-center justify-center border-2 bg-ink-800 ${
-                          isCurrent
-                            ? 'border-gold-700 text-gold-300'
-                            : 'border-ink-700 text-ink-300 group-hover:border-ink-600'
-                        }`}
-                      >
-                        <PixelIcon name={item.icon} size={16} />
-                      </span>
-                      <span className="flex-1 min-w-0">
-                        <span className="flex items-center gap-2 text-sm font-semibold text-ink-100">{item.label}</span>
-                        <span className="block text-2xs text-ink-500 leading-tight mt-0.5">{item.hint}</span>
-                      </span>
-                      {isCurrent ? (
-                        <span className="text-2xs font-bold uppercase tracking-[0.08em] text-gold-300 shrink-0">
-                          здесь
-                        </span>
-                      ) : (
-                        <PixelIcon name="chevron" size={9} className="text-ink-600 -rotate-90 shrink-0" />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-              <button
-                className="btn btn-secondary w-full mt-2"
-                onClick={() => {
-                  setMoreOpen(false);
-                  setView('main');
-                  setScreen('game');
-                }}
-              >
-                На главную
-              </button>
+          <div role="dialog" aria-modal="true" aria-label="Меню" className="sheet animate-slide-up safe-area-pb">
+            <div className="sheet-grip" />
+            <div className="menu-grid">
+              {MORE.map((item) => {
+                const isCurrent = currentView === item.view;
+                return (
+                  <button
+                    key={item.view}
+                    onClick={() => nav(item.view)}
+                    aria-current={isCurrent ? 'true' : undefined}
+                    className="menu-tile"
+                  >
+                    <span className="emoji" aria-hidden="true">
+                      {item.emoji}
+                    </span>
+                    <span className="menu-tile-label">{item.label}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </>
       )}
 
+      {/* End of the turn — docked above the nav so it never needs scrolling to */}
+      <DayEndDock visible={DOCK_VIEWS.has(currentView) && !activeEvent && !outcome} />
+
       {/* Bottom navigation */}
-      <nav className="tabbar safe-area-pb" aria-label="Основная навигация">
+      <nav className="tabbar" aria-label="Основная навигация">
         {TABS.map((tab) => (
           <NavButton
             key={tab.view}

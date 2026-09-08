@@ -48,6 +48,7 @@ export async function stateRoutes(app: FastifyInstance) {
         ratingScore: 0,
         activeEventId: null,
         freelanceDoneToday: false,
+        freelanceBid: null,
         lastFreelanceDay: 0,
         sideJobDoneToday: false,
         petFedToday: false,

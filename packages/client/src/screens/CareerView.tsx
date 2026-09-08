@@ -1,9 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { InterviewPanel } from '../components/InterviewPanel';
-import { Spinner } from '../components/ui';
+import { Spinner, ScreenTitle, SectionTitle, ResChip } from '../components/ui';
 import { ProjectBoard } from '../components/ProjectBoard';
-import { PixelIcon } from '../components/pixel/PixelIcon';
+import { CareerPressureCard } from '../components/CareerPressureCard';
+import { ActionGrid, toTile } from '../components/ActionGrid';
+import { NavLinks } from '../components/NavLinks';
+import { SIDE_JOB_EMOJI, WORK_ACTIONS, formatMoney as formatCash, type SideJobInfo } from './actionCatalogue';
 
 interface GateInfo {
   grade: string;
@@ -54,12 +57,12 @@ interface CompanyInfo {
 
 export const CareerView: React.FC = () => {
   const player = useGameStore((s) => s.player);
-  const setView = useGameStore((s) => s.setView);
   const performAction = useGameStore((s) => s.performAction);
   const applyToCompany = useGameStore((s) => s.applyToCompany);
   const acceptOffer = useGameStore((s) => s.acceptOffer);
   const declineOffer = useGameStore((s) => s.declineOffer);
   const [companies, setCompanies] = useState<CompanyInfo[]>([]);
+  const [sideJobs, setSideJobs] = useState<Record<string, SideJobInfo>>({});
   const [gates, setGates] = useState<GateInfo[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [loadError, setLoadError] = useState(false);
@@ -79,6 +82,13 @@ export const CareerView: React.FC = () => {
     }
   };
   const outlook = useGameStore((s) => s.careerOutlook);
+
+  useEffect(() => {
+    fetch('/api/content/side-jobs')
+      .then((r) => r.json())
+      .then((data) => setSideJobs(data.sideJobs ?? {}))
+      .catch(() => setSideJobs({}));
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -112,19 +122,16 @@ export const CareerView: React.FC = () => {
 
   return (
     <div className="space-y-4 animate-fade-in">
-      <h2 className="flex items-center gap-2 text-base font-semibold text-white">
-        <PixelIcon name="briefcase" size={20} className="text-ochre-300" />
-        Работа
-      </h2>
+      <ScreenTitle emoji="💼">Работа</ScreenTitle>
 
       {error && (
-        <p role="alert" className="panel text-sm text-clay-300">
+        <p role="alert" className="card card-sm text-sm text-clay-300">
           {error}
         </p>
       )}
 
       {/* Current job */}
-      <div className={`panel panel-note ${player.job ? 'panel-note-moss' : 'panel-note-ochre'}`}>
+      <div className={`card panel-note ${player.job ? 'panel-note-moss' : 'panel-note-ochre'}`}>
         {player.job ? (
           <>
             <div className="flex items-center justify-between mb-1.5">
@@ -150,45 +157,79 @@ export const CareerView: React.FC = () => {
 
       <ProjectBoard />
 
-      <section className="reference-work-actions" aria-label="Быстрые действия">
-        <h3>Быстрые действия</h3>
-        {[
-          { id: 'work_task', name: 'Рабочая задача', energy: 4, job: true },
-          { id: 'pet_project', name: 'Развивать пет-проект', energy: 3, job: false },
-          { id: 'freelance', name: 'Фриланс-заказ', energy: 4, job: false },
-        ].map((action) => (
-          <button
-            key={action.id}
-            disabled={busy || player.energy < action.energy || (action.job && !player.job)}
-            onClick={() => act(() => performAction(action.id, { skillId: player.mainSkillId || 'javascript' }))}
-          >
-            <span>{action.name}</span>
-            <span>
-              {action.job && !player.job ? 'Нужна работа' : `−${action.energy} энергии`}{' '}
-              <PixelIcon name="arrow" size={10} />
-            </span>
-          </button>
-        ))}
+      <section aria-label="Рабочие действия">
+        <SectionTitle className="mb-2">Действия</SectionTitle>
+        <ActionGrid
+          label="Рабочие действия"
+          actions={WORK_ACTIONS.map((a) => toTile(a, Boolean(player.job)))}
+          energy={player.energy ?? 0}
+          money={player.money ?? 0}
+          busy={busy}
+          onRun={(id) => act(() => performAction(id, { skillId: player.mainSkillId || 'javascript' }))}
+        />
       </section>
 
-      {/* Office entry */}
-      {player.job && (
-        <button onClick={() => setView('office')} className="tile w-full flex items-center gap-3">
-          <PixelIcon name="briefcase" size={16} className="text-ink-300" />
-          <span className="flex-1 min-w-0">
-            <span className="block text-sm font-medium text-ink-100">Мой офис</span>
-            <span className="block text-xs text-ink-500 truncate">
-              {player.job.position} · команда, задачи и настроение дня
-            </span>
-          </span>
-          <PixelIcon name="arrow" size={11} className="text-ink-500 shrink-0" />
-        </button>
+      {/* Non-IT gigs: money now, at the price of health and mood */}
+      {Object.keys(sideJobs).length > 0 && (
+        <section aria-label="Подработки не в IT">
+          <SectionTitle className="mb-2">Подработки не в IT</SectionTitle>
+          <ActionGrid
+            label="Подработки"
+            energy={player.energy ?? 0}
+            money={player.money ?? 0}
+            busy={busy}
+            onRun={(jobId) => act(() => performAction('side_job', { jobId }))}
+            actions={Object.entries(sideJobs).map(([jobId, job]) => {
+              const skillLevel = player.skills?.[player.mainSkillId ?? 'javascript']?.level ?? 0;
+              const tooEarly = (player.currentDay ?? 0) < (job.minDay ?? 1);
+              const minSkillMet = skillLevel >= (job.minSkill ?? 0);
+              const payout = job.payment + (job.paymentPerSkill ? Math.round(skillLevel * job.paymentPerSkill) : 0);
+              return {
+                id: jobId,
+                emoji: SIDE_JOB_EMOJI[jobId] ?? '📦',
+                name: job.name,
+                energy: job.energy,
+                locked: !minSkillMet || tooEarly,
+                lockLabel: !minSkillMet ? `навык ${job.minSkill}+` : `с ${job.minDay} дня`,
+                gain: (
+                  <ResChip tone="positive">
+                    +{formatCash(payout)}
+                    {job.paymentVar ? '±' : ''} ₽
+                  </ResChip>
+                ),
+              };
+            })}
+          />
+          <p className="text-2xs text-ink-600 mt-1.5">Одна подработка в день. Здоровье и настроение — по курсу.</p>
+        </section>
       )}
+
+      {/* The rest of the career lives one tap away, not in the «⋮» menu */}
+      <NavLinks
+        title="Карьера дальше"
+        links={[
+          ...(player.job
+            ? [
+                {
+                  view: 'office',
+                  emoji: '🖥',
+                  label: 'Мой офис',
+                  hint: `${player.job.position} · команда, задачи и настроение дня`,
+                },
+              ]
+            : []),
+          { view: 'endings', emoji: '🏁', label: 'Финалы', hint: 'шесть способов завершить карьеру' },
+          { view: 'leaderboard', emoji: '🏆', label: 'Топ игроков', hint: 'кто и как быстро растёт' },
+        ]}
+      />
+
+      {/* Promotion pressure: cost of the day + what the next grade really needs */}
+      <CareerPressureCard />
 
       {/* Job offers */}
       {offers.length > 0 && (
-        <div className="panel panel-note panel-note-moss animate-pop-in">
-          <h3 className="section-title mb-2">Офферы</h3>
+        <div className="card panel-note panel-note-moss animate-pop-in">
+          <SectionTitle className="mb-2">Офферы</SectionTitle>
           <div className="space-y-2">
             {offers.map((o: any) => (
               <div key={o.companyId} className="well p-2.5">
@@ -202,14 +243,14 @@ export const CareerView: React.FC = () => {
                     <button
                       disabled={busy}
                       onClick={() => act(() => acceptOffer(o.companyId))}
-                      className="btn btn-primary !min-h-[38px] !px-3 text-xs"
+                      className="btn btn-sm btn-primary"
                     >
                       Принять
                     </button>
                     <button
                       disabled={busy}
                       onClick={() => act(() => declineOffer(o.companyId))}
-                      className="btn btn-ghost !min-h-[38px] !px-3 text-xs"
+                      className="btn btn-sm btn-ghost"
                     >
                       Отклонить
                     </button>
@@ -226,8 +267,8 @@ export const CareerView: React.FC = () => {
 
       {/* Application status */}
       {application && (
-        <div className="panel panel-note panel-note-sky">
-          <h3 className="eyebrow mb-2">Твой отклик</h3>
+        <div className="card panel-note panel-note-sky">
+          <SectionTitle className="mb-2">Твой отклик</SectionTitle>
           {application.status === 'interview_scheduled' && (
             <p className="text-sm text-ink-300 leading-relaxed">
               {application.position} — собеседование на {application.interviewDay} день. Готовься, скрести пальцы.
@@ -245,8 +286,8 @@ export const CareerView: React.FC = () => {
       )}
 
       {/* Companies */}
-      <div className="game-card">
-        <h3 className="section-title mb-2">Доступные компании</h3>
+      <div className="card">
+        <SectionTitle className="mb-3">Доступные компании</SectionTitle>
         {!loaded && <Spinner label="Загрузка компаний…" />}
         {loadError && (
           <div role="alert" className="text-sm text-clay-300">
@@ -285,7 +326,7 @@ export const CareerView: React.FC = () => {
                   <button
                     disabled={busy}
                     onClick={() => act(() => applyToCompany(c.id))}
-                    className="btn btn-primary career-apply text-xs"
+                    className="btn btn-sm btn-primary mt-3 ml-auto flex"
                   >
                     Откликнуться
                   </button>
@@ -296,9 +337,9 @@ export const CareerView: React.FC = () => {
         </div>
       </div>
       {/* Grade progress — real content gates, not a hardcoded copy */}
-      <details className="game-card career-grades">
+      <details className="card career-grades">
         <summary className="flex items-center justify-between mb-2">
-          <span className="section-title">Грейды · требования к росту</span>
+          <span className="section-title">Повышение грейда · требования</span>
         </summary>
         <div className="space-y-1.5">
           {(gates.length ? gates : []).map((g) => {
@@ -310,11 +351,15 @@ export const CareerView: React.FC = () => {
             return (
               <div
                 key={g.grade}
-                className={` px-2 py-1.5 border ${isNext ? 'border-gold-700 bg-gold-900/15' : 'border-transparent'}`}
+                className={`px-2 py-1.5 rounded-xl border ${
+                  isNext ? 'border-gold-500 bg-gold-900/20' : 'border-transparent'
+                }`}
               >
                 <div className="flex items-center gap-2 text-xs">
                   <span
-                    className={`w-1.5 h-1.5 ${isReached ? 'bg-moss-400' : g.special ? 'bg-gold-500' : 'bg-ink-600'}`}
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      isReached ? 'bg-moss-300' : g.special ? 'bg-gold-300' : 'bg-ink-600'
+                    }`}
                   />
                   <span className={`w-24 ${isReached ? 'text-ink-100' : 'text-ink-500'}`}>{g.label ?? g.grade}</span>
                   <span className={`num flex-1 ${isReached ? 'text-ink-300' : 'text-ink-600'}`}>

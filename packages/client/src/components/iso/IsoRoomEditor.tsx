@@ -2,7 +2,6 @@ import React from 'react';
 import { REPAINT_COST, FLOOR_STYLES, WALL_PAINTS, floorsFor, paintsFor } from '@itsim/shared';
 import { useGameStore } from '../../store/gameStore';
 import { haptic } from '../../lib/telegram';
-import { PixelIcon } from '../pixel/PixelIcon';
 
 /**
  * Room finishes editor.
@@ -24,8 +23,7 @@ export const IsoRoomEditor: React.FC<{
     await performAction('customize_room', { slot, entryId });
   };
 
-  const canAfford = (current?: string, next?: string | null) =>
-    current === next || (player.money ?? 0) >= REPAINT_COST;
+  const canAfford = (current?: string, next?: string | null) => current === next || (player.money ?? 0) >= REPAINT_COST;
 
   const paints = paintsFor(tier);
   const floors = floorsFor(tier);
@@ -62,7 +60,7 @@ export const IsoRoomEditor: React.FC<{
 
       <div>
         <h4 className="eyebrow mb-2 flex items-center gap-1.5">
-          <PixelIcon name="house" size={10} className="text-ink-500" />
+          <span aria-hidden="true">🎨</span>
           Стены
         </h4>
         <div className="flex gap-2 overflow-x-auto pb-1">
@@ -92,7 +90,7 @@ export const IsoRoomEditor: React.FC<{
 
       <div>
         <h4 className="eyebrow mb-2 flex items-center gap-1.5">
-          <PixelIcon name="box" size={10} className="text-ink-500" />
+          <span aria-hidden="true">🪵</span>
           Пол
         </h4>
         <div className="flex gap-2 overflow-x-auto pb-1">

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useGameStore } from '../store/gameStore';
-import { PixelIcon } from './pixel/PixelIcon';
 
 /**
  * Weekly season sprint card (P1.2).
@@ -31,7 +30,7 @@ export const SprintCard: React.FC = () => {
   const { reward } = sprint;
   const rewardParts: string[] = [];
   if (reward?.money) rewardParts.push(`+${fmtMoney(reward.money)} ₽`);
-  if (reward?.motivation) rewardParts.push(`+${reward.motivation} мотивации`);
+  if (reward?.motivation) rewardParts.push(`+${reward.motivation} настроения`);
   if (reward?.reputation) rewardParts.push(`+${reward.reputation} репутации`);
   const rewardLabel = rewardParts.join(' · ');
 
@@ -53,9 +52,11 @@ export const SprintCard: React.FC = () => {
   };
 
   return (
-    <section className="panel space-y-2.5">
+    <section className="card space-y-2.5">
       <div className="flex items-start gap-2">
-        <PixelIcon name={sprint.icon} size={14} className="text-gold-300 mt-0.5 shrink-0" />
+        <span className="text-base leading-none mt-0.5 shrink-0" aria-hidden="true">
+          🗓
+        </span>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className="text-sm font-semibold text-ink-100">{sprint.title}</span>
@@ -79,13 +80,13 @@ export const SprintCard: React.FC = () => {
                   {g.progress} из {g.count} {g.description}
                 </span>
                 {done && (
-                  <span className="flex items-center gap-1 text-moss-300">
-                    <PixelIcon name="check" size={9} />
+                  <span className="text-moss-300" aria-hidden="true">
+                    ✓
                   </span>
                 )}
               </div>
               <div className="meter mt-1">
-                <span style={{ width: `${pct}%`, background: done ? 'var(--moss)' : 'var(--gold)' }} />
+                <span style={{ width: `${pct}%`, background: done ? 'var(--green)' : 'var(--gold)' }} />
               </div>
             </div>
           );
@@ -95,18 +96,17 @@ export const SprintCard: React.FC = () => {
       {/* Footer: the reward state — open, claimable, or banked */}
       {sprint.claimed ? (
         <p className="flex items-center gap-1.5 text-xs text-moss-300">
-          <PixelIcon name="check" size={10} />
+          <span aria-hidden="true">✓</span>
           Награда недели получена{rewardLabel ? `: ${rewardLabel}` : ''}
         </p>
       ) : sprint.allDone ? (
-        <button onClick={() => void handleClaim()} disabled={busy} className="btn btn-primary w-full text-sm">
-          <PixelIcon name="coin" size={12} className="text-gold-300" />
+        <button onClick={() => void handleClaim()} disabled={busy} className="btn btn-primary w-full">
           {busy ? 'Забираем…' : `Забрать награду${rewardLabel ? ` · ${rewardLabel}` : ''}`}
         </button>
       ) : (
         rewardLabel && (
           <p className="flex items-center gap-1.5 text-2xs text-ink-500">
-            <PixelIcon name="lock" size={8} className="text-ink-600 shrink-0" />
+            <span aria-hidden="true">🔒</span>
             Выполни все цели до конца недели — награда {rewardLabel}
           </p>
         )

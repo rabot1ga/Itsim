@@ -58,11 +58,11 @@ export interface Gain {
 }
 
 const GAIN_FIELDS: Array<{ key: string; icon: string; unit?: string; round?: number }> = [
-  { key: 'money', icon: 'coin', unit: '₽' },
-  { key: 'energy', icon: 'bolt' },
-  { key: 'motivation', icon: 'flame' },
-  { key: 'health', icon: 'heart' },
-  { key: 'reputation', icon: 'star' },
+  { key: 'money', icon: '🪙', unit: '₽' },
+  { key: 'energy', icon: '⚡' },
+  { key: 'motivation', icon: '😊' },
+  { key: 'health', icon: '❤️' },
+  { key: 'reputation', icon: '⭐' },
 ];
 
 let gainId = 0;
@@ -86,7 +86,7 @@ export function diffGains(prev: any, next: any): Gain[] {
   const levels = (st: any) =>
     Object.values(st?.skills ?? {}).reduce((sum: number, sk: any) => sum + (sk?.level ?? 0), 0);
   const up = levels(next) - levels(prev);
-  if (up > 0) out.push({ id: ++gainId, icon: 'book', text: `+${up} ур.`, tone: 'good' });
+  if (up > 0) out.push({ id: ++gainId, icon: '📚', text: `+${up} ур.`, tone: 'good' });
   return out;
 }
 

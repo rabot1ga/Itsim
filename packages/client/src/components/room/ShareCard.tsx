@@ -199,7 +199,7 @@ export const ShareCard: React.FC<{
   const achs: string[] = player?.achievements ?? [];
 
   return (
-    <div className="game-card">
+    <div className="card">
       <h3 className="section-title mb-2">Карточка для шеринга</h3>
       <canvas ref={canvasRef} width={W} height={H} style={{ display: 'none' }} />
       {dataUrl && <img src={dataUrl} alt="Шар-карточка" className=" border-2 border-ink-700 mb-2" />}

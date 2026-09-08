@@ -14,13 +14,17 @@ async function startFreshGame(page: Page): Promise<void> {
   await page.goto('/');
 }
 
-const energyMeter = (page: Page) => page.locator('div[title^="Энергия:"]');
+const energyMeter = (page: Page) => page.locator('[title^="Энергия:"]').first();
 
 async function resolveStory(page: Page): Promise<void> {
   const card = page.locator('.story-card');
   if (await card.isVisible()) {
-    await card.locator('button:not(:disabled)').first().click();
-    await expect(card).toHaveCount(0);
+    await card.locator('.story-choice:not(:disabled)').first().click();
+    // The choice collapses into a result card that waits for a deliberate tap.
+    const done = page.getByRole('button', { name: 'Продолжить' });
+    await expect(done).toBeVisible({ timeout: 15_000 });
+    await done.click();
+    await expect(page.locator('.story-card')).toHaveCount(0);
   }
 }
 
@@ -29,6 +33,10 @@ test('fresh run: three actions → end of day → buy cosmetics → telemetry', 
   await startFreshGame(page);
   // state loads with the daily check-in (+300 ₽); HUD shows a full battery
   await expect(energyMeter(page)).toHaveAttribute('title', /^Энергия: 10\/10$/);
+
+  // Study actions moved from «Главная» to the «Обучение» tab.
+  const nav = page.getByRole('navigation', { name: 'Основная навигация' });
+  await nav.getByRole('button', { name: 'Обучение', exact: true }).click();
 
   // Real random events may interrupt any action, not only end-of-day.
   for (const [name, energyCost] of [
@@ -43,23 +51,21 @@ test('fresh run: three actions → end of day → buy cosmetics → telemetry', 
     await resolveStory(page);
   }
 
-  // ── end of day: server rolls day 1, day 2 opens with a fresh battery ────
+  // ── end of day: the CTA is docked above the nav, so it works from any
+  //    working tab without scrolling to the bottom of «Главная» ────────────
+  await expect(page.getByRole('button', { name: /^Завершить день / })).toBeVisible();
   await page.getByRole('button', { name: /^Завершить день / }).click();
   await expect(energyMeter(page)).toHaveAttribute('title', /^Энергия: 10\/10$/);
   await resolveStory(page);
   await expect(page.getByRole('button', { name: /^Завершить день 2/ })).toBeVisible();
 
   // ── shop: buy a cheap decor item (Кактус на стол, 500 ₽) ────────────────
-  await page.getByRole('button', { name: /^Ещё/ }).click();
-  await page
-    .getByRole('dialog', { name: 'Ещё', exact: true })
-    .getByRole('button', { name: /^Магазин/ })
-    .click();
+  await nav.getByRole('button', { name: 'Магазин', exact: true }).click();
   await page
     .getByRole('group', { name: 'Категории товаров' })
     .getByRole('button', { name: 'Для дома', exact: true })
     .click();
-  const plantRow = page.locator('.panel').filter({ hasText: 'Кактус на стол' });
+  const plantRow = page.locator('.card').filter({ hasText: 'Кактус на стол' });
   await expect(plantRow.getByRole('button', { name: /^Купить$/ })).toBeVisible();
   await plantRow.getByRole('button', { name: /^Купить$/ }).click();
   await expect(plantRow).toContainText('куплено', { timeout: 15_000 });

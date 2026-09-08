@@ -45,6 +45,8 @@ export function createNewPlayer(): PlayerState {
     relationships: {},
 
     activeFreelance: null,
+    activeProject: null,
+    freelanceBid: null,
 
     achievements: [],
 

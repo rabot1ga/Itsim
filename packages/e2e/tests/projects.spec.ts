@@ -1,14 +1,15 @@
 import { test, expect, Page } from '@playwright/test';
 
 /**
- * Projects with deadlines — the «Работа» screen of reference 1.png.
+ * Contracts on the board — the «Работа» screen of reference 1.png.
  *
- * Everything here is played through the real UI against the real server: no
- * injected state, no stubbed responses. A deadline that expires must really
- * cost the player reputation.
+ * A project is no longer handed out on tap: the player answers the ad
+ * («Откликнуться», −3 ⚡) and the client replies the next morning — signed,
+ * paid test task, or silence. Everything here is played through the real UI
+ * against the real server: no injected state, no stubbed responses.
  */
 
-const board = (page: Page) => page.getByRole('region', { name: 'Проекты' });
+const board = (page: Page) => page.getByRole('region', { name: 'Заказы' });
 
 /**
  * Tests share one server DATA_DIR and these scenarios burn game days, so each
@@ -31,29 +32,57 @@ test.afterEach(async ({ request }) => {
 });
 
 async function endDay(page: Page): Promise<void> {
+  // The day-end CTA is docked above the tab bar, so «Работа» can close the day.
   await page.getByRole('button', { name: /^Завершить день / }).click();
   const card = page.locator('.story-card');
   if (await card.isVisible()) {
-    await card.locator('button:not(:disabled)').first().click();
-    await expect(card).toHaveCount(0);
+    await card.locator('.story-choice:not(:disabled)').first().click();
+    const done = page.getByRole('button', { name: 'Продолжить' });
+    await expect(done).toBeVisible({ timeout: 15_000 });
+    await done.click();
+    await expect(page.locator('.story-card')).toHaveCount(0);
   }
+  await expect(board(page)).toBeVisible();
 }
 
-test('take a project, finish its tasks and deliver it for real money', async ({ page }) => {
+/**
+ * Bid until the client says yes. The roll is real, so the loop is generous:
+ * «Сайт-визитка» sits near a 30% chance for a fresh player, which makes 25
+ * attempts a practically certain win without ever faking the outcome.
+ */
+async function winContract(page: Page, title: string): Promise<void> {
+  const active = board(page).getByRole('article', { name: /^Активный проект/ });
+  for (let attempt = 0; attempt < 25; attempt++) {
+    if ((await active.count()) > 0) return;
+    const offer = board(page).getByRole('article', { name: title, exact: true });
+    await offer.getByRole('button', { name: 'Откликнуться', exact: true }).click();
+    await expect(board(page).getByRole('article', { name: 'Отклик отправлен' })).toBeVisible();
+    await endDay(page);
+  }
+  await expect(active).toBeVisible();
+}
+
+test('bid for a contract, finish its tasks and deliver it for real money', async ({ page }) => {
   await openWork(page);
-  const landing = board(page).getByRole('article', { name: 'Сайт-визитка' });
+  const landing = board(page).getByRole('article', { name: 'Сайт-визитка', exact: true });
   await expect(landing).toContainText('Оплата: 35 000 ₽');
-  await landing.getByRole('button', { name: 'Взять', exact: true }).click();
+  await expect(landing).toContainText('Шанс получить');
+
+  // One bid per day, and no second ad while the first client is thinking.
+  await landing.getByRole('button', { name: 'Откликнуться', exact: true }).click();
+  await expect(board(page).getByRole('article', { name: 'Отклик отправлен' })).toBeVisible();
+  await expect(
+    board(page)
+      .getByRole('article', { name: 'Telegram-бот', exact: true })
+      .getByRole('button', { name: 'Откликнуться' })
+  ).toBeDisabled();
+
+  await endDay(page);
+  await winContract(page, 'Сайт-визитка');
 
   const active = board(page).getByRole('article', { name: 'Активный проект: Сайт-визитка' });
   await expect(active).toBeVisible();
   await expect(active.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '0');
-  await expect(active).toContainText('Дедлайн: день 6');
-
-  // A project cannot be doubled up on while another one is running.
-  await expect(
-    board(page).getByRole('article', { name: 'Telegram-бот' }).getByRole('button', { name: 'Взять', exact: true })
-  ).toBeDisabled();
 
   const money = async () => {
     const response = await page.request.get('/api/game/state');
@@ -71,16 +100,12 @@ test('take a project, finish its tasks and deliver it for real money', async ({ 
   await active.getByRole('button', { name: /^Сдать за/ }).click();
   await expect(board(page).getByRole('article', { name: /^Активный проект/ })).toHaveCount(0);
   expect(await money()).toBe(before + 35000);
-  await expect(board(page).getByRole('article', { name: 'Сайт-визитка' })).toContainText('Уже сдавался');
-  await expect(board(page).getByRole('article', { name: 'Сайт-визитка' }).getByRole('button', { name: 'Взять', exact: true })).toBeEnabled();
+  await expect(board(page).getByRole('article', { name: 'Сайт-визитка', exact: true })).toContainText('Уже сдавался');
 });
 
-test('a missed deadline drops the project and costs reputation', async ({ page }) => {
+test('a missed deadline drops the contract and costs reputation', async ({ page }) => {
   await openWork(page);
-  await board(page)
-    .getByRole('article', { name: 'Сайт-визитка' })
-    .getByRole('button', { name: 'Взять', exact: true })
-    .click();
+  await winContract(page, 'Сайт-визитка');
   await expect(board(page).getByRole('article', { name: /^Активный проект/ })).toBeVisible();
 
   const reputation = async () => {
@@ -90,33 +115,19 @@ test('a missed deadline drops the project and costs reputation', async ({ page }
   const before = await reputation();
 
   // Deadline is 5 days out; walking past it must expire the contract.
-  await page
-    .getByRole('navigation', { name: 'Основная навигация' })
-    .getByRole('button', { name: 'Главная', exact: true })
-    .click();
   for (let day = 0; day < 6; day++) await endDay(page);
 
-  await page
-    .getByRole('navigation', { name: 'Основная навигация' })
-    .getByRole('button', { name: 'Работа', exact: true })
-    .click();
   await expect(board(page).getByRole('article', { name: /^Активный проект/ })).toHaveCount(0);
   expect(await reputation()).toBeLessThan(before + 1);
-  await expect(
-    board(page).getByRole('article', { name: 'Сайт-визитка' }).getByRole('button', { name: 'Взять', exact: true })
-  ).toBeEnabled();
 });
 
-test('dropping a project frees the board immediately', async ({ page }) => {
+test('dropping a contract frees the board immediately', async ({ page }) => {
   await openWork(page);
-  await board(page)
-    .getByRole('article', { name: 'Сайт-визитка' })
-    .getByRole('button', { name: 'Взять', exact: true })
-    .click();
+  await winContract(page, 'Сайт-визитка');
   await board(page).getByRole('button', { name: 'Отказаться', exact: true }).click();
   await expect(board(page).getByRole('article', { name: /^Активный проект/ })).toHaveCount(0);
   // A contract far above the player's level stays closed with a real reason.
-  const platform = board(page).getByRole('article', { name: 'Аналитическая платформа' });
-  await expect(platform.getByRole('button', { name: 'Взять', exact: true })).toBeDisabled();
+  const platform = board(page).getByRole('article', { name: 'Аналитическая платформа', exact: true });
+  await expect(platform.getByRole('button', { name: 'Откликнуться', exact: true })).toBeDisabled();
   await expect(platform).toContainText('Нужен уровень основного навыка 25');
 });

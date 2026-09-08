@@ -19,15 +19,13 @@ export const PixelIdentity: React.FC<{ pack: PixelPack; data: PixelAvatarData; n
   const labels = (combo: Record<string, string | null>) =>
     Object.entries(combo)
       .filter(([, v]) => v)
-      .map(([cat, id]) => ({ cat, label: id ? file.components[id]?.label ?? id : '', id: id ?? '' }));
+      .map(([cat, id]) => ({ cat, label: id ? (file.components[id]?.label ?? id) : '', id: id ?? '' }));
 
   const rows = labels(data.combo);
-  const siblingSeeds = config
-    ? Array.from({ length: neighbours }, (_, i) => `${data.seed}:next${i}`)
-    : [];
+  const siblingSeeds = config ? Array.from({ length: neighbours }, (_, i) => `${data.seed}:next${i}`) : [];
 
   return (
-    <div className="game-card">
+    <div className="card">
       <div className="flex items-baseline justify-between mb-2">
         <h3 className="section-title">Пиксельная идентичность</h3>
         <span className="text-[10px] font-mono text-ink-500">32×32 · {rows.length} слоёв</span>

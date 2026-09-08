@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { xpToNext } from '@itsim/shared';
-import { PixelIcon } from '../components/pixel/PixelIcon';
 
 export interface SkillInfo {
   id: string;
@@ -22,18 +21,35 @@ interface SkillListProps {
   onPick: (id: string) => void;
 }
 
+/** School headers — emoji + human name, in the order a career usually grows. */
+export const BRANCH_META: Record<string, { name: string; emoji: string }> = {
+  frontend: { name: 'Frontend', emoji: '🎨' },
+  backend: { name: 'Backend', emoji: '⚙️' },
+  mobile: { name: 'Mobile', emoji: '📱' },
+  qa: { name: 'QA', emoji: '🔍' },
+  devops: { name: 'DevOps', emoji: '🐳' },
+  ai_ml: { name: 'AI / ML', emoji: '🤖' },
+  cybersec: { name: 'Кибербез', emoji: '🛡️' },
+  gamedev: { name: 'GameDev', emoji: '🎮' },
+  blockchain: { name: 'Blockchain', emoji: '⛓️' },
+};
+
+const BRANCH_ORDER = Object.keys(BRANCH_META);
+
+/** Two-letter monogram, the way the reference draws skill badges. */
 const SYMBOLS: Record<string, string> = {
   javascript: 'JS',
   typescript: 'TS',
   python: 'Py',
   react: 'Re',
   nextjs: 'Nx',
-  css: '#',
+  css: 'CSS',
   sql: 'DB',
   java: 'Jv',
   nodejs: 'Nd',
   git: 'Git',
   docker: 'Dk',
+  linux: 'Lx',
 };
 
 export function missingRequirements(skill: SkillInfo, levels: SkillListProps['levels'], skills: SkillInfo[]): string[] {
@@ -44,129 +60,115 @@ export function missingRequirements(skill: SkillInfo, levels: SkillListProps['le
     );
 }
 
-/** Compact alternative to the galaxy. Both views use the same server skill selection. */
+/**
+ * Learning — a flat list grouped by school, one accordion per school.
+ *
+ * A radial map looked impressive and read like homework on a 480px screen.
+ * A list is scanned in a second: name, level, progress bar, and a lock with
+ * the exact requirement when the skill is still gated. Tapping a row makes it
+ * the main skill (a gold frame marks it), which is what the study actions on
+ * the home screen level up.
+ */
 export const SkillList: React.FC<SkillListProps> = ({ skills, levels, mainSkillId, busy, route, onPick }) => {
-  const [query, setQuery] = useState('');
-  const [expanded, setExpanded] = useState(false);
-  const [branch, setBranch] = useState('all');
-  const branches = [...new Set(skills.map((skill) => skill.branch))];
-  const ordered = [...skills].sort(
-    (a, b) =>
-      Number(missingRequirements(a, levels, skills).length > 0) -
-      Number(missingRequirements(b, levels, skills).length > 0)
-  );
-  const visible = ordered.filter(
-    (skill) =>
-      (branch === 'all' || skill.branch === branch) &&
-      `${skill.name} ${skill.id}`.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase())
+  const rank = (branch: string) => {
+    const index = BRANCH_ORDER.indexOf(branch);
+    return index === -1 ? BRANCH_ORDER.length : index;
+  };
+  const branches = [...new Set(skills.map((s) => s.branch))].sort((a, b) => rank(a) - rank(b) || a.localeCompare(b));
+  const [open, setOpen] = useState<Record<string, boolean>>(() =>
+    Object.fromEntries(branches.map((b, i) => [b, i === 0]))
   );
 
+  const toggle = (branch: string) => setOpen((prev) => ({ ...prev, [branch]: !prev[branch] }));
+
   return (
-    <section aria-label="Список навыков" className="skill-list">
-      <details className="skill-search">
-        <summary>Поиск и направления</summary>
-        <div className="skill-list-filters">
-          <label>
-            Найти навык
-            <input
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="JavaScript, Python…"
-            />
-          </label>
-          <label>
-            Направление
-            <select value={branch} onChange={(e) => setBranch(e.target.value)}>
-              <option value="all">Все направления</option>
-              {branches.map((name) => (
-                <option key={name} value={name}>
-                  {name}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
-      </details>
-      <p className="skill-result-count text-xs text-ink-400" role="status">
-        Показано {expanded ? visible.length : Math.min(8, visible.length)} из {visible.length} · всего {skills.length}
-      </p>
-      {visible.length === 0 && (
-        <div className="panel">
-          <p className="text-sm text-ink-300">Навыки не найдены. Попробуй другое название или направление.</p>
-          <button
-            className="btn btn-secondary mt-2"
-            onClick={() => {
-              setQuery('');
-              setBranch('all');
-            }}
-          >
-            Сбросить фильтры
-          </button>
-        </div>
-      )}
-      {(expanded ? visible : visible.slice(0, 8)).map((skill) => {
-        const state = levels[skill.id] ?? { level: 0, xp: 0 };
-        const level = Math.max(0, Math.min(skill.maxLevel, state.level));
-        const maxed = level >= skill.maxLevel;
-        const need = xpToNext(level);
-        const xp = Math.max(0, Math.min(need, state.xp));
-        const requirements = missingRequirements(skill, levels, skills);
-        const locked = requirements.length > 0;
-        const main = mainSkillId === skill.id;
-        const milestone = route?.steps.find((step) => step.skillId === skill.id);
+    <section aria-label="Список навыков">
+      {branches.map((branch) => {
+        const meta = BRANCH_META[branch] ?? { name: branch, emoji: '📘' };
+        const items = skills.filter((s) => s.branch === branch);
+        const learned = items.filter((s) => (levels[s.id]?.level ?? 0) > 0).length;
+        const isOpen = open[branch] ?? false;
         return (
-          <article
-            key={skill.id}
-            className={`skill-list-row ${main ? 'is-main' : ''} ${locked ? 'is-locked' : ''}`}
-            aria-label={skill.name}
-          >
-            <span className={`skill-list-symbol symbol-${skill.id}`} aria-hidden="true">
-              {SYMBOLS[skill.id] ?? skill.name.slice(0, 2)}
-            </span>
-            <div className="skill-list-copy">
-              <div className="skill-list-title">
-                <h3>{skill.name}</h3>
-                {main && <span className="skill-main-mark">Основной</span>}
-                {locked && <PixelIcon name="lock" size={12} className="text-ink-500" />}
-              </div>
-              {milestone && <p className="text-2xs text-gold-300">Веха пути · цель: ур. {milestone.target}</p>}
-              <div className="skill-list-progress-label">
-                <span>{maxed ? 'Максимальный уровень' : `Уровень ${level}`}</span>
-                <span className="num">{maxed ? `${level} / ${skill.maxLevel}` : `${xp} / ${need} XP`}</span>
-              </div>
-              <div
-                className="meter"
-                role="progressbar"
-                aria-label={`Прогресс ${skill.name}`}
-                aria-valuemin={0}
-                aria-valuemax={maxed ? skill.maxLevel : need}
-                aria-valuenow={maxed ? level : xp}
-              >
-                <span style={{ width: `${maxed ? 100 : (xp / need) * 100}%`, background: 'var(--ochre)' }} />
-              </div>
-              {locked && <p className="skill-list-requirements">Нужно: {requirements.join(' · ')}</p>}
-              <div className="skill-list-action">
-                <button
-                  className="skill-row-select"
-                  disabled={locked || busy || main}
-                  aria-pressed={main}
-                  onClick={() => onPick(skill.id)}
-                >
-                  <span className="sr-only">
-                    {main ? 'Основной навык' : locked ? 'Заблокирован' : 'Сделать основным'}
-                  </span>
-                </button>
+          <div className="skill-group" key={branch}>
+            <button className="skill-group-head" aria-expanded={isOpen} onClick={() => toggle(branch)}>
+              <span className="emoji" aria-hidden="true">
+                {meta.emoji}
+              </span>
+              <span className="skill-group-name">{meta.name}</span>
+              <span className="skill-group-count num">
+                {learned} / {items.length}
+              </span>
+              <span className={`accordion-chevron ${isOpen ? 'open' : ''}`} aria-hidden="true">
+                ▾
+              </span>
+            </button>
+            <div className={`accordion-body ${isOpen ? 'open' : ''}`}>
+              <div className="accordion-inner">
+                <div className="skill-group-body">
+                  {items.map((skill) => {
+                    const state = levels[skill.id] ?? { level: 0, xp: 0 };
+                    const level = Math.max(0, Math.min(skill.maxLevel, state.level));
+                    const maxed = level >= skill.maxLevel;
+                    const need = xpToNext(level);
+                    const xp = Math.max(0, Math.min(need, state.xp));
+                    const requirements = missingRequirements(skill, levels, skills);
+                    const locked = requirements.length > 0;
+                    const main = mainSkillId === skill.id;
+                    const milestone = route?.steps.find((step) => step.skillId === skill.id);
+                    return (
+                      <button
+                        key={skill.id}
+                        type="button"
+                        className={`skill-row ${main ? 'is-main' : ''} ${locked ? 'is-locked' : ''}`}
+                        aria-label={skill.name}
+                        aria-pressed={main}
+                        disabled={locked || busy || main}
+                        onClick={() => onPick(skill.id)}
+                      >
+                        <span className="skill-badge" aria-hidden="true">
+                          {locked ? '🔒' : (SYMBOLS[skill.id] ?? skill.name.slice(0, 2))}
+                        </span>
+                        <span className="skill-row-copy">
+                          <span className="skill-row-title">
+                            <h3>{skill.name}</h3>
+                            {main ? (
+                              <span className="skill-main-mark">основной</span>
+                            ) : (
+                              <span className="skill-row-level num">ур. {level}</span>
+                            )}
+                          </span>
+                          <span className="skill-row-progress">
+                            <span
+                              className="meter"
+                              role="progressbar"
+                              aria-label={`Прогресс ${skill.name}`}
+                              aria-valuemin={0}
+                              aria-valuemax={maxed ? skill.maxLevel : need}
+                              aria-valuenow={maxed ? level : xp}
+                            >
+                              <span
+                                style={{
+                                  width: `${maxed ? 100 : (xp / need) * 100}%`,
+                                  background: main ? 'var(--gold)' : 'var(--green-dark)',
+                                }}
+                              />
+                            </span>
+                            <span className="skill-row-xp num">{maxed ? 'максимум' : `${xp} / ${need} XP`}</span>
+                          </span>
+                          {milestone && (
+                            <span className="skill-row-note">Веха пути · цель: ур. {milestone.target}</span>
+                          )}
+                          {locked && <span className="skill-row-note">Нужно: {requirements.join(' · ')}</span>}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
-          </article>
+          </div>
         );
       })}
-      {visible.length > 8 && (
-        <button className="btn btn-secondary w-full" aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>
-          {expanded ? 'Свернуть список' : `Показать все ${visible.length} навыков`}
-        </button>
-      )}
     </section>
   );
 };

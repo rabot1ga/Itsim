@@ -27,7 +27,10 @@ export interface EffectRow {
   key: string;
   label: string;
   text: string;
+  /** pixel icon name (legacy surfaces) */
   icon: string;
+  /** chrome emoji — the design system's resource token */
+  emoji: string;
   good: boolean;
 }
 
@@ -52,35 +55,45 @@ const PEOPLE: Record<string, string> = {
   uni_friend: 'Саня',
   hr_anna: 'Анна из HR',
 };
-const RESOURCES: Array<[keyof EventEffects, string, string, string, boolean]> = [
-  ['money', 'Деньги', 'coin', ' ₽', false],
-  ['energy', 'Энергия', 'bolt', '', false],
-  ['motivation', 'Мотивация', 'flame', '', false],
-  ['health', 'Здоровье', 'heart', '', false],
-  ['reputation', 'Репутация', 'star', '', false],
-  ['karma', 'Карма', 'dice', '', false],
-  ['burnoutDays', 'Дни выгорания', 'warn', ' дн.', true],
-  ['jobWarnings', 'Замечания на работе', 'warn', '', true],
+const RESOURCES: Array<[keyof EventEffects, string, string, string, string, boolean]> = [
+  ['money', 'Деньги', 'coin', '💰', ' ₽', false],
+  ['energy', 'Энергия', 'bolt', '⚡', '', false],
+  ['motivation', 'Настроение', 'flame', '😊', '', false],
+  ['health', 'Здоровье', 'heart', '❤️', '', false],
+  ['reputation', 'Репутация', 'star', '⭐', '', false],
+  ['karma', 'Карма', 'dice', '🍀', '', false],
+  ['burnoutDays', 'Дни выгорания', 'warn', '🔥', ' дн.', true],
+  ['jobWarnings', 'Замечания на работе', 'warn', '⚠️', '', true],
 ];
 
 /** No totals: +XP for one skill must not cancel −XP for another. */
 export function effectRows(effects: EventEffects = {}): EffectRow[] {
   const rows: EffectRow[] = [];
-  const add = (key: string, label: string, icon: string, value: unknown, suffix = '', inverse = false) => {
+  const add = (
+    key: string,
+    label: string,
+    icon: string,
+    emoji: string,
+    value: unknown,
+    suffix = '',
+    inverse = false
+  ) => {
     if (typeof value !== 'number' || !Number.isFinite(value) || value === 0) return;
     rows.push({
       key,
       label,
       icon,
+      emoji,
       text: `${value > 0 ? '+' : ''}${value.toLocaleString('ru-RU')}${suffix}`,
       good: inverse ? value < 0 : value > 0,
     });
   };
-  for (const [key, label, icon, suffix, inverse] of RESOURCES) add(key, label, icon, effects[key], suffix, inverse);
+  for (const [key, label, icon, emoji, suffix, inverse] of RESOURCES)
+    add(key, label, icon, emoji, effects[key], suffix, inverse);
   for (const [id, xp] of Object.entries(effects.skill ?? {}))
-    add(`skill:${id}`, `Опыт · ${SKILLS[id] ?? id}`, 'book', xp, ' XP');
+    add(`skill:${id}`, `Опыт · ${SKILLS[id] ?? id}`, 'book', '✨', xp, ' XP');
   for (const [id, value] of Object.entries(effects.relation ?? {}))
-    add(`relation:${id}`, `Отношения · ${PEOPLE[id] ?? id}`, 'people', value);
+    add(`relation:${id}`, `Отношения · ${PEOPLE[id] ?? id}`, 'people', '👥', value);
   return rows;
 }
 
@@ -131,6 +144,8 @@ export function eventArtwork(tags: string[], title = '', eventId = ''): string {
       [/сервер|продакш|взлом|server/, 'server'],
       [/\bbug\b|баг|ошибка в код/, 'bug'],
       [/ваканс|оффер|предложение.*работ/, 'offer'],
+      [/контракт|подписал|подряд/, 'contract'],
+      [/фриланс|заказчик|биржа заказ|клиент/, 'freelance'],
       [/похвал|соцсет|лайк|пост.*вирус/, 'social'],
       [/скидка на тех|магазин|ноутбук|новый пк/, 'shop'],
       [/дожд|болез|простуд|выходно|отпуск|выгор/, 'rest'],
@@ -139,6 +154,7 @@ export function eventArtwork(tags: string[], title = '', eventId = ''): string {
   }
   if (!scene) {
     if (tags.includes('pets')) scene = 'pet';
+    else if (tags.includes('freelance')) scene = 'freelance';
     else if (tags.some((tag) => ['health', 'mental', 'rest', 'weather'].includes(tag))) scene = 'rest';
     else if (tags.some((tag) => ['social', 'friend', 'family'].includes(tag))) scene = 'social';
     else if (tags.some((tag) => ['career', 'interview'].includes(tag))) scene = 'offer';
