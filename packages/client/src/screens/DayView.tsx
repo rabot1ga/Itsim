@@ -1,7 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { CareerPressureCard } from '../components/CareerPressureCard';
+import { SprintCard } from '../components/SprintCard';
 import { PixelIcon } from '../components/pixel/PixelIcon';
+import { tipForDay } from './dayTips';
 import { hideMainButton, isMainButtonSupported, setMainButtonProgress, showMainButton } from '../lib/telegram';
 
 interface DayViewProps {
@@ -22,7 +24,17 @@ interface SideJobInfo {
 }
 
 /** Feedable pets — cosmetic accessories (pet_bow/...) are not dinner guests */
-const REAL_PETS = ['pet_cat', 'pet_dog', 'pet_cactus', 'pet_robo', 'pet_spider', 'pet_bulldog'];
+const REAL_PETS = [
+  'pet_cat',
+  'pet_dog',
+  'pet_cactus',
+  'pet_robo',
+  'pet_spider',
+  'pet_bulldog',
+  'pet_parrot',
+  'pet_hamster',
+  'pet_fish',
+];
 
 const ACTIONS = [
   // Study
@@ -93,6 +105,276 @@ const CostRow: React.FC<{ energy: number; cost?: number; children?: React.ReactN
   </div>
 );
 
+/**
+ * Yesterday's narration is context, not a decision — so it is one quiet line
+ * that opens on tap instead of a tall panel pushing today's choices down.
+ */
+const YesterdayLog: React.FC<{ text: string }> = ({ text }) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <section className="panel">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="w-full flex items-center gap-2 text-left touch-target"
+      >
+        <PixelIcon name="clock" size={11} className="text-ink-500 shrink-0" />
+        <span className="text-2xs font-bold uppercase tracking-[0.09em] text-ink-500 shrink-0">Вчера</span>
+        {!open && <span className="flex-1 min-w-0 truncate text-xs text-ink-400">{text.replace(/\n/g, ' · ')}</span>}
+        <PixelIcon
+          name="chevron"
+          size={9}
+          className={`text-ink-600 shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+        />
+      </button>
+      <div className={`accordion-body ${open ? 'open' : ''}`}>
+        <div className="accordion-inner">
+          <p className="text-sm text-ink-300 leading-relaxed whitespace-pre-line pt-1">{text}</p>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+/** localStorage key: the last day whose tip the player dismissed */
+const ONBOARD_DISMISS_KEY = 'itsim_tip_dismissed_day';
+
+/* ── Event card (P0.9) ────────────────────────────────────────────────────
+ * A random event is the day's card: a tone-tinted story card with an art
+ * medallion (the event's own emoji or a thematic pixel icon), the story, and
+ * choices as raised rows that show their resource cost right on the row.
+ * The pixel world stays untouched — the emoji is rendered on a soft plate.
+ */
+
+/** Pick the leading emoji of an event title («☀️ Утро…» → ☀️ + «Утро…»). */
+function splitLeadEmoji(title: string): { emoji: string | null; rest: string } {
+  const m = title.match(/^(\p{Extended_Pictographic}\uFE0F?(?:\u200D\p{Extended_Pictographic}\uFE0F?)*)\s*(.*)$/su);
+  if (m && m[1] && m[2]) return { emoji: m[1], rest: m[2] };
+  return { emoji: null, rest: title };
+}
+
+/** The tone (color + emblem + kicker) of an event card by its tags. */
+const EVENT_TONES: Array<{
+  test: (tags: string[]) => boolean;
+  tone: 'tone-gold' | 'tone-sky' | 'tone-moss' | 'tone-clay' | 'tone-ochre';
+  icon: string;
+  label: string;
+}> = [
+  { test: (t) => t.includes('crisis') || t.includes('toxic'), tone: 'tone-clay', icon: 'warn', label: 'Кризис' },
+  { test: (t) => t.includes('reward'), tone: 'tone-gold', icon: 'trophy', label: 'Награда' },
+  {
+    test: (t) =>
+      ['work', 'career', 'tech', 'overtime', 'startup', 'mentoring', 'freelance', 'code'].some((x) => t.includes(x)),
+    tone: 'tone-gold',
+    icon: 'briefcase',
+    label: 'Работа',
+  },
+  {
+    test: (t) =>
+      ['study', 'ai_ml', 'frontend', 'backend', 'mobile', 'qa', 'devops', 'gamedev', 'blockchain', 'cybersec'].some(
+        (x) => t.includes(x)
+      ),
+    tone: 'tone-sky',
+    icon: 'book',
+    label: 'Учёба',
+  },
+  {
+    test: (t) => ['money', 'crypto', 'mining', 'bar', 'sidejob'].some((x) => t.includes(x)),
+    tone: 'tone-moss',
+    icon: 'coin',
+    label: 'Деньги',
+  },
+  {
+    test: (t) => ['social', 'friend', 'family', 'pets'].some((x) => t.includes(x)),
+    tone: 'tone-sky',
+    icon: 'people',
+    label: 'Люди',
+  },
+  { test: (t) => ['health', 'mental'].some((x) => t.includes(x)), tone: 'tone-moss', icon: 'heart', label: 'Здоровье' },
+  { test: (t) => t.includes('chain'), tone: 'tone-sky', icon: 'chat', label: 'История' },
+  { test: () => true, tone: 'tone-ochre', icon: 'dice', label: 'Событие' },
+];
+
+/** Resource chips for a choice: +2 ⚡, −500 ₽, ★+1… driven by effects. */
+const CHIP_SPECS: Array<{ key: string; icon: string }> = [
+  { key: 'money', icon: '₽' },
+  { key: 'energy', icon: '⚡' },
+  { key: 'motivation', icon: '🔥' },
+  { key: 'health', icon: '❤️' },
+  { key: 'reputation', icon: '★' },
+  { key: 'karma', icon: '☯' },
+];
+
+interface EventChip {
+  icon: string;
+  text: string;
+  good: boolean;
+}
+
+function effectChips(effects?: Record<string, any>): EventChip[] {
+  if (!effects) return [];
+  const chips: EventChip[] = [];
+  for (const spec of CHIP_SPECS) {
+    const v = effects[spec.key];
+    if (typeof v !== 'number' || v === 0) continue;
+    const good = v > 0;
+    const sign = v > 0 ? '+' : '';
+    chips.push({
+      icon: spec.icon,
+      text: spec.key === 'money' ? `${sign}${v.toLocaleString('ru-RU')} ₽` : `${sign}${v}`,
+      good,
+    });
+  }
+  // skill xp gains (may be several skills in one choice)
+  const skill = effects['skill'];
+  if (skill && typeof skill === 'object') {
+    const total = Object.values(skill).reduce((s: number, v: any) => s + (typeof v === 'number' ? v : 0), 0);
+    if (total > 0) chips.push({ icon: '📚', text: `+${total} XP`, good: true });
+  }
+  // relationships to colleagues/relatives
+  const relation = effects['relation'];
+  if (relation && typeof relation === 'object') {
+    const total = Object.values(relation).reduce((s: number, v: any) => s + (typeof v === 'number' ? v : 0), 0);
+    if (total !== 0) chips.push({ icon: '👥', text: `${total > 0 ? '+' : ''}${total}`, good: total > 0 });
+  }
+  for (const key of ['burnoutDays', 'jobWarnings']) {
+    const v = effects[key];
+    if (typeof v === 'number' && v > 0) chips.push({ icon: '⚠️', text: `+${v}`, good: false });
+  }
+  return chips.slice(0, 5);
+}
+
+const EventCard: React.FC<{
+  title: string;
+  description: string;
+  tags?: string[];
+  choices: Array<{ text: string; effects?: Record<string, any> }>;
+  onChoose: (index: number) => void;
+}> = ({ title, description, tags = [], choices, onChoose }) => {
+  const tone = EVENT_TONES.find((t) => t.test(tags)) ?? EVENT_TONES[EVENT_TONES.length - 1];
+  const lead = splitLeadEmoji(title);
+  return (
+    <section className={`ev-card ${tone.tone} animate-pop-in`} aria-label={title}>
+      <div className="ev-head">
+        <span className="ev-icon">
+          {lead.emoji ? <span className="ev-emoji">{lead.emoji}</span> : <PixelIcon name={tone.icon} size={22} />}
+        </span>
+        <span className="min-w-0 flex-1 flex flex-col justify-center">
+          <span className="ev-kicker">{tone.label}</span>
+          <span className="ev-title">{lead.rest}</span>
+        </span>
+      </div>
+      <div className="ev-band" />
+      <div className="ev-body">
+        <p className="ev-desc">{description}</p>
+      </div>
+      <div className="ev-choices">
+        {choices.map((choice, i) => {
+          const chips = effectChips(choice.effects);
+          return (
+            <button key={i} onClick={() => onChoose(i)} className="ev-choice">
+              <span className="ev-choice-text">{choice.text}</span>
+              {chips.length > 0 && (
+                <span className="ev-chips">
+                  {chips.map((c, ci) => (
+                    <span key={ci} className={`ev-chip ${c.good ? 'good' : 'bad'}`}>
+                      <span className="ev-chip-ico">{c.icon}</span>
+                      <span className="num">{c.text}</span>
+                    </span>
+                  ))}
+                </span>
+              )}
+              <PixelIcon name="arrow" size={10} className="ev-choice-arrow shrink-0" />
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
+};
+
+/** First-week coaching card — one tip per day, dismissible until next day. */
+const OnboardingTip: React.FC<{ day: number }> = ({ day }) => {
+  const [dismissed, setDismissed] = useState(() => {
+    try {
+      return localStorage.getItem(ONBOARD_DISMISS_KEY) === String(day);
+    } catch {
+      return false;
+    }
+  });
+  const tip = tipForDay(day);
+  if (!tip || dismissed) return null;
+
+  const hide = () => {
+    setDismissed(true);
+    try {
+      localStorage.setItem(ONBOARD_DISMISS_KEY, String(day));
+    } catch {
+      /* storage unavailable — fine, tip re-shows next visit */
+    }
+  };
+
+  return (
+    <section className="panel panel-note panel-note-sky animate-pop-in">
+      <div className="flex items-start gap-2">
+        <PixelIcon name={tip.icon} size={13} className="text-sky-300 mt-0.5 shrink-0" />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-ink-100 leading-tight">{tip.title}</p>
+          <p className="text-xs text-ink-300 leading-relaxed mt-1">{tip.body}</p>
+        </div>
+        <button
+          onClick={hide}
+          aria-label="Скрыть совет"
+          className="text-2xs text-ink-600 hover:text-ink-300 transition-colors shrink-0 flex items-center justify-center !min-w-[36px] touch-target px-1"
+        >
+          ✕
+        </button>
+      </div>
+    </section>
+  );
+};
+
+const CHECKIN_SEEN_KEY = 'itsim_checkin_seen';
+
+/** Once per real day: «заходишь N дней подряд — +X ₽» after the server check-in. */
+const CheckInBanner: React.FC<{ checkIn: any }> = ({ checkIn }) => {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (!checkIn?.claimed) return;
+    try {
+      const today = new Date().toDateString();
+      if (localStorage.getItem(CHECKIN_SEEN_KEY) === today) return;
+      localStorage.setItem(CHECKIN_SEEN_KEY, today);
+      setVisible(true);
+    } catch {
+      setVisible(true);
+    }
+  }, [checkIn]);
+
+  if (!visible || !checkIn?.claimed) return null;
+  const { streak, money, nextMoney } = checkIn;
+  return (
+    <section className="panel panel-note panel-note-gold animate-pop-in">
+      <div className="flex items-start gap-2">
+        <PixelIcon name="flame" size={14} className="text-ochre-300 mt-0.5 shrink-0" />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-white leading-tight">
+            Стрик: {streak} {streak === 1 ? 'день' : streak < 5 ? 'дня' : 'дней'} подряд
+            {money > 0 && <span className="num text-moss-300"> · +{money} ₽ за вход</span>}
+          </p>
+          {nextMoney > 0 && (
+            <p className="text-xs text-ink-400 leading-relaxed mt-0.5">
+              Возвращайся завтра — получишь <span className="num text-ink-200">{nextMoney} ₽</span>. Пропустишь день —
+              стрик сгорит.
+            </p>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+};
+
 export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
   const player = useGameStore((s) => s.player);
   const activeEvent = useGameStore((s) => s.activeEvent);
@@ -100,6 +382,7 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
   const clearError = useGameStore((s) => s.clearError);
   const performAction = useGameStore((s) => s.performAction);
   const chooseEvent = useGameStore((s) => s.chooseEvent);
+  const checkIn = useGameStore((s) => s.checkIn);
   const mining = useGameStore((s) => s.mining);
   const [sideJobs, setSideJobs] = useState<Record<string, SideJobInfo>>({});
   const [finishing, setFinishing] = useState(false);
@@ -156,24 +439,22 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
 
   return (
     <div className="space-y-4 animate-fade-in">
-      {/* Active event */}
+      {/* Daily check-in reward — once per real day */}
+      {checkIn && <CheckInBanner checkIn={checkIn} />}
+
+      {/* First week: one pointer per day instead of a wall of grids */}
+      <OnboardingTip day={currentDay} />
+
+      {/* Active event — the day's story card (P0.9) */}
       {activeEvent && (
-        <section className="panel panel-note panel-note-gold animate-pop-in">
-          <p className="text-sm font-semibold text-white mb-1">{activeEvent.title}</p>
-          <p className="text-sm text-ink-300 leading-relaxed mb-3">{activeEvent.description}</p>
-          <div className="space-y-1.5">
-            {activeEvent.choices.map((choice: { text: string }, i: number) => (
-              <button
-                key={i}
-                onClick={() => chooseEvent(activeEvent.id, i)}
-                className="tile w-full flex items-center gap-2 text-sm text-ink-100 touch-target"
-              >
-                <PixelIcon name="arrow" size={11} className="text-ink-600" />
-                <span className="min-w-0">{choice.text}</span>
-              </button>
-            ))}
-          </div>
-        </section>
+        <EventCard
+          key={activeEvent.id}
+          title={activeEvent.title}
+          description={activeEvent.description}
+          tags={activeEvent.tags ?? []}
+          choices={activeEvent.choices ?? []}
+          onChoose={(i) => chooseEvent(activeEvent.id, i)}
+        />
       )}
 
       {/* Error */}
@@ -187,12 +468,8 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
         </button>
       )}
 
-      {/* Yesterday's log */}
-      {player._lastEvent && (
-        <section className="panel panel-note whitespace-pre-line">
-          <p className="text-sm text-ink-300 leading-relaxed">{player._lastEvent}</p>
-        </section>
-      )}
+      {/* Yesterday's log — one line, expandable */}
+      {player._lastEvent && <YesterdayLog text={player._lastEvent} />}
 
       {/* Mining farm (passive income) */}
       {mining && (
@@ -218,8 +495,56 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
         </section>
       )}
 
+      {/* Goal of the day — a target above the toolbox reads as direction,
+          a target buried under it reads as homework */}
+      {player.dailyChallenge && (
+        <section className={`panel panel-note ${player.dailyChallenge.done ? 'panel-note-moss' : 'panel-note-sky'}`}>
+          <div className="flex items-center justify-between gap-2 mb-1">
+            <span className="flex items-center gap-1.5 text-2xs font-bold uppercase tracking-[0.09em] text-ink-400">
+              <PixelIcon name="target" size={11} className={player.dailyChallenge.done ? 'text-moss-300' : ''} />
+              Задание дня
+            </span>
+            {player.dailyChallenge.done ? (
+              <span className="flex items-center gap-1 text-2xs font-bold text-moss-300 uppercase tracking-[0.06em]">
+                <PixelIcon name="check" size={10} />
+                выполнено
+              </span>
+            ) : (
+              <span className="num text-2xs text-ink-500">
+                {player.dailyChallenge.progress}/{player.dailyChallenge.count}
+              </span>
+            )}
+          </div>
+          <p className="text-sm text-ink-200">{CHALLENGE_TEXT[player.dailyChallenge.id] ?? 'Выполни задание'}</p>
+          {!player.dailyChallenge.done && (
+            <div className="meter mt-2">
+              <span
+                style={{
+                  width: `${Math.min(
+                    100,
+                    (player.dailyChallenge.progress / Math.max(1, player.dailyChallenge.count)) * 100
+                  )}%`,
+                  background: 'var(--sky)',
+                }}
+              />
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* Weekly season sprint — the real-time target for the whole week */}
+      <SprintCard />
+
       {/* Career pressure: living costs + what the next gate really needs */}
       <CareerPressureCard />
+
+      {/* Low energy: tell the player the way out instead of leaving actions grey */}
+      {player.energy <= 2 && (
+        <p className="flex items-center gap-2 text-xs text-ochre-300 leading-tight px-0.5">
+          <PixelIcon name="bolt" size={11} className="text-ochre-400 shrink-0" />
+          Энергия на исходе. «Поспать» восстановит её — а сон всегда доступен, даже при нуле.
+        </p>
+      )}
 
       {/* Actions by category */}
       {categories.map((cat) => (
@@ -290,42 +615,6 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
             })}
           </div>
           <p className="text-2xs text-ink-600 mt-1.5">Одна подработка в день. Здоровье и мотивация — по курсу.</p>
-        </section>
-      )}
-
-      {/* Daily challenge */}
-      {player.dailyChallenge && (
-        <section className={`panel panel-note ${player.dailyChallenge.done ? 'panel-note-moss' : 'panel-note-sky'}`}>
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="flex items-center gap-1.5 text-2xs font-semibold uppercase tracking-[0.09em] text-ink-400">
-              <PixelIcon name="target" size={11} />
-              Задание дня
-            </span>
-            {player.dailyChallenge.done ? (
-              <span className="flex items-center gap-1 text-2xs font-semibold text-moss-300">
-                <PixelIcon name="check" size={10} />
-                выполнено
-              </span>
-            ) : (
-              <span className="num text-2xs text-ink-500">
-                {player.dailyChallenge.progress}/{player.dailyChallenge.count}
-              </span>
-            )}
-          </div>
-          <p className="text-sm text-ink-200">{CHALLENGE_TEXT[player.dailyChallenge.id] ?? 'Выполни задание'}</p>
-          {!player.dailyChallenge.done && (
-            <div className="meter mt-2">
-              <span
-                style={{
-                  width: `${Math.min(
-                    100,
-                    (player.dailyChallenge.progress / Math.max(1, player.dailyChallenge.count)) * 100
-                  )}%`,
-                  background: 'var(--sky)',
-                }}
-              />
-            </div>
-          )}
         </section>
       )}
 

@@ -73,7 +73,7 @@ for (let p = 0; p < W * H; p++) {
 }
 
 // keep real objects, then merge vertically stacked parts of the same object
-let objs = boxes.filter((b) => b.area >= MIN_AREA);
+const objs = boxes.filter((b) => b.area >= MIN_AREA);
 let merged = true;
 while (merged) {
   merged = false;

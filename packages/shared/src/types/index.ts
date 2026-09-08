@@ -193,15 +193,7 @@ export interface PixelManifest {
 
 // ---- Room customization (docs/design.md §12.2) ----
 
-export type RoomSlotId =
-  | 'bg'
-  | 'window'
-  | 'decor'
-  | 'desk'
-  | 'setup'
-  | 'chair'
-  | 'atmosphere'
-  | 'pet';
+export type RoomSlotId = 'bg' | 'window' | 'decor' | 'desk' | 'setup' | 'chair' | 'atmosphere' | 'pet';
 
 export type AvatarSlotId = 'hair' | 'beard' | 'top' | 'bottom' | 'accessory';
 
@@ -317,11 +309,49 @@ export interface PlayerState {
   // Daily challenge progress
   dailyChallenge?: DailyChallengeState;
 
+  // Weekly season sprint (real-time retention, P1.2)
+  sprint?: PlayerSprint;
+
+  // Archetype builds (P1.3) — career-scoped guidance + completion bonus
+  /** the archetype route currently highlighted on the skill map */
+  archetypeChosen?: string;
+  /** archetype ids whose bonus has been claimed in THIS life (per-life ledger) */
+  archetypeBonuses?: string[];
+
   // Monetization (Telegram Stars) — cosmetics only, see content/monetization.json
   /** layer ids unlocked by a purchase */
   entitlements?: string[];
   /** profile badges (supporter, fashionista, …) */
   badges?: string[];
+
+  // Daily check-in streak (real-time retention hook, UTC+3 game date)
+  /** consecutive real days the player has checked in */
+  dailyStreak?: number;
+  /** last check-in day, YYYY-MM-DD in the game-day timezone */
+  lastCheckInDate?: string;
+
+  // Meta layer (P1.1 «Новая жизнь»): the only thing that survives a reset
+  /** prestige ledger — persists across lives, never resets */
+  meta?: MetaLife;
+}
+
+/**
+ * Prestige («Новая жизнь», P1.1). A player who reached a career ending can
+ * start over; the career itself resets to day 1 while this ledger, earned
+ * achievements, monetization entitlements and the check-in streak survive.
+ * Every finished life stacks a permanent XP multiplier (metaXpMult).
+ */
+export interface MetaLife {
+  /** how many lives have been completed (0 = first life, no reset yet) */
+  lives: number;
+  /** career endings seen, oldest first, deduped — cosmetic «воспоминания» */
+  memories: CareerEnding[];
+  /** the best grade ever reached across lives */
+  bestGrade?: Grade;
+  /** the deepest game day ever reached across lives */
+  deepestDay?: number;
+  /** lifetime total actions across all lives */
+  lifetimeActions?: number;
 }
 
 export interface SkillLevel {
@@ -414,7 +444,8 @@ export interface SkillDefinition {
   flavor: string;
 }
 
-export type SkillBranch = 'frontend' | 'backend' | 'mobile' | 'qa' | 'devops' | 'ai_ml' | 'cybersec' | 'gamedev' | 'blockchain';
+export type SkillBranch =
+  'frontend' | 'backend' | 'mobile' | 'qa' | 'devops' | 'ai_ml' | 'cybersec' | 'gamedev' | 'blockchain';
 
 export interface PerkDefinition {
   id: PerkId;
@@ -785,6 +816,20 @@ export interface DailyChallengeState {
   progress: number;
   count: number;
   done: boolean;
+}
+
+// ---- Weekly season sprint (P1.2) ----
+
+/** Per-player record of the current weekly sprint (real-time, UTC+3 week) */
+export interface PlayerSprint {
+  /** week key: the Monday of the sprint window, YYYY-MM-DD (UTC+3) */
+  week: string;
+  /** active sprint theme id (from content sprints.json) */
+  themeId: string;
+  /** goal id → actions counted this week (capped at the goal's count) */
+  progress: Record<string, number>;
+  /** true once the weekly reward has been claimed — a claim is per-week */
+  claimed: boolean;
 }
 
 // ---- Rating ----

@@ -33,6 +33,16 @@ async function api(path: string, init: RequestInit = {}): Promise<{ ok: boolean;
 export const apiRequest = api;
 
 /**
+ * Fire-and-forget product telemetry (roadmap P0.3). The server appends to
+ * NDJSON; a failure must never slow down or break the game.
+ */
+function track(event: string, payload?: Record<string, unknown>): void {
+  api('/telemetry', { method: 'POST', body: JSON.stringify({ event, payload }) }).catch(() => {
+    /* telemetry is best-effort */
+  });
+}
+
+/**
  * A number that just changed, on its way up the screen.
  *
  * Idle games live on this: a tap has to *pay out* visibly, or the loop feels
@@ -85,6 +95,8 @@ interface GameState {
   screen: Screen;
   player: any;
   currentView: string;
+  /** is the «Ещё» sheet open? kept in the store so the native BackButton can close it first */
+  moreOpen: boolean;
   error: string | null;
   activeEvent: any;
   /** promotion/election outlook from the server (career gates) */
@@ -99,12 +111,21 @@ interface GameState {
 
   // Actions
   initGame: (initData: string) => Promise<void>;
+  /** daily check-in result from the server: { claimed, streak, money, nextMoney } | null */
+  checkIn: any;
+  /** weekly sprint view (P1.2): { title, goals, allDone, claimed, reward, endsAtMs } | null */
+  sprint: any;
+  /** claim the finished weekly sprint reward */
+  claimSprint: () => Promise<boolean>;
   /** re-read /game/state (after a Stars purchase or a background change) */
   refreshState: () => Promise<void>;
   setScreen: (screen: Screen) => void;
   setView: (view: string) => void;
+  setMoreOpen: (open: boolean) => void;
   performAction: (actionId: string, params?: any) => Promise<boolean>;
   advanceDay: () => Promise<void>;
+  /** prestige reset (P1.1): fresh career, meta ledger + achievements survive */
+  startNewLife: () => Promise<boolean>;
   chooseEvent: (eventId: string, choiceIndex: number) => Promise<void>;
   applyToCompany: (companyId: string) => Promise<boolean>;
   acceptOffer: (companyId: string) => Promise<boolean>;
@@ -117,6 +138,10 @@ interface GameState {
   setMockCollections: (collections: string[]) => Promise<void>;
   unlockPerk: (perkId: string) => Promise<boolean>;
   setMainSkill: (skillId: string) => Promise<boolean>;
+  /** pick (or clear, with '') the route highlighted on the skill map (P1.3) */
+  chooseArchetype: (archetypeId: string) => Promise<boolean>;
+  /** one-time-per-life bonus for walking a route to the end (P1.3) */
+  claimArchetype: (archetypeId: string) => Promise<boolean>;
   startInterview: () => Promise<any>;
   answerInterview: (questionId: string, choiceIndex: number) => Promise<any>;
   finishInterview: () => Promise<any>;
@@ -127,6 +152,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   screen: 'loading',
   player: null,
   currentView: 'main',
+  moreOpen: false,
   error: null,
   activeEvent: null,
   careerOutlook: null,
@@ -134,6 +160,8 @@ export const useGameStore = create<GameState>((set, get) => ({
   inventory: [],
   heldCollections: [],
   mining: null,
+  checkIn: null,
+  sprint: null,
   gains: [],
 
   initGame: async (initData: string) => {
@@ -162,6 +190,8 @@ export const useGameStore = create<GameState>((set, get) => ({
         mining: stateRes.data.mining ?? null,
         careerOutlook: stateRes.data.careerOutlook ?? null,
         costOfDay: stateRes.data.costOfDay ?? null,
+        checkIn: stateRes.data.checkIn ?? null,
+        sprint: stateRes.data.sprint ?? null,
         screen: stateRes.data.isNew ? 'game' : 'menu',
       });
     } catch (err: any) {
@@ -195,12 +225,18 @@ export const useGameStore = create<GameState>((set, get) => ({
         mining: res.data.mining ?? null,
         careerOutlook: res.data.careerOutlook ?? null,
         costOfDay: res.data.costOfDay ?? null,
+        checkIn: res.data.checkIn ?? get().checkIn,
+        sprint: res.data.sprint ?? null,
       });
     }
   },
 
-  setScreen: (screen) => set({ screen }),
-  setView: (view) => set({ currentView: view }),
+  setScreen: (screen) => set({ screen, moreOpen: false }),
+  setView: (view) => {
+    set({ currentView: view, moreOpen: false });
+    track('screen_view', { view });
+  },
+  setMoreOpen: (open) => set({ moreOpen: open }),
   clearError: () => set({ error: null }),
 
   dropGain: (id) => set((s) => ({ gains: s.gains.filter((g) => g.id !== id) })),
@@ -225,6 +261,7 @@ export const useGameStore = create<GameState>((set, get) => ({
           mining: res.data.mining ?? null,
           careerOutlook: res.data.careerOutlook ?? get().careerOutlook,
           costOfDay: res.data.costOfDay ?? get().costOfDay,
+          sprint: res.data.sprint ?? get().sprint,
           error: null,
           gains: [...s.gains, ...diffGains(player, res.data.state)].slice(-6),
         }));
@@ -239,6 +276,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       else if (actionId === 'buy_item' || actionId === 'upgrade_housing') haptic('medium');
       else if (actionId === 'customize_room' || actionId === 'customize_avatar') haptic('selection');
       else haptic('tap');
+      track('action', { actionId });
       return true;
     } catch (err) {
       console.error('Action error:', err);
@@ -268,11 +306,67 @@ export const useGameStore = create<GameState>((set, get) => ({
         set({ error: res.data?.error || 'Не удалось завершить день' });
       } else {
         haptic('medium');
+        track('day_end', { day: res.data?.state?.currentDay });
       }
     } catch (err) {
       console.error('Advance day error:', err);
       haptic('error');
       set({ error: 'Сервер недоступен' });
+    }
+  },
+
+  startNewLife: async () => {
+    try {
+      const res = await api('/game/new-life', { method: 'POST' });
+      if (res.data?.state) {
+        haptic('success');
+        set({
+          player: res.data.state,
+          activeEvent: null,
+          error: null,
+          gains: [],
+          mining: null,
+          careerOutlook: null,
+          costOfDay: null,
+          sprint: null,
+        });
+        // Repopulate check-in / mining / outlook from the fresh state
+        await get().refreshState();
+        return true;
+      }
+      haptic('error');
+      set({ error: res.data?.error || 'Не удалось начать новую жизнь' });
+      return false;
+    } catch (err) {
+      console.error('New life error:', err);
+      haptic('error');
+      set({ error: 'Сервер недоступен' });
+      return false;
+    }
+  },
+
+  claimSprint: async () => {
+    try {
+      const res = await api('/game/sprint/claim', { method: 'POST' });
+      if (res.data?.state) {
+        haptic('success');
+        set((s) => ({
+          player: res.data.state,
+          sprint: res.data.sprint ?? s.sprint,
+          error: null,
+          gains: [...s.gains, ...diffGains(s.player, res.data.state)].slice(-6),
+        }));
+        track('sprint_claim', { week: res.data.sprint?.week });
+        return true;
+      }
+      haptic('error');
+      set({ error: res.data?.error || 'Не удалось получить награду' });
+      return false;
+    } catch (err) {
+      console.error('Sprint claim error:', err);
+      haptic('error');
+      set({ error: 'Сервер недоступен' });
+      return false;
     }
   },
 
@@ -291,6 +385,7 @@ export const useGameStore = create<GameState>((set, get) => ({
           error: null,
           gains: [...s.gains, ...diffGains(before, res.data.state)].slice(-6),
         }));
+        track('event_choice', { eventId });
       }
       if (!res.ok) {
         haptic('error');
@@ -392,6 +487,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       if (res.data?.state) {
         haptic('selection');
         set({ player: res.data.state, error: null });
+        track('skill_pick', { skillId });
         return true;
       }
       haptic('error');
@@ -399,6 +495,50 @@ export const useGameStore = create<GameState>((set, get) => ({
       return false;
     } catch (err) {
       console.error('setMainSkill error:', err);
+      set({ error: 'Сервер недоступен' });
+      return false;
+    }
+  },
+
+  chooseArchetype: async (archetypeId) => {
+    try {
+      const res = await api('/game/archetype/choose', {
+        method: 'POST',
+        body: JSON.stringify({ archetypeId }),
+      });
+      if (res.data?.state) {
+        haptic('selection');
+        set({ player: res.data.state, error: null });
+        track('archetype_choose', { archetypeId });
+        return true;
+      }
+      haptic('error');
+      set({ error: res.data?.error || 'Не удалось выбрать путь' });
+      return false;
+    } catch (err) {
+      console.error('chooseArchetype error:', err);
+      set({ error: 'Сервер недоступен' });
+      return false;
+    }
+  },
+
+  claimArchetype: async (archetypeId) => {
+    try {
+      const res = await api('/game/archetype/claim', {
+        method: 'POST',
+        body: JSON.stringify({ archetypeId }),
+      });
+      if (res.data?.state) {
+        haptic('success');
+        set({ player: res.data.state, error: null });
+        track('archetype_claim', { archetypeId });
+        return true;
+      }
+      haptic('error');
+      set({ error: res.data?.error || 'Не удалось получить бонус пути' });
+      return false;
+    } catch (err) {
+      console.error('claimArchetype error:', err);
       set({ error: 'Сервер недоступен' });
       return false;
     }

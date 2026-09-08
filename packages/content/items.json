@@ -332,6 +332,42 @@
     "layerId": "pet_bulldog"
   },
   {
+    "id": "pet_parrot",
+    "name": "Попугай Кеша",
+    "type": "pet",
+    "price": 22000,
+    "description": "Повторяет твои ругательства на дейли-стендапах. +2 мотивации в день.",
+    "effects": {
+      "motivationBonus": 2
+    },
+    "icon": "pet_parrot.png",
+    "layerId": "pet_parrot"
+  },
+  {
+    "id": "pet_hamster",
+    "name": "Хомяк Байт",
+    "type": "pet",
+    "price": 12000,
+    "description": "Копит семечки так же дисциплинированно, как ты — сбережения. +1 мотивации в день.",
+    "effects": {
+      "motivationBonus": 1
+    },
+    "icon": "pet_hamster.png",
+    "layerId": "pet_hamster"
+  },
+  {
+    "id": "pet_fish",
+    "name": "Рыбка Гит",
+    "type": "pet",
+    "price": 8000,
+    "description": "Молчаливый ревьюер. Плавает туда-сюда и не спамит в чат. +1 мотивации в день.",
+    "effects": {
+      "motivationBonus": 1
+    },
+    "icon": "pet_fish.png",
+    "layerId": "pet_fish"
+  },
+  {
     "id": "pet_bow",
     "name": "🎀 Бант для питомца",
     "type": "pet",

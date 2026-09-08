@@ -9,14 +9,8 @@ import { IsoIcon } from './iso/IsoIcon';
  */
 
 /** Inline loading indicator: three blinking pixels, no spinning ring. */
-export const Spinner: React.FC<{ label?: string; className?: string }> = ({
-  label,
-  className = '',
-}) => (
-  <div
-    className={`flex items-center justify-center gap-2 py-6 text-ink-500 ${className}`}
-    role="status"
-  >
+export const Spinner: React.FC<{ label?: string; className?: string }> = ({ label, className = '' }) => (
+  <div className={`flex items-center justify-center gap-2 py-6 text-ink-500 ${className}`} role="status">
     <span className="flex gap-1" aria-hidden="true">
       {[0, 1, 2].map((i) => (
         <span
@@ -52,8 +46,8 @@ export const RoomSkeleton: React.FC = () => (
  */
 export const SpriteBadge: React.FC<{ sprite: string; size?: number }> = ({ sprite, size = 36 }) => (
   <span
-    className="shrink-0 inline-flex items-end justify-center bg-ink-900 border-2 border-ink-700 p-0.5"
-    style={{ width: size, height: size }}
+    className="shrink-0 inline-flex items-end justify-center bg-ink-900 border border-ink-600 rounded-[10px] p-0.5"
+    style={{ width: size, height: size, boxShadow: 'inset 0 1px 3px rgba(0,0,0,.55)' }}
   >
     <IsoIcon sprite={sprite} size={size - 8} />
   </span>
@@ -86,8 +80,8 @@ export const EmojiToken: React.FC<{ children: React.ReactNode; className?: strin
   className = '',
 }) => (
   <span
-    className={`inline-flex items-center justify-center shrink-0 w-7 h-7 border-2 border-ink-700 bg-ink-900 text-[14px] leading-none ${className}`}
-    style={{ filter: 'saturate(0.8)' }}
+    className={`inline-flex items-center justify-center shrink-0 w-7 h-7 border border-ink-600 bg-ink-900 rounded-[9px] text-[14px] leading-none ${className}`}
+    style={{ filter: 'saturate(0.8)', boxShadow: 'inset 0 1px 2px rgba(0,0,0,.5)' }}
     aria-hidden="true"
   >
     {children}

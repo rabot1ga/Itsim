@@ -50,6 +50,7 @@ const ENTRY_NAMES: Record<string, string> = {
   atmo_rug: 'Ковёр', atmo_lamp: 'Лампа',
   pet_none: 'Нет', pet_cat: 'Кот', pet_dog: 'Корги', pet_cactus: 'Кактус',
   pet_robo: 'Пылесос', pet_spider: 'Паук', pet_bulldog: 'Бульдог',
+  pet_parrot: 'Попугай Кеша', pet_hamster: 'Хомяк Байт', pet_fish: 'Рыбка Гит',
 };
 
 export function entryName(id: string): string {

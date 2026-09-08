@@ -29,6 +29,13 @@ export const ShopView: React.FC = () => {
   const performAction = useGameStore((s) => s.performAction);
   const [items, setItems] = useState<ShopItem[]>([]);
   const [loaded, setLoaded] = useState(false);
+  /**
+   * A shelf of three dozen rows reads as clutter when every row shouts its full
+   * life story. One row = one scan line: sprite, name, what it is, price, buy.
+   * The story (description) opens on tap — and only one at a time, so the eye
+   * never has to dodge a wall of text to find the next button.
+   */
+  const [openItem, setOpenItem] = useState<string | null>(null);
 
   useEffect(() => {
     fetch('/api/content/items')
@@ -55,9 +62,7 @@ export const ShopView: React.FC = () => {
           <SpriteBadge sprite="boxes" size={32} />
           Магазин
         </h2>
-        <span className="num text-sm font-semibold text-moss-300">
-          {formatMoney(player.money ?? 0)}
-        </span>
+        <span className="num text-sm font-semibold text-moss-300">{formatMoney(player.money ?? 0)}</span>
       </div>
 
       <StarsShop />
@@ -70,51 +75,75 @@ export const ShopView: React.FC = () => {
           hint="Не удалось загрузить товары. Проверь соединение и зайди позже."
         />
       )}
-      <div className="grid grid-cols-1 gap-3">
+      <div className="grid grid-cols-1 gap-2">
         {items.map((item) => {
           const owned = alreadyOwned(item.id);
           const affordable = canAfford(item.price);
           // everything drawn in the room says so; pets get their own word
           const where = item.type === 'pet' ? 'питомец' : 'в комнату';
+          const expanded = openItem === item.id;
 
           return (
             <div
               key={item.id}
               className={`panel flex items-center gap-3 ${
-                owned ? 'panel-note panel-note-moss' : affordable ? '' : 'opacity-55'
+                owned ? 'panel-note panel-note-moss' : affordable ? '' : 'opacity-60'
               }`}
             >
               {/* the drawing that will actually land in the room */}
               <span className="w-14 h-14 shrink-0 flex items-end justify-center bg-ink-900 border-2 border-ink-700 p-1">
                 <IsoIcon sprite={spriteForItem(item.id, item.type)} size={44} />
               </span>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-sm font-medium text-ink-100">{item.name}</span>
-                  {owned && <PixelIcon name="check" size={10} className="text-moss-400" />}
+
+              <div className="flex-1 min-w-0 self-stretch flex flex-col justify-center py-1">
+                <button
+                  onClick={() => setOpenItem(expanded ? null : item.id)}
+                  aria-expanded={expanded}
+                  className="flex items-center gap-1.5 min-w-0 text-left touch-target !min-h-[36px]"
+                >
+                  <span className={`text-sm font-medium truncate ${owned ? 'text-moss-300' : 'text-ink-100'}`}>
+                    {item.name}
+                  </span>
+                  {owned && <PixelIcon name="check" size={10} className="text-moss-400 shrink-0" />}
+                  {item.nft && <span className="chip !text-gold-300 !border-gold-700 shrink-0">NFT</span>}
+                  <PixelIcon
+                    name="chevron"
+                    size={8}
+                    className={`text-ink-600 shrink-0 transition-transform duration-200 ${
+                      expanded ? 'rotate-180' : ''
+                    }`}
+                  />
+                </button>
+
+                <div className="flex items-center gap-1.5 mt-1">
+                  <span className="chip !py-0">{where}</span>
                 </div>
-                <p className="text-xs text-ink-500 leading-relaxed">{item.description}</p>
-                {(where || item.nft) && (
-                  <div className="flex gap-1 mt-1 flex-wrap">
-                    <span className="chip">{where}</span>
-                    {item.nft && (
-                      <span className="chip !text-gold-300 !border-gold-700">NFT</span>
-                    )}
+
+                {!owned && (
+                  <div className={`accordion-body ${expanded ? 'open' : ''}`}>
+                    <div className="accordion-inner">
+                      <p className="text-xs text-ink-500 leading-relaxed mt-1.5 pr-1">{item.description}</p>
+                    </div>
                   </div>
                 )}
               </div>
-              <div className="text-right">
-                <div className="num text-sm font-semibold text-ink-100">{formatMoney(item.price)}</div>
-                {!owned && (
-                  <button
-                    disabled={!affordable}
-                    onClick={() => performAction('buy_item', { itemId: item.id })}
-                    className={`btn mt-1.5 !min-h-[36px] !px-4 text-sm ${
-                      affordable ? 'btn-primary' : 'btn-secondary'
-                    }`}
-                  >
-                    Купить
-                  </button>
+
+              <div className="text-right shrink-0 self-center">
+                {owned ? (
+                  <span className="text-2xs font-bold uppercase tracking-[0.06em] text-moss-300">куплено</span>
+                ) : (
+                  <>
+                    <div className={`num text-sm font-bold ${affordable ? 'text-ink-100' : 'text-ink-500'}`}>
+                      {formatMoney(item.price)}
+                    </div>
+                    <button
+                      disabled={!affordable}
+                      onClick={() => performAction('buy_item', { itemId: item.id })}
+                      className={`btn mt-1 !min-h-[36px] !px-3 text-xs ${affordable ? 'btn-primary' : 'btn-secondary'}`}
+                    >
+                      Купить
+                    </button>
+                  </>
                 )}
               </div>
             </div>
@@ -123,7 +152,7 @@ export const ShopView: React.FC = () => {
       </div>
 
       {/* Housing section */}
-      <div className="game-card mt-4">
+      <div className="game-card mt-3">
         <h3 className="section-title mb-2">Жильё</h3>
         <div className="space-y-2">
           {HOUSING.map((h) => {
@@ -142,15 +171,11 @@ export const ShopView: React.FC = () => {
                     <IsoIcon sprite={HOUSING_SPRITE[h.level] ?? 'bed'} size={34} />
                   </span>
                   <div className="min-w-0">
-                    <span
-                      className={`text-sm ${current ? 'text-moss-300 font-medium' : 'text-ink-200'}`}
-                    >
+                    <span className={`text-sm ${current ? 'text-moss-300 font-medium' : 'text-ink-200'}`}>
                       {h.name}
                     </span>
                     <span className="text-xs text-ink-500 ml-2">{h.bonus}</span>
-                    {!current && (
-                      <span className="block text-2xs text-ink-600 mt-0.5">меняет фон комнаты</span>
-                    )}
+                    {!current && <span className="block text-2xs text-ink-600 mt-0.5">меняет фон комнаты</span>}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -159,9 +184,7 @@ export const ShopView: React.FC = () => {
                     <button
                       disabled={!affordable}
                       onClick={() => performAction('upgrade_housing')}
-                      className={`btn !min-h-[34px] !px-3 text-xs ${
-                        affordable ? 'btn-primary' : 'btn-secondary'
-                      }`}
+                      className={`btn !min-h-[34px] !px-3 text-xs ${affordable ? 'btn-primary' : 'btn-secondary'}`}
                     >
                       Переехать
                     </button>
