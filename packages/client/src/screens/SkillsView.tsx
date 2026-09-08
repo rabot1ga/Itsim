@@ -4,10 +4,11 @@ import { haptic } from '../lib/telegram';
 import { xpToNext, canUnlockPerk, archetypeToView, type ArchetypeDef } from '@itsim/shared';
 import { PixelIcon } from '../components/pixel/PixelIcon';
 import { EmojiToken, SpriteBadge } from '../components/ui';
+import { SkillList, type SkillInfo } from './SkillList';
 import { KEYSTONE_H, KEYSTONE_W, layoutGalaxy, NODE_H, NODE_W } from './skillTreeLayout';
 
 /**
- * Skills — ONE map, Path of Exile style.
+ * Skills — compact list plus a preserved Path of Exile-style map.
  *
  * No branch subsections. skills.json is a forest of connected trees (schools
  * cross-require each other: AI/ML hangs off backend Python, blockchain off
@@ -60,17 +61,6 @@ const SKILL_EMOJI: Record<string, string> = {
   defi: '💹',
 };
 
-interface SkillInfo {
-  id: string;
-  name: string;
-  branch: string;
-  icon: string;
-  maxLevel: number;
-  flavor: string;
-  parent?: string;
-  unlockAt?: Record<string, number>;
-}
-
 interface SoftSkillMeta {
   key: string;
   name: string;
@@ -119,6 +109,7 @@ const ARCH_EMOJI: Record<string, string> = {
 
 export const SkillsView: React.FC = () => {
   const player = useGameStore((s) => s.player);
+  const setView = useGameStore((s) => s.setView);
   const setMainSkill = useGameStore((s) => s.setMainSkill);
   const unlockPerk = useGameStore((s) => s.unlockPerk);
   const chooseArchetype = useGameStore((s) => s.chooseArchetype);
@@ -128,21 +119,65 @@ export const SkillsView: React.FC = () => {
   const [skills, setSkills] = useState<SkillInfo[]>([]);
   const [perks, setPerks] = useState<PerkInfo[]>([]);
   const [archDefs, setArchDefs] = useState<ArchetypeDef[]>([]);
+  const [mode, setMode] = useState<'list' | 'map'>(() => {
+    try {
+      return localStorage.getItem('itsim_skill_view') === 'map' ? 'map' : 'list';
+    } catch {
+      return 'list';
+    }
+  });
+  const [loaded, setLoaded] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  const [picking, setPicking] = useState(false);
+  const pickLock = useRef(false);
+  const pickSkill = async (id: string) => {
+    if (pickLock.current) return;
+    pickLock.current = true;
+    setPicking(true);
+    haptic('selection');
+    try {
+      await setMainSkill(id);
+    } finally {
+      pickLock.current = false;
+      setPicking(false);
+    }
+  };
+  const changeMode = (next: 'list' | 'map') => {
+    setMode(next);
+    try {
+      localStorage.setItem('itsim_skill_view', next);
+    } catch {
+      /* preferences are optional */
+    }
+  };
 
   useEffect(() => {
-    fetch('/api/content/skills')
-      .then((r) => r.json())
-      .then((data) => setSkills(data.skills ?? []))
-      .catch(() => setSkills([]));
-    fetch('/api/content/perks')
-      .then((r) => r.json())
-      .then((data) => setPerks(data.perks ?? []))
-      .catch(() => setPerks([]));
-    fetch('/api/content/archetypes')
-      .then((r) => r.json())
-      .then((data) => setArchDefs(data.archetypes ?? []))
-      .catch(() => setArchDefs([]));
-  }, []);
+    const controller = new AbortController();
+    setLoaded(false);
+    setLoadError(false);
+    const load = async (path: string, key: string) => {
+      const response = await fetch(`/api/content/${path}`, { signal: controller.signal });
+      if (!response.ok) throw new Error(path);
+      const data = await response.json();
+      if (!Array.isArray(data[key])) throw new Error(path);
+      return data[key];
+    };
+    Promise.all([load('skills', 'skills'), load('perks', 'perks'), load('archetypes', 'archetypes')])
+      .then(([skillData, perkData, archetypeData]) => {
+        setSkills(skillData);
+        setPerks(perkData);
+        setArchDefs(archetypeData);
+        setLoaded(true);
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) {
+          setLoadError(true);
+          setLoaded(true);
+        }
+      });
+    return () => controller.abort();
+  }, [attempt]);
 
   if (!player) return null;
 
@@ -184,72 +219,106 @@ export const SkillsView: React.FC = () => {
   return (
     <div className="space-y-3 animate-fade-in">
       {error && (
-        <div className="panel panel-note panel-note-clay cursor-pointer" onClick={clearError}>
+        <div role="alert" className="panel panel-note panel-note-clay">
           <p className="flex items-start gap-2 text-sm text-clay-300">
             <PixelIcon name="warn" size={12} className="mt-0.5" />
             {error}
           </p>
+          <button className="btn btn-ghost text-xs mt-1" onClick={clearError}>
+            Скрыть ошибку
+          </button>
         </div>
       )}
 
       <div className="flex items-center justify-between">
         <h2 className="flex items-center gap-2 text-base font-semibold text-white">
           <SpriteBadge sprite="bookshelf" size={32} />
-          Дерево навыков
+          Обучение
         </h2>
         <span className="num text-xs text-ink-500">{totalLevels} уровней</span>
       </div>
 
-      {/* Main skill — the one school/work actually levels */}
-      {mainSkill && (
-        <div className="panel panel-note panel-note-gold flex items-center gap-2.5 !py-2">
-          <PixelIcon name="target" size={15} className="text-gold-300 shrink-0" />
-          <p className="flex-1 min-w-0 text-sm text-ink-200">
-            Качаешь <span className="font-semibold text-white">{mainSkill.name}</span> ·{' '}
-            <span className="num font-semibold text-gold-200">ур. {skillLevel(mainSkill.id)}</span>
-            <span className="block text-2xs text-ink-500">тап по любой доступной ноде — сменить</span>
+      {/* Selecting a focus is not a study action; keep that distinction visible. */}
+      <div className="panel flex flex-wrap items-center justify-between gap-2 !py-2">
+        <div className="flex-1 min-w-[140px]">
+          <p className="text-sm text-ink-200">
+            Основной: <span className="font-semibold text-white">{mainSkill?.name ?? 'не выбран'}</span>
           </p>
+          <p className="text-2xs text-ink-400 mt-1">Опыт дают учебные действия во вкладке «День».</p>
         </div>
-      )}
+        <button className="btn btn-secondary text-xs" onClick={() => setView('main')}>
+          Учиться
+        </button>
+      </div>
 
-      {skills.length === 0 ? (
-        <div className="panel text-center py-8">
-          <PixelIcon name="book" size={26} className="text-ink-600 mx-auto mb-2" />
-          <p className="text-ink-400 text-sm">Растим дерево…</p>
-        </div>
-      ) : (
-        <SkillMap
-          skills={skills}
-          skillLevel={skillLevel}
-          skillXp={skillXp}
-          unlocked={unlocked}
-          firstGate={firstGate}
-          mainSkillId={player.mainSkillId}
-          route={route}
-          onPick={(id) => {
-            haptic('selection');
-            setMainSkill(id);
-          }}
-        />
+      <div className="catalogue-filters" role="group" aria-label="Вид навыков">
+        <button aria-pressed={mode === 'list'} onClick={() => changeMode('list')}>
+          Список
+        </button>
+        <button aria-pressed={mode === 'map'} onClick={() => changeMode('map')}>
+          Карта
+        </button>
+      </div>
+      {!loaded && (
+        <p className="panel text-sm text-ink-400" role="status">
+          Загружаем навыки…
+        </p>
       )}
+      {loadError && (
+        <div className="panel" role="alert">
+          <p className="text-sm text-clay-300">Не удалось загрузить обучение.</p>
+          <button className="btn btn-secondary mt-2" onClick={() => setAttempt((n) => n + 1)}>
+            Повторить загрузку
+          </button>
+        </div>
+      )}
+      {loaded && !loadError && skills.length === 0 && (
+        <p className="panel text-sm text-ink-400">Каталог навыков пока пуст.</p>
+      )}
+      {loaded &&
+        !loadError &&
+        skills.length > 0 &&
+        (mode === 'list' ? (
+          <SkillList
+            skills={skills}
+            levels={player.skills ?? {}}
+            mainSkillId={player.mainSkillId}
+            busy={picking}
+            route={route}
+            onPick={pickSkill}
+          />
+        ) : (
+          <SkillMap
+            skills={skills}
+            skillLevel={skillLevel}
+            skillXp={skillXp}
+            unlocked={unlocked}
+            firstGate={firstGate}
+            mainSkillId={player.mainSkillId}
+            route={route}
+            onPick={pickSkill}
+          />
+        ))}
 
       {/* Legend — one line, never a subsection */}
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-2xs text-ink-500 px-0.5">
-        <span className="uppercase tracking-[0.08em] text-ink-600 font-bold">Ноды:</span>
-        <LegendDot color="var(--moss)">выучен</LegendDot>
-        {route ? (
-          <>
-            <LegendDot color="var(--gold)">веха пути</LegendDot>
-            <span className="text-ink-600">вне пути приглушены</span>
-          </>
-        ) : (
-          <LegendDot color="var(--gold)">основной</LegendDot>
-        )}
-        <LegendDot color="var(--line-strong)">доступен</LegendDot>
-        <LegendDot color="var(--line)" dashed>
-          заперт
-        </LegendDot>
-      </div>
+      {mode === 'map' && (
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-2xs text-ink-500 px-0.5">
+          <span className="uppercase tracking-[0.08em] text-ink-600 font-bold">Ноды:</span>
+          <LegendDot color="var(--moss)">выучен</LegendDot>
+          {route ? (
+            <>
+              <LegendDot color="var(--gold)">веха пути</LegendDot>
+              <span className="text-ink-600">вне пути приглушены</span>
+            </>
+          ) : (
+            <LegendDot color="var(--gold)">основной</LegendDot>
+          )}
+          <LegendDot color="var(--line-strong)">доступен</LegendDot>
+          <LegendDot color="var(--line)" dashed>
+            заперт
+          </LegendDot>
+        </div>
+      )}
 
       {/* Archetype routes (P1.3) — curated builds; pick one to trace it on the map */}
       <div className="game-card">
@@ -258,7 +327,13 @@ export const SkillsView: React.FC = () => {
           {archViews.length > 0 && <span className="text-2xs text-ink-500">бонус — раз за жизнь</span>}
         </div>
         {archViews.length === 0 ? (
-          <p className="text-xs text-ink-500">Загрузка путей…</p>
+          <p className="text-xs text-ink-500">
+            {!loaded
+              ? 'Загрузка путей…'
+              : loadError
+                ? 'Пути недоступны — повтори загрузку выше.'
+                : 'Пути пока не опубликованы.'}
+          </p>
         ) : (
           <div className="flex gap-2 overflow-x-auto snap-x pb-1 [scrollbar-width:none]">
             {archViews.map((v) => {
@@ -319,8 +394,7 @@ export const SkillsView: React.FC = () => {
                     {next ? (
                       <button
                         onClick={() => {
-                          haptic('selection');
-                          setMainSkill(next.skillId);
+                          pickSkill(next.skillId);
                         }}
                         title={`Качать: ${next.skillName} до ур. ${next.target}`}
                         className="flex items-center gap-1 min-w-0 text-2xs text-sky-300 hover:text-sky-200 active:text-sky-200"
@@ -364,7 +438,7 @@ export const SkillsView: React.FC = () => {
 
       {/* Soft skills */}
       <div className="game-card">
-        <h3 className="section-title mb-2">Soft Skills</h3>
+        <h3 className="section-title mb-2">Гибкие навыки</h3>
         <div className="grid grid-cols-3 gap-2">
           {SOFT_SKILLS.map((s) => {
             const lvl = player.softSkills?.[s.key]?.level ?? 0;

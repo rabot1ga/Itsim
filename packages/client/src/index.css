@@ -1301,3 +1301,108 @@ svg path.map-route-flow {
     padding-inline: 8px;
   }
 }
+
+/* Learning list: live levels and XP, with the galaxy available as an alternative. */
+.skill-list {
+  display: grid;
+  gap: 8px;
+}
+.skill-list-filters {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+}
+.skill-list-filters label {
+  display: grid;
+  gap: 5px;
+  color: var(--text-dim);
+  font-size: 11px;
+  min-width: 0;
+}
+.skill-list-filters input,
+.skill-list-filters select {
+  min-width: 0;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px;
+  border: 1px solid var(--line-strong);
+  background: var(--well);
+  color: var(--text);
+  border-radius: var(--radius-control);
+}
+.skill-list-row {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 10px;
+  padding: 12px;
+  background: linear-gradient(160deg, var(--surface), var(--bg-raise));
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-tile);
+}
+.skill-list-row.is-main {
+  border-color: var(--accent-deep);
+  box-shadow: inset 3px 0 0 var(--accent-deep);
+}
+.skill-list-symbol {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  color: var(--ochre);
+  background: var(--well);
+  border: 1px solid var(--line-strong);
+  font-family: monospace;
+  font-size: 17px;
+  font-weight: 700;
+}
+.skill-list-row.is-locked .skill-list-symbol {
+  color: var(--text-mute);
+}
+.skill-list-copy {
+  min-width: 0;
+}
+.skill-list-title {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 4px 8px;
+}
+.skill-list-title h3 {
+  font-size: 14px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.skill-list-progress-label {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 3px 8px;
+  font-size: 10px;
+  color: var(--text-dim);
+  margin: 7px 0 4px;
+}
+.skill-list-requirements {
+  margin-top: 7px;
+  color: var(--text-dim);
+  font-size: 11px;
+  line-height: 1.5;
+}
+.skill-list-action {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+}
+.skill-list-action .btn {
+  min-height: 44px;
+  font-size: 11px;
+  padding: 6px 10px;
+}
+@media (max-width: 359px) {
+  .skill-list-filters {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

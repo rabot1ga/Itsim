@@ -29,6 +29,7 @@ test('archetype routes: choose → gold chain on map → clear → guarded claim
   expect(body.archetypes[0].nodes.map((n: any) => n.skillId)).toEqual(['javascript', 'typescript', 'react', 'nextjs']);
 
   await page.getByRole('button', { name: /^Навыки$/ }).click();
+  await page.getByRole('group', { name: 'Вид навыков' }).getByRole('button', { name: 'Карта', exact: true }).click();
 
   // ── the routes rail renders with progress derived from live levels ──────
   const rail = page.locator('.game-card').filter({ hasText: 'Пути-архетипы' });
