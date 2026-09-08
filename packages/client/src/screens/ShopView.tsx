@@ -2,11 +2,13 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import {
   SHOP_CATEGORIES,
-  itemCategory,
+  itemInCategory,
   itemEffects,
+  shopCategoriesFromBalance,
   shopMoney,
   type ShopCategory,
   type ShopItem,
+  type ShopCategoryDef,
 } from './shopCatalogue';
 import { Spinner, EmptyState, SpriteBadge } from '../components/ui';
 import { StarsShop } from '../components/StarsShop';
@@ -56,6 +58,7 @@ export const ShopView: React.FC = () => {
   const lock = useRef(false);
   const [note, setNote] = useState<string | null>(null);
   const [housing, setHousing] = useState<HousingDef[]>([]);
+  const [shopCatalogue, setShopCatalogue] = useState<ShopCategoryDef[] | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -89,12 +92,16 @@ export const ShopView: React.FC = () => {
       .then((data) => {
         const list = (data?.balance?.housing ?? []) as HousingDef[];
         if (list.length) setHousing(list);
+        const cats = data?.balance?.shop?.categories as ShopCategoryDef[] | undefined;
+        if (cats && cats.length) setShopCatalogue(cats);
       })
       .catch(() => {
         // keep fallback below
       });
     return () => controller.abort();
   }, []);
+
+  const shopTabs = shopCatalogue ? shopCategoriesFromBalance(shopCatalogue) : SHOP_CATEGORIES;
 
   const HOUSING = housing.length > 0 ? housing : FALLBACK_HOUSING;
 
@@ -114,7 +121,7 @@ export const ShopView: React.FC = () => {
 
   if (!player) return null;
   const canAfford = (price: number) => (player.money ?? 0) >= price;
-  const visible = items.filter((item) => category === 'all' || itemCategory(item) === category);
+  const visible = items.filter((item) => itemInCategory(item, category, shopCatalogue ?? undefined));
 
   return (
     <div className="space-y-4 animate-fade-in">
@@ -128,7 +135,7 @@ export const ShopView: React.FC = () => {
         </span>
       </div>
       <div className="catalogue-filters" role="group" aria-label="Категории товаров">
-        {SHOP_CATEGORIES.map((tab) => (
+        {shopTabs.map((tab) => (
           <button key={tab.id} aria-pressed={category === tab.id} onClick={() => setCategory(tab.id)}>
             {tab.label}
           </button>

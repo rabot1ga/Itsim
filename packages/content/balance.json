@@ -349,5 +349,14 @@
     "softSkills": {
         "saturatesAt": 30,
         "xpDamping": 0.4
+    },
+    "shop": {
+        "categories": [
+            { "id": "all", "label": "Все", "match": "all" },
+            { "id": "equipment", "label": "Техника", "match": ["pc", "headphones"], "matchIds": ["mechanical_keyboard", "solar_panel"], "matchPrefixes": ["mining_"] },
+            { "id": "home", "label": "Для дома", "match": ["housing", "chair", "coffee", "other"] },
+            { "id": "pets", "label": "Питомцы", "match": ["pet"] },
+            { "id": "courses", "label": "Курсы", "match": ["course"] }
+        ]
     }
 }

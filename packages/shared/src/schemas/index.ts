@@ -420,6 +420,28 @@ export const BalanceSchema = z.object({
         .default({}),
     })
     .optional(),
+
+  // Shop catalogue (3.7): categories live in content so we can add/rename
+  // tabs without shipping a new client. `match` is a list of `Item.type`
+  // values the tab covers; `matchIds` is a list of explicit item ids;
+  // `matchPrefixes` covers dynamic ids like `mining_*`.
+  shop: z
+    .object({
+      categories: z
+        .array(
+          z.object({
+            id: z.string().min(1).regex(/^[a-z0-9_]+$/),
+            label: z.string().min(1),
+            match: z
+              .union([z.literal('all'), z.array(z.string())])
+              .default([]),
+            matchIds: z.array(z.string()).default([]),
+            matchPrefixes: z.array(z.string()).default([]),
+          })
+        )
+        .min(1),
+    })
+    .optional(),
 });
 
 export type BalanceConfig = z.infer<typeof BalanceSchema>;
