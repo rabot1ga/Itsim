@@ -20,6 +20,8 @@ import {
   sprintRewardAmounts,
   sprintWeekEndsAtMs,
   sprintDaysLeft,
+  newlyClaimableArchetypes,
+  validateArchetypeClaim,
   advanceLastTick,
   applyXp,
   applySoftXp,
@@ -194,6 +196,15 @@ function deriveGenetics(state: StoredState): void {
  */
 function respondState(state: StoredState, message?: string) {
   return { ...stripInternal(state), _lastEvent: message };
+}
+
+/** Flat skill → level map (archetype progress is derived from these). */
+function skillLevelMap(state: StoredState): Record<string, number> {
+  const map: Record<string, number> = {};
+  for (const [id, v] of Object.entries(state.skills ?? {})) {
+    map[id] = (v as { level?: number } | undefined)?.level ?? 0;
+  }
+  return map;
 }
 
 /**
@@ -463,6 +474,10 @@ export async function gameRoutes(app: FastifyInstance) {
       return reply.status(404).send({ error: 'Game not started' });
     }
 
+    // Archetype progress is derived from skill levels — snapshot them so a
+    // just-completed route can be announced (P1.3).
+    const levelsBefore = skillLevelMap(state);
+
     // Idempotency — a duplicate request replays nothing and returns the state
     // as it is now (keys are persisted with the save, so restarts are safe).
     if (idempotencyKey) {
@@ -519,6 +534,16 @@ export async function gameRoutes(app: FastifyInstance) {
     if (sprintBump) state.sprint = sprintBump.sprint;
     if (sprintBump?.doneJustNow) {
       finalMessage += '\n🎯 Спринт недели выполнен — награда ждёт в карточке спринта';
+    }
+
+    // Archetype routes (P1.3): did this action just walk a route to the end?
+    const archDefs = content.archetypes?.archetypes ?? [];
+    if (archDefs.length > 0) {
+      const finished = newlyClaimableArchetypes(archDefs, levelsBefore, skillLevelMap(state), state.archetypeBonuses);
+      if (finished.length > 0) {
+        const titles = finished.map((a) => `«${a.title}»`).join(', ');
+        finalMessage += `\n🏆 Путь ${titles} пройден — забери бонус в карточке пути`;
+      }
     }
 
     state.totalActions += 1;
@@ -607,6 +632,75 @@ export async function gameRoutes(app: FastifyInstance) {
     return {
       state: respondState(state, `🏁 Спринт «${theme.title}» закрыт: ${parts.join(', ')}`),
       sprint: sprintView(state, content, nowMs),
+    };
+  });
+
+  /**
+   * POST /api/game/archetype/choose — pick the route highlighted on the skill map (P1.3).
+   * body: { archetypeId?: string } — empty/null clears the highlight.
+   * Choosing is free and can change at any time; it only drives the map UI.
+   */
+  app.post('/archetype/choose', async (request, reply) => {
+    const user = (request as any).telegramUser;
+    const userId = String(user.id);
+    const state = loadState(userId) as StoredState | null;
+    if (!state) {
+      return reply.status(404).send({ error: 'Game not started' });
+    }
+
+    const { archetypeId } = (request.body ?? {}) as { archetypeId?: string | null };
+    if (!archetypeId) {
+      state.archetypeChosen = undefined;
+      saveState(userId, state);
+      return { state: respondState(state, 'Подсветка пути снята') };
+    }
+
+    const def = (getContent().archetypes?.archetypes ?? []).find((a: any) => a.id === archetypeId);
+    if (!def) {
+      return reply.status(400).send({ error: 'Такого пути нет' });
+    }
+    state.archetypeChosen = archetypeId;
+    saveState(userId, state);
+    return { state: respondState(state, `🧭 Путь «${def.title}» выбран — следуй вехам на карте`) };
+  });
+
+  /**
+   * POST /api/game/archetype/claim — one-time-per-life bonus for finishing a route (P1.3).
+   *
+   * Progress is never stored: the route must be fully walked by the player's
+   * current skill levels right now, and each route pays out once per life
+   * (state.archetypeBonuses — the prestige reset clears the ledger, so a new
+   * life can walk and cash the same route again).
+   */
+  app.post('/archetype/claim', async (request, reply) => {
+    const user = (request as any).telegramUser;
+    const userId = String(user.id);
+    const state = loadState(userId) as StoredState | null;
+    if (!state) {
+      return reply.status(404).send({ error: 'Game not started' });
+    }
+
+    const { archetypeId } = (request.body ?? {}) as { archetypeId?: string };
+    const content = getContent();
+    const verdict = validateArchetypeClaim(content.archetypes?.archetypes, archetypeId, state);
+    if ('error' in verdict) {
+      return reply.status(400).send({ error: verdict.error, state: respondState(state) });
+    }
+
+    const def = verdict.def;
+    const money = def.reward?.money ?? 0;
+    const reputation = def.reward?.reputation ?? 0;
+    if (money > 0) state.money += money;
+    if (reputation > 0) state.reputation = clamp(state.reputation + reputation, 0, 100);
+    state.archetypeBonuses = [...(state.archetypeBonuses ?? []), def.id];
+    state.ratingScore = calculateRating(state);
+    saveState(userId, state);
+
+    const parts: string[] = [];
+    if (money > 0) parts.push(`+${fmtMoney(money)}`);
+    if (reputation > 0) parts.push(`+${reputation} репутации`);
+    return {
+      state: respondState(state, `🏆 Путь «${def.title}» пройден до конца: ${parts.join(', ')}`),
     };
   });
 

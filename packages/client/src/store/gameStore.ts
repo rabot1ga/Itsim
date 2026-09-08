@@ -138,6 +138,10 @@ interface GameState {
   setMockCollections: (collections: string[]) => Promise<void>;
   unlockPerk: (perkId: string) => Promise<boolean>;
   setMainSkill: (skillId: string) => Promise<boolean>;
+  /** pick (or clear, with '') the route highlighted on the skill map (P1.3) */
+  chooseArchetype: (archetypeId: string) => Promise<boolean>;
+  /** one-time-per-life bonus for walking a route to the end (P1.3) */
+  claimArchetype: (archetypeId: string) => Promise<boolean>;
   startInterview: () => Promise<any>;
   answerInterview: (questionId: string, choiceIndex: number) => Promise<any>;
   finishInterview: () => Promise<any>;
@@ -491,6 +495,50 @@ export const useGameStore = create<GameState>((set, get) => ({
       return false;
     } catch (err) {
       console.error('setMainSkill error:', err);
+      set({ error: 'Сервер недоступен' });
+      return false;
+    }
+  },
+
+  chooseArchetype: async (archetypeId) => {
+    try {
+      const res = await api('/game/archetype/choose', {
+        method: 'POST',
+        body: JSON.stringify({ archetypeId }),
+      });
+      if (res.data?.state) {
+        haptic('selection');
+        set({ player: res.data.state, error: null });
+        track('archetype_choose', { archetypeId });
+        return true;
+      }
+      haptic('error');
+      set({ error: res.data?.error || 'Не удалось выбрать путь' });
+      return false;
+    } catch (err) {
+      console.error('chooseArchetype error:', err);
+      set({ error: 'Сервер недоступен' });
+      return false;
+    }
+  },
+
+  claimArchetype: async (archetypeId) => {
+    try {
+      const res = await api('/game/archetype/claim', {
+        method: 'POST',
+        body: JSON.stringify({ archetypeId }),
+      });
+      if (res.data?.state) {
+        haptic('success');
+        set({ player: res.data.state, error: null });
+        track('archetype_claim', { archetypeId });
+        return true;
+      }
+      haptic('error');
+      set({ error: res.data?.error || 'Не удалось получить бонус пути' });
+      return false;
+    } catch (err) {
+      console.error('claimArchetype error:', err);
       set({ error: 'Сервер недоступен' });
       return false;
     }

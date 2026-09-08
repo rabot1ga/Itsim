@@ -727,14 +727,33 @@ svg path.map-learned-flow {
   animation: skillFlow 0.8s linear infinite;
 }
 
+/* The archetype route thread: gold dashes crawling along the chosen path
+   (P1.3). Like the moss flow, the state never depends on motion — the thread
+   stays a solid gold line even with animations off (reduced-motion below). */
+@keyframes routeFlow {
+  to {
+    stroke-dashoffset: -16;
+  }
+}
+svg path.map-route-flow {
+  stroke-dasharray: 5 11;
+  animation: routeFlow 1.1s linear infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .gain-float,
   .num-pop,
-  svg path.map-learned-flow {
+  svg path.map-learned-flow,
+  svg path.map-route-flow {
     animation: none;
   }
+  /* learned flow has a solid moss edge underneath; the route thread has only a
+     faint glow, so it must fall back to a solid gold line instead of vanishing */
   svg path.map-learned-flow {
     display: none;
+  }
+  svg path.map-route-flow {
+    stroke-dasharray: none;
   }
 }
 

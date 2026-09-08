@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { haptic } from '../lib/telegram';
-import { xpToNext, canUnlockPerk } from '@itsim/shared';
+import { xpToNext, canUnlockPerk, archetypeToView, type ArchetypeDef } from '@itsim/shared';
 import { PixelIcon } from '../components/pixel/PixelIcon';
 import { EmojiToken, SpriteBadge } from '../components/ui';
 import { KEYSTONE_H, KEYSTONE_W, layoutGalaxy, NODE_H, NODE_W } from './skillTreeLayout';
@@ -107,14 +107,27 @@ const PERK_EMOJI: Record<string, string> = {
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
+/** One curated route through the skill galaxy (roadmap P1.3). */
+const ARCH_EMOJI: Record<string, string> = {
+  frontend: '🎨',
+  backend: '⚙️',
+  ml: '🧠',
+  mobile: '📱',
+  qa: '🔍',
+  web3: '⛓️',
+};
+
 export const SkillsView: React.FC = () => {
   const player = useGameStore((s) => s.player);
   const setMainSkill = useGameStore((s) => s.setMainSkill);
   const unlockPerk = useGameStore((s) => s.unlockPerk);
+  const chooseArchetype = useGameStore((s) => s.chooseArchetype);
+  const claimArchetype = useGameStore((s) => s.claimArchetype);
   const error = useGameStore((s) => s.error);
   const clearError = useGameStore((s) => s.clearError);
   const [skills, setSkills] = useState<SkillInfo[]>([]);
   const [perks, setPerks] = useState<PerkInfo[]>([]);
+  const [archDefs, setArchDefs] = useState<ArchetypeDef[]>([]);
 
   useEffect(() => {
     fetch('/api/content/skills')
@@ -125,6 +138,10 @@ export const SkillsView: React.FC = () => {
       .then((r) => r.json())
       .then((data) => setPerks(data.perks ?? []))
       .catch(() => setPerks([]));
+    fetch('/api/content/archetypes')
+      .then((r) => r.json())
+      .then((data) => setArchDefs(data.archetypes ?? []))
+      .catch(() => setArchDefs([]));
   }, []);
 
   if (!player) return null;
@@ -150,6 +167,19 @@ export const SkillsView: React.FC = () => {
 
   const totalLevels = Object.values(player.skills ?? {}).reduce((sum: number, s: any) => sum + (s.level ?? 0), 0);
   const mainSkill = skills.find((s) => s.id === player.mainSkillId);
+
+  // ── Archetype routes (P1.3): progress is derived from live skill levels ──
+  const levelMap: Record<string, number> = {};
+  for (const [id, v] of Object.entries(player.skills ?? {})) levelMap[id] = (v as { level?: number })?.level ?? 0;
+  const bonuses = player.archetypeBonuses ?? [];
+  const chosenArch = archDefs.find((a) => a.id === player.archetypeChosen) ?? null;
+  const archViews = archDefs.map((def) => archetypeToView(def, levelMap, bonuses, nameOf));
+  const route = chosenArch
+    ? {
+        title: chosenArch.title,
+        steps: chosenArch.nodes.map((n) => ({ skillId: n.skillId, target: n.level })),
+      }
+    : null;
 
   return (
     <div className="space-y-3 animate-fade-in">
@@ -195,6 +225,7 @@ export const SkillsView: React.FC = () => {
           unlocked={unlocked}
           firstGate={firstGate}
           mainSkillId={player.mainSkillId}
+          route={route}
           onPick={(id) => {
             haptic('selection');
             setMainSkill(id);
@@ -206,11 +237,127 @@ export const SkillsView: React.FC = () => {
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-2xs text-ink-500 px-0.5">
         <span className="uppercase tracking-[0.08em] text-ink-600 font-bold">Ноды:</span>
         <LegendDot color="var(--moss)">выучен</LegendDot>
-        <LegendDot color="var(--gold)">основной</LegendDot>
+        {route ? (
+          <>
+            <LegendDot color="var(--gold)">веха пути</LegendDot>
+            <span className="text-ink-600">вне пути приглушены</span>
+          </>
+        ) : (
+          <LegendDot color="var(--gold)">основной</LegendDot>
+        )}
         <LegendDot color="var(--line-strong)">доступен</LegendDot>
         <LegendDot color="var(--line)" dashed>
           заперт
         </LegendDot>
+      </div>
+
+      {/* Archetype routes (P1.3) — curated builds; pick one to trace it on the map */}
+      <div className="game-card">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="section-title">Пути-архетипы</h3>
+          {archViews.length > 0 && <span className="text-2xs text-ink-500">бонус — раз за жизнь</span>}
+        </div>
+        {archViews.length === 0 ? (
+          <p className="text-xs text-ink-500">Загрузка путей…</p>
+        ) : (
+          <div className="flex gap-2 overflow-x-auto snap-x pb-1 [scrollbar-width:none]">
+            {archViews.map((v) => {
+              const chosen = chosenArch?.id === v.id;
+              const doneCount = v.steps.filter((s) => s.done).length;
+              const next = v.steps.find((s) => !s.done) ?? null;
+              const rewardText = [
+                v.reward.money > 0 ? `₽${v.reward.money.toLocaleString('ru-RU')}` : '',
+                v.reward.reputation > 0 ? `+${v.reward.reputation} реп` : '',
+              ]
+                .filter(Boolean)
+                .join(' · ');
+              return (
+                <div
+                  key={v.id}
+                  className={`snap-start w-[264px] shrink-0 border-2 flex flex-col gap-1.5 p-2 ${
+                    chosen ? 'border-gold-700 bg-gold-900/10' : 'border-ink-700 bg-ink-900'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <EmojiToken>{ARCH_EMOJI[v.id] ?? '🧭'}</EmojiToken>
+                    <span
+                      className={`flex-1 min-w-0 truncate text-sm font-semibold ${
+                        chosen ? 'text-gold-200' : 'text-ink-100'
+                      }`}
+                      title={v.title}
+                    >
+                      {v.title}
+                    </span>
+                    {v.claimed ? (
+                      <span className="chip !text-moss-300 !border-moss-700 shrink-0">бонус ✓</span>
+                    ) : v.allDone ? (
+                      <span className="chip !text-gold-300 !border-gold-700 shrink-0">готов</span>
+                    ) : chosen ? (
+                      <span className="chip !text-gold-300 !border-gold-700 shrink-0">выбран</span>
+                    ) : null}
+                  </div>
+                  <p className="text-2xs text-ink-500 leading-snug min-h-[26px]" title={v.subtitle}>
+                    {v.subtitle}
+                  </p>
+                  <div className="flex items-center gap-1.5">
+                    <span className="meter flex-1 !h-[5px]">
+                      <span
+                        className="block h-full"
+                        style={{
+                          width: `${v.steps.length ? (doneCount / v.steps.length) * 100 : 0}%`,
+                          background: 'var(--gold)',
+                        }}
+                      />
+                    </span>
+                    <span className="num text-2xs font-bold text-ink-300 shrink-0">
+                      {doneCount}/{v.steps.length}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 min-w-0">
+                    {next ? (
+                      <button
+                        onClick={() => {
+                          haptic('selection');
+                          setMainSkill(next.skillId);
+                        }}
+                        title={`Качать: ${next.skillName} до ур. ${next.target}`}
+                        className="flex items-center gap-1 min-w-0 text-2xs text-sky-300 hover:text-sky-200 active:text-sky-200"
+                      >
+                        <PixelIcon name="target" size={9} className="shrink-0" />
+                        <span className="truncate">
+                          {next.skillName} → ур.{next.target}
+                        </span>
+                        <span className="num text-ink-600 shrink-0">ур.{next.level}</span>
+                      </button>
+                    ) : (
+                      <span className="text-2xs text-gold-300">весь путь пройден</span>
+                    )}
+                    <span className="flex-1" />
+                    {!v.claimed && v.allDone && rewardText && (
+                      <span className="num text-2xs text-gold-300 shrink-0">{rewardText}</span>
+                    )}
+                  </div>
+                  {!v.claimed && v.allDone ? (
+                    <button
+                      onClick={() => claimArchetype(v.id)}
+                      className="btn btn-primary !min-h-[34px] !px-2 text-xs"
+                    >
+                      Забрать бонус
+                    </button>
+                  ) : !v.allDone ? (
+                    <button
+                      onClick={() => chooseArchetype(chosen ? '' : v.id)}
+                      aria-pressed={chosen}
+                      className={`!min-h-[34px] !px-2 text-xs ${chosen ? 'btn btn-secondary' : 'btn btn-ghost'}`}
+                    >
+                      {chosen ? 'Снять подсветку' : 'Следовать пути'}
+                    </button>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Soft skills */}
@@ -302,6 +449,8 @@ interface SkillMapProps {
   unlocked: (s: SkillInfo) => boolean;
   firstGate: (s: SkillInfo) => { name: string; need: number } | null;
   mainSkillId: string | null | undefined;
+  /** active archetype route (P1.3): golden chain + everything else dimmed */
+  route: { title: string; steps: Array<{ skillId: string; target: number }> } | null;
   onPick: (id: string) => void;
 }
 
@@ -315,6 +464,7 @@ const SkillMap: React.FC<SkillMapProps> = ({
   unlocked,
   firstGate,
   mainSkillId,
+  route,
   onPick,
 }) => {
   const map = useMemo(() => layoutGalaxy(skills), [skills]);
@@ -463,6 +613,24 @@ const SkillMap: React.FC<SkillMapProps> = ({
   const small = scale < 0.62;
   const dimmed = (branch: string) => (school ? branch !== school : false);
 
+  // Active archetype route: which nodes are milestones and where the thread runs
+  const routeOn = !!route;
+  const routeTarget = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const s of route?.steps ?? []) m.set(s.skillId, s.target);
+    return m;
+  }, [route]);
+  const routePathD = useMemo(() => {
+    if (!route || route.steps.length < 2) return '';
+    const pts: Array<{ x: number; y: number }> = [];
+    for (const s of route.steps) {
+      const n = map.nodes.find((x) => x.skill.id === s.skillId);
+      if (n) pts.push({ x: n.x, y: n.y });
+    }
+    if (pts.length < 2) return '';
+    return `M ${pts.map((p) => `${p.x} ${p.y}`).join(' L ')}`;
+  }, [route, map.nodes]);
+
   // tap/drag on the minimap moves the big map to that spot
   const jumpMini = (e: React.PointerEvent) => {
     const el = scrollRef.current;
@@ -516,8 +684,10 @@ const SkillMap: React.FC<SkillMapProps> = ({
   const mmKy = mmH / map.height;
   const miniDots = map.nodes.map((n) => {
     const lvl = skillLevel(n.skill.id);
-    const color =
-      mainSkillId === n.skill.id
+    const onRouteDot = routeOn && routeTarget.has(n.skill.id);
+    const color = onRouteDot
+      ? 'var(--gold)'
+      : mainSkillId === n.skill.id
         ? 'var(--gold)'
         : lvl > 0
           ? 'var(--moss)'
@@ -529,7 +699,8 @@ const SkillMap: React.FC<SkillMapProps> = ({
       x: n.x * mmKx,
       y: n.y * mmKy,
       color,
-      dim: dimmed(n.skill.branch),
+      route: onRouteDot,
+      dim: dimmed(n.skill.branch) || (!onRouteDot && routeOn),
     };
   });
 
@@ -614,6 +785,7 @@ const SkillMap: React.FC<SkillMapProps> = ({
                 const childLvl = childSkill ? skillLevel(childSkill.id) : 0;
                 const isLocked = childSkill ? !unlocked(childSkill) : false;
                 const isDim = childSkill ? dimmed(childSkill.branch) : false;
+                const offRoute = routeOn && childSkill ? !routeTarget.has(childSkill.id) : false;
                 const baseOpacity = childLvl > 0 ? 0.85 : isLocked ? 0.4 : 0.65;
                 const d = `M ${e.sx} ${e.sy} C ${e.c1x} ${e.c1y}, ${e.c2x} ${e.c2y}, ${e.ex} ${e.ey}`;
                 return (
@@ -624,9 +796,9 @@ const SkillMap: React.FC<SkillMapProps> = ({
                       strokeWidth={2}
                       fill="none"
                       strokeDasharray={isLocked ? '4 4' : undefined}
-                      opacity={isDim ? baseOpacity * 0.14 : baseOpacity}
+                      opacity={isDim || offRoute ? baseOpacity * 0.14 : baseOpacity}
                     />
-                    {childLvl > 0 && !isDim && (
+                    {childLvl > 0 && !isDim && !offRoute && (
                       <path
                         d={d}
                         className="map-learned-flow"
@@ -639,6 +811,21 @@ const SkillMap: React.FC<SkillMapProps> = ({
                   </g>
                 );
               })}
+
+              {/* the chosen route: one golden thread through its milestones */}
+              {routePathD && (
+                <g aria-hidden="true">
+                  <path d={routePathD} stroke="var(--gold)" strokeWidth={8} fill="none" opacity={0.13} />
+                  <path
+                    d={routePathD}
+                    className="map-route-flow"
+                    stroke="var(--gold)"
+                    strokeWidth={2.5}
+                    fill="none"
+                    opacity={0.95}
+                  />
+                </g>
+              )}
             </svg>
 
             {map.nodes.map(({ skill, x, y }) => {
@@ -655,15 +842,32 @@ const SkillMap: React.FC<SkillMapProps> = ({
               const w = isKeystone ? KEYSTONE_W : NODE_W;
               const h = isKeystone ? KEYSTONE_H : NODE_H;
 
-              const frame = isMain
-                ? 'border-gold-700 bg-gold-900/15'
-                : isLearned
-                  ? 'border-moss-700 bg-moss-900/20'
-                  : isKeystone
-                    ? 'border-ink-500 bg-ink-900'
-                    : isUnlocked
-                      ? 'border-ink-600 bg-ink-900'
-                      : 'border-ink-700 bg-ink-900/60';
+              // Archetype route mode: milestone nodes wear gold; off-path fades
+              const onRoute = routeOn && routeTarget.has(skill.id);
+              const offRoute = routeOn && !onRoute;
+              const routeDone = onRoute && level >= (routeTarget.get(skill.id) ?? Infinity);
+
+              const frame = !routeOn
+                ? isMain
+                  ? 'border-gold-700 bg-gold-900/15'
+                  : isLearned
+                    ? 'border-moss-700 bg-moss-900/20'
+                    : isKeystone
+                      ? 'border-ink-500 bg-ink-900'
+                      : isUnlocked
+                        ? 'border-ink-600 bg-ink-900'
+                        : 'border-ink-700 bg-ink-900/60'
+                : onRoute
+                  ? routeDone
+                    ? 'border-gold-500 bg-gold-900/25'
+                    : 'border-gold-700 bg-gold-900/10'
+                  : isLearned
+                    ? 'border-moss-700/60 bg-moss-900/15'
+                    : isKeystone
+                      ? 'border-ink-500 bg-ink-900'
+                      : isUnlocked
+                        ? 'border-ink-600 bg-ink-900'
+                        : 'border-ink-700 bg-ink-900/60';
 
               return (
                 <button
@@ -677,17 +881,21 @@ const SkillMap: React.FC<SkillMapProps> = ({
                   }}
                   disabled={!isUnlocked}
                   title={
-                    isMain
-                      ? `Основной навык — учёба и работа качают его (ур. ${level})`
-                      : !isUnlocked && gate
-                        ? `${skill.flavor} Нужно: ${gate.name} ${gate.need}+`
-                        : isKeystone
-                          ? `${skill.name} — корень школы${isLearned ? ` (ур. ${level})` : ''}`
-                          : `Сделать основным: ${skill.name}`
+                    onRoute
+                      ? routeDone
+                        ? `Веха пути «${route?.title}» пройдена: ${skill.name} ур. ${routeTarget.get(skill.id)}`
+                        : `Веха пути «${route?.title}»: ${skill.name} до ур. ${routeTarget.get(skill.id)} (сейчас ${level}) — тап, чтобы качать`
+                      : isMain
+                        ? `Основной навык — учёба и работа качают его (ур. ${level})`
+                        : !isUnlocked && gate
+                          ? `${skill.flavor} Нужно: ${gate.name} ${gate.need}+`
+                          : isKeystone
+                            ? `${skill.name} — корень школы${isLearned ? ` (ур. ${level})` : ''}`
+                            : `Сделать основным: ${skill.name}`
                   }
                   className={`absolute -translate-x-1/2 flex flex-col items-center justify-center border-2 text-center transition-transform active:translate-y-[1px] ${
-                    isUnlocked && !isMain ? 'hover:border-ink-400' : ''
-                  } ${frame} ${isDim ? 'opacity-[0.15] pointer-events-none' : isUnlocked ? '' : 'opacity-75'}`}
+                    isUnlocked && !isMain ? (onRoute ? 'hover:border-gold-600' : 'hover:border-ink-400') : ''
+                  } ${frame} ${isDim ? 'opacity-[0.15] pointer-events-none' : offRoute ? 'opacity-30' : isUnlocked ? '' : 'opacity-75'}`}
                   style={{ left: x, top: y, width: w, height: h }}
                 >
                   <span className="relative">
@@ -709,11 +917,15 @@ const SkillMap: React.FC<SkillMapProps> = ({
                         } ${
                           isMain
                             ? 'text-gold-200'
-                            : isLearned
-                              ? 'text-ink-100'
-                              : isUnlocked
-                                ? 'text-ink-300'
-                                : 'text-ink-500'
+                            : onRoute
+                              ? routeDone
+                                ? 'text-gold-200'
+                                : 'text-gold-300'
+                              : isLearned
+                                ? 'text-ink-100'
+                                : isUnlocked
+                                  ? 'text-ink-300'
+                                  : 'text-ink-500'
                         }`}
                         title={skill.name}
                       >
@@ -789,12 +1001,12 @@ const SkillMap: React.FC<SkillMapProps> = ({
                 {miniDots.map((d) => (
                   <rect
                     key={d.key}
-                    x={Math.round((d.x - 1) * 10) / 10}
-                    y={Math.round((d.y - 1) * 10) / 10}
-                    width={2}
-                    height={2}
+                    x={Math.round((d.x - (d.route ? 1.5 : 1)) * 10) / 10}
+                    y={Math.round((d.y - (d.route ? 1.5 : 1)) * 10) / 10}
+                    width={d.route ? 3 : 2}
+                    height={d.route ? 3 : 2}
                     fill={d.color}
-                    opacity={d.dim ? 0.12 : 1}
+                    opacity={d.dim ? (d.route ? 0.5 : 0.12) : 1}
                   />
                 ))}
                 <rect
@@ -814,7 +1026,12 @@ const SkillMap: React.FC<SkillMapProps> = ({
 
         <div className="absolute bottom-1.5 left-2 right-2 z-10 flex items-end justify-between gap-2 pointer-events-none">
           <p className="text-2xs text-ink-600 leading-tight">
-            {school ? (
+            {route ? (
+              <>
+                золотая нить — <span className="text-gold-400 font-semibold">«{route.title}»</span> · тап по вехе —
+                сделать основным
+              </>
+            ) : school ? (
               <>
                 показана школа <span className="text-ink-400 font-semibold">{BRANCH_META[school]?.name ?? school}</span>{' '}
                 · тап по «Все школы» — вернуть

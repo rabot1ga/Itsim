@@ -312,6 +312,12 @@ export interface PlayerState {
   // Weekly season sprint (real-time retention, P1.2)
   sprint?: PlayerSprint;
 
+  // Archetype builds (P1.3) — career-scoped guidance + completion bonus
+  /** the archetype route currently highlighted on the skill map */
+  archetypeChosen?: string;
+  /** archetype ids whose bonus has been claimed in THIS life (per-life ledger) */
+  archetypeBonuses?: string[];
+
   // Monetization (Telegram Stars) — cosmetics only, see content/monetization.json
   /** layer ids unlocked by a purchase */
   entitlements?: string[];

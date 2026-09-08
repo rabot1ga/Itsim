@@ -12,7 +12,27 @@ export async function contentRoutes(app: FastifyInstance) {
       skills: 'skills.json',
       perks: 'perks.json',
       companies: 'companies.json',
-      events: ['events_common.json', 'events_work.json', 'events_chains.json', 'events_mining.json', 'events_life.json', 'events_skills.json', 'events_action.json', 'events_daily.json', 'events_daily2.json', 'events_npcs.json', 'events_more_action.json', 'events_tech.json', 'events_money2.json', 'events_family2.json', 'events_social2.json', 'events_health2.json', 'events_work2.json', 'events_study2.json', 'events_sidejob2.json'],
+      events: [
+        'events_common.json',
+        'events_work.json',
+        'events_chains.json',
+        'events_mining.json',
+        'events_life.json',
+        'events_skills.json',
+        'events_action.json',
+        'events_daily.json',
+        'events_daily2.json',
+        'events_npcs.json',
+        'events_more_action.json',
+        'events_tech.json',
+        'events_money2.json',
+        'events_family2.json',
+        'events_social2.json',
+        'events_health2.json',
+        'events_work2.json',
+        'events_study2.json',
+        'events_sidejob2.json',
+      ],
       items: 'items.json',
       npcs: 'npcs.json',
       achievements: 'achievements.json',
@@ -135,6 +155,14 @@ export async function contentRoutes(app: FastifyInstance) {
    */
   app.get('/side-jobs', async () => {
     return { sideJobs: getContent().balance.sideJobs ?? {} };
+  });
+
+  /**
+   * GET /api/content/archetypes — curated skill routes (P1.3). Progress is not
+   * stored anywhere: the client derives it from the player's skill levels.
+   */
+  app.get('/archetypes', async () => {
+    return { archetypes: getContent().archetypes?.archetypes ?? [] };
   });
 
   /**
