@@ -12,12 +12,35 @@ import { Spinner, EmptyState, SpriteBadge } from '../components/ui';
 import { StarsShop } from '../components/StarsShop';
 import { IsoIcon, spriteForItem, HOUSING_SPRITE } from '../components/iso/IsoIcon';
 
-const HOUSING = [
-  { level: 0, name: 'Общага', cost: 5000, bonus: 'базовое' },
-  { level: 1, name: 'Однушка на окраине', cost: 25000, bonus: '+1 энергия' },
-  { level: 2, name: 'Квартира в центре', cost: 50000, bonus: '+2 энергия, +5 мотивация' },
-  { level: 3, name: 'Ипотека', cost: 40000, bonus: '+2 энергия, +10 мотивация' },
-  { level: 4, name: 'Пентхаус', cost: 150000, bonus: '+3 энергия, +15 мотивация, +10 репутация' },
+type HousingDef = {
+  level: number;
+  name: string;
+  cost: number;
+  energyBonus: number;
+  motivationBonus: number;
+  reputationBonus: number;
+  incomeGateMult: number;
+  saveMult: number;
+  saveStreakDays: number;
+};
+
+/** Compose the small "bonus" caption from the structured fields */
+function housingBonus(h: HousingDef): string {
+  const parts: string[] = [];
+  if (h.energyBonus) parts.push(`+${h.energyBonus} энергия`);
+  if (h.motivationBonus) parts.push(`+${h.motivationBonus} мотивация`);
+  if (h.reputationBonus) parts.push(`+${h.reputationBonus} репутация`);
+  return parts.length ? parts.join(', ') : 'базовое';
+}
+
+// Hard-coded fallback used only while /api/content/balance hasn't resolved.
+// The values mirror balance.json so the section is never empty.
+const FALLBACK_HOUSING: HousingDef[] = [
+  { level: 0, name: 'Общага', cost: 5000, energyBonus: 0, motivationBonus: 0, reputationBonus: 0, incomeGateMult: 0, saveMult: 1, saveStreakDays: 0 },
+  { level: 1, name: 'Однушка на окраине', cost: 25000, energyBonus: 1, motivationBonus: 0, reputationBonus: 0, incomeGateMult: 0, saveMult: 3, saveStreakDays: 25 },
+  { level: 2, name: 'Квартира в центре', cost: 50000, energyBonus: 2, motivationBonus: 5, reputationBonus: 0, incomeGateMult: 0, saveMult: 6, saveStreakDays: 40 },
+  { level: 3, name: 'Своя квартира (ипотека)', cost: 40000, energyBonus: 2, motivationBonus: 10, reputationBonus: 0, incomeGateMult: 18000, saveMult: 8, saveStreakDays: 55 },
+  { level: 4, name: 'Пентхаус', cost: 150000, energyBonus: 3, motivationBonus: 15, reputationBonus: 10, incomeGateMult: 0, saveMult: 10, saveStreakDays: 70 },
 ];
 
 export const ShopView: React.FC = () => {
@@ -32,6 +55,7 @@ export const ShopView: React.FC = () => {
   const [busy, setBusy] = useState<string | null>(null);
   const lock = useRef(false);
   const [note, setNote] = useState<string | null>(null);
+  const [housing, setHousing] = useState<HousingDef[]>([]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -54,6 +78,25 @@ export const ShopView: React.FC = () => {
       });
     return () => controller.abort();
   }, [attempt]);
+
+  // Housing comes from the same balance.json the server uses (3.6: HOUSING
+  // moved out of a hard-coded array into content). We keep a local copy as a
+  // graceful fallback in case the content service is down on first paint.
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch('/api/content/balance', { signal: controller.signal })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        const list = (data?.balance?.housing ?? []) as HousingDef[];
+        if (list.length) setHousing(list);
+      })
+      .catch(() => {
+        // keep fallback below
+      });
+    return () => controller.abort();
+  }, []);
+
+  const HOUSING = housing.length > 0 ? housing : FALLBACK_HOUSING;
 
   const buy = async (id: string, action = 'buy_item') => {
     if (lock.current) return;
@@ -205,7 +248,7 @@ export const ShopView: React.FC = () => {
                     <span className={`text-sm ${current ? 'text-moss-300 font-medium' : 'text-ink-200'}`}>
                       {h.name}
                     </span>
-                    <span className="text-xs text-ink-500 ml-2">{h.bonus}</span>
+                    <span className="text-xs text-ink-500 ml-2">{housingBonus(h)}</span>
                     {!current && <span className="block text-2xs text-ink-600 mt-0.5">меняет фон комнаты</span>}
                   </div>
                 </div>
