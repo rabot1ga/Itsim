@@ -107,9 +107,20 @@ export const ResourceBar: React.FC = () => {
           </span>
         </div>
 
-        {/* Grade — identity, not a resource; never louder than money. */}
-        <span className={`chip uppercase tracking-[0.06em] shrink-0 ${gilded ? 'text-gold-300' : 'text-ink-300'}`}>
-          {grade}
+        {/* Streak + grade — identity and the daily habit; never louder than money. */}
+        <span className="flex items-center gap-1.5 shrink-0 min-w-0">
+          {(player.dailyStreak ?? 0) >= 2 && (
+            <span
+              className="chip !text-ochre-300"
+              title={`Заходишь ${player.dailyStreak} дней подряд — награда за вход растёт`}
+            >
+              <PixelIcon name="flame" size={10} className="text-ochre-400" />
+              <span className="num">{player.dailyStreak}</span>
+            </span>
+          )}
+          <span className={`chip uppercase tracking-[0.06em] ${gilded ? 'text-gold-300' : 'text-ink-300'}`}>
+            {grade}
+          </span>
         </span>
       </div>
 

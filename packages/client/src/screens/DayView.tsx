@@ -179,6 +179,47 @@ const OnboardingTip: React.FC<{ day: number }> = ({ day }) => {
   );
 };
 
+const CHECKIN_SEEN_KEY = 'itsim_checkin_seen';
+
+/** Once per real day: «заходишь N дней подряд — +X ₽» after the server check-in. */
+const CheckInBanner: React.FC<{ checkIn: any }> = ({ checkIn }) => {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (!checkIn?.claimed) return;
+    try {
+      const today = new Date().toDateString();
+      if (localStorage.getItem(CHECKIN_SEEN_KEY) === today) return;
+      localStorage.setItem(CHECKIN_SEEN_KEY, today);
+      setVisible(true);
+    } catch {
+      setVisible(true);
+    }
+  }, [checkIn]);
+
+  if (!visible || !checkIn?.claimed) return null;
+  const { streak, money, nextMoney } = checkIn;
+  return (
+    <section className="panel panel-note panel-note-gold animate-pop-in">
+      <div className="flex items-start gap-2">
+        <PixelIcon name="flame" size={14} className="text-ochre-300 mt-0.5 shrink-0" />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-white leading-tight">
+            Стрик: {streak} {streak === 1 ? 'день' : streak < 5 ? 'дня' : 'дней'} подряд
+            {money > 0 && <span className="num text-moss-300"> · +{money} ₽ за вход</span>}
+          </p>
+          {nextMoney > 0 && (
+            <p className="text-xs text-ink-400 leading-relaxed mt-0.5">
+              Возвращайся завтра — получишь <span className="num text-ink-200">{nextMoney} ₽</span>. Пропустишь день —
+              стрик сгорит.
+            </p>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+};
+
 export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
   const player = useGameStore((s) => s.player);
   const activeEvent = useGameStore((s) => s.activeEvent);
@@ -186,6 +227,7 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
   const clearError = useGameStore((s) => s.clearError);
   const performAction = useGameStore((s) => s.performAction);
   const chooseEvent = useGameStore((s) => s.chooseEvent);
+  const checkIn = useGameStore((s) => s.checkIn);
   const mining = useGameStore((s) => s.mining);
   const [sideJobs, setSideJobs] = useState<Record<string, SideJobInfo>>({});
   const [finishing, setFinishing] = useState(false);
@@ -242,6 +284,9 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
 
   return (
     <div className="space-y-4 animate-fade-in">
+      {/* Daily check-in reward — once per real day */}
+      {checkIn && <CheckInBanner checkIn={checkIn} />}
+
       {/* First week: one pointer per day instead of a wall of grids */}
       <OnboardingTip day={currentDay} />
 

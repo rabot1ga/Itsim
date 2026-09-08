@@ -193,15 +193,7 @@ export interface PixelManifest {
 
 // ---- Room customization (docs/design.md §12.2) ----
 
-export type RoomSlotId =
-  | 'bg'
-  | 'window'
-  | 'decor'
-  | 'desk'
-  | 'setup'
-  | 'chair'
-  | 'atmosphere'
-  | 'pet';
+export type RoomSlotId = 'bg' | 'window' | 'decor' | 'desk' | 'setup' | 'chair' | 'atmosphere' | 'pet';
 
 export type AvatarSlotId = 'hair' | 'beard' | 'top' | 'bottom' | 'accessory';
 
@@ -322,6 +314,12 @@ export interface PlayerState {
   entitlements?: string[];
   /** profile badges (supporter, fashionista, …) */
   badges?: string[];
+
+  // Daily check-in streak (real-time retention hook, UTC+3 game date)
+  /** consecutive real days the player has checked in */
+  dailyStreak?: number;
+  /** last check-in day, YYYY-MM-DD in the game-day timezone */
+  lastCheckInDate?: string;
 }
 
 export interface SkillLevel {
@@ -414,7 +412,8 @@ export interface SkillDefinition {
   flavor: string;
 }
 
-export type SkillBranch = 'frontend' | 'backend' | 'mobile' | 'qa' | 'devops' | 'ai_ml' | 'cybersec' | 'gamedev' | 'blockchain';
+export type SkillBranch =
+  'frontend' | 'backend' | 'mobile' | 'qa' | 'devops' | 'ai_ml' | 'cybersec' | 'gamedev' | 'blockchain';
 
 export interface PerkDefinition {
   id: PerkId;

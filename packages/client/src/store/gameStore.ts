@@ -101,6 +101,8 @@ interface GameState {
 
   // Actions
   initGame: (initData: string) => Promise<void>;
+  /** daily check-in result from the server: { claimed, streak, money, nextMoney } | null */
+  checkIn: any;
   /** re-read /game/state (after a Stars purchase or a background change) */
   refreshState: () => Promise<void>;
   setScreen: (screen: Screen) => void;
@@ -138,6 +140,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   inventory: [],
   heldCollections: [],
   mining: null,
+  checkIn: null,
   gains: [],
 
   initGame: async (initData: string) => {
@@ -166,6 +169,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         mining: stateRes.data.mining ?? null,
         careerOutlook: stateRes.data.careerOutlook ?? null,
         costOfDay: stateRes.data.costOfDay ?? null,
+        checkIn: stateRes.data.checkIn ?? null,
         screen: stateRes.data.isNew ? 'game' : 'menu',
       });
     } catch (err: any) {
@@ -199,6 +203,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         mining: res.data.mining ?? null,
         careerOutlook: res.data.careerOutlook ?? null,
         costOfDay: res.data.costOfDay ?? null,
+        checkIn: res.data.checkIn ?? get().checkIn,
       });
     }
   },
