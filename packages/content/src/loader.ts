@@ -34,6 +34,7 @@ import {
   DailyChallengesFileSchema,
   InterviewQuestionsFileSchema,
   SprintsFileSchema,
+  ProjectsFileSchema,
   ArchetypesFileSchema,
   MonetizationSchema,
   PixelArtFileSchema,
@@ -74,6 +75,8 @@ export interface ContentBundle {
   interviewQuestions: any[];
   /** Telegram Stars catalogue */
   monetization: any;
+  /** freelance projects with deadlines — { projects: [...] } */
+  projects: any;
   /** weekly season sprints (P1.2) — { themes: [...] } */
   sprints: any;
   /** archetype builds (P1.3) — { archetypes: [...] } */
@@ -177,6 +180,7 @@ export function loadContentBundle(dir: string = CONTENT_DIR): ContentLoadResult 
       currency: 'XTR',
       products: [],
     }),
+    projects: validate('projects.json', ProjectsFileSchema, read('projects.json'), { projects: [] }),
     sprints: validate('sprints.json', SprintsFileSchema, read('sprints.json'), { themes: [] }),
     archetypes: validate('archetypes.json', ArchetypesFileSchema, read('archetypes.json'), { archetypes: [] }),
     ...loadPixelArt(dir, issues),
@@ -197,6 +201,7 @@ export function loadContentBundle(dir: string = CONTENT_DIR): ContentLoadResult 
     products: bundle.monetization?.products?.length ?? 0,
     careerGates: bundle.balance?.careerGates?.length ?? 0,
     sprintThemes: bundle.sprints?.themes?.length ?? 0,
+    projects: bundle.projects?.projects?.length ?? 0,
     archetypes: bundle.archetypes?.archetypes?.length ?? 0,
     pixelComponents: Object.keys(bundle.pixelArt?.components ?? {}).length,
   };
@@ -500,6 +505,22 @@ function crossValidate(bundle: ContentBundle, issues: ContentIssue[]) {
   for (const ch of bundle.challenges) {
     if (ch.actionId && typeof ch.actionId !== 'string')
       err('challenges.json', `challenge "${ch.id}": actionId must be a string`);
+  }
+
+  // --- projects: unique ids, unique task ids, sane deadline pacing ----------
+  const projectIds = new Set<string>();
+  for (const project of bundle.projects?.projects ?? []) {
+    if (projectIds.has(project.id)) err('projects.json', `duplicate project id "${project.id}"`);
+    projectIds.add(project.id);
+    const taskIds = new Set<string>();
+    for (const task of project.tasks) {
+      if (taskIds.has(task.id)) err('projects.json', `project "${project.id}": duplicate task "${task.id}"`);
+      taskIds.add(task.id);
+    }
+    // One task per day is the fastest honest pace; a deadline below that is a trap.
+    if (project.deadlineDays < project.tasks.length) {
+      err('projects.json', `project "${project.id}": deadline ${project.deadlineDays} d is shorter than ${project.tasks.length} tasks`);
+    }
   }
 
   // --- monetization ---------------------------------------------------------

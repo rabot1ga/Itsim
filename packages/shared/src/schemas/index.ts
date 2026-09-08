@@ -505,6 +505,32 @@ export const DailyChallengeSchema = z.object({
 
 export const DailyChallengesFileSchema = z.array(DailyChallengeSchema).min(1);
 
+// ---- Freelance projects with deadlines (reference 1.png «Работа») ----
+
+export const ProjectTaskSchema = z.object({
+  id: z.string().regex(/^[a-z0-9_]+$/),
+  title: z.string().min(1).max(80),
+  xp: z.number().int().positive().max(100),
+  energy: z.number().int().min(0).max(10),
+});
+
+export const ProjectSchema = z.object({
+  id: z.string().regex(/^[a-z0-9_]+$/),
+  title: z.string().min(1).max(80),
+  subtitle: z.string().max(120).default(''),
+  icon: z.string().min(1),
+  payment: z.number().int().positive(),
+  reputation: z.number().int().min(0).max(20),
+  deadlineDays: z.number().int().min(1).max(60),
+  minSkillLevel: z.number().int().min(0).max(100),
+  tasks: z.array(ProjectTaskSchema).min(2).max(6),
+});
+
+export const ProjectsFileSchema = z.object({
+  version: z.number().int().default(1),
+  projects: z.array(ProjectSchema).min(1),
+});
+
 // ---- Weekly season sprint (P1.2) ----
 // Real-time weekly sprint: one theme rotates in every Monday (UTC+3); its goals
 // count matching actions (by action-id prefix) done during that real week.

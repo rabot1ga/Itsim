@@ -2142,3 +2142,136 @@ svg path.map-route-flow {
   border: 0;
   image-rendering: pixelated;
 }
+
+/* Project board — reference 1.png «Работа»: contract, deadline, checklist. */
+.project-board {
+  border: 1px solid #36414c;
+  background: #131b22;
+  padding: 10px;
+  border-radius: 4px;
+}
+.project-board .section-title {
+  margin-bottom: 8px;
+}
+.project-active {
+  border: 1px solid #4a6c86;
+  background: #16232e;
+  padding: 9px;
+  border-radius: 3px;
+  margin-bottom: 10px;
+}
+.project-active-head {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  margin-bottom: 7px;
+}
+.project-title {
+  font-size: 12px;
+  color: #e7eef4;
+}
+.project-subtitle {
+  font-size: 10px;
+  color: #8ea0ae;
+}
+.project-percent {
+  margin-left: auto;
+  font-size: 11px;
+  color: #a1c665;
+}
+.project-deadline {
+  font-size: 10px;
+  color: #8ea0ae;
+  margin-top: 5px;
+}
+.project-deadline.is-late {
+  color: #dc8a80;
+}
+.project-tasks-title {
+  font-size: 11px;
+  color: #c3d0da;
+  margin: 9px 0 5px;
+}
+.project-tasks {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.project-tasks li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: space-between;
+  background: #1d2730;
+  border: 1px solid #36414c;
+  padding: 6px 8px;
+  min-height: 38px;
+  border-radius: 3px;
+}
+.project-task-title {
+  font-size: 11px;
+  color: #dbe4eb;
+  min-width: 0;
+}
+.project-tasks li.is-done .project-task-title {
+  color: #7e8d99;
+  text-decoration: line-through;
+}
+.project-task-done {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: #a1c665;
+  white-space: nowrap;
+}
+.project-tasks button {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: #a1c665;
+  border: 1px solid #4b6338;
+  background: #1f2a20;
+  padding: 5px 8px;
+  min-height: 32px;
+  white-space: nowrap;
+  border-radius: 3px;
+}
+.project-tasks button:disabled {
+  opacity: 0.5;
+}
+.project-active-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 9px;
+}
+.project-active-actions .btn {
+  flex: 1;
+  min-height: 38px;
+}
+.project-offer {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  background: #16202a;
+  border: 1px solid #36414c;
+  padding: 9px;
+  border-radius: 3px;
+}
+.project-terms {
+  font-size: 10px;
+  color: #8ea0ae;
+  margin-top: 3px;
+}
+.project-blocked {
+  font-size: 10px;
+  color: #d3a45f;
+  margin-top: 3px;
+}
+.project-take {
+  align-self: center;
+  min-height: 36px;
+  padding: 5px 12px;
+  flex-shrink: 0;
+}

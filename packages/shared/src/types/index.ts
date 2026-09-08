@@ -294,6 +294,11 @@ export interface PlayerState {
   // Freelance
   activeFreelance: FreelanceJob | null;
 
+  /** contract with a deadline; missing = no project taken */
+  activeProject?: PlayerProject | null;
+  /** ids of projects delivered in this life */
+  projectsDone?: string[];
+
   // Achievements
   achievements: AchievementId[];
 
@@ -419,6 +424,36 @@ export interface FreelanceJob {
   minSkillLevel: number;
   daysWorked: number;
   daysRequired: number;
+}
+
+// ---- Freelance projects with deadlines (reference 1.png «Работа») ----
+
+export interface ProjectTaskDef {
+  id: string;
+  title: string;
+  xp: number;
+  energy: number;
+}
+
+export interface ProjectDef {
+  id: string;
+  title: string;
+  subtitle: string;
+  icon: string;
+  payment: number;
+  reputation: number;
+  /** game days from the day the project is taken */
+  deadlineDays: number;
+  minSkillLevel: number;
+  tasks: ProjectTaskDef[];
+}
+
+/** The one project a player is working on right now. */
+export interface PlayerProject {
+  id: string;
+  startedDay: number;
+  deadlineDay: number;
+  tasksDone: string[];
 }
 
 export interface PendingChainEvent {
@@ -653,6 +688,10 @@ export type ActionId =
   | 'rest_gym'
   | 'networking'
   | 'apply_job'
+  | 'take_project'
+  | 'project_task'
+  | 'deliver_project'
+  | 'drop_project'
   | 'advance_day';
 
 export interface ActionDefinition {

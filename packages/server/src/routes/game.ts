@@ -18,6 +18,14 @@ import {
   bumpSprintProgress,
   sprintAllDone,
   sprintRewardAmounts,
+  findProject,
+  remainingTasks,
+  projectComplete,
+  projectBlockedReason,
+  projectDaysLeft,
+  projectFailurePenalty,
+  projectPayout,
+  startProject,
   sprintWeekEndsAtMs,
   sprintDaysLeft,
   newlyClaimableArchetypes,
@@ -134,6 +142,9 @@ const EXTRA_ENERGY_COSTS: Record<string, number> = {
   rest_gym: 2,
   networking: 2,
   apply_job: 1,
+  take_project: 0,
+  deliver_project: 0,
+  drop_project: 0,
   cto_elect: 3,
   buy_item: 0,
   upgrade_housing: 0,
@@ -1384,6 +1395,11 @@ function getActionEnergyCost(actionId: string, params: any, content: any): numbe
   if (actionId === 'side_job') {
     return content.balance.sideJobs?.[params?.jobId]?.energy ?? 1;
   }
+  if (actionId === 'project_task') {
+    // The cost belongs to the task, so a heavy task stays heavy wherever it runs.
+    const def = findProject(content.projects?.projects, String(params?.projectId ?? ''));
+    return def?.tasks.find((t: any) => t.id === params?.taskId)?.energy ?? 3;
+  }
   return EXTRA_ENERGY_COSTS[actionId] ?? 1;
 }
 
@@ -1589,6 +1605,78 @@ function applyAction(
       delta.reputation = 0.5;
       delta.skills = { [skillId]: { from: current.level, to: next.level } };
       return { message: '🚀 Пет-проект: ещё один TODO-трекер в портфолио. Репутация растёт' };
+    }
+
+    // ---- Projects with deadlines (reference 1.png «Работа») ----
+    case 'take_project': {
+      const def = findProject(content.projects?.projects, String(params?.projectId ?? ''));
+      if (!def) return { error: 'Такого проекта нет в списке' };
+      const skillLevel = state.skills[state.mainSkillId]?.level ?? 0;
+      const blocked = projectBlockedReason(def, { activeProject: state.activeProject, skillLevel });
+      if (blocked) return { error: blocked };
+      state.activeProject = startProject(def, state.currentDay);
+      delta.activeProject = state.activeProject;
+      return {
+        message: `📁 Проект «${def.title}» взят. Дедлайн — день ${state.activeProject.deadlineDay}`,
+        delta,
+      };
+    }
+
+    case 'project_task': {
+      const active = state.activeProject;
+      if (!active) return { error: 'Сначала возьми проект' };
+      const def = findProject(content.projects?.projects, active.id);
+      if (!def) return { error: 'Проект больше не доступен' };
+      const task = remainingTasks(def, active).find((t) => t.id === params?.taskId);
+      if (!task) return { error: 'Эта задача уже сделана или её нет в проекте' };
+      const skillId = state.mainSkillId;
+      const current = state.skills[skillId] ?? { level: 0, xp: 0 };
+      const next = applyXp(current, xpGain(state, content, task.xp), xpMotivation(state, content));
+      state.skills = { ...state.skills, [skillId]: next };
+      state.activeProject = { ...active, tasksDone: [...active.tasksDone, task.id] };
+      delta.skills = { [skillId]: { from: current.level, to: next.level } };
+      delta.activeProject = state.activeProject;
+      const left = remainingTasks(def, state.activeProject).length;
+      return {
+        message: left
+          ? `✅ ${task.title}. Осталось задач: ${left}`
+          : `✅ ${task.title}. Все задачи готовы — можно сдавать проект`,
+        delta,
+      };
+    }
+
+    case 'deliver_project': {
+      const active = state.activeProject;
+      if (!active) return { error: 'Нет активного проекта' };
+      const def = findProject(content.projects?.projects, active.id);
+      if (!def) return { error: 'Проект больше не доступен' };
+      if (!projectComplete(def, active)) return { error: 'Сначала закрой все задачи проекта' };
+      const payout = projectPayout(def, active, state.currentDay);
+      state.money += payout.money;
+      state.reputation = clamp(state.reputation + payout.reputation, 0, 100);
+      state.projectsDone = [...(state.projectsDone ?? []), def.id];
+      state.activeProject = null;
+      delta.money = payout.money;
+      delta.reputation = payout.reputation;
+      delta.activeProject = null;
+      return {
+        message: payout.late
+          ? `📦 «${def.title}» сдан с опозданием: ${fmtMoney(payout.money)} вместо ${fmtMoney(def.payment)}`
+          : `📦 «${def.title}» сдан в срок: +${fmtMoney(payout.money)}, +${payout.reputation} репутации`,
+        delta,
+      };
+    }
+
+    case 'drop_project': {
+      const active = state.activeProject;
+      if (!active) return { error: 'Нет активного проекта' };
+      const def = findProject(content.projects?.projects, active.id);
+      const penalty = def ? projectFailurePenalty(def) : 1;
+      state.reputation = clamp(state.reputation - penalty, 0, 100);
+      state.activeProject = null;
+      delta.reputation = -penalty;
+      delta.activeProject = null;
+      return { message: `🚪 Проект брошен. Заказчик расстроен: −${penalty} репутации`, delta };
     }
 
     // ---- Freelance ----
@@ -2179,6 +2267,19 @@ function advanceDay(state: StoredState, content: any, messages: string[]) {
   }
   if (dailyBonuses.health > 0) {
     state.health = clamp(state.health + dailyBonuses.health, 0, 100);
+  }
+
+  // 8.5 Project deadline: an unfinished contract expires at the deadline day
+  if (state.activeProject) {
+    const def = findProject(content.projects?.projects, state.activeProject.id);
+    if (!def) {
+      state.activeProject = null;
+    } else if (projectDaysLeft(state.activeProject, state.currentDay) < 0 && !projectComplete(def, state.activeProject)) {
+      const penalty = projectFailurePenalty(def);
+      state.reputation = clamp(state.reputation - penalty, 0, 100);
+      state.activeProject = null;
+      messages.push(`⌛ Дедлайн проекта «${def.title}» прошёл. Заказчик ушёл: −${penalty} репутации`);
+    }
   }
 
   // 9. Daily reset

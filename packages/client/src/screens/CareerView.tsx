@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { InterviewPanel } from '../components/InterviewPanel';
 import { Spinner } from '../components/ui';
+import { ProjectBoard } from '../components/ProjectBoard';
 import { PixelIcon } from '../components/pixel/PixelIcon';
 
 interface GateInfo {
@@ -147,8 +148,10 @@ export const CareerView: React.FC = () => {
         )}
       </div>
 
-      <section className="reference-work-actions" aria-label="Рабочие действия">
-        <h3>Активные задачи</h3>
+      <ProjectBoard />
+
+      <section className="reference-work-actions" aria-label="Быстрые действия">
+        <h3>Быстрые действия</h3>
         {[
           { id: 'work_task', name: 'Рабочая задача', energy: 4, job: true },
           { id: 'pet_project', name: 'Развивать пет-проект', energy: 3, job: false },

@@ -151,6 +151,15 @@ export async function contentRoutes(app: FastifyInstance) {
   });
 
   /**
+   * GET /api/content/projects — freelance contracts with deadlines. Whether a
+   * project is available depends on player state, so that stays server-side in
+   * /api/game/action; this is only the catalogue.
+   */
+  app.get('/projects', async () => {
+    return { projects: getContent().projects?.projects ?? [] };
+  });
+
+  /**
    * GET /api/content/side-jobs — non-IT gigs (courier, barista, etc.)
    */
   app.get('/side-jobs', async () => {

@@ -15,6 +15,7 @@ export * from './interviewQuestions';
 export * from './checkIn';
 export * from './meta';
 export * from './sprint';
+export * from './projects';
 export * from './archetypes';
 export * from './utils';
 export * from './roomDecor';
