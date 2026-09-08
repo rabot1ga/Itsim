@@ -139,7 +139,10 @@
 .btn-primary:active { border-image-source: url('/ui/btn-gold-down.png'); transform: translateY(2px); }
 ```
 
-Перегенерация: `node tools/uigen/build.mjs`.
+Перегенерация: `node tools/uigen/build.mjs`. Контрольный лист (каждая рамка
+растянута до боевого размера, ×3) — `node tools/uigen/sheet.mjs`:
+
+![Рамки UI](assets/ui-frames.png)
 
 ### Обратная связь как в кликерах
 
