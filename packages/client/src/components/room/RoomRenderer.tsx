@@ -144,7 +144,7 @@ export function buildRoomComposition(opts: {
   // owned pets (cross-collection skins take priority)
   let pet = crossBySlot.pet ?? null;
   if (!pet) {
-    const petIds = ['pet_bulldog', 'pet_cat', 'pet_dog', 'pet_cactus', 'pet_robo', 'pet_spider'];
+    const petIds = ['pet_bulldog', 'pet_cat', 'pet_dog', 'pet_cactus', 'pet_robo', 'pet_spider', 'pet_parrot', 'pet_hamster', 'pet_fish'];
     for (const pid of petIds) {
       if (items.includes(pid)) {
         pet = pid;

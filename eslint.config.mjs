@@ -21,6 +21,10 @@ export default tseslint.config(
       'packages/server/data/**',
       'packages/client/public/**',
       'packages/content/*.json',
+      // E2E specs run only under Playwright (own config, browser context) — not app code
+      'packages/e2e/**',
+      // Scratch render scripts kept in the repo root while sprite decisions are open
+      '*.tmp.mjs',
     ],
   },
 

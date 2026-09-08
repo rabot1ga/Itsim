@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "archetypes": [
+    {
+      "id": "frontend",
+      "title": "Путь фронтендера",
+      "subtitle": "JS → TypeScript → React → Next.js. Глубина фронта, которая видна в портфолио и на собеседованиях.",
+      "reward": { "money": 20000, "reputation": 1 },
+      "nodes": [
+        { "skillId": "javascript", "level": 30 },
+        { "skillId": "typescript", "level": 20 },
+        { "skillId": "react", "level": 30 },
+        { "skillId": "nextjs", "level": 10 }
+      ]
+    },
+    {
+      "id": "backend",
+      "title": "Бэкенд-инженер",
+      "subtitle": "Python → Go плюс уверенный SQL. Данные, сервисы и ничего лишнего на UI.",
+      "reward": { "money": 20000 },
+      "nodes": [
+        { "skillId": "python", "level": 30 },
+        { "skillId": "go", "level": 15 },
+        { "skillId": "sql", "level": 20 }
+      ]
+    },
+    {
+      "id": "ml",
+      "title": "ML-инженер",
+      "subtitle": "Python → машинное обучение → нейросети. Самый дорогой путь — и самый тернистый.",
+      "reward": { "money": 20000, "reputation": 1 },
+      "nodes": [
+        { "skillId": "python", "level": 30 },
+        { "skillId": "machine_learning", "level": 30 },
+        { "skillId": "neural_networks", "level": 15 }
+      ]
+    },
+    {
+      "id": "mobile",
+      "title": "Мобильный разработчик",
+      "subtitle": "Kotlin → Android + Swift для второй платформы. Два стора в кармане.",
+      "reward": { "money": 15000 },
+      "nodes": [
+        { "skillId": "kotlin", "level": 30 },
+        { "skillId": "android", "level": 15 },
+        { "skillId": "swift", "level": 20 }
+      ]
+    },
+    {
+      "id": "qa",
+      "title": "QA-автоматизатор",
+      "subtitle": "Ручное тестирование → автоматизация → Selenium. Тот, кто ломает, правит мир.",
+      "reward": { "money": 15000 },
+      "nodes": [
+        { "skillId": "manual_testing", "level": 30 },
+        { "skillId": "automation_testing", "level": 20 },
+        { "skillId": "selenium", "level": 10 }
+      ]
+    },
+    {
+      "id": "web3",
+      "title": "Web3-разработчик",
+      "subtitle": "JS → Solidity → web3.js → DeFi. Глубоко в блокчейн — по настоящим рёбрам дерева.",
+      "reward": { "money": 25000, "reputation": 1 },
+      "nodes": [
+        { "skillId": "javascript", "level": 30 },
+        { "skillId": "solidity", "level": 20 },
+        { "skillId": "web3", "level": 20 },
+        { "skillId": "defi", "level": 10 }
+      ]
+    }
+  ]
+}

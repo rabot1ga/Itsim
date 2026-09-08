@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "projects": [
+    {
+      "id": "landing",
+      "title": "Сайт-визитка",
+      "subtitle": "Простой сайт для бизнеса",
+      "icon": "screen",
+      "payment": 35000,
+      "reputation": 1,
+      "deadlineDays": 5,
+      "minSkillLevel": 0,
+      "tasks": [
+        { "id": "layout", "title": "Свёрстать первый экран", "xp": 10, "energy": 3 },
+        { "id": "form", "title": "Подключить форму заявки", "xp": 12, "energy": 3 },
+        { "id": "deploy", "title": "Выкатить на хостинг", "xp": 8, "energy": 2 }
+      ]
+    },
+    {
+      "id": "telegram_bot",
+      "title": "Telegram-бот",
+      "subtitle": "Разработка бота для доставки",
+      "icon": "chat",
+      "payment": 60000,
+      "reputation": 2,
+      "deadlineDays": 6,
+      "minSkillLevel": 3,
+      "tasks": [
+        { "id": "commands", "title": "Сделать команды и меню", "xp": 12, "energy": 3 },
+        { "id": "auth", "title": "Добавить авторизацию", "xp": 20, "energy": 4 },
+        { "id": "bugfix", "title": "Исправить баг с оплатой", "xp": 15, "energy": 3 },
+        { "id": "optimize", "title": "Оптимизировать код", "xp": 10, "energy": 2 }
+      ]
+    },
+    {
+      "id": "mobile_fitness",
+      "title": "Мобильное приложение",
+      "subtitle": "Фитнес-трекер с синхронизацией",
+      "icon": "rocket",
+      "payment": 120000,
+      "reputation": 3,
+      "deadlineDays": 8,
+      "minSkillLevel": 8,
+      "tasks": [
+        { "id": "design", "title": "Собрать экраны по макету", "xp": 15, "energy": 3 },
+        { "id": "sync", "title": "Синхронизация с сервером", "xp": 22, "energy": 4 },
+        { "id": "charts", "title": "Графики активности", "xp": 18, "energy": 3 },
+        { "id": "release", "title": "Отправить в стор", "xp": 12, "energy": 3 }
+      ]
+    },
+    {
+      "id": "shop_backend",
+      "title": "Бэкенд интернет-магазина",
+      "subtitle": "Каталог, корзина и оплата",
+      "icon": "briefcase",
+      "payment": 220000,
+      "reputation": 4,
+      "deadlineDays": 10,
+      "minSkillLevel": 15,
+      "tasks": [
+        { "id": "schema", "title": "Спроектировать базу", "xp": 20, "energy": 4 },
+        { "id": "api", "title": "Написать API каталога", "xp": 24, "energy": 4 },
+        { "id": "payments", "title": "Подключить платежи", "xp": 26, "energy": 4 },
+        { "id": "load", "title": "Выдержать нагрузку", "xp": 22, "energy": 4 }
+      ]
+    },
+    {
+      "id": "data_platform",
+      "title": "Аналитическая платформа",
+      "subtitle": "Дашборды и отчёты для отдела",
+      "icon": "chart",
+      "payment": 400000,
+      "reputation": 6,
+      "deadlineDays": 12,
+      "minSkillLevel": 25,
+      "tasks": [
+        { "id": "pipeline", "title": "Собрать пайплайн данных", "xp": 30, "energy": 5 },
+        { "id": "dash", "title": "Сделать дашборды", "xp": 28, "energy": 4 },
+        { "id": "alerts", "title": "Настроить алерты", "xp": 24, "energy": 4 },
+        { "id": "handover", "title": "Передать команде заказчика", "xp": 20, "energy": 3 }
+      ]
+    }
+  ]
+}

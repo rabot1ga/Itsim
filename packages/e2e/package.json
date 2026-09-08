@@ -1,0 +1,15 @@
+{
+  "name": "@itsim/e2e",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Playwright end-to-end smoke tests: real browser → real client → real API (isolated DATA_DIR).",
+  "scripts": {
+    "pretest": "npm run build -w @itsim/shared && npm run build -w @itsim/content",
+    "test": "playwright test",
+    "test:headed": "playwright test --headed"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.51.0"
+  }
+}

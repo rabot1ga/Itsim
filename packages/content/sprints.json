@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "themes": [
+    {
+      "id": "learn",
+      "title": "Неделя прокачки",
+      "subtitle": "Учёба и нетворкинг качают сильнее, когда идёт спринт.",
+      "icon": "cap",
+      "goals": [
+        { "id": "study", "prefix": "study_", "count": 10, "description": "учебных действий" },
+        { "id": "network", "prefix": "networking", "count": 2, "description": "нетворкингов" }
+      ],
+      "reward": { "money": 12000 }
+    },
+    {
+      "id": "money",
+      "title": "Неделя денег",
+      "subtitle": "Фриланс и пет-проекты платят дважды: деньгами и репутацией.",
+      "icon": "coin",
+      "goals": [
+        { "id": "freelance", "prefix": "freelance", "count": 2, "description": "фриланс-заказов" },
+        { "id": "pet", "prefix": "pet_project", "count": 2, "description": "пет-проектов" },
+        { "id": "work", "prefix": "work_", "count": 6, "description": "рабочих задач" }
+      ],
+      "reward": { "money": 18000 }
+    },
+    {
+      "id": "balance",
+      "title": "Неделя баланса",
+      "subtitle": "Работа и отдых поровну — выгорание не подкрадётся.",
+      "icon": "mug",
+      "goals": [
+        { "id": "rest", "prefix": "rest_", "count": 6, "description": "отдыхов" },
+        { "id": "work", "prefix": "work_", "count": 4, "description": "рабочих задач" }
+      ],
+      "reward": { "money": 12000, "reputation": 1 }
+    }
+  ]
+}

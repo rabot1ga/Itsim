@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { haptic } from '../lib/telegram';
+import { ProfileView } from '../screens/ProfileView';
+import { FriendsView } from '../screens/FriendsView';
 import { DayView } from '../screens/DayView';
 import { OfficeView } from '../screens/OfficeView';
 import { SkillsView } from '../screens/SkillsView';
@@ -12,31 +14,27 @@ import { LeaderboardView } from '../screens/LeaderboardView';
 import { PixelIcon } from './pixel/PixelIcon';
 import { GainStream } from './GainStream';
 
-/**
- * Four tabs carry the loop: the day, what you learn, where you work, where you
- * live. Everything you visit once in a while lives behind «Ещё» — seven equal
- * tabs made every one of them look equally unimportant.
- */
+/** The reference's five destinations stay visible; secondary screens live in the header menu. */
 const TABS = [
-  { view: 'main', icon: 'calendar', label: 'День' },
-  { view: 'skills', icon: 'book', label: 'Навыки' },
-  { view: 'career', icon: 'briefcase', label: 'Карьера' },
-  { view: 'room', icon: 'house', label: 'Дом' },
+  { view: 'main', icon: 'house', label: 'Главная' },
+  { view: 'career', icon: 'briefcase', label: 'Работа' },
+  { view: 'skills', icon: 'book', label: 'Обучение' },
+  { view: 'shop', icon: 'bag', label: 'Магазин' },
+  { view: 'friends', icon: 'people', label: 'Друзья' },
 ] as const;
 
 const MORE = [
+  { view: 'profile', icon: 'person', label: 'Профиль', hint: 'Статистика, цели и гардероб' },
+  { view: 'room', icon: 'house', label: 'Дом', hint: 'Предметы, расстановка и внешность' },
   { view: 'shop', icon: 'bag', label: 'Магазин', hint: 'Техника, мебель, жильё' },
-  { view: 'achievements', icon: 'trophy', label: 'Трофеи', hint: 'Ачивки и челленджи' },
+  { view: 'achievements', icon: 'trophy', label: 'Цели', hint: 'Цели, достижения и прогресс' },
   { view: 'leaderboard', icon: 'chart', label: 'Топ', hint: 'Рейтинг игроков' },
   { view: 'office', icon: 'people', label: 'Офис', hint: 'Команда и задачи' },
 ] as const;
 
-const MORE_VIEWS: string[] = MORE.map((m) => m.view);
-
 export const GameScreen: React.FC = () => {
-  const { currentView, setView, advanceDay, loadNft } = useGameStore();
+  const { currentView, setView, setScreen, advanceDay, loadNft, moreOpen, setMoreOpen } = useGameStore();
   const player = useGameStore((s) => s.player);
-  const [moreOpen, setMoreOpen] = useState(false);
 
   /** an offer on the table is the one thing worth a marker in the nav */
   const offerWaiting = Boolean(player?.pendingOffers?.length);
@@ -50,13 +48,12 @@ export const GameScreen: React.FC = () => {
     if (currentView === 'room') loadNft();
   }, [currentView, loadNft]);
 
-  // The sheet is a navigation detour, never a state you can get stuck in.
-  useEffect(() => {
-    setMoreOpen(false);
-  }, [currentView]);
-
   const renderView = () => {
     switch (currentView) {
+      case 'profile':
+        return <ProfileView />;
+      case 'friends':
+        return <FriendsView />;
       case 'main':
         return <DayView onAdvanceDay={handleAdvanceDay} />;
       case 'skills':
@@ -94,40 +91,86 @@ export const GameScreen: React.FC = () => {
         {renderView()}
       </div>
 
-      {/* «Ещё» sheet */}
+      {/* «Ещё» sheet — a navigation detour, never a state you can get stuck in.
+          Closing it is one tap, one native back press (see App.tsx) or simply
+          picking a destination; setView in the store closes it for us. */}
       {moreOpen && (
         <>
           <button
-            aria-label="Закрыть"
+            aria-label="Закрыть меню «Ещё»"
             onClick={() => setMoreOpen(false)}
             className="absolute inset-0 z-20 bg-black/50 animate-fade-in"
           />
-          <div className="absolute inset-x-0 bottom-0 z-30 animate-slide-up">
-            <div className="border-t-2 border-x-2 border-ink-700 bg-ink-900 p-3 pb-2">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Ещё"
+            className="absolute inset-x-0 bottom-0 z-30 animate-slide-up"
+          >
+            <div className="border-t border-x border-ink-600 bg-ink-900 rounded-t-[20px] p-3 pb-2 safe-area-pb shadow-[0_-18px_44px_-24px_rgba(0,0,0,0.9)]">
               <div className="h-1 w-9 bg-ink-700 mx-auto mb-3" />
-              <div className="grid grid-cols-2 gap-2">
-                {MORE.map((item) => (
-                  <button
-                    key={item.view}
-                    onClick={() => nav(item.view)}
-                    className={`tile flex items-start gap-2.5 ${
-                      currentView === item.view ? 'panel-note panel-note-gold' : ''
-                    }`}
-                  >
-                    <PixelIcon
-                      name={item.icon}
-                      size={15}
-                      className={currentView === item.view ? 'text-gold-300 mt-0.5' : 'text-ink-300 mt-0.5'}
-                    />
-                    <span className="min-w-0">
-                      <span className="block text-sm font-semibold text-ink-100">{item.label}</span>
-                      <span className="block text-2xs text-ink-500 leading-tight mt-0.5">{item.hint}</span>
-                    </span>
-                  </button>
-                ))}
+              <div className="flex items-center gap-2 mb-3">
+                <PixelIcon name="plus" size={12} className="text-gold-300" />
+                <span className="text-xs font-bold uppercase tracking-[0.12em] text-ink-300">Ещё</span>
+                <span className="flex-1 border-t border-dashed border-ink-700" />
+                <button
+                  onClick={() => setMoreOpen(false)}
+                  className="flex items-center gap-1.5 text-2xs text-ink-500 hover:text-ink-200 transition-colors touch-target px-1"
+                >
+                  <PixelIcon name="chevron" size={9} />
+                  Закрыть
+                </button>
               </div>
-              <button onClick={() => setMoreOpen(false)} className="btn btn-ghost w-full mt-2 !min-h-[40px] text-sm">
-                Закрыть
+              {/* A hub is a list, not a shelf: one destination per row with its
+                  icon anchored left, so a glance scans four real places instead
+                  of four identical tiles. */}
+              <div className="max-h-[min(420px,58vh)] overflow-y-auto -mx-1 px-1">
+                {MORE.map((item, i) => {
+                  const isCurrent = currentView === item.view;
+                  return (
+                    <button
+                      key={item.view}
+                      onClick={() => nav(item.view)}
+                      aria-current={isCurrent ? 'true' : undefined}
+                      className={`group flex w-full items-center gap-3 text-left min-h-[52px] py-2 border-b border-ink-800 last:border-0 ${
+                        i > 0 ? 'mt-0.5' : ''
+                      } ${isCurrent ? '' : 'active:bg-ink-800/60'}`}
+                    >
+                      {/* the notch: where you are right now */}
+                      {isCurrent && <span className="self-stretch w-[3px] shrink-0 bg-gold-300" aria-hidden="true" />}
+                      <span
+                        className={`w-9 h-9 shrink-0 flex items-center justify-center border-2 bg-ink-800 ${
+                          isCurrent
+                            ? 'border-gold-700 text-gold-300'
+                            : 'border-ink-700 text-ink-300 group-hover:border-ink-600'
+                        }`}
+                      >
+                        <PixelIcon name={item.icon} size={16} />
+                      </span>
+                      <span className="flex-1 min-w-0">
+                        <span className="flex items-center gap-2 text-sm font-semibold text-ink-100">{item.label}</span>
+                        <span className="block text-2xs text-ink-500 leading-tight mt-0.5">{item.hint}</span>
+                      </span>
+                      {isCurrent ? (
+                        <span className="text-2xs font-bold uppercase tracking-[0.08em] text-gold-300 shrink-0">
+                          здесь
+                        </span>
+                      ) : (
+                        <PixelIcon name="chevron" size={9} className="text-ink-600 -rotate-90 shrink-0" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+              <button
+                className="btn btn-secondary w-full mt-2"
+                onClick={() => {
+                  setMoreOpen(false);
+                  setView('main');
+                  setScreen('game');
+                }}
+              >
+                На главную
               </button>
             </div>
           </div>
@@ -135,7 +178,7 @@ export const GameScreen: React.FC = () => {
       )}
 
       {/* Bottom navigation */}
-      <nav className="tabbar safe-area-pb">
+      <nav className="tabbar safe-area-pb" aria-label="Основная навигация">
         {TABS.map((tab) => (
           <NavButton
             key={tab.view}
@@ -146,15 +189,6 @@ export const GameScreen: React.FC = () => {
             onClick={() => nav(tab.view)}
           />
         ))}
-        <NavButton
-          icon="plus"
-          label="Ещё"
-          active={moreOpen || MORE_VIEWS.includes(currentView)}
-          onClick={() => {
-            haptic('selection');
-            setMoreOpen((v) => !v);
-          }}
-        />
       </nav>
     </div>
   );

@@ -33,6 +33,9 @@ import {
   CrossCollectionsSchema,
   DailyChallengesFileSchema,
   InterviewQuestionsFileSchema,
+  SprintsFileSchema,
+  ProjectsFileSchema,
+  ArchetypesFileSchema,
   MonetizationSchema,
   PixelArtFileSchema,
   PixelGeneratorConfigSchema,
@@ -72,6 +75,12 @@ export interface ContentBundle {
   interviewQuestions: any[];
   /** Telegram Stars catalogue */
   monetization: any;
+  /** freelance projects with deadlines — { projects: [...] } */
+  projects: any;
+  /** weekly season sprints (P1.2) — { themes: [...] } */
+  sprints: any;
+  /** archetype builds (P1.3) — { archetypes: [...] } */
+  archetypes: any;
   /** Pixel-art avatar pack (docs/pixel-art.md). null = not generated yet. */
   pixelArt: any | null;
   pixelGeneratorConfig: any | null;
@@ -139,13 +148,41 @@ export function loadContentBundle(dir: string = CONTENT_DIR): ContentLoadResult 
     achievements: validate('achievements.json', AchievementsFileSchema, read('achievements.json'), []),
     balance: validate('balance.json', BalanceSchema, read('balance.json'), {} as any),
     genetics: validate('genetics.json', GeneticsConfigSchema, read('genetics.json'), {} as any),
-    avatarLayers: validate('layers/avatar_manifest.json', LayerManifestSchema, read('layers/avatar_manifest.json'), EMPTY_MANIFEST),
-    roomLayers: validate('layers/room_manifest.json', LayerManifestSchema, read('layers/room_manifest.json'), EMPTY_MANIFEST),
-    officeLayers: validate('layers/office_manifest.json', LayerManifestSchema, read('layers/office_manifest.json'), EMPTY_MANIFEST),
-    crossCollections: validate('cross_collections.json', CrossCollectionsSchema, read('cross_collections.json'), { collections: [] }),
+    avatarLayers: validate(
+      'layers/avatar_manifest.json',
+      LayerManifestSchema,
+      read('layers/avatar_manifest.json'),
+      EMPTY_MANIFEST
+    ),
+    roomLayers: validate(
+      'layers/room_manifest.json',
+      LayerManifestSchema,
+      read('layers/room_manifest.json'),
+      EMPTY_MANIFEST
+    ),
+    officeLayers: validate(
+      'layers/office_manifest.json',
+      LayerManifestSchema,
+      read('layers/office_manifest.json'),
+      EMPTY_MANIFEST
+    ),
+    crossCollections: validate('cross_collections.json', CrossCollectionsSchema, read('cross_collections.json'), {
+      collections: [],
+    }),
     challenges: validate('challenges.json', DailyChallengesFileSchema, read('challenges.json'), []),
-    interviewQuestions: validate('interview_questions.json', InterviewQuestionsFileSchema, read('interview_questions.json'), []),
-    monetization: validate('monetization.json', MonetizationSchema, read('monetization.json'), { currency: 'XTR', products: [] }),
+    interviewQuestions: validate(
+      'interview_questions.json',
+      InterviewQuestionsFileSchema,
+      read('interview_questions.json'),
+      []
+    ),
+    monetization: validate('monetization.json', MonetizationSchema, read('monetization.json'), {
+      currency: 'XTR',
+      products: [],
+    }),
+    projects: validate('projects.json', ProjectsFileSchema, read('projects.json'), { projects: [] }),
+    sprints: validate('sprints.json', SprintsFileSchema, read('sprints.json'), { themes: [] }),
+    archetypes: validate('archetypes.json', ArchetypesFileSchema, read('archetypes.json'), { archetypes: [] }),
     ...loadPixelArt(dir, issues),
   };
 
@@ -163,6 +200,9 @@ export function loadContentBundle(dir: string = CONTENT_DIR): ContentLoadResult 
     interviewQuestions: bundle.interviewQuestions.length,
     products: bundle.monetization?.products?.length ?? 0,
     careerGates: bundle.balance?.careerGates?.length ?? 0,
+    sprintThemes: bundle.sprints?.themes?.length ?? 0,
+    projects: bundle.projects?.projects?.length ?? 0,
+    archetypes: bundle.archetypes?.archetypes?.length ?? 0,
     pixelComponents: Object.keys(bundle.pixelArt?.components ?? {}).length,
   };
 
@@ -187,7 +227,9 @@ function readEventFiles(dir: string, issues: ContentIssue[]): any[] {
     return [];
   }
   const all: any[] = [];
-  for (const file of readdirSync(eventsDir).filter((f) => f.endsWith('.json')).sort()) {
+  for (const file of readdirSync(eventsDir)
+    .filter((f) => f.endsWith('.json'))
+    .sort()) {
     let data: any;
     try {
       data = JSON.parse(readFileSync(join(eventsDir, file), 'utf-8'));
@@ -232,7 +274,11 @@ function loadPixelArt(dir: string, issues: ContentIssue[]): Pick<ContentBundle, 
   const parsed = PixelArtFileSchema.safeParse(raw);
   if (!parsed.success) {
     for (const issue of parsed.error.issues) {
-      issues.push({ level: 'error', where: 'pixel/components.json', message: `${issue.path.join('.')}: ${issue.message}` });
+      issues.push({
+        level: 'error',
+        where: 'pixel/components.json',
+        message: `${issue.path.join('.')}: ${issue.message}`,
+      });
     }
     return { pixelArt: null, pixelGeneratorConfig: null };
   }
@@ -243,7 +289,11 @@ function loadPixelArt(dir: string, issues: ContentIssue[]): Pick<ContentBundle, 
     const parsedCfg = PixelGeneratorConfigSchema.safeParse(JSON.parse(readFileSync(configPath, 'utf-8')));
     if (!parsedCfg.success) {
       for (const issue of parsedCfg.error.issues) {
-        issues.push({ level: 'error', where: 'pixel/generator_config.json', message: `${issue.path.join('.')}: ${issue.message}` });
+        issues.push({
+          level: 'error',
+          where: 'pixel/generator_config.json',
+          message: `${issue.path.join('.')}: ${issue.message}`,
+        });
       }
     } else {
       config = parsedCfg.data;
@@ -252,7 +302,11 @@ function loadPixelArt(dir: string, issues: ContentIssue[]): Pick<ContentBundle, 
 
   const validation = validatePixelArtFile(parsed.data, config);
   for (const issue of validation.issues) {
-    issues.push({ level: issue.level === 'error' ? 'error' : 'warning', where: `pixel/${issue.path}`, message: issue.message });
+    issues.push({
+      level: issue.level === 'error' ? 'error' : 'warning',
+      where: `pixel/${issue.path}`,
+      message: issue.message,
+    });
   }
 
   return { pixelArt: parsed.data, pixelGeneratorConfig: config };
@@ -300,6 +354,31 @@ function crossValidate(bundle: ContentBundle, issues: ContentIssue[]) {
   dupCheck('achievements.json', bundle.achievements);
   dupCheck('challenges.json', bundle.challenges);
   dupCheck('interview_questions.json', bundle.interviewQuestions);
+  dupCheck('sprints.json', bundle.sprints?.themes ?? []);
+  dupCheck('archetypes.json', bundle.archetypes?.archetypes ?? []);
+
+  // --- archetype routes: skills must exist and each milestone must be
+  // --- reachable from the milestones before it (or be a root skill)
+  for (const arch of bundle.archetypes?.archetypes ?? []) {
+    const provided = new Map<string, number>();
+    for (const step of arch.nodes ?? []) {
+      const skill = bundle.skills.find((sk: any) => sk.id === step.skillId);
+      if (!skill) {
+        err('archetypes.json', `archetype "${arch.id}": unknown skill "${step.skillId}"`);
+        continue;
+      }
+      const unlockAt = skill.unlockAt ?? {};
+      for (const [parent, need] of Object.entries(unlockAt)) {
+        if (typeof need !== 'number' || !Number.isFinite(need) || (provided.get(parent) ?? 0) < need) {
+          err(
+            'archetypes.json',
+            `archetype "${arch.id}": step ${step.skillId} needs ${parent} ${need}, but the route never provides it before this step`
+          );
+        }
+      }
+      provided.set(step.skillId, Math.max(provided.get(step.skillId) ?? 0, step.level));
+    }
+  }
 
   // --- layer ids across all manifests --------------------------------------
   const layerIds = new Set<string>();
@@ -337,7 +416,10 @@ function crossValidate(bundle: ContentBundle, issues: ContentIssue[]) {
         err(`events: ${event.id}`, `unknown item "${grantedItem}" in choice effects`);
       }
     }
-    if (event.chainOnly && ![...bundle.events].some((e) => (e.choices ?? []).some((c: any) => c.chain?.eventId === event.id))) {
+    if (
+      event.chainOnly &&
+      ![...bundle.events].some((e) => (e.choices ?? []).some((c: any) => c.chain?.eventId === event.id))
+    ) {
       warn(`events: ${event.id}`, 'chainOnly event is unreachable — no choice chains into it');
     }
   }
@@ -357,7 +439,10 @@ function crossValidate(bundle: ContentBundle, issues: ContentIssue[]) {
   }
   for (const col of bundle.crossCollections?.collections ?? []) {
     if (!layerIds.has(col.layerId)) {
-      err('cross_collections.json', `collection "${col.collectionId}": layerId "${col.layerId}" not found in layer manifests`);
+      err(
+        'cross_collections.json',
+        `collection "${col.collectionId}": layerId "${col.layerId}" not found in layer manifests`
+      );
     }
   }
   const geneticsCheck: Array<[string, any[] | undefined, Set<string>]> = [
@@ -392,14 +477,20 @@ function crossValidate(bundle: ContentBundle, issues: ContentIssue[]) {
     const gateGrades = gates.map((g) => g.grade);
     const expected = order.filter((g) => gateGrades.includes(g));
     if (gateGrades.join(',') !== expected.join(',')) {
-      err('balance.careerGates', `gates must be ordered by grade (${expected.join(' → ')}), got ${gateGrades.join(' → ')}`);
+      err(
+        'balance.careerGates',
+        `gates must be ordered by grade (${expected.join(' → ')}), got ${gateGrades.join(' → ')}`
+      );
     }
     for (let i = 1; i < gates.length; i++) {
       const prev = gates[i - 1];
       const cur = gates[i];
       for (const key of ['mainSkillDepth', 'branchTotal', 'totalLevels', 'rep'] as const) {
         if (typeof prev[key] === 'number' && typeof cur[key] === 'number' && cur[key] < prev[key]) {
-          err('balance.careerGates', `${cur.grade}.${key} (${cur[key]}) is lower than ${prev.grade}.${key} (${prev[key]}) — the ladder must be monotonic`);
+          err(
+            'balance.careerGates',
+            `${cur.grade}.${key} (${cur[key]}) is lower than ${prev.grade}.${key} (${prev[key]}) — the ladder must be monotonic`
+          );
         }
       }
     }
@@ -412,7 +503,24 @@ function crossValidate(bundle: ContentBundle, issues: ContentIssue[]) {
 
   // --- achievements / challenges --------------------------------------------
   for (const ch of bundle.challenges) {
-    if (ch.actionId && typeof ch.actionId !== 'string') err('challenges.json', `challenge "${ch.id}": actionId must be a string`);
+    if (ch.actionId && typeof ch.actionId !== 'string')
+      err('challenges.json', `challenge "${ch.id}": actionId must be a string`);
+  }
+
+  // --- projects: unique ids, unique task ids, sane deadline pacing ----------
+  const projectIds = new Set<string>();
+  for (const project of bundle.projects?.projects ?? []) {
+    if (projectIds.has(project.id)) err('projects.json', `duplicate project id "${project.id}"`);
+    projectIds.add(project.id);
+    const taskIds = new Set<string>();
+    for (const task of project.tasks) {
+      if (taskIds.has(task.id)) err('projects.json', `project "${project.id}": duplicate task "${task.id}"`);
+      taskIds.add(task.id);
+    }
+    // One task per day is the fastest honest pace; a deadline below that is a trap.
+    if (project.deadlineDays < project.tasks.length) {
+      err('projects.json', `project "${project.id}": deadline ${project.deadlineDays} d is shorter than ${project.tasks.length} tasks`);
+    }
   }
 
   // --- monetization ---------------------------------------------------------

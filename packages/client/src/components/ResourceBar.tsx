@@ -1,15 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
+import { xpToNext } from '@itsim/shared';
+import { PlayerPortrait } from './PlayerPortrait';
 import { PixelIcon } from './pixel/PixelIcon';
 
-/**
- * The HUD.
- *
- * In an idle game the top bar is not decoration — it is the scoreboard the
- * player checks after every single tap. So it follows the genre's rules:
- * the numbers never move on the screen, they are always visible, they are
- * abbreviated once they get long, and each one gives a chunky bounce the
- * moment it changes (the floating +N labels come from GainStream).
+/** Reference 1.png: home portrait/XP + three stacked vitals; compact wallet on other tabs.
+ * The portrait follows the saved room look; numeric values come from player state.
  */
 
 const GRADE_LABEL: Record<string, string> = {
@@ -22,9 +18,6 @@ const GRADE_LABEL: Record<string, string> = {
   architect: 'архитектор',
   cto: 'CTO',
 };
-
-/** Only the top of the ladder is gilded — everything else stays quiet on purpose. */
-const GRADE_GOLD = new Set(['architect', 'cto']);
 
 /** True for one animation frame after `value` changes — used to bounce a counter. */
 function usePop(value: number): boolean {
@@ -49,12 +42,15 @@ const Meter: React.FC<{
   max: number;
   color: string;
 }> = ({ icon, label, value, max, color }) => {
-  const pct = Math.max(0, Math.min(100, (value / max) * 100));
+  const safeMax = Number.isFinite(max) && max > 0 ? max : 1;
+  const safeValue = Number.isFinite(value) ? Math.max(0, Math.min(safeMax, value)) : 0;
+  const pct = (safeValue / safeMax) * 100;
   const low = pct < 25;
   const pop = usePop(Math.round(value));
 
   return (
-    <div className="flex-1 min-w-0" title={`${label}: ${Math.round(value)}/${max}`}>
+    <div className="vital-row flex-1 min-w-0" title={`${label}: ${Math.round(safeValue)}/${safeMax}`}>
+      <div className="hud-meter-label">{label}</div>
       <div className="flex items-center gap-1 mb-1">
         <PixelIcon name={icon} size={11} className={low ? 'text-clay-400' : 'text-ink-400'} title={label} />
         <span
@@ -62,10 +58,18 @@ const Meter: React.FC<{
             pop ? 'num-pop' : ''
           }`}
         >
-          {Math.round(value)}
+          {Math.round(safeValue)}
+          <span className="hud-meter-max"> / {safeMax}</span>
         </span>
       </div>
-      <div className="meter">
+      <div
+        className="meter"
+        role="progressbar"
+        aria-label={label}
+        aria-valuemin={0}
+        aria-valuemax={safeMax}
+        aria-valuenow={safeValue}
+      >
         <span className={low ? 'animate-pulse-soft' : ''} style={{ width: `${pct}%`, background: color }} />
       </div>
     </div>
@@ -74,56 +78,93 @@ const Meter: React.FC<{
 
 export const ResourceBar: React.FC = () => {
   const player = useGameStore((s) => s.player);
-  const money = player?.money ?? 0;
-  const moneyPop = usePop(money);
-
+  const activeEvent = useGameStore((s) => s.activeEvent);
+  const currentView = useGameStore((s) => s.currentView);
+  const setView = useGameStore((s) => s.setView);
+  const setMoreOpen = useGameStore((s) => s.setMoreOpen);
+  const moreOpen = useGameStore((s) => s.moreOpen);
+  const moneyPop = usePop(player?.money ?? 0);
   if (!player) return null;
-
-  const grade = GRADE_LABEL[player.grade] ?? player.grade;
-  const gilded = GRADE_GOLD.has(player.grade);
-
+  const home = (!currentView || currentView === 'main') && !activeEvent;
+  const id = player.mainSkillId || 'javascript';
+  const skill = player.skills?.[id] ?? { level: 0, xp: 0 };
+  const maxed = skill.level >= 100;
+  const need = xpToNext(skill.level);
+  const pct = maxed ? 100 : Math.max(0, Math.min(100, (skill.xp / need) * 100));
+  const names: Record<string, string> = {
+    javascript: 'JavaScript',
+    python: 'Python',
+    react: 'React',
+    typescript: 'TypeScript',
+    sql: 'SQL',
+  };
   return (
-    <header className="shrink-0 bg-ink-900 border-b-2 border-ink-700 px-3 pt-2 pb-2.5 space-y-2 safe-area-pt">
-      <div className="flex items-center justify-between gap-2">
-        {/* Day and balance: the two numbers the whole loop is scored on */}
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="well flex items-baseline gap-1.5 px-2 py-1">
-            <span className="text-2xs font-bold uppercase tracking-[0.09em] text-ink-500">Дн.</span>
-            <span className="num text-sm font-bold text-white leading-none">{player.currentDay ?? 1}</span>
-          </span>
-          <span className="well flex items-center gap-1.5 px-2 py-1">
-            <PixelIcon name="coin" size={11} className="text-gold-300" />
-            <span className={`num text-sm font-bold text-white leading-none ${moneyPop ? 'num-pop' : ''}`}>
-              {formatMoney(money)}
-            </span>
-          </span>
+    <header className={`reference-hud ${home ? 'reference-hud-home' : ''}`}>
+      <div className="miniapp-chrome">
+        <button aria-label="На главную" onClick={() => setView('main')}>
+          <PixelIcon name="chevron" size={12} className="rotate-90" />
+        </button>
+        <div>
+          IT Life<span>mini app</span>
         </div>
-
-        <div className="flex items-center gap-1.5 min-w-0">
-          {player.ratingScore !== undefined && (
-            <span className="chip" title="Рейтинг для лидерборда">
-              <PixelIcon name="star" size={10} className="text-gold-300" />
-              <span className="num">{player.ratingScore}</span>
-            </span>
-          )}
-          <span className={`chip uppercase tracking-[0.06em] ${gilded ? 'text-gold-300' : 'text-ink-200'}`}>
-            {grade}
+        <button aria-label="Ещё" aria-expanded={Boolean(moreOpen)} onClick={() => setMoreOpen(!moreOpen)}>
+          <span aria-hidden="true">⋮</span>
+        </button>
+      </div>
+      {home ? (
+        <>
+          <section className="reference-identity" aria-label="Персонаж и основной навык">
+            <button className="profile-portrait-button" aria-label="Открыть профиль" onClick={() => setView('profile')}>
+              <PlayerPortrait player={player} />
+            </button>
+            <div>
+              <div className="reference-identity-meta">
+                <span>
+                  {names[id] ?? id} · ур. {skill.level}
+                </span>
+                <span className="num">День {player.currentDay ?? 1}</span>
+              </div>
+              <div
+                className="reference-xp"
+                role="progressbar"
+                aria-label="Опыт основного навыка"
+                aria-valuemin={0}
+                aria-valuemax={maxed ? 100 : need}
+                aria-valuenow={maxed ? 100 : Math.min(need, skill.xp)}
+              >
+                <span style={{ width: `${pct}%` }} />
+                <b>{maxed ? 'Максимум' : `${skill.xp} / ${need} XP`}</b>
+              </div>
+              <span className="reference-identity-caption">
+                {GRADE_LABEL[player.grade] ?? player.grade} · {player.money.toLocaleString('ru-RU')} ₽
+              </span>
+            </div>
+          </section>
+          <div className="reference-vitals">
+            <Meter
+              icon="bolt"
+              label="Энергия"
+              value={player.energy}
+              max={player.maxEnergy || 16}
+              color="var(--accent)"
+            />
+            <Meter icon="flame" label="Мотивация" value={player.motivation} max={100} color="var(--ochre)" />
+            <Meter icon="heart" label="Здоровье" value={player.health} max={100} color="var(--clay)" />
+          </div>
+        </>
+      ) : (
+        <div className="reference-wallet">
+          <span className={moneyPop ? 'num-pop' : ''}>
+            <PixelIcon name="coin" size={16} />
+            {player.money.toLocaleString('ru-RU')} ₽
           </span>
+          <div className="wallet-energy" title={`Энергия: ${Math.round(player.energy)}/${player.maxEnergy}`}>
+            <PixelIcon name="bolt" size={13} />
+            {player.energy} / {player.maxEnergy}
+          </div>
+          <span>День {player.currentDay ?? 1}</span>
         </div>
-      </div>
-
-      <div className="flex items-end gap-2.5">
-        <Meter icon="bolt" label="Энергия" value={player.energy} max={player.maxEnergy || 16} color="var(--sky)" />
-        <Meter icon="heart" label="Здоровье" value={player.health} max={100} color="var(--moss)" />
-        <Meter icon="flame" label="Мотивация" value={player.motivation} max={100} color="var(--ochre)" />
-        <Meter icon="star" label="Репутация" value={player.reputation} max={100} color="var(--gold)" />
-      </div>
+      )}
     </header>
   );
 };
-
-function formatMoney(amount: number): string {
-  if (amount >= 1_000_000) return `${(amount / 1_000_000).toFixed(1)} млн ₽`;
-  if (amount >= 10_000) return `${Math.round(amount / 1000)} тыс ₽`;
-  return `${amount.toLocaleString('ru-RU')} ₽`;
-}

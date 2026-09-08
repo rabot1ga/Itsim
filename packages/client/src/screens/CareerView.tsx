@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { InterviewPanel } from '../components/InterviewPanel';
-import { Spinner, SpriteBadge } from '../components/ui';
+import { Spinner } from '../components/ui';
+import { ProjectBoard } from '../components/ProjectBoard';
 import { PixelIcon } from '../components/pixel/PixelIcon';
 
 interface GateInfo {
@@ -20,8 +21,13 @@ interface GateInfo {
 }
 
 const SALARY_LABELS: Record<string, string> = {
-  intern: '35 000 ₽', junior: '90 000 ₽', middle: '220 000 ₽', senior: '400 000 ₽',
-  teamlead: '520 000 ₽', architect: '680 000 ₽', cto: '1 000 000 ₽',
+  intern: '35 000 ₽',
+  junior: '90 000 ₽',
+  middle: '220 000 ₽',
+  senior: '400 000 ₽',
+  teamlead: '520 000 ₽',
+  architect: '680 000 ₽',
+  cto: '1 000 000 ₽',
 };
 
 const SIZE_LABELS: Record<string, string> = {
@@ -46,31 +52,58 @@ interface CompanyInfo {
   requiresEnglish: number;
 }
 
-const STACK_ICONS: Record<string, string> = {
-  javascript: '🟨', react: '⚛️', typescript: '🔷', python: '🐍', java: '☕',
-  spring: '🌱', sql: '🗃️', kotlin: '🟣', go: '🐹', nodejs: '🟢', swift: '🐦',
-};
-
 export const CareerView: React.FC = () => {
   const player = useGameStore((s) => s.player);
   const setView = useGameStore((s) => s.setView);
+  const performAction = useGameStore((s) => s.performAction);
   const applyToCompany = useGameStore((s) => s.applyToCompany);
   const acceptOffer = useGameStore((s) => s.acceptOffer);
   const declineOffer = useGameStore((s) => s.declineOffer);
   const [companies, setCompanies] = useState<CompanyInfo[]>([]);
   const [gates, setGates] = useState<GateInfo[]>([]);
+  const [loaded, setLoaded] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  const [busy, setBusy] = useState(false);
+  const lock = useRef(false);
+  const error = useGameStore((s) => s.error);
+  const act = async (action: () => Promise<unknown>) => {
+    if (lock.current) return;
+    lock.current = true;
+    setBusy(true);
+    try {
+      await action();
+    } finally {
+      lock.current = false;
+      setBusy(false);
+    }
+  };
   const outlook = useGameStore((s) => s.careerOutlook);
 
   useEffect(() => {
-    fetch('/api/content/companies')
-      .then((r) => r.json())
-      .then((data) => setCompanies(data.companies ?? []))
-      .catch(() => setCompanies([]));
-    fetch('/api/content/career-gates')
-      .then((r) => r.json())
-      .then((data) => setGates(data.gates ?? []))
-      .catch(() => setGates([]));
-  }, []);
+    const controller = new AbortController();
+    setLoaded(false);
+    setLoadError(false);
+    const load = async (path: string) => {
+      const response = await fetch(path, { signal: controller.signal });
+      if (!response.ok) throw new Error('content');
+      return response.json();
+    };
+    Promise.all([load('/api/content/companies'), load('/api/content/career-gates')])
+      .then(([companyData, gateData]) => {
+        if (!Array.isArray(companyData.companies) || !Array.isArray(gateData.gates)) throw new Error('content');
+        setCompanies(companyData.companies);
+        setGates(gateData.gates);
+        setLoaded(true);
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) {
+          setLoadError(true);
+          setLoaded(true);
+        }
+      });
+    return () => controller.abort();
+  }, [attempt]);
 
   if (!player) return null;
 
@@ -80,9 +113,15 @@ export const CareerView: React.FC = () => {
   return (
     <div className="space-y-4 animate-fade-in">
       <h2 className="flex items-center gap-2 text-base font-semibold text-white">
-        <SpriteBadge sprite="whiteboard" size={32} />
-        Карьера
+        <PixelIcon name="briefcase" size={20} className="text-ochre-300" />
+        Работа
       </h2>
+
+      {error && (
+        <p role="alert" className="panel text-sm text-clay-300">
+          {error}
+        </p>
+      )}
 
       {/* Current job */}
       <div className={`panel panel-note ${player.job ? 'panel-note-moss' : 'panel-note-ochre'}`}>
@@ -90,14 +129,10 @@ export const CareerView: React.FC = () => {
           <>
             <div className="flex items-center justify-between mb-1.5">
               <span className="eyebrow !text-moss-300">Работаешь</span>
-              <span className="num text-xs text-ink-500 shrink-0">
-                {player.job.daysWorked ?? 0} дн.
-              </span>
+              <span className="num text-xs text-ink-500 shrink-0">{player.job.daysWorked ?? 0} дн.</span>
             </div>
             <p className="text-white font-medium">{player.job.position}</p>
-            <p className="num text-xs text-ink-400 mt-0.5">
-              {formatMoney(player.job.salary)} ₽/мес
-            </p>
+            <p className="num text-xs text-ink-400 mt-0.5">{formatMoney(player.job.salary)} ₽/мес</p>
           </>
         ) : (
           <>
@@ -106,18 +141,39 @@ export const CareerView: React.FC = () => {
               <span className="num text-xs text-ink-500 shrink-0">день {player.currentDay ?? 1}</span>
             </div>
             <p className="text-ink-400 text-sm leading-relaxed">
-              Откликайся на вакансии ниже — но сначала прокачай навыки (от 18 суммарно) и коммуникацию
+              Выбери компанию ниже. Навыки и коммуникация помогут пройти собеседование; требования к росту — в
+              справочнике грейдов.
             </p>
           </>
         )}
       </div>
 
+      <ProjectBoard />
+
+      <section className="reference-work-actions" aria-label="Быстрые действия">
+        <h3>Быстрые действия</h3>
+        {[
+          { id: 'work_task', name: 'Рабочая задача', energy: 4, job: true },
+          { id: 'pet_project', name: 'Развивать пет-проект', energy: 3, job: false },
+          { id: 'freelance', name: 'Фриланс-заказ', energy: 4, job: false },
+        ].map((action) => (
+          <button
+            key={action.id}
+            disabled={busy || player.energy < action.energy || (action.job && !player.job)}
+            onClick={() => act(() => performAction(action.id, { skillId: player.mainSkillId || 'javascript' }))}
+          >
+            <span>{action.name}</span>
+            <span>
+              {action.job && !player.job ? 'Нужна работа' : `−${action.energy} энергии`}{' '}
+              <PixelIcon name="arrow" size={10} />
+            </span>
+          </button>
+        ))}
+      </section>
+
       {/* Office entry */}
       {player.job && (
-        <button
-          onClick={() => setView('office')}
-          className="tile w-full flex items-center gap-3"
-        >
+        <button onClick={() => setView('office')} className="tile w-full flex items-center gap-3">
           <PixelIcon name="briefcase" size={16} className="text-ink-300" />
           <span className="flex-1 min-w-0">
             <span className="block text-sm font-medium text-ink-100">Мой офис</span>
@@ -130,22 +186,13 @@ export const CareerView: React.FC = () => {
       )}
 
       {/* Job offers */}
-      {offers.length === 0 && !player.job && !application && (
-        <div className="panel flex items-center gap-3">
-          <PixelIcon name="box" size={18} className="text-ink-600" />
-          <p className="text-xs text-ink-400 leading-relaxed">
-            Офферов пока нет — откликнись на вакансии ниже. HR любят настойчивых
-            (и прокачанные навыки).
-          </p>
-        </div>
-      )}
       {offers.length > 0 && (
         <div className="panel panel-note panel-note-moss animate-pop-in">
           <h3 className="section-title mb-2">Офферы</h3>
           <div className="space-y-2">
             {offers.map((o: any) => (
               <div key={o.companyId} className="well p-2.5">
-                <div className="flex items-center justify-between gap-2">
+                <div className="career-offer-row">
                   <div className="min-w-0">
                     <p className="text-sm text-ink-100">{o.position}</p>
                     <p className="num text-xs text-moss-300">{formatMoney(o.salary)} ₽/мес</p>
@@ -153,13 +200,15 @@ export const CareerView: React.FC = () => {
                   </div>
                   <div className="flex gap-2 shrink-0">
                     <button
-                      onClick={() => acceptOffer(o.companyId)}
+                      disabled={busy}
+                      onClick={() => act(() => acceptOffer(o.companyId))}
                       className="btn btn-primary !min-h-[38px] !px-3 text-xs"
                     >
                       Принять
                     </button>
                     <button
-                      onClick={() => declineOffer(o.companyId)}
+                      disabled={busy}
+                      onClick={() => act(() => declineOffer(o.companyId))}
                       className="btn btn-ghost !min-h-[38px] !px-3 text-xs"
                     >
                       Отклонить
@@ -190,22 +239,70 @@ export const CareerView: React.FC = () => {
             </p>
           )}
           {application.status === 'accepted' && (
-            <p className="text-sm text-ink-300 leading-relaxed">
-              Оффер получен — прими его в блоке «Офферы» выше.
-            </p>
+            <p className="text-sm text-ink-300 leading-relaxed">Оффер получен — прими его в блоке «Офферы» выше.</p>
           )}
         </div>
       )}
 
-      {/* Grade progress — real content gates, not a hardcoded copy */}
+      {/* Companies */}
       <div className="game-card">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="section-title">Грейды</h3>
-          <span className="text-2xs text-ink-600">глубина + ветка + мягкие навыки</span>
+        <h3 className="section-title mb-2">Доступные компании</h3>
+        {!loaded && <Spinner label="Загрузка компаний…" />}
+        {loadError && (
+          <div role="alert" className="text-sm text-clay-300">
+            Не удалось загрузить вакансии.
+            <button className="btn btn-secondary mt-2" onClick={() => setAttempt((n) => n + 1)}>
+              Повторить загрузку
+            </button>
+          </div>
+        )}
+        {loaded && !loadError && companies.length === 0 && (
+          <p className="text-sm text-ink-400">Открытых вакансий пока нет.</p>
+        )}
+        <div className="space-y-2">
+          {(loaded && !loadError ? companies : []).map((c) => {
+            const canApply = !player.job && (!application || ['rejected', 'accepted'].includes(application.status));
+            return (
+              <article key={c.id} className="well career-company" aria-label={c.name}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="min-w-0">
+                      <p className="text-sm text-ink-100 break-words">{c.name}</p>
+                      <p className="text-xs text-ink-500">
+                        {SIZE_LABELS[c.size] ?? c.size} · {c.stack.slice(0, 3).join(' · ')}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right text-xs shrink-0 ml-2">
+                    <span className="num text-moss-300" title="От базовой зарплаты грейда">
+                      {Math.round(c.salaryMult * 100)}% к базе
+                    </span>
+                    <div className="num text-ink-600">барьер {c.interviewBar}</div>
+                  </div>
+                </div>
+                <p className="text-xs text-ink-500 mt-1.5 leading-relaxed line-clamp-2">{c.flavor}</p>
+                {canApply && (
+                  <button
+                    disabled={busy}
+                    onClick={() => act(() => applyToCompany(c.id))}
+                    className="btn btn-primary career-apply text-xs"
+                  >
+                    Откликнуться
+                  </button>
+                )}
+              </article>
+            );
+          })}
         </div>
+      </div>
+      {/* Grade progress — real content gates, not a hardcoded copy */}
+      <details className="game-card career-grades">
+        <summary className="flex items-center justify-between mb-2">
+          <span className="section-title">Грейды · требования к росту</span>
+        </summary>
         <div className="space-y-1.5">
           {(gates.length ? gates : []).map((g) => {
-            const order = gates.map(x => x.grade);
+            const order = gates.map((x) => x.grade);
             const isReached = order.indexOf(player.grade || '') >= order.indexOf(g.grade);
             const isNext = outlook?.grade === g.grade || outlook?.label === g.label;
             const mainSkill = Math.max(...Object.values(player.skills ?? {}).map((x: any) => x.level ?? 0), 0);
@@ -213,25 +310,17 @@ export const CareerView: React.FC = () => {
             return (
               <div
                 key={g.grade}
-                className={` px-2 py-1.5 border ${
-                  isNext ? 'border-gold-700 bg-gold-900/15' : 'border-transparent'
-                }`}
+                className={` px-2 py-1.5 border ${isNext ? 'border-gold-700 bg-gold-900/15' : 'border-transparent'}`}
               >
                 <div className="flex items-center gap-2 text-xs">
                   <span
-                    className={`w-1.5 h-1.5 ${
-                      isReached ? 'bg-moss-400' : g.special ? 'bg-gold-500' : 'bg-ink-600'
-                    }`}
+                    className={`w-1.5 h-1.5 ${isReached ? 'bg-moss-400' : g.special ? 'bg-gold-500' : 'bg-ink-600'}`}
                   />
-                  <span className={`w-24 ${isReached ? 'text-ink-100' : 'text-ink-500'}`}>
-                    {g.label ?? g.grade}
-                  </span>
+                  <span className={`w-24 ${isReached ? 'text-ink-100' : 'text-ink-500'}`}>{g.label ?? g.grade}</span>
                   <span className={`num flex-1 ${isReached ? 'text-ink-300' : 'text-ink-600'}`}>
                     {SALARY_LABELS[g.grade] ?? ''}
                   </span>
-                  <span
-                    className={`num ${mainSkill >= g.skill ? 'text-moss-300' : 'text-ink-500'}`}
-                  >
+                  <span className={`num ${mainSkill >= g.skill ? 'text-moss-300' : 'text-ink-500'}`}>
                     навык {g.skill}
                   </span>
                 </div>
@@ -243,56 +332,20 @@ export const CareerView: React.FC = () => {
                     {g.english ? <span className="chip">eng {g.english}</span> : null}
                     {g.leadership ? <span className="chip">lead {g.leadership}</span> : null}
                     <span className="chip">rep {g.rep}</span>
-                    {g.special ? (
-                      <span className="chip !text-gold-300 !border-gold-700">выборы борда</span>
+                    {g.special ? <span className="chip !text-gold-300 !border-gold-700">выборы борда</span> : null}
+                    {!g.special && g.minDaysInGrade ? (
+                      <span className="chip">ревью раз в {g.minDaysInGrade} дн.</span>
                     ) : null}
-                    {!g.special && g.minDaysInGrade ? <span className="chip">ревью раз в {g.minDaysInGrade} дн.</span> : null}
                   </div>
                 )}
               </div>
             );
           })}
-          {!gates.length && <Spinner label="Грейды загружаются…" />}
+          {loaded && !loadError && !gates.length && (
+            <p className="text-xs text-ink-400">Грейды пока не опубликованы.</p>
+          )}
         </div>
-      </div>
-
-      {/* Companies */}
-      <div className="game-card">
-        <h3 className="section-title mb-2">Компании</h3>
-        {companies.length === 0 && <Spinner label="Загрузка компаний…" />}
-        <div className="space-y-2">
-          {companies.map((c) => {
-            const canApply = !player.job && (!application || ['rejected', 'accepted'].includes(application.status));
-            return (
-              <div key={c.id} className="well p-2.5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <div className="min-w-0">
-                      <p className="text-sm text-ink-100 truncate">{c.name}</p>
-                      <p className="text-xs text-ink-500">
-                        {SIZE_LABELS[c.size] ?? c.size} · {c.stack.slice(0, 3).map(s => STACK_ICONS[s] ?? s).join(' ')}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right text-xs shrink-0 ml-2">
-                    <span className="num text-moss-300">{Math.round(c.salaryMult * 100)}%</span>
-                    <div className="num text-ink-600">барьер {c.interviewBar}</div>
-                  </div>
-                </div>
-                <p className="text-xs text-ink-500 mt-1.5 leading-relaxed line-clamp-2">{c.flavor}</p>
-                {canApply && (
-                  <button
-                    onClick={() => applyToCompany(c.id)}
-                    className="btn btn-secondary w-full mt-2 !min-h-[38px] text-sm"
-                  >
-                    Откликнуться
-                  </button>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      </details>
     </div>
   );
 };

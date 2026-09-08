@@ -8,3 +8,7 @@ data/
 
 # generated pixel-art artifacts (PNG/gallery/spritesheet) — rebuild with npm run pixelgen:generate
 artifacts/
+
+packages/e2e/test-results/
+packages/e2e/playwright-report/
+packages/e2e/.chromium-path.json

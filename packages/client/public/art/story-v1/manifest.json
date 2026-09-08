@@ -1,0 +1,189 @@
+{
+  "version": 1,
+  "created": "2026-09-08",
+  "provenance": "AI-generated with user references for art direction; not crops of reference PNGs",
+  "masters": [
+    {
+      "name": "event-atlas.png",
+      "sha256": "529a2b5b5d039ab4e0c68fc0b9150c62a65d1dab0490a486a8009ab4d11e290c"
+    },
+    {
+      "name": "room.png",
+      "sha256": "7ca2af92bb7250f1e4dad1d4d25d2eced61b46b65a785114fadc9d4daaff45c7"
+    },
+    {
+      "name": "portrait.png",
+      "sha256": "42eb81263fb64a01bce62689dcbe49a6e60ebbc8119a0aff468ecfe23fc4ebea"
+    }
+  ],
+  "files": [
+    {
+      "id": "night",
+      "file": "/art/story-v1/night.webp",
+      "width": 384,
+      "height": 230,
+      "bytes": 14304,
+      "sha256": "c95f495afd92a2653680dd1e8a762a213058f20d142da061c8a07e6511e3db23",
+      "source": "event-atlas.png",
+      "crop": {
+        "left": 12,
+        "top": 9,
+        "width": 406,
+        "height": 243
+      }
+    },
+    {
+      "id": "pet",
+      "file": "/art/story-v1/pet.webp",
+      "width": 384,
+      "height": 230,
+      "bytes": 20156,
+      "sha256": "3a412501dbae0a951fa117ff0453d17ec4b2a6e6f8136422663d511b18793ef6",
+      "source": "event-atlas.png",
+      "crop": {
+        "left": 430,
+        "top": 9,
+        "width": 406,
+        "height": 243
+      }
+    },
+    {
+      "id": "bicycle",
+      "file": "/art/story-v1/bicycle.webp",
+      "width": 384,
+      "height": 230,
+      "bytes": 22538,
+      "sha256": "6ed1050d5c464146134b1d6118393e45b5fbfef73b8fee607916a5eea83fd142",
+      "source": "event-atlas.png",
+      "crop": {
+        "left": 12,
+        "top": 264,
+        "width": 406,
+        "height": 242
+      }
+    },
+    {
+      "id": "offer",
+      "file": "/art/story-v1/offer.webp",
+      "width": 384,
+      "height": 230,
+      "bytes": 12464,
+      "sha256": "1f6bdc7948638e5a2434b57aa3286a7a644035b6b4e060e05bcf832423c552b5",
+      "source": "event-atlas.png",
+      "crop": {
+        "left": 430,
+        "top": 264,
+        "width": 406,
+        "height": 242
+      }
+    },
+    {
+      "id": "social",
+      "file": "/art/story-v1/social.webp",
+      "width": 384,
+      "height": 230,
+      "bytes": 10646,
+      "sha256": "6e32db23940cd8098097df7357faa80fe58827b485bb726631abc3cf63216a8f",
+      "source": "event-atlas.png",
+      "crop": {
+        "left": 12,
+        "top": 518,
+        "width": 406,
+        "height": 240
+      }
+    },
+    {
+      "id": "shop",
+      "file": "/art/story-v1/shop.webp",
+      "width": 384,
+      "height": 230,
+      "bytes": 17972,
+      "sha256": "cc3375b17b4859d009ec8b2c1eda878cf69618a820e1205e639f01dda152b39c",
+      "source": "event-atlas.png",
+      "crop": {
+        "left": 430,
+        "top": 518,
+        "width": 406,
+        "height": 240
+      }
+    },
+    {
+      "id": "server",
+      "file": "/art/story-v1/server.webp",
+      "width": 384,
+      "height": 230,
+      "bytes": 14244,
+      "sha256": "9288c6a2f6e81ba8f4b33566fda57cb06926cd3b21a37c02350b52cb6e282c85",
+      "source": "event-atlas.png",
+      "crop": {
+        "left": 12,
+        "top": 770,
+        "width": 406,
+        "height": 238
+      }
+    },
+    {
+      "id": "parcel",
+      "file": "/art/story-v1/parcel.webp",
+      "width": 384,
+      "height": 230,
+      "bytes": 12426,
+      "sha256": "66f45d6d8fed571d01f059de9837a797efb6c27fa87be9e2c2b4af91952d0a32",
+      "source": "event-atlas.png",
+      "crop": {
+        "left": 430,
+        "top": 770,
+        "width": 406,
+        "height": 238
+      }
+    },
+    {
+      "id": "rest",
+      "file": "/art/story-v1/rest.webp",
+      "width": 384,
+      "height": 230,
+      "bytes": 18622,
+      "sha256": "ff8e6ee38456efe776a7fe9b17e3085381f3d58bc59fff5baefaaf697ae1b2bb",
+      "source": "event-atlas.png",
+      "crop": {
+        "left": 12,
+        "top": 1020,
+        "width": 406,
+        "height": 238
+      }
+    },
+    {
+      "id": "bug",
+      "file": "/art/story-v1/bug.webp",
+      "width": 384,
+      "height": 230,
+      "bytes": 13334,
+      "sha256": "707c79c3a58ac450f460ebd6094b90dc70546d7509c6cc0b0742613f530cb5a3",
+      "source": "event-atlas.png",
+      "crop": {
+        "left": 430,
+        "top": 1020,
+        "width": 406,
+        "height": 238
+      }
+    },
+    {
+      "id": "room",
+      "file": "/art/story-v1/room.webp",
+      "width": 640,
+      "height": 480,
+      "bytes": 65100,
+      "sha256": "e542911e3f001b2ee86c00f1a2e283c67885ddc8951d92e6e11f2092fe99c1b7",
+      "source": "room.png"
+    },
+    {
+      "id": "portrait",
+      "file": "/art/story-v1/portrait.webp",
+      "width": 128,
+      "height": 128,
+      "bytes": 3746,
+      "sha256": "15879c14e9237f8716ed89128de61ab2097bcd5247ae79b7cbc17a7ef5dc27da",
+      "source": "portrait.png"
+    }
+  ]
+}

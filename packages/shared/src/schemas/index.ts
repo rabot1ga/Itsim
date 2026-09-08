@@ -233,113 +233,137 @@ export const BalanceSchema = z.object({
   motivationMultSlope: z.number().default(0.006),
 
   // XP sources
-  xpSources: z.record(z.string(), z.object({
-    xp: z.number(),
-    energy: z.number(),
-    cost: z.number().default(0),
-    maxLevel: z.number().default(100),
-  })),
+  xpSources: z.record(
+    z.string(),
+    z.object({
+      xp: z.number(),
+      energy: z.number(),
+      cost: z.number().default(0),
+      maxLevel: z.number().default(100),
+    })
+  ),
 
   // Networking tuning (communication XP, reputation gain, energy cost,
   // daily cap — soft skills must not be farmable without limit)
-  networking: z.object({
-    commXp: z.number().default(5),
-    repGain: z.number().default(0.5),
-    energy: z.number().default(2),
-    dailyCap: z.number().int().min(1).default(1),
-    leadershipPerDay: z.number().min(0).default(0),
-    repFromPromotion: z.number().min(0).default(0),
-  }).default({ commXp: 5, repGain: 0.5, energy: 2, dailyCap: 1, leadershipPerDay: 0, repFromPromotion: 0 }),
+  networking: z
+    .object({
+      commXp: z.number().default(5),
+      repGain: z.number().default(0.5),
+      energy: z.number().default(2),
+      dailyCap: z.number().int().min(1).default(1),
+      leadershipPerDay: z.number().min(0).default(0),
+      repFromPromotion: z.number().min(0).default(0),
+    })
+    .default({ commXp: 5, repGain: 0.5, energy: 2, dailyCap: 1, leadershipPerDay: 0, repFromPromotion: 0 }),
 
   // Soft-skill saturation: above this level XP trickles (people skills saturate)
-  softSkills: z.object({
-    saturatesAt: z.number().int().min(1).default(30),
-    xpDamping: z.number().min(0).max(1).default(0.5),
-  }).default({ saturatesAt: 30, xpDamping: 0.5 }),
+  softSkills: z
+    .object({
+      saturatesAt: z.number().int().min(1).default(30),
+      xpDamping: z.number().min(0).max(1).default(0.5),
+    })
+    .default({ saturatesAt: 30, xpDamping: 0.5 }),
 
   // Event frequency
-  eventChanceOnboarding: z.number().default(0.20),
+  eventChanceOnboarding: z.number().default(0.2),
   eventChanceEarly: z.number().default(0.35),
   eventChanceMid: z.number().default(0.28),
-  eventChanceLate: z.number().default(0.20),
+  eventChanceLate: z.number().default(0.2),
 
   // Housing
-  housing: z.array(z.object({
-    level: z.number(),
-    name: z.string(),
-    cost: z.number(),
-    energyBonus: z.number(),
-    motivationBonus: z.number(),
-    reputationBonus: z.number(),
-    /** monthly income required to move in (lifestyle has an entry fee) */
-    incomeGateMult: z.number().min(0).default(0),
-    /** how many monthly payments must be sitting in the account to move */
-    saveMult: z.number().min(1).default(5),
-    /** how many days that cushion must be held (savings habit, not one lucky month) */
-    saveStreakDays: z.number().int().min(0).default(14),
-  })),
+  housing: z.array(
+    z.object({
+      level: z.number(),
+      name: z.string(),
+      cost: z.number(),
+      energyBonus: z.number(),
+      motivationBonus: z.number(),
+      reputationBonus: z.number(),
+      /** monthly income required to move in (lifestyle has an entry fee) */
+      incomeGateMult: z.number().min(0).default(0),
+      /** how many monthly payments must be sitting in the account to move */
+      saveMult: z.number().min(1).default(5),
+      /** how many days that cushion must be held (savings habit, not one lucky month) */
+      saveStreakDays: z.number().int().min(0).default(14),
+    })
+  ),
 
   // Side jobs (non-IT gigs — courier, barista, etc.)
-  sideJobs: z.record(z.string(), z.object({
-    name: z.string(),
-    icon: z.string().default('💼'),
-    energy: z.number().int().min(0),
-    payment: z.number(),
-    paymentPerSkill: z.number().optional(),
-    paymentVar: z.number().optional(),
-    health: z.number().default(0),
-    motivation: z.number().default(0),
-    commXp: z.number().default(0),
-    repGain: z.number().default(0),
-    minSkill: z.number().default(0),
-    minDay: z.number().int().default(1),
-  })).default({}),
+  sideJobs: z
+    .record(
+      z.string(),
+      z.object({
+        name: z.string(),
+        icon: z.string().default('💼'),
+        energy: z.number().int().min(0),
+        payment: z.number(),
+        paymentPerSkill: z.number().optional(),
+        paymentVar: z.number().optional(),
+        health: z.number().default(0),
+        motivation: z.number().default(0),
+        commXp: z.number().default(0),
+        repGain: z.number().default(0),
+        minSkill: z.number().default(0),
+        minDay: z.number().int().default(1),
+      })
+    )
+    .default({}),
 
   // Mining farm (passive crypto income)
-  mining: z.object({
-    priceBase: z.number().positive(),
-    volatility: z.number().min(0).max(1),
-    electricityPerHashrate: z.number().min(0),
-  }).default({ priceBase: 40, volatility: 0.5, electricityPerHashrate: 0.5 }),
+  mining: z
+    .object({
+      priceBase: z.number().positive(),
+      volatility: z.number().min(0).max(1),
+      electricityPerHashrate: z.number().min(0),
+    })
+    .default({ priceBase: 40, volatility: 0.5, electricityPerHashrate: 0.5 }),
 
   // Career gates (v2.1): data-driven promotion ladder.
   // skill = level of the MAIN skill (depth); total = sum over all skills (breadth).
-  careerGates: z.array(z.object({
-    grade: z.enum(['intern', 'junior', 'middle', 'senior', 'teamlead', 'architect', 'cto']),
-    label: z.string().optional(),
-    skill: z.number().int().min(0),
-    comm: z.number().int().min(0),
-    rep: z.number().int().min(0),
-    total: z.number().int().min(0).default(0),
-    branchTotal: z.number().int().min(0).optional(),
-    english: z.number().int().min(0).optional(),
-    leadership: z.number().int().min(0).optional(),
-    minDaysInGrade: z.number().int().min(1).default(7),
-    competition: z.number().int().min(1).default(1),
-    special: z.boolean().default(false),
-    /** how often the board meets for a special (non-promotion) election */
-    electionIntervalDays: z.number().int().min(1).default(60),
-  })).optional(),
+  careerGates: z
+    .array(
+      z.object({
+        grade: z.enum(['intern', 'junior', 'middle', 'senior', 'teamlead', 'architect', 'cto']),
+        label: z.string().optional(),
+        skill: z.number().int().min(0),
+        comm: z.number().int().min(0),
+        rep: z.number().int().min(0),
+        total: z.number().int().min(0).default(0),
+        branchTotal: z.number().int().min(0).optional(),
+        english: z.number().int().min(0).optional(),
+        leadership: z.number().int().min(0).optional(),
+        minDaysInGrade: z.number().int().min(1).default(7),
+        competition: z.number().int().min(1).default(1),
+        special: z.boolean().default(false),
+        /** how often the board meets for a special (non-promotion) election */
+        electionIntervalDays: z.number().int().min(1).default(60),
+      })
+    )
+    .optional(),
 
   // Daily living costs (ТЗ 5.6) — the counterweight to high late-game salaries
-  livingCosts: z.object({
-    foodBase: z.number().min(0).default(350),
-    foodBroke: z.number().min(0).default(180),
-    perHousingLevel: z.number().min(0).default(0),
-    perCareerIndex: z.number().min(0).default(0),
-    subscriptionsMonthly: z.number().min(0).default(0),
-    lifestyleRefundMultiplier: z.number().min(0).default(0),
-    wealthTaxMonthly: z.number().min(0).default(0),
-    wealthTaxThreshold: z.number().min(0).default(500000),
-    wealthTaxRate: z.number().min(0).max(1).default(0),
-    wealthTaxCap: z.number().min(0).default(0),
-  }).optional(),
+  livingCosts: z
+    .object({
+      foodBase: z.number().min(0).default(350),
+      foodBroke: z.number().min(0).default(180),
+      perHousingLevel: z.number().min(0).default(0),
+      perCareerIndex: z.number().min(0).default(0),
+      subscriptionsMonthly: z.number().min(0).default(0),
+      lifestyleRefundMultiplier: z.number().min(0).default(0),
+      wealthTaxMonthly: z.number().min(0).default(0),
+      wealthTaxThreshold: z.number().min(0).default(500000),
+      wealthTaxRate: z.number().min(0).max(1).default(0),
+      wealthTaxCap: z.number().min(0).default(0),
+    })
+    .optional(),
 
   // Career endings (ТЗ «Финалы») — terminal states reached by living conditions
-  endings: z.object({
-    burnoutDays: z.number().int().min(1).default(7),
-    brokeDaysToQuit: z.number().int().min(1).default(15),
-  }).optional(),
+  endings: z
+    .object({
+      burnoutDays: z.number().int().min(1).default(7),
+      brokeDaysToQuit: z.number().int().min(1).default(15),
+    })
+    .optional(),
 });
 
 export type BalanceConfig = z.infer<typeof BalanceSchema>;
@@ -481,6 +505,83 @@ export const DailyChallengeSchema = z.object({
 
 export const DailyChallengesFileSchema = z.array(DailyChallengeSchema).min(1);
 
+// ---- Freelance projects with deadlines (reference 1.png «Работа») ----
+
+export const ProjectTaskSchema = z.object({
+  id: z.string().regex(/^[a-z0-9_]+$/),
+  title: z.string().min(1).max(80),
+  xp: z.number().int().positive().max(100),
+  energy: z.number().int().min(0).max(10),
+});
+
+export const ProjectSchema = z.object({
+  id: z.string().regex(/^[a-z0-9_]+$/),
+  title: z.string().min(1).max(80),
+  subtitle: z.string().max(120).default(''),
+  icon: z.string().min(1),
+  payment: z.number().int().positive(),
+  reputation: z.number().int().min(0).max(20),
+  deadlineDays: z.number().int().min(1).max(60),
+  minSkillLevel: z.number().int().min(0).max(100),
+  tasks: z.array(ProjectTaskSchema).min(2).max(6),
+});
+
+export const ProjectsFileSchema = z.object({
+  version: z.number().int().default(1),
+  projects: z.array(ProjectSchema).min(1),
+});
+
+// ---- Weekly season sprint (P1.2) ----
+// Real-time weekly sprint: one theme rotates in every Monday (UTC+3); its goals
+// count matching actions (by action-id prefix) done during that real week.
+
+export const SprintGoalSchema = z.object({
+  id: z.string().regex(/^[a-z0-9_]+$/),
+  /** action-id prefix this goal counts, e.g. 'study_' or 'freelance' */
+  prefix: z.string().min(1),
+  count: z.number().int().positive(),
+  /** human line, e.g. «учебных действий» (used in «8 из 12 …») */
+  description: z.string().min(1).max(120),
+});
+
+export const SprintThemeSchema = z.object({
+  id: z.string().regex(/^[a-z0-9_]+$/),
+  title: z.string().min(1).max(80),
+  subtitle: z.string().max(140).default(''),
+  /** a PixelIcon name the client knows */
+  icon: z.string().min(1),
+  goals: z.array(SprintGoalSchema).min(1).max(4),
+  reward: DailyChallengeRewardSchema,
+});
+
+export const SprintsFileSchema = z.object({
+  version: z.number().int().default(1),
+  /** rotating weekly themes; index = real UTC+3 week number % themes.length */
+  themes: z.array(SprintThemeSchema).min(1),
+});
+
+// ---- Archetype builds (P1.3) ----
+// Curated routes through the skill galaxy: an ordered chain of (skill, level)
+// milestones; walking it unlocks a one-time-per-life bonus (see engine/archetypes).
+
+export const ArchetypeStepSchema = z.object({
+  skillId: z.string().regex(/^[a-z0-9_]+$/),
+  level: z.number().int().min(1).max(100),
+});
+
+export const ArchetypeSchema = z.object({
+  id: z.string().regex(/^[a-z0-9_]+$/),
+  title: z.string().min(1).max(80),
+  subtitle: z.string().max(200).default(''),
+  nodes: z.array(ArchetypeStepSchema).min(2).max(6),
+  reward: DailyChallengeRewardSchema,
+});
+
+export const ArchetypesFileSchema = z.object({
+  version: z.number().int().default(1),
+  archetypes: z.array(ArchetypeSchema).min(1),
+});
+
 // ---- Interview questions (gamified learning) ----
 
 export const InterviewQuestionSchema = z.object({
@@ -498,9 +599,7 @@ export const InterviewQuestionsFileSchema = z.array(InterviewQuestionSchema).min
 // ---- Pixel-art avatar (docs/pixel-art.md) ----
 
 const PixelCategorySchema = z.enum(['face', 'eyes', 'mouth', 'hair', 'hat', 'clothing', 'accessory']);
-const HexColor = z
-  .string()
-  .regex(/^#[0-9a-fA-F]{6}$/, 'must be #rrggbb');
+const HexColor = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'must be #rrggbb');
 
 export const PixelDefSchema = z.object({
   x: z.number().int(),
@@ -523,7 +622,10 @@ export const PixelComponentSchema = z.object({
 export const PixelArtFileSchema = z.object({
   format: z.number().int().default(1),
   $schema: z.string().optional(),
-  sourceChecksum: z.string().regex(/^[0-9a-f]{64}$/).optional(),
+  sourceChecksum: z
+    .string()
+    .regex(/^[0-9a-f]{64}$/)
+    .optional(),
   canvas: z.object({ width: z.number().int().positive(), height: z.number().int().positive() }),
   layout: z.object({
     eyes_y: z.number().int().min(0),
@@ -563,13 +665,15 @@ export const PixelColorSchemeSchema = z.object({
 
 export const PixelGeneratorConfigSchema = z.object({
   format: z.number().int().default(1),
-  categories: z.array(z.object({
-    category: PixelCategorySchema,
-    required: z.boolean().default(false),
-    noneId: z.string().optional(),
-    variants: z.array(z.string().min(1)),
-    weights: z.record(z.string(), z.number().min(0)).optional(),
-  })),
+  categories: z.array(
+    z.object({
+      category: PixelCategorySchema,
+      required: z.boolean().default(false),
+      noneId: z.string().optional(),
+      variants: z.array(z.string().min(1)),
+      weights: z.record(z.string(), z.number().min(0)).optional(),
+    })
+  ),
   colorSchemes: z.array(PixelColorSchemeSchema).default([]),
 });
 

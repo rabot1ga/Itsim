@@ -185,7 +185,7 @@ export function showMainButton(text: string, onClick: () => void): void {
   const btn = getTelegram()?.MainButton;
   if (!btn) return;
   try {
-    btn.setParams({ text, color: '#0284c7', text_color: '#ffffff' });
+    btn.setParams({ text, color: '#3b5d24', text_color: '#f3f7ea' });
     btn.onClick(onClick);
     btn.show();
   } catch {
