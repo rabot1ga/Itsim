@@ -364,7 +364,7 @@ function crossValidate(bundle: ContentBundle, issues: ContentIssue[]) {
       }
       const unlockAt = skill.unlockAt ?? {};
       for (const [parent, need] of Object.entries(unlockAt)) {
-        if ((provided.get(parent) ?? 0) < need) {
+        if (typeof need !== 'number' || !Number.isFinite(need) || (provided.get(parent) ?? 0) < need) {
           err(
             'archetypes.json',
             `archetype "${arch.id}": step ${step.skillId} needs ${parent} ${need}, but the route never provides it before this step`
