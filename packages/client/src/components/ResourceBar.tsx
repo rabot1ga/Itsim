@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { xpToNext } from '@itsim/shared';
+import { PlayerPortrait } from './PlayerPortrait';
 import { PixelIcon } from './pixel/PixelIcon';
 
 /** Reference 1.png: home portrait/XP + three stacked vitals; compact wallet on other tabs.
- * The portrait is a default illustration; every numeric value comes from player state.
+ * The portrait follows the saved room look; numeric values come from player state.
  */
 
 const GRADE_LABEL: Record<string, string> = {
@@ -114,7 +115,7 @@ export const ResourceBar: React.FC = () => {
         <>
           <section className="reference-identity" aria-label="Персонаж и основной навык">
             <button className="profile-portrait-button" aria-label="Открыть профиль" onClick={() => setView('profile')}>
-              <img src="/art/story-v1/portrait.webp" alt="Стандартный портрет героя" width={66} height={66} />
+              <PlayerPortrait player={player} />
             </button>
             <div>
               <div className="reference-identity-meta">

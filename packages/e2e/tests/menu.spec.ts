@@ -5,7 +5,7 @@ for (const width of [320, 390, 480]) {
     await page.setViewportSize({ width, height: 844 });
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');
-    await expect(page.locator('[data-ui-revision="07"]')).toBeVisible();
+    await expect(page.locator('[data-ui-revision="08"]')).toBeVisible();
     await expect(page.getByRole('button', { name: /^(Начать игру|Продолжить)/ })).toHaveCount(0);
     const nav = page.getByRole('navigation', { name: 'Основная навигация' });
     expect(await nav.getByRole('button').allTextContents()).toEqual([

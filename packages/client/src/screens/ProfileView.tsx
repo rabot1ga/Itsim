@@ -1,5 +1,6 @@
 import React from 'react';
 import { useGameStore } from '../store/gameStore';
+import { PlayerPortrait } from '../components/PlayerPortrait';
 import { PixelIcon } from '../components/pixel/PixelIcon';
 import { xpToNext } from '@itsim/shared';
 
@@ -40,7 +41,7 @@ export const ProfileView: React.FC = () => {
       </h2>
       <section className="profile-card" aria-label="Профиль персонажа">
         <div className="profile-identity">
-          <img src="/art/story-v1/portrait.webp" alt="Стандартный портрет героя" width={128} height={128} />
+          <PlayerPortrait player={player} size={80} />
           <div>
             <h3>Айтишник</h3>
             <p>{GRADES[player.grade] ?? player.grade}</p>
@@ -90,7 +91,7 @@ export const ProfileView: React.FC = () => {
         </div>
       </section>
       <p className="text-2xs text-ink-400">
-        Портрет — стандартная иллюстрация. Процедурная внешность доступна в гардеробе.
+        Портрет использует ту же внешность, что и комната: причёску, силуэт одежды и доступные цвета. Изменить их можно в гардеробе.
       </p>
     </div>
   );

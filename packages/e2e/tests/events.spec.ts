@@ -57,7 +57,7 @@ test('profile opens from portrait and exposes live stats and goals', async ({ pa
   const profile = page.getByRole('region', { name: 'Профиль персонажа' });
   await expect(profile).toBeVisible();
   await expect(profile.getByText('Основной навык', { exact: true })).toBeVisible();
-  await expect(profile.getByRole('img')).toHaveAttribute('src', '/art/story-v1/portrait.webp');
+  await expect(profile.getByRole('img', { name: 'Портрет твоего персонажа' })).toBeVisible();
   await page.getByRole('button', { name: 'Достижения и цели', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Достижения', exact: true })).toBeVisible();
 });
