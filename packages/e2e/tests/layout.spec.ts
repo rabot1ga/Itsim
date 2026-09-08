@@ -24,6 +24,19 @@ for (const width of [320, 390, 480]) {
 
     await room.getByRole('button', { name: 'Магазин', exact: true }).click();
     await expect(room).toHaveCount(0);
+    const filters = page.getByRole('group', { name: 'Категории товаров' });
+    await expect(filters).toBeVisible();
+    await filters.getByRole('button', { name: 'Техника', exact: true }).click();
+    await expect(page.getByRole('article', { name: 'Бюджетный ПК', exact: true })).toBeVisible();
+    await expect(page.getByRole('article', { name: 'Кактус на стол', exact: true })).toHaveCount(0);
+    await filters.getByRole('button', { name: 'Для дома', exact: true }).click();
+    await expect(page.getByRole('article', { name: 'Кактус на стол', exact: true })).toBeVisible();
+    expect(
+      await page.evaluate(() => {
+        const scroll = document.getElementById('game-scroll')!;
+        return scroll.scrollWidth > scroll.clientWidth;
+      })
+    ).toBe(false);
     await page.getByRole('button', { name: 'День', exact: true }).click();
     await expect(room).toBeVisible();
     await room.getByRole('button', { name: 'Обустроить' }).click();

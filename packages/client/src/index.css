@@ -1144,3 +1144,160 @@ svg path.map-route-flow {
   color: var(--accent);
   background: #a3ce580c;
 }
+
+/* Reference catalogue: small sprite, readable effect, exact price and action. */
+.shop-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.catalogue-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.catalogue-filters button {
+  flex: 1 0 auto;
+  min-height: 44px;
+  padding: 6px 10px;
+  font-size: 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--text-dim);
+}
+.catalogue-filters button[aria-pressed='true'] {
+  border-color: var(--accent-deep);
+  color: var(--accent);
+  background: #26331e;
+}
+.shop-product {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: 10px;
+}
+.shop-product-art {
+  width: 56px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--well);
+  border: 1px solid var(--line-strong);
+}
+.shop-product-copy {
+  min-width: 0;
+}
+.shop-product-copy h3 {
+  font-size: 14px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.shop-product-effects {
+  font-size: 12px;
+  color: #bbd991;
+  margin-top: 4px;
+}
+.shop-product-details {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+.shop-product-details summary,
+.shop-stars > summary {
+  min-height: 44px;
+  align-content: center;
+  cursor: pointer;
+}
+.shop-product-details p {
+  padding-bottom: 8px;
+  line-height: 1.5;
+}
+.shop-product-buy {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px 12px;
+  border-top: 1px solid var(--line);
+  padding-top: 8px;
+}
+.shop-product-buy > .num {
+  margin-right: auto;
+}
+.shop-product-buy > .text-2xs {
+  flex-basis: 100%;
+  text-align: right;
+}
+.shop-product-buy .btn {
+  min-width: 86px;
+}
+.shop-housing-row {
+  flex-wrap: wrap;
+}
+.shop-housing-row > div {
+  min-width: 0;
+  flex-wrap: wrap;
+}
+.shop-stars > summary {
+  font-size: 13px;
+  color: var(--gold);
+}
+.career-company {
+  padding: 12px;
+  border: 1px solid var(--line-strong);
+}
+.career-offer-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.career-grades > summary {
+  cursor: pointer;
+  min-height: 44px;
+}
+.career-grades > summary::after {
+  content: '+';
+  color: var(--accent);
+}
+.career-grades[open] > summary::after {
+  content: '−';
+}
+
+@media (min-width: 360px) {
+  .shop-product {
+    grid-template-columns: 48px minmax(0, 1fr) 92px;
+    gap: 8px;
+  }
+  .shop-product-art {
+    width: 48px;
+    height: 54px;
+  }
+  .shop-product-buy {
+    grid-column: 3;
+    grid-row: 1;
+    flex-direction: column;
+    align-items: stretch;
+    align-self: center;
+    padding: 0;
+    border: 0;
+    gap: 6px;
+    text-align: right;
+  }
+  .shop-product-buy > .num {
+    margin-right: 0;
+    font-size: 12px;
+  }
+  .shop-product-buy > .text-2xs {
+    flex-basis: auto;
+    font-size: 10px;
+  }
+  .shop-product-buy .btn {
+    min-width: 0;
+    padding-inline: 8px;
+  }
+}
