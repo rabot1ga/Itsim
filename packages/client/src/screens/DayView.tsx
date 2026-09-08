@@ -115,7 +115,7 @@ const YesterdayLog: React.FC<{ text: string }> = ({ text }) => {
       <button
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        className="w-full flex items-center gap-2 text-left touch-target !min-h-[32px]"
+        className="w-full flex items-center gap-2 text-left touch-target"
       >
         <PixelIcon name="clock" size={11} className="text-ink-500 shrink-0" />
         <span className="text-2xs font-bold uppercase tracking-[0.09em] text-ink-500 shrink-0">Вчера</span>
@@ -170,7 +170,7 @@ const OnboardingTip: React.FC<{ day: number }> = ({ day }) => {
         <button
           onClick={hide}
           aria-label="Скрыть совет"
-          className="text-2xs text-ink-600 hover:text-ink-300 transition-colors shrink-0 touch-target !min-h-[28px] px-1 -mt-1"
+          className="text-2xs text-ink-600 hover:text-ink-300 transition-colors shrink-0 flex items-center justify-center !min-w-[36px] touch-target px-1"
         >
           ✕
         </button>

@@ -112,7 +112,7 @@ export const GameScreen: React.FC = () => {
                 <span className="flex-1 border-t border-dashed border-ink-700" />
                 <button
                   onClick={() => setMoreOpen(false)}
-                  className="flex items-center gap-1.5 text-2xs text-ink-500 hover:text-ink-200 transition-colors touch-target !min-h-[28px] px-1"
+                  className="flex items-center gap-1.5 text-2xs text-ink-500 hover:text-ink-200 transition-colors touch-target px-1"
                 >
                   <PixelIcon name="chevron" size={9} />
                   Закрыть

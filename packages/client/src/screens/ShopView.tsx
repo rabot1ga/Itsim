@@ -99,7 +99,7 @@ export const ShopView: React.FC = () => {
                 <button
                   onClick={() => setOpenItem(expanded ? null : item.id)}
                   aria-expanded={expanded}
-                  className="flex items-center gap-1.5 min-w-0 text-left touch-target !min-h-[26px]"
+                  className="flex items-center gap-1.5 min-w-0 text-left touch-target !min-h-[36px]"
                 >
                   <span className={`text-sm font-medium truncate ${owned ? 'text-moss-300' : 'text-ink-100'}`}>
                     {item.name}
@@ -139,7 +139,7 @@ export const ShopView: React.FC = () => {
                     <button
                       disabled={!affordable}
                       onClick={() => performAction('buy_item', { itemId: item.id })}
-                      className={`btn mt-1 !min-h-[30px] !px-3 text-xs ${affordable ? 'btn-primary' : 'btn-secondary'}`}
+                      className={`btn mt-1 !min-h-[36px] !px-3 text-xs ${affordable ? 'btn-primary' : 'btn-secondary'}`}
                     >
                       Купить
                     </button>

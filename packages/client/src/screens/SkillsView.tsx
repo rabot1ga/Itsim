@@ -735,10 +735,10 @@ const SkillMap: React.FC<SkillMapProps> = ({
                           </>
                         ) : !isUnlocked && gate ? (
                           <span
-                            className="flex items-center gap-1 min-w-0 w-full justify-center text-[9px] text-ink-400"
+                            className="flex items-center gap-1 min-w-0 w-full justify-center text-[10px] leading-none text-ink-400"
                             title={`Нужно: ${gate.name} ${gate.need}+`}
                           >
-                            <PixelIcon name="lock" size={7} className="shrink-0 text-ink-500" />
+                            <PixelIcon name="lock" size={8} className="shrink-0 text-ink-500" />
                             <span className="truncate">
                               {gate.name} {gate.need}
                             </span>
@@ -841,7 +841,7 @@ const MapBtn: React.FC<{ title: string; onClick: () => void; label: string; acti
     aria-label={title}
     aria-pressed={active}
     onClick={onClick}
-    className={`!min-h-[30px] !min-w-[30px] !px-0 !py-0 text-sm leading-none flex items-center justify-center select-none ${
+    className={`!min-h-[36px] !min-w-[36px] !px-0 !py-0 text-sm leading-none flex items-center justify-center select-none ${
       active ? 'btn btn-primary' : 'btn btn-secondary'
     }`}
   >
@@ -853,7 +853,7 @@ const ToolbarChip: React.FC<{ label: string; active: boolean; onClick: () => voi
   <button
     onClick={onClick}
     aria-pressed={active}
-    className={`shrink-0 px-2 py-1 text-2xs font-semibold border-2 whitespace-nowrap transition-colors touch-target !min-h-[28px] ${
+    className={`shrink-0 px-2.5 text-xs font-semibold border-2 whitespace-nowrap transition-colors touch-target !min-h-[38px] ${
       active
         ? 'border-gold-700 bg-gold-900/20 text-gold-200'
         : 'border-ink-700 bg-ink-900 text-ink-400 hover:border-ink-500 hover:text-ink-200'

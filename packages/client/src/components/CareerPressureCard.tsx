@@ -66,7 +66,7 @@ export const CareerPressureCard: React.FC = () => {
           <button
             onClick={() => setCostOpen((v) => !v)}
             aria-expanded={costOpen}
-            className="w-full flex items-center gap-2 text-left touch-target !min-h-[32px]"
+            className="w-full flex items-center gap-2 text-left touch-target"
           >
             <PixelIcon name="coin" size={12} className="text-ink-400 shrink-0" />
             <span className="flex-1 text-sm font-semibold text-ink-100">Стоимость дня</span>
