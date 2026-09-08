@@ -481,6 +481,35 @@ export const DailyChallengeSchema = z.object({
 
 export const DailyChallengesFileSchema = z.array(DailyChallengeSchema).min(1);
 
+// ---- Weekly season sprint (P1.2) ----
+// Real-time weekly sprint: one theme rotates in every Monday (UTC+3); its goals
+// count matching actions (by action-id prefix) done during that real week.
+
+export const SprintGoalSchema = z.object({
+  id: z.string().regex(/^[a-z0-9_]+$/),
+  /** action-id prefix this goal counts, e.g. 'study_' or 'freelance' */
+  prefix: z.string().min(1),
+  count: z.number().int().positive(),
+  /** human line, e.g. «учебных действий» (used in «8 из 12 …») */
+  description: z.string().min(1).max(120),
+});
+
+export const SprintThemeSchema = z.object({
+  id: z.string().regex(/^[a-z0-9_]+$/),
+  title: z.string().min(1).max(80),
+  subtitle: z.string().max(140).default(''),
+  /** a PixelIcon name the client knows */
+  icon: z.string().min(1),
+  goals: z.array(SprintGoalSchema).min(1).max(4),
+  reward: DailyChallengeRewardSchema,
+});
+
+export const SprintsFileSchema = z.object({
+  version: z.number().int().default(1),
+  /** rotating weekly themes; index = real UTC+3 week number % themes.length */
+  themes: z.array(SprintThemeSchema).min(1),
+});
+
 // ---- Interview questions (gamified learning) ----
 
 export const InterviewQuestionSchema = z.object({

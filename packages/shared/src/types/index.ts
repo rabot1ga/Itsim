@@ -309,6 +309,9 @@ export interface PlayerState {
   // Daily challenge progress
   dailyChallenge?: DailyChallengeState;
 
+  // Weekly season sprint (real-time retention, P1.2)
+  sprint?: PlayerSprint;
+
   // Monetization (Telegram Stars) — cosmetics only, see content/monetization.json
   /** layer ids unlocked by a purchase */
   entitlements?: string[];
@@ -807,6 +810,20 @@ export interface DailyChallengeState {
   progress: number;
   count: number;
   done: boolean;
+}
+
+// ---- Weekly season sprint (P1.2) ----
+
+/** Per-player record of the current weekly sprint (real-time, UTC+3 week) */
+export interface PlayerSprint {
+  /** week key: the Monday of the sprint window, YYYY-MM-DD (UTC+3) */
+  week: string;
+  /** active sprint theme id (from content sprints.json) */
+  themeId: string;
+  /** goal id → actions counted this week (capped at the goal's count) */
+  progress: Record<string, number>;
+  /** true once the weekly reward has been claimed — a claim is per-week */
+  claimed: boolean;
 }
 
 // ---- Rating ----

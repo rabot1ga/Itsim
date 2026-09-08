@@ -33,5 +33,8 @@ export {
   ProductSchema,
   ProductGrantsSchema,
   MonetizationSchema,
+  SprintGoalSchema,
+  SprintThemeSchema,
+  SprintsFileSchema,
 } from './schemas/index';
 export type { BalanceConfig, Product, ProductGrants, MonetizationConfig } from './schemas/index';

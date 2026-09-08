@@ -113,6 +113,10 @@ interface GameState {
   initGame: (initData: string) => Promise<void>;
   /** daily check-in result from the server: { claimed, streak, money, nextMoney } | null */
   checkIn: any;
+  /** weekly sprint view (P1.2): { title, goals, allDone, claimed, reward, endsAtMs } | null */
+  sprint: any;
+  /** claim the finished weekly sprint reward */
+  claimSprint: () => Promise<boolean>;
   /** re-read /game/state (after a Stars purchase or a background change) */
   refreshState: () => Promise<void>;
   setScreen: (screen: Screen) => void;
@@ -153,6 +157,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   heldCollections: [],
   mining: null,
   checkIn: null,
+  sprint: null,
   gains: [],
 
   initGame: async (initData: string) => {
@@ -182,6 +187,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         careerOutlook: stateRes.data.careerOutlook ?? null,
         costOfDay: stateRes.data.costOfDay ?? null,
         checkIn: stateRes.data.checkIn ?? null,
+        sprint: stateRes.data.sprint ?? null,
         screen: stateRes.data.isNew ? 'game' : 'menu',
       });
     } catch (err: any) {
@@ -216,6 +222,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         careerOutlook: res.data.careerOutlook ?? null,
         costOfDay: res.data.costOfDay ?? null,
         checkIn: res.data.checkIn ?? get().checkIn,
+        sprint: res.data.sprint ?? null,
       });
     }
   },
@@ -250,6 +257,7 @@ export const useGameStore = create<GameState>((set, get) => ({
           mining: res.data.mining ?? null,
           careerOutlook: res.data.careerOutlook ?? get().careerOutlook,
           costOfDay: res.data.costOfDay ?? get().costOfDay,
+          sprint: res.data.sprint ?? get().sprint,
           error: null,
           gains: [...s.gains, ...diffGains(player, res.data.state)].slice(-6),
         }));
@@ -316,6 +324,7 @@ export const useGameStore = create<GameState>((set, get) => ({
           mining: null,
           careerOutlook: null,
           costOfDay: null,
+          sprint: null,
         });
         // Repopulate check-in / mining / outlook from the fresh state
         await get().refreshState();
@@ -326,6 +335,31 @@ export const useGameStore = create<GameState>((set, get) => ({
       return false;
     } catch (err) {
       console.error('New life error:', err);
+      haptic('error');
+      set({ error: 'Сервер недоступен' });
+      return false;
+    }
+  },
+
+  claimSprint: async () => {
+    try {
+      const res = await api('/game/sprint/claim', { method: 'POST' });
+      if (res.data?.state) {
+        haptic('success');
+        set((s) => ({
+          player: res.data.state,
+          sprint: res.data.sprint ?? s.sprint,
+          error: null,
+          gains: [...s.gains, ...diffGains(s.player, res.data.state)].slice(-6),
+        }));
+        track('sprint_claim', { week: res.data.sprint?.week });
+        return true;
+      }
+      haptic('error');
+      set({ error: res.data?.error || 'Не удалось получить награду' });
+      return false;
+    } catch (err) {
+      console.error('Sprint claim error:', err);
       haptic('error');
       set({ error: 'Сервер недоступен' });
       return false;

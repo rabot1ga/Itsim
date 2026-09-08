@@ -13,6 +13,13 @@ import {
   canStartNewLife,
   buildNewLife,
   metaXpMult,
+  activeSprintTheme,
+  rollSprint,
+  bumpSprintProgress,
+  sprintAllDone,
+  sprintRewardAmounts,
+  sprintWeekEndsAtMs,
+  sprintDaysLeft,
   advanceLastTick,
   applyXp,
   applySoftXp,
@@ -401,6 +408,10 @@ export async function gameRoutes(app: FastifyInstance) {
       checkIn = { claimed: false, streak, money: 0, nextMoney: checkInReward(streak + 1).money };
     }
 
+    // Weekly sprint (P1.2): roll the real-time week so the banner is current
+    const sprintRolled = rollSprint(state.sprint, getContent().sprints?.themes, Date.now());
+    if (sprintRolled) state.sprint = sprintRolled;
+
     // Surface pending chain events even if the user missed the day roll
     let activeEvent: GameEvent | null = null;
     if (state.activeEventId) {
@@ -427,6 +438,7 @@ export async function gameRoutes(app: FastifyInstance) {
       mining: miningSummary(state, getContent()),
       careerOutlook: careerOutlook(state, getContent()),
       costOfDay: costOfDay(state, getContent()),
+      sprint: sprintView(state, getContent(), Date.now()),
     };
   });
 
@@ -500,7 +512,14 @@ export async function gameRoutes(app: FastifyInstance) {
 
     // Daily challenge progress (BEFORE persisting — rewards land in state)
     const challengeMsg = bumpChallenge(state, content, actionId);
-    const finalMessage = challengeMsg ? `${result.message}\n${challengeMsg}` : result.message;
+    let finalMessage = challengeMsg ? `${result.message}\n${challengeMsg}` : result.message;
+
+    // Weekly sprint progress (P1.2) — same tap, real-time week goals
+    const sprintBump = bumpSprintProgress(state.sprint, content.sprints?.themes, actionId, Date.now());
+    if (sprintBump) state.sprint = sprintBump.sprint;
+    if (sprintBump?.doneJustNow) {
+      finalMessage += '\n🎯 Спринт недели выполнен — награда ждёт в карточке спринта';
+    }
 
     state.totalActions += 1;
     state.maxEnergy = recalcMaxEnergy(state, content);
@@ -537,6 +556,57 @@ export async function gameRoutes(app: FastifyInstance) {
       activeEvent: triggeredEvent,
       nft,
       mining: miningSummary(state, content),
+      sprint: sprintView(state, content, Date.now()),
+    };
+  });
+
+  /**
+   * POST /api/game/sprint/claim — claim the weekly sprint reward (P1.2).
+   *
+   * Guarded three ways: a sprint must be active for the current real week,
+   * every goal must be done, and the reward is claimable once per week
+   * (state.sprint.claimed flips; a rolled-over week starts unclaimed but with
+   * empty progress, so an old week can never be cashed late).
+   */
+  app.post('/sprint/claim', async (request, reply) => {
+    const user = (request as any).telegramUser;
+    const userId = String(user.id);
+    const state = loadState(userId) as StoredState | null;
+    if (!state) {
+      return reply.status(404).send({ error: 'Game not started' });
+    }
+
+    const content = getContent();
+    const nowMs = Date.now();
+    const theme = activeSprintTheme(content.sprints?.themes, nowMs);
+    const sprint = rollSprint(state.sprint, content.sprints?.themes, nowMs);
+    if (!theme || !sprint) {
+      return reply.status(400).send({ error: 'Сейчас нет активного спринта' });
+    }
+    if (sprint.claimed) {
+      return reply.status(400).send({ error: 'Награда этой недели уже получена' });
+    }
+    if (!sprintAllDone(theme, sprint)) {
+      return reply.status(400).send({ error: 'Цели спринта ещё не выполнены' });
+    }
+
+    const reward = sprintRewardAmounts(theme);
+    if (reward.money) state.money += reward.money;
+    if (reward.motivation) state.motivation = clamp(state.motivation + reward.motivation, 0, 100);
+    if (reward.reputation) state.reputation = clamp(state.reputation + reward.reputation, 0, 100);
+
+    sprint.claimed = true;
+    state.sprint = sprint;
+    state.ratingScore = calculateRating(state);
+    saveState(userId, state);
+
+    const parts: string[] = [];
+    if (reward.money) parts.push(`+${fmtMoney(reward.money)}`);
+    if (reward.motivation) parts.push(`+${reward.motivation} мотивации`);
+    if (reward.reputation) parts.push(`+${reward.reputation} репутации`);
+    return {
+      state: respondState(state, `🏁 Спринт «${theme.title}» закрыт: ${parts.join(', ')}`),
+      sprint: sprintView(state, content, nowMs),
     };
   });
 
@@ -1091,6 +1161,45 @@ function describePerkRequires(requires: Record<string, number>, content: any): s
       return `${skillName(key)}: ${lvl}`;
     })
     .join(', ');
+}
+
+/**
+ * Weekly season sprint (P1.2). One theme rotates in every real week
+ * (Monday→Sunday, UTC+3 — same calendar as the check-in). Content lives in
+ * sprints.json; per-player progress lives in state.sprint.
+ */
+
+/** Resolved, client-ready sprint view — what the banner in «День» renders. */
+function sprintView(state: StoredState, content: any, nowMs: number): any | null {
+  const theme = activeSprintTheme(content.sprints?.themes, nowMs);
+  if (!theme) return null;
+  const sprint = rollSprint(state.sprint, content.sprints?.themes, nowMs);
+  if (!sprint) return null;
+  const goals = theme.goals.map((g: any) => ({
+    id: g.id,
+    description: g.description,
+    count: g.count,
+    progress: Math.min(sprint.progress[g.id] ?? 0, g.count),
+    done: (sprint.progress[g.id] ?? 0) >= g.count,
+  }));
+  const reward = theme.reward ?? {};
+  return {
+    week: sprint.week,
+    themeId: theme.id,
+    title: theme.title,
+    subtitle: theme.subtitle ?? '',
+    icon: theme.icon,
+    goals,
+    allDone: goals.every((g: any) => g.done),
+    claimed: sprint.claimed,
+    reward: {
+      money: reward.money ?? 0,
+      motivation: reward.motivation ?? 0,
+      reputation: reward.reputation ?? 0,
+    },
+    endsAtMs: sprintWeekEndsAtMs(nowMs),
+    daysLeft: Math.max(0, sprintDaysLeft(nowMs)),
+  };
 }
 
 /**

@@ -78,5 +78,8 @@ export function buildNewLife(prev: PlayerState): PlayerState {
   fresh.dailyStreak = prev.dailyStreak;
   fresh.lastCheckInDate = prev.lastCheckInDate;
   fresh.walletAddress = prev.walletAddress;
+  // the weekly sprint belongs to the real-time week, not to the career —
+  // starting a new life mid-week keeps the week's progress and its claim
+  if (prev.sprint) fresh.sprint = { ...prev.sprint };
   return fresh;
 }

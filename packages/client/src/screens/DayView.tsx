@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { CareerPressureCard } from '../components/CareerPressureCard';
+import { SprintCard } from '../components/SprintCard';
 import { PixelIcon } from '../components/pixel/PixelIcon';
 import { tipForDay } from './dayTips';
 import { hideMainButton, isMainButtonSupported, setMainButtonProgress, showMainButton } from '../lib/telegram';
@@ -384,6 +385,9 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
           )}
         </section>
       )}
+
+      {/* Weekly season sprint — the real-time target for the whole week */}
+      <SprintCard />
 
       {/* Career pressure: living costs + what the next gate really needs */}
       <CareerPressureCard />

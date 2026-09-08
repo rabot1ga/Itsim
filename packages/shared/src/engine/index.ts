@@ -14,6 +14,7 @@ export * from './items';
 export * from './interviewQuestions';
 export * from './checkIn';
 export * from './meta';
+export * from './sprint';
 export * from './utils';
 export * from './roomDecor';
 export * from './isoFinishes';

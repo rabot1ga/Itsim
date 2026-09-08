@@ -33,6 +33,7 @@ import {
   CrossCollectionsSchema,
   DailyChallengesFileSchema,
   InterviewQuestionsFileSchema,
+  SprintsFileSchema,
   MonetizationSchema,
   PixelArtFileSchema,
   PixelGeneratorConfigSchema,
@@ -72,6 +73,8 @@ export interface ContentBundle {
   interviewQuestions: any[];
   /** Telegram Stars catalogue */
   monetization: any;
+  /** weekly season sprints (P1.2) — { themes: [...] } */
+  sprints: any;
   /** Pixel-art avatar pack (docs/pixel-art.md). null = not generated yet. */
   pixelArt: any | null;
   pixelGeneratorConfig: any | null;
@@ -146,6 +149,7 @@ export function loadContentBundle(dir: string = CONTENT_DIR): ContentLoadResult 
     challenges: validate('challenges.json', DailyChallengesFileSchema, read('challenges.json'), []),
     interviewQuestions: validate('interview_questions.json', InterviewQuestionsFileSchema, read('interview_questions.json'), []),
     monetization: validate('monetization.json', MonetizationSchema, read('monetization.json'), { currency: 'XTR', products: [] }),
+    sprints: validate('sprints.json', SprintsFileSchema, read('sprints.json'), { themes: [] }),
     ...loadPixelArt(dir, issues),
   };
 
@@ -163,6 +167,7 @@ export function loadContentBundle(dir: string = CONTENT_DIR): ContentLoadResult 
     interviewQuestions: bundle.interviewQuestions.length,
     products: bundle.monetization?.products?.length ?? 0,
     careerGates: bundle.balance?.careerGates?.length ?? 0,
+    sprintThemes: bundle.sprints?.themes?.length ?? 0,
     pixelComponents: Object.keys(bundle.pixelArt?.components ?? {}).length,
   };
 
@@ -300,6 +305,7 @@ function crossValidate(bundle: ContentBundle, issues: ContentIssue[]) {
   dupCheck('achievements.json', bundle.achievements);
   dupCheck('challenges.json', bundle.challenges);
   dupCheck('interview_questions.json', bundle.interviewQuestions);
+  dupCheck('sprints.json', bundle.sprints?.themes ?? []);
 
   // --- layer ids across all manifests --------------------------------------
   const layerIds = new Set<string>();
