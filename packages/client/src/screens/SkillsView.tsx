@@ -4,21 +4,23 @@ import { haptic } from '../lib/telegram';
 import { xpToNext, canUnlockPerk } from '@itsim/shared';
 import { PixelIcon } from '../components/pixel/PixelIcon';
 import { EmojiToken, SpriteBadge } from '../components/ui';
-import { layoutForest, NODE_H, NODE_W } from './skillTreeLayout';
+import { layoutGalaxy, NODE_H, NODE_W } from './skillTreeLayout';
 
 /**
- * Skills — ONE tree, Path of Exile style.
+ * Skills — ONE map, Path of Exile style.
  *
  * No branch subsections. skills.json is a forest of connected trees (schools
  * cross-require each other: AI/ML hangs off backend Python, blockchain off
- * frontend JavaScript), so the whole thing is laid out on a single canvas and
- * shown as one map you pan and zoom. Components are packed into balanced
- * columns; node states are the same as always and read from the frame:
+ * frontend JavaScript), so the whole thing is drawn as a single constellation
+ * you pan and zoom. Every school root is the center of its own radial tree;
+ * groves are scattered over the canvas (golden-angle spiral), never aligned
+ * into columns or rows, and paths between a skill and its children are curved
+ * Béziers that wind instead of elbows. Node states read from the frame:
  * moss = learned, neutral = available, gold + target = your main skill,
  * dark + dashed connector = gated (needs its parent leveled).
  *
  * The map is a real viewport: scroll to pan (two fingers / drag), wheel or
- * the buttons to zoom, «все» to fit the whole tree back on screen.
+ * the buttons to zoom, «⌂» to fit the whole map back on screen.
  */
 
 const SKILL_EMOJI: Record<string, string> = {
@@ -291,7 +293,7 @@ const LegendDot: React.FC<{ color: string; dashed?: boolean; children: React.Rea
   </span>
 );
 
-/* ── The one big tree (pan + zoom viewport) ─────────────────────────────── */
+/* ── The one big tree (pan + zoom viewport) ──────────────────────────────────────────────── */
 
 interface SkillMapProps {
   skills: SkillInfo[];
@@ -303,7 +305,7 @@ interface SkillMapProps {
   onPick: (id: string) => void;
 }
 
-const MIN_SCALE = 0.18;
+const MIN_SCALE = 0.07;
 const MAX_SCALE = 3;
 
 const SkillMap: React.FC<SkillMapProps> = ({
@@ -315,7 +317,9 @@ const SkillMap: React.FC<SkillMapProps> = ({
   mainSkillId,
   onPick,
 }) => {
-  const forest = useMemo(() => layoutForest(skills, 2), [skills]);
+  const map = useMemo(() => layoutGalaxy(skills), [skills]);
+  const skillById = useMemo(() => new Map(skills.map((s) => [s.id, s])), [skills]);
+  const schools = useMemo(() => [...new Set(skills.map((s) => s.branch))], [skills]);
 
   const [mapH, setMapH] = useState(420);
   const [scale, setScale] = useState(0.5);
@@ -346,36 +350,30 @@ const SkillMap: React.FC<SkillMapProps> = ({
     const el = scrollRef.current;
     const a = anchorRef.current;
     if (!el || !a) return;
-    const maxL = Math.max(0, forest.width * scale - el.clientWidth);
-    const maxT = Math.max(0, forest.height * scale - el.clientHeight);
+    const maxL = Math.max(0, map.width * scale - el.clientWidth);
+    const maxT = Math.max(0, map.height * scale - el.clientHeight);
     el.scrollLeft = clamp(a.cx * scale - a.px, 0, maxL);
     el.scrollTop = clamp(a.cy * scale - a.py, 0, maxT);
     anchorRef.current = null;
-  }, [scale, forest.width, forest.height]);
+  }, [scale, map.width, map.height]);
 
-  // fit the whole tree onto the screen around a map point (px/py = viewport center)
+  // fit the whole map onto the screen around a map point
   const fitTo = useCallback(
     (cx: number, cy: number) => {
       const el = scrollRef.current;
       if (!el) return;
-      const s = clamp(
-        Math.min((el.clientWidth - 20) / forest.width, (el.clientHeight - 20) / forest.height),
-        MIN_SCALE,
-        1
-      );
+      const s = clamp(Math.min((el.clientWidth - 20) / map.width, (el.clientHeight - 20) / map.height), MIN_SCALE, 1);
       applyScale(s, { cx, cy, px: el.clientWidth / 2, py: el.clientHeight / 2 });
     },
-    [forest, applyScale]
+    [map, applyScale]
   );
-  const fitAll = useCallback(() => fitTo(forest.width / 2, forest.height / 2), [forest, fitTo]);
+  const fitAll = useCallback(() => fitTo(map.width / 2, map.height / 2), [map, fitTo]);
 
-  // where the main skill sits on the map — the first view centers on it
+  // where the main skill sits — the first view centers on it
   const mainPos = useMemo(() => {
-    const cluster = forest.clusters.find((c) => c.skills.some((s) => s.id === mainSkillId));
-    if (!cluster) return null;
-    const node = cluster.layout.nodes.find((n) => n.skill.id === mainSkillId);
-    return node ? { x: cluster.ox + node.x, y: cluster.oy + node.y } : null;
-  }, [forest, mainSkillId]);
+    const n = map.nodes.find((x) => x.skill.id === mainSkillId);
+    return n ? { x: n.x, y: n.y } : null;
+  }, [map, mainSkillId]);
 
   // measure the map stage: it claims everything above the fold of the tab
   useLayoutEffect(() => {
@@ -394,9 +392,9 @@ const SkillMap: React.FC<SkillMapProps> = ({
       window.clearTimeout(id);
       window.removeEventListener('resize', measure);
     };
-  }, [forest]);
+  }, [map]);
 
-  // first view after sizing is stable: whole tree, centered on the main skill
+  // first view after sizing is stable: centered on the main skill
   useLayoutEffect(() => {
     if (fittedRef.current || !scrollRef.current) return;
     const id = window.setTimeout(() => {
@@ -414,15 +412,14 @@ const SkillMap: React.FC<SkillMapProps> = ({
     if (!el || !r) return;
     const svg = r.ownerSVGElement;
     if (!svg) return;
-    const kx = svg.clientWidth / forest.width;
-    const ky = svg.clientHeight / forest.height;
+    const kx = svg.clientWidth / map.width;
+    const ky = svg.clientHeight / map.height;
     r.setAttribute('x', String((el.scrollLeft / scaleRef.current) * kx));
     r.setAttribute('y', String((el.scrollTop / scaleRef.current) * ky));
     r.setAttribute('width', String((el.clientWidth / scaleRef.current) * kx));
     r.setAttribute('height', String((el.clientHeight / scaleRef.current) * ky));
-  }, [forest.width, forest.height]);
+  }, [map.width, map.height]);
 
-  // keep the viewport rect fresh after every zoom change and on mini-map open
   useLayoutEffect(() => {
     syncViewport();
   }, [scale, syncViewport, mapH, showMini]);
@@ -459,11 +456,10 @@ const SkillMap: React.FC<SkillMapProps> = ({
     };
     el.addEventListener('wheel', onWheel, { passive: false });
     return () => el.removeEventListener('wheel', onWheel);
-  }, [forest, applyScale]);
+  }, [map, applyScale]);
 
   const small = scale < 0.62;
   const dimmed = (branch: string) => (school ? branch !== school : false);
-  const schools = useMemo(() => [...new Set(skills.map((s) => s.branch))], [skills]);
 
   // tap/drag on the minimap moves the big map to that spot
   const jumpMini = (e: React.PointerEvent) => {
@@ -473,40 +469,52 @@ const SkillMap: React.FC<SkillMapProps> = ({
     const svg = wrap.querySelector('svg');
     if (!svg) return;
     const r = svg.getBoundingClientRect();
-    const mx = ((e.clientX - r.left) / r.width) * forest.width;
-    const my = ((e.clientY - r.top) / r.height) * forest.height;
-    const maxL = Math.max(0, forest.width * scaleRef.current - el.clientWidth);
-    const maxT = Math.max(0, forest.height * scaleRef.current - el.clientHeight);
+    const mx = ((e.clientX - r.left) / r.width) * map.width;
+    const my = ((e.clientY - r.top) / r.height) * map.height;
+    const maxL = Math.max(0, map.width * scaleRef.current - el.clientWidth);
+    const maxT = Math.max(0, map.height * scaleRef.current - el.clientHeight);
     el.scrollLeft = clamp(mx * scaleRef.current - el.clientWidth / 2, 0, maxL);
     el.scrollTop = clamp(my * scaleRef.current - el.clientHeight / 2, 0, maxT);
   };
 
-  // minimap: the whole forest shrunk into a corner, with a live viewport rect
+  // faint dust so the empty space reads as a night map, not a blank sheet
+  const stars = useMemo(() => {
+    const n = Math.min(240, Math.max(80, Math.round((map.width * map.height) / 22000)));
+    const out: { x: number; y: number; r: number; o: number }[] = [];
+    let seed = 7;
+    for (let i = 0; i < n; i++) {
+      seed = (seed * 9301 + 49297) % 233280;
+      const a = seed / 233280;
+      seed = (seed * 9301 + 49297) % 233280;
+      const b = seed / 233280;
+      out.push({ x: a * map.width, y: b * map.height, r: i % 4 === 0 ? 2 : 1, o: 0.08 + 0.12 * (i % 3) });
+    }
+    return out;
+  }, [map.width, map.height]);
+
+  // minimap dots + live viewport
   const mmW = 112;
-  const mmH = Math.round(clamp((mmW * forest.height) / Math.max(1, forest.width), 74, 190));
-  const mmKx = mmW / forest.width;
-  const mmKy = mmH / forest.height;
-  const miniDots = forest.clusters.flatMap((c, ci) =>
-    c.layout.nodes.map((n) => {
-      const s = n.skill;
-      const lvl = skillLevel(s.id);
-      const color =
-        mainSkillId === s.id
-          ? 'var(--gold)'
-          : lvl > 0
-            ? 'var(--moss)'
-            : unlocked(s)
-              ? 'var(--text-mute)'
-              : 'var(--line-strong)';
-      return {
-        key: `${ci}-${s.id}`,
-        x: (c.ox + n.x + NODE_W / 2) * mmKx,
-        y: (c.oy + n.y + NODE_H / 2) * mmKy,
-        color,
-        dim: dimmed(s.branch),
-      };
-    })
-  );
+  const mmH = Math.round(clamp((mmW * map.height) / Math.max(1, map.width), 60, 220));
+  const mmKx = mmW / map.width;
+  const mmKy = mmH / map.height;
+  const miniDots = map.nodes.map((n) => {
+    const lvl = skillLevel(n.skill.id);
+    const color =
+      mainSkillId === n.skill.id
+        ? 'var(--gold)'
+        : lvl > 0
+          ? 'var(--moss)'
+          : unlocked(n.skill)
+            ? 'var(--text-mute)'
+            : 'var(--line-strong)';
+    return {
+      key: n.skill.id,
+      x: n.x * mmKx,
+      y: n.y * mmKy,
+      color,
+      dim: dimmed(n.skill.branch),
+    };
+  });
 
   return (
     <div ref={mapWrapRef} className="relative border-2 border-ink-700 bg-ink-900">
@@ -560,141 +568,138 @@ const SkillMap: React.FC<SkillMapProps> = ({
           }}
         >
           {/* spacer sized in zoomed pixels so the scrollbars know the map's size */}
-          <div style={{ width: forest.width * scale, height: forest.height * scale }} />
+          <div style={{ width: map.width * scale, height: map.height * scale }} />
           {/* the map itself at natural size, scaled as one picture */}
           <div
             className="absolute top-0 left-0 origin-top-left"
             style={{
-              width: forest.width,
-              height: forest.height,
+              width: map.width,
+              height: map.height,
               transform: `scale(${scale})`,
             }}
           >
-            <svg width={forest.width} height={forest.height} className="absolute inset-0" aria-hidden="true">
-              {forest.clusters.map((c, ci) =>
-                c.layout.edges.map((e, i) => {
-                  const childSkill = c.skills.find((s) => s.id === e.childId);
-                  const childLvl = childSkill ? skillLevel(childSkill.id) : 0;
-                  const isLocked = childSkill ? !unlocked(childSkill) : false;
-                  const isDim = childSkill ? dimmed(childSkill.branch) : false;
-                  const baseOpacity = childLvl > 0 ? 0.9 : isLocked ? 0.5 : 0.7;
-                  const midY = e.y1 + (e.y2 - e.y1) / 2;
-                  return (
-                    <path
-                      key={`${ci}-${i}`}
-                      d={`M ${e.x1 + c.ox} ${e.y1 + c.oy} L ${e.x1 + c.ox} ${midY + c.oy} L ${e.x2 + c.ox} ${midY + c.oy} L ${e.x2 + c.ox} ${e.y2 + c.oy}`}
-                      stroke={childLvl > 0 ? 'var(--moss)' : isLocked ? 'var(--line)' : 'var(--line-strong)'}
-                      strokeWidth={2}
-                      fill="none"
-                      strokeDasharray={isLocked ? '4 4' : undefined}
-                      opacity={isDim ? baseOpacity * 0.14 : baseOpacity}
-                    />
-                  );
-                })
-              )}
+            {/* dust + curved skill paths */}
+            <svg width={map.width} height={map.height} className="absolute inset-0" aria-hidden="true">
+              {stars.map((d, i) => (
+                <rect key={i} x={d.x} y={d.y} width={d.r} height={d.r} fill="var(--line-strong)" opacity={d.o} />
+              ))}
+              {map.edges.map((e, i) => {
+                const childSkill = skillById.get(e.childId);
+                const childLvl = childSkill ? skillLevel(childSkill.id) : 0;
+                const isLocked = childSkill ? !unlocked(childSkill) : false;
+                const isDim = childSkill ? dimmed(childSkill.branch) : false;
+                const baseOpacity = childLvl > 0 ? 0.85 : isLocked ? 0.4 : 0.65;
+                return (
+                  <path
+                    key={i}
+                    d={`M ${e.sx} ${e.sy} C ${e.c1x} ${e.c1y}, ${e.c2x} ${e.c2y}, ${e.ex} ${e.ey}`}
+                    stroke={childLvl > 0 ? 'var(--moss)' : isLocked ? 'var(--line)' : 'var(--line-strong)'}
+                    strokeWidth={2}
+                    fill="none"
+                    strokeDasharray={isLocked ? '4 4' : undefined}
+                    opacity={isDim ? baseOpacity * 0.14 : baseOpacity}
+                  />
+                );
+              })}
             </svg>
 
-            {forest.clusters.map((c, ci) =>
-              c.layout.nodes.map(({ skill, x, y }) => {
-                const level = skillLevel(skill.id);
-                const isMain = mainSkillId === skill.id;
-                const isUnlocked = unlocked(skill);
-                const isLearned = level > 0;
-                const xp = skillXp(skill.id);
-                const xpPercent = Math.min(100, Math.round((xp / Math.max(1, xpToNext(level))) * 100));
-                const gate = isUnlocked ? null : firstGate(skill);
-                const nx = x + c.ox;
-                const ny = y + c.oy;
-                const isDim = dimmed(skill.branch);
+            {map.nodes.map(({ skill, x, y }) => {
+              const level = skillLevel(skill.id);
+              const isMain = mainSkillId === skill.id;
+              const isUnlocked = unlocked(skill);
+              const isLearned = level > 0;
+              const xp = skillXp(skill.id);
+              const xpPercent = Math.min(100, Math.round((xp / Math.max(1, xpToNext(level))) * 100));
+              const gate = isUnlocked ? null : firstGate(skill);
+              const isDim = dimmed(skill.branch);
 
-                const frame = isMain
-                  ? 'border-gold-700 bg-gold-900/15'
-                  : isLearned
-                    ? 'border-moss-700 bg-moss-900/20'
-                    : isUnlocked
-                      ? 'border-ink-600 bg-ink-900'
-                      : 'border-ink-700 bg-ink-900/60';
+              const frame = isMain
+                ? 'border-gold-700 bg-gold-900/15'
+                : isLearned
+                  ? 'border-moss-700 bg-moss-900/20'
+                  : isUnlocked
+                    ? 'border-ink-600 bg-ink-900'
+                    : 'border-ink-700 bg-ink-900/60';
 
-                return (
-                  <button
-                    key={`${ci}-${skill.id}`}
-                    onClick={() => {
-                      if (suppressClickRef.current) {
-                        suppressClickRef.current = false;
-                        return;
-                      }
-                      if (isUnlocked) onPick(skill.id);
-                    }}
-                    disabled={!isUnlocked}
-                    title={
-                      isMain
-                        ? `Основной навык — учёба и работа качают его (ур. ${level})`
-                        : !isUnlocked && gate
-                          ? `${skill.flavor} Нужно: ${gate.name} ${gate.need}+`
-                          : `Сделать основным: ${skill.name}`
+              return (
+                <button
+                  key={skill.id}
+                  onClick={() => {
+                    if (suppressClickRef.current) {
+                      suppressClickRef.current = false;
+                      return;
                     }
-                    className={`absolute -translate-x-1/2 flex flex-col items-center justify-center border-2 text-center transition-transform active:translate-y-[1px] ${
-                      isUnlocked && !isMain ? 'hover:border-ink-400' : ''
-                    } ${frame} ${isDim ? 'opacity-[0.15] pointer-events-none' : isUnlocked ? '' : 'opacity-75'}`}
-                    style={{ left: nx, top: ny, width: NODE_W, height: NODE_H }}
-                  >
-                    <span className="relative">
-                      <EmojiToken className="!w-7 !h-7 !text-[14px]">{SKILL_EMOJI[skill.id] ?? '📌'}</EmojiToken>
-                      {isMain && (
-                        <span className="absolute -top-1 -right-1 bg-ink-900 border border-gold-700 p-[1px]">
-                          <PixelIcon name="target" size={8} className="text-gold-300" />
-                        </span>
-                      )}
-                    </span>
-
-                    {!small && (
-                      <>
-                        <span
-                          className={`w-full px-1 mt-1 text-[10px] leading-[1.15] font-semibold truncate ${
-                            isMain
-                              ? 'text-gold-200'
-                              : isLearned
-                                ? 'text-ink-100'
-                                : isUnlocked
-                                  ? 'text-ink-300'
-                                  : 'text-ink-500'
-                          }`}
-                          title={skill.name}
-                        >
-                          {skill.name}
-                        </span>
-                        <span className="w-full h-[16px] px-1.5 mt-0.5 flex items-center gap-1">
-                          {isLearned ? (
-                            <>
-                              <span className="meter flex-1 !h-[3px]">
-                                <span style={{ width: `${xpPercent}%`, background: 'var(--sky)' }} />
-                              </span>
-                              <span
-                                className={`num text-[10px] font-bold leading-none ${
-                                  isMain ? 'text-gold-200' : 'text-moss-300'
-                                }`}
-                              >
-                                {level}
-                              </span>
-                            </>
-                          ) : !isUnlocked && gate ? (
-                            <span
-                              className="flex items-center gap-1 min-w-0 w-full justify-center text-[9px] text-ink-400"
-                              title={`Нужно: ${gate.name} ${gate.need}+`}
-                            >
-                              <PixelIcon name="lock" size={7} className="shrink-0 text-ink-500" />
-                              <span className="truncate">
-                                {gate.name} {gate.need}
-                              </span>
-                            </span>
-                          ) : null}
-                        </span>
-                      </>
+                    if (isUnlocked) onPick(skill.id);
+                  }}
+                  disabled={!isUnlocked}
+                  title={
+                    isMain
+                      ? `Основной навык — учёба и работа качают его (ур. ${level})`
+                      : !isUnlocked && gate
+                        ? `${skill.flavor} Нужно: ${gate.name} ${gate.need}+`
+                        : `Сделать основным: ${skill.name}`
+                  }
+                  className={`absolute -translate-x-1/2 flex flex-col items-center justify-center border-2 text-center transition-transform active:translate-y-[1px] ${
+                    isUnlocked && !isMain ? 'hover:border-ink-400' : ''
+                  } ${frame} ${isDim ? 'opacity-[0.15] pointer-events-none' : isUnlocked ? '' : 'opacity-75'}`}
+                  style={{ left: x, top: y, width: NODE_W, height: NODE_H }}
+                >
+                  <span className="relative">
+                    <EmojiToken className="!w-7 !h-7 !text-[14px]">{SKILL_EMOJI[skill.id] ?? '📌'}</EmojiToken>
+                    {isMain && (
+                      <span className="absolute -top-1 -right-1 bg-ink-900 border border-gold-700 p-[1px]">
+                        <PixelIcon name="target" size={8} className="text-gold-300" />
+                      </span>
                     )}
-                  </button>
-                );
-              })
-            )}
+                  </span>
+
+                  {!small && (
+                    <>
+                      <span
+                        className={`w-full px-1 mt-1 text-[10px] leading-[1.15] font-semibold truncate ${
+                          isMain
+                            ? 'text-gold-200'
+                            : isLearned
+                              ? 'text-ink-100'
+                              : isUnlocked
+                                ? 'text-ink-300'
+                                : 'text-ink-500'
+                        }`}
+                        title={skill.name}
+                      >
+                        {skill.name}
+                      </span>
+                      <span className="w-full h-[16px] px-1.5 mt-0.5 flex items-center gap-1">
+                        {isLearned ? (
+                          <>
+                            <span className="meter flex-1 !h-[3px]">
+                              <span style={{ width: `${xpPercent}%`, background: 'var(--sky)' }} />
+                            </span>
+                            <span
+                              className={`num text-[10px] font-bold leading-none ${
+                                isMain ? 'text-gold-200' : 'text-moss-300'
+                              }`}
+                            >
+                              {level}
+                            </span>
+                          </>
+                        ) : !isUnlocked && gate ? (
+                          <span
+                            className="flex items-center gap-1 min-w-0 w-full justify-center text-[9px] text-ink-400"
+                            title={`Нужно: ${gate.name} ${gate.need}+`}
+                          >
+                            <PixelIcon name="lock" size={7} className="shrink-0 text-ink-500" />
+                            <span className="truncate">
+                              {gate.name} {gate.need}
+                            </span>
+                          </span>
+                        ) : null}
+                      </span>
+                    </>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
 
