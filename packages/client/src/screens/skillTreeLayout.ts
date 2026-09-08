@@ -16,6 +16,9 @@
 
 export const NODE_W = 92;
 export const NODE_H = 70;
+/** grove roots are drawn as bigger "keystone" nodes that anchor their tree */
+export const KEYSTONE_W = 120;
+export const KEYSTONE_H = 90;
 
 /** first ring radius (clearance around the root node) */
 const RING0 = 190;
@@ -54,6 +57,8 @@ export interface GalaxyGrove {
   x: number;
   y: number;
   radius: number;
+  /** how many skills hang off this root (1 = lone node, no keystone) */
+  count: number;
 }
 
 export interface Galaxy<T> {
@@ -145,8 +150,10 @@ export function layoutGalaxy<T extends { id: string; parent?: string }>(skills: 
       const kids = childMap.get(id) ?? [];
       for (const k of kids) stack.push(k.id);
     }
-    // node sticks out of its ring by half its diagonal
-    const radius = maxExtent + Math.hypot(NODE_W, NODE_H) / 2;
+    // a grove's root is drawn bigger (keystone), so its clearance uses that size
+    const groveCount = countLeaves(rootId);
+    const rootHalfDiag = groveCount > 1 ? Math.hypot(KEYSTONE_W, KEYSTONE_H) / 2 : Math.hypot(NODE_W, NODE_H) / 2;
+    const radius = maxExtent + rootHalfDiag;
     groveRadius.set(rootId, radius);
 
     // find a spot that clears every already-placed grove
@@ -164,7 +171,7 @@ export function layoutGalaxy<T extends { id: string; parent?: string }>(skills: 
         }
       }
       if (ok) {
-        groves.push({ id: rootId, x, y, radius });
+        groves.push({ id: rootId, x, y, radius, count: groveCount });
         placed = true;
       }
     }

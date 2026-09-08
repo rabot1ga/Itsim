@@ -4,7 +4,7 @@ import { haptic } from '../lib/telegram';
 import { xpToNext, canUnlockPerk } from '@itsim/shared';
 import { PixelIcon } from '../components/pixel/PixelIcon';
 import { EmojiToken, SpriteBadge } from '../components/ui';
-import { layoutGalaxy, NODE_H, NODE_W } from './skillTreeLayout';
+import { KEYSTONE_H, KEYSTONE_W, layoutGalaxy, NODE_H, NODE_W } from './skillTreeLayout';
 
 /**
  * Skills — ONE map, Path of Exile style.
@@ -320,6 +320,8 @@ const SkillMap: React.FC<SkillMapProps> = ({
   const map = useMemo(() => layoutGalaxy(skills), [skills]);
   const skillById = useMemo(() => new Map(skills.map((s) => [s.id, s])), [skills]);
   const schools = useMemo(() => [...new Set(skills.map((s) => s.branch))], [skills]);
+  // groves with a real tree get a bigger root anchor on the map
+  const keystoneIds = useMemo(() => new Set(map.roots.filter((r) => r.count > 1).map((r) => r.id)), [map.roots]);
 
   const [mapH, setMapH] = useState(420);
   const [scale, setScale] = useState(0.5);
@@ -477,6 +479,21 @@ const SkillMap: React.FC<SkillMapProps> = ({
     el.scrollTop = clamp(my * scaleRef.current - el.clientHeight / 2, 0, maxT);
   };
 
+  // per-grove tint zones (a whisper of the root school's colour) + big anchors
+  const zones = useMemo(
+    () =>
+      map.roots
+        .map((r) => {
+          const sk = skillById.get(r.id);
+          const col = sk ? SCHOOL_TINT[sk.branch] : undefined;
+          if (!sk || !col) return null;
+          const dim = school ? sk.branch !== school : false;
+          return { key: r.id, x: r.x, y: r.y, radius: r.radius, col, dim };
+        })
+        .filter(Boolean) as { key: string; x: number; y: number; radius: number; col: string; dim: boolean }[],
+    [map.roots, skillById, school]
+  );
+
   // faint dust so the empty space reads as a night map, not a blank sheet
   const stars = useMemo(() => {
     const n = Math.min(240, Math.max(80, Math.round((map.width * map.height) / 22000)));
@@ -583,22 +600,43 @@ const SkillMap: React.FC<SkillMapProps> = ({
               {stars.map((d, i) => (
                 <rect key={i} x={d.x} y={d.y} width={d.r} height={d.r} fill="var(--line-strong)" opacity={d.o} />
               ))}
+
+              {/* grove zones: faint coloured regions + a hairline boundary */}
+              {zones.map((z) => (
+                <g key={z.key} opacity={z.dim ? 0.05 : 1}>
+                  <circle cx={z.x} cy={z.y} r={z.radius} fill={z.col} opacity={0.045} />
+                  <circle cx={z.x} cy={z.y} r={z.radius} fill="none" stroke={z.col} strokeWidth={1} opacity={0.1} />
+                </g>
+              ))}
+
               {map.edges.map((e, i) => {
                 const childSkill = skillById.get(e.childId);
                 const childLvl = childSkill ? skillLevel(childSkill.id) : 0;
                 const isLocked = childSkill ? !unlocked(childSkill) : false;
                 const isDim = childSkill ? dimmed(childSkill.branch) : false;
                 const baseOpacity = childLvl > 0 ? 0.85 : isLocked ? 0.4 : 0.65;
+                const d = `M ${e.sx} ${e.sy} C ${e.c1x} ${e.c1y}, ${e.c2x} ${e.c2y}, ${e.ex} ${e.ey}`;
                 return (
-                  <path
-                    key={i}
-                    d={`M ${e.sx} ${e.sy} C ${e.c1x} ${e.c1y}, ${e.c2x} ${e.c2y}, ${e.ex} ${e.ey}`}
-                    stroke={childLvl > 0 ? 'var(--moss)' : isLocked ? 'var(--line)' : 'var(--line-strong)'}
-                    strokeWidth={2}
-                    fill="none"
-                    strokeDasharray={isLocked ? '4 4' : undefined}
-                    opacity={isDim ? baseOpacity * 0.14 : baseOpacity}
-                  />
+                  <g key={i}>
+                    <path
+                      d={d}
+                      stroke={childLvl > 0 ? 'var(--moss)' : isLocked ? 'var(--line)' : 'var(--line-strong)'}
+                      strokeWidth={2}
+                      fill="none"
+                      strokeDasharray={isLocked ? '4 4' : undefined}
+                      opacity={isDim ? baseOpacity * 0.14 : baseOpacity}
+                    />
+                    {childLvl > 0 && !isDim && (
+                      <path
+                        d={d}
+                        className="map-learned-flow"
+                        stroke="#9ccf97"
+                        strokeWidth={2}
+                        fill="none"
+                        opacity={0.9}
+                      />
+                    )}
+                  </g>
                 );
               })}
             </svg>
@@ -612,14 +650,20 @@ const SkillMap: React.FC<SkillMapProps> = ({
               const xpPercent = Math.min(100, Math.round((xp / Math.max(1, xpToNext(level))) * 100));
               const gate = isUnlocked ? null : firstGate(skill);
               const isDim = dimmed(skill.branch);
+              // roots of real groves are drawn as bigger "keystone" anchors
+              const isKeystone = keystoneIds.has(skill.id);
+              const w = isKeystone ? KEYSTONE_W : NODE_W;
+              const h = isKeystone ? KEYSTONE_H : NODE_H;
 
               const frame = isMain
                 ? 'border-gold-700 bg-gold-900/15'
                 : isLearned
                   ? 'border-moss-700 bg-moss-900/20'
-                  : isUnlocked
-                    ? 'border-ink-600 bg-ink-900'
-                    : 'border-ink-700 bg-ink-900/60';
+                  : isKeystone
+                    ? 'border-ink-500 bg-ink-900'
+                    : isUnlocked
+                      ? 'border-ink-600 bg-ink-900'
+                      : 'border-ink-700 bg-ink-900/60';
 
               return (
                 <button
@@ -637,15 +681,19 @@ const SkillMap: React.FC<SkillMapProps> = ({
                       ? `Основной навык — учёба и работа качают его (ур. ${level})`
                       : !isUnlocked && gate
                         ? `${skill.flavor} Нужно: ${gate.name} ${gate.need}+`
-                        : `Сделать основным: ${skill.name}`
+                        : isKeystone
+                          ? `${skill.name} — корень школы${isLearned ? ` (ур. ${level})` : ''}`
+                          : `Сделать основным: ${skill.name}`
                   }
                   className={`absolute -translate-x-1/2 flex flex-col items-center justify-center border-2 text-center transition-transform active:translate-y-[1px] ${
                     isUnlocked && !isMain ? 'hover:border-ink-400' : ''
                   } ${frame} ${isDim ? 'opacity-[0.15] pointer-events-none' : isUnlocked ? '' : 'opacity-75'}`}
-                  style={{ left: x, top: y, width: NODE_W, height: NODE_H }}
+                  style={{ left: x, top: y, width: w, height: h }}
                 >
                   <span className="relative">
-                    <EmojiToken className="!w-7 !h-7 !text-[14px]">{SKILL_EMOJI[skill.id] ?? '📌'}</EmojiToken>
+                    <EmojiToken className={isKeystone ? '!w-9 !h-9 !text-[18px]' : '!w-7 !h-7 !text-[14px]'}>
+                      {SKILL_EMOJI[skill.id] ?? '📌'}
+                    </EmojiToken>
                     {isMain && (
                       <span className="absolute -top-1 -right-1 bg-ink-900 border border-gold-700 p-[1px]">
                         <PixelIcon name="target" size={8} className="text-gold-300" />
@@ -656,7 +704,9 @@ const SkillMap: React.FC<SkillMapProps> = ({
                   {!small && (
                     <>
                       <span
-                        className={`w-full px-1 mt-1 text-[10px] leading-[1.15] font-semibold truncate ${
+                        className={`w-full px-1 mt-1 leading-[1.15] truncate ${
+                          isKeystone ? 'text-[11px] font-bold tracking-[0.01em]' : 'text-[10px] font-semibold'
+                        } ${
                           isMain
                             ? 'text-gold-200'
                             : isLearned
@@ -832,6 +882,23 @@ const BRANCH_META: Record<string, { name: string; icon: string }> = {
   cybersec: { name: 'Кибербез', icon: '🛡️' },
   gamedev: { name: 'GameDev', icon: '🎮' },
   blockchain: { name: 'Blockchain', icon: '⛓️' },
+};
+
+/**
+ * Grove tints: each school's region gets a whisper of its own colour so the
+ * map reads in zones at a glance. Alphas stay very low — the tint must never
+ * fight the node state frames (moss = learned, gold = main skill).
+ */
+const SCHOOL_TINT: Record<string, string> = {
+  frontend: '#f4d35e', // gold
+  backend: '#a9c6e0', // sky
+  mobile: '#e6b478', // ochre
+  qa: '#d3b48f', // wood
+  devops: '#9ccf97', // moss
+  ai_ml: '#e08b8d', // clay
+  cybersec: '#8bb0d0', // sky deep
+  gamedev: '#c2c9d5', // ink light
+  blockchain: '#eec44a', // gold deep
 };
 
 function describeRequires(requires: Record<string, number>, skills: SkillInfo[]): string {

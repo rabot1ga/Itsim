@@ -715,10 +715,26 @@ select {
   animation: numPop 0.24s steps(4, end);
 }
 
+/* A learned skill path on the map slowly "conducts": dashes crawl outward.
+   Under it the edge stays solid moss, so the state never depends on motion. */
+@keyframes skillFlow {
+  to {
+    stroke-dashoffset: -12;
+  }
+}
+svg path.map-learned-flow {
+  stroke-dasharray: 3 9;
+  animation: skillFlow 0.8s linear infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .gain-float,
-  .num-pop {
+  .num-pop,
+  svg path.map-learned-flow {
     animation: none;
+  }
+  svg path.map-learned-flow {
+    display: none;
   }
 }
 
