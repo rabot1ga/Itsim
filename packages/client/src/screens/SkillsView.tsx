@@ -319,9 +319,16 @@ const SkillMap: React.FC<SkillMapProps> = ({
 
   const [mapH, setMapH] = useState(420);
   const [scale, setScale] = useState(0.5);
+  /** which school the map is filtered to (null = show everything) */
+  const [school, setSchool] = useState<string | null>(null);
+  const [showMini, setShowMini] = useState(false);
   const scaleRef = useRef(0.5);
   const scrollRef = useRef<HTMLDivElement>(null);
   const mapWrapRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const mmWrapRef = useRef<HTMLDivElement>(null);
+  const vpRef = useRef<SVGRectElement>(null);
+  const mmDownRef = useRef(false);
   const fittedRef = useRef(false);
   const anchorRef = useRef<{ cx: number; cy: number; px: number; py: number } | null>(null);
   const dragRef = useRef<{ x: number; y: number; sl: number; st: number; moved: boolean } | null>(null);
@@ -346,27 +353,38 @@ const SkillMap: React.FC<SkillMapProps> = ({
     anchorRef.current = null;
   }, [scale, forest.width, forest.height]);
 
-  // fit the whole tree onto the screen (first open and the ⌂ button)
-  const fit = useCallback(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const s = clamp(
-      Math.min((el.clientWidth - 20) / forest.width, (el.clientHeight - 20) / forest.height),
-      MIN_SCALE,
-      1
-    );
-    applyScale(s, { cx: forest.width / 2, cy: forest.height / 2, px: el.clientWidth / 2, py: el.clientHeight / 2 });
-  }, [forest, applyScale]);
+  // fit the whole tree onto the screen around a map point (px/py = viewport center)
+  const fitTo = useCallback(
+    (cx: number, cy: number) => {
+      const el = scrollRef.current;
+      if (!el) return;
+      const s = clamp(
+        Math.min((el.clientWidth - 20) / forest.width, (el.clientHeight - 20) / forest.height),
+        MIN_SCALE,
+        1
+      );
+      applyScale(s, { cx, cy, px: el.clientWidth / 2, py: el.clientHeight / 2 });
+    },
+    [forest, applyScale]
+  );
+  const fitAll = useCallback(() => fitTo(forest.width / 2, forest.height / 2), [forest, fitTo]);
 
-  // measure the tab viewport: the map claims everything above the fold
+  // where the main skill sits on the map — the first view centers on it
+  const mainPos = useMemo(() => {
+    const cluster = forest.clusters.find((c) => c.skills.some((s) => s.id === mainSkillId));
+    if (!cluster) return null;
+    const node = cluster.layout.nodes.find((n) => n.skill.id === mainSkillId);
+    return node ? { x: cluster.ox + node.x, y: cluster.oy + node.y } : null;
+  }, [forest, mainSkillId]);
+
+  // measure the map stage: it claims everything above the fold of the tab
   useLayoutEffect(() => {
     const measure = () => {
       const sc = document.getElementById('game-scroll');
       if (!sc) return;
-      const wrap = mapWrapRef.current;
-      if (!wrap) return;
-      // height of the map area = what is left of the scroll viewport above it
-      const top = wrap.getBoundingClientRect().top - sc.getBoundingClientRect().top;
+      const stage = stageRef.current;
+      if (!stage) return;
+      const top = stage.getBoundingClientRect().top - sc.getBoundingClientRect().top;
       setMapH(Math.max(280, sc.clientHeight - top - 16));
     };
     measure();
@@ -378,15 +396,36 @@ const SkillMap: React.FC<SkillMapProps> = ({
     };
   }, [forest]);
 
-  // first fit after sizing is stable
+  // first view after sizing is stable: whole tree, centered on the main skill
   useLayoutEffect(() => {
     if (fittedRef.current || !scrollRef.current) return;
     const id = window.setTimeout(() => {
       fittedRef.current = true;
-      fit();
+      if (mainPos) fitTo(mainPos.x, mainPos.y);
+      else fitAll();
     }, 80);
     return () => window.clearTimeout(id);
-  }, [mapH, fit]);
+  }, [mapH, mainPos, fitTo, fitAll]);
+
+  // minimap viewport rectangle follows pan/zoom
+  const syncViewport = useCallback(() => {
+    const el = scrollRef.current;
+    const r = vpRef.current;
+    if (!el || !r) return;
+    const svg = r.ownerSVGElement;
+    if (!svg) return;
+    const kx = svg.clientWidth / forest.width;
+    const ky = svg.clientHeight / forest.height;
+    r.setAttribute('x', String((el.scrollLeft / scaleRef.current) * kx));
+    r.setAttribute('y', String((el.scrollTop / scaleRef.current) * ky));
+    r.setAttribute('width', String((el.clientWidth / scaleRef.current) * kx));
+    r.setAttribute('height', String((el.clientHeight / scaleRef.current) * ky));
+  }, [forest.width, forest.height]);
+
+  // keep the viewport rect fresh after every zoom change and on mini-map open
+  useLayoutEffect(() => {
+    syncViewport();
+  }, [scale, syncViewport, mapH, showMini]);
 
   const zoomBy = (f: number) => {
     const el = scrollRef.current;
@@ -423,197 +462,347 @@ const SkillMap: React.FC<SkillMapProps> = ({
   }, [forest, applyScale]);
 
   const small = scale < 0.62;
+  const dimmed = (branch: string) => (school ? branch !== school : false);
+  const schools = useMemo(() => [...new Set(skills.map((s) => s.branch))], [skills]);
+
+  // tap/drag on the minimap moves the big map to that spot
+  const jumpMini = (e: React.PointerEvent) => {
+    const el = scrollRef.current;
+    const wrap = mmWrapRef.current;
+    if (!el || !wrap) return;
+    const svg = wrap.querySelector('svg');
+    if (!svg) return;
+    const r = svg.getBoundingClientRect();
+    const mx = ((e.clientX - r.left) / r.width) * forest.width;
+    const my = ((e.clientY - r.top) / r.height) * forest.height;
+    const maxL = Math.max(0, forest.width * scaleRef.current - el.clientWidth);
+    const maxT = Math.max(0, forest.height * scaleRef.current - el.clientHeight);
+    el.scrollLeft = clamp(mx * scaleRef.current - el.clientWidth / 2, 0, maxL);
+    el.scrollTop = clamp(my * scaleRef.current - el.clientHeight / 2, 0, maxT);
+  };
+
+  // minimap: the whole forest shrunk into a corner, with a live viewport rect
+  const mmW = 112;
+  const mmH = Math.round(clamp((mmW * forest.height) / Math.max(1, forest.width), 74, 190));
+  const mmKx = mmW / forest.width;
+  const mmKy = mmH / forest.height;
+  const miniDots = forest.clusters.flatMap((c, ci) =>
+    c.layout.nodes.map((n) => {
+      const s = n.skill;
+      const lvl = skillLevel(s.id);
+      const color =
+        mainSkillId === s.id
+          ? 'var(--gold)'
+          : lvl > 0
+            ? 'var(--moss)'
+            : unlocked(s)
+              ? 'var(--text-mute)'
+              : 'var(--line-strong)';
+      return {
+        key: `${ci}-${s.id}`,
+        x: (c.ox + n.x + NODE_W / 2) * mmKx,
+        y: (c.oy + n.y + NODE_H / 2) * mmKy,
+        color,
+        dim: dimmed(s.branch),
+      };
+    })
+  );
 
   return (
-    <div ref={mapWrapRef} className="relative border-2 border-ink-700 bg-ink-900" style={{ height: mapH }}>
-      <div
-        ref={scrollRef}
-        className="absolute inset-0 overflow-auto [scrollbar-width:thin] touch-pan-x touch-pan-y cursor-grab active:cursor-grabbing"
-        onPointerDown={(e) => {
-          if (e.pointerType !== 'mouse') return;
-          const el = scrollRef.current;
-          if (!el) return;
-          dragRef.current = { x: e.clientX, y: e.clientY, sl: el.scrollLeft, st: el.scrollTop, moved: false };
-          el.setPointerCapture(e.pointerId);
-        }}
-        onPointerMove={(e) => {
-          const d = dragRef.current;
-          const el = scrollRef.current;
-          if (!d || !el || e.pointerType !== 'mouse') return;
-          const dx = e.clientX - d.x;
-          const dy = e.clientY - d.y;
-          if (!d.moved && Math.hypot(dx, dy) > 5) d.moved = true;
-          if (d.moved) {
-            el.scrollLeft = d.sl - dx;
-            el.scrollTop = d.st - dy;
-          }
-        }}
-        onPointerUp={() => {
-          const d = dragRef.current;
-          dragRef.current = null;
-          if (d && d.moved) {
-            suppressClickRef.current = true;
-            window.setTimeout(() => (suppressClickRef.current = false), 120);
-          }
-        }}
-      >
-        {/* spacer sized in zoomed pixels so the scrollbars know the map's size */}
-        <div style={{ width: forest.width * scale, height: forest.height * scale }} />
-        {/* the map itself at natural size, scaled as one picture */}
+    <div ref={mapWrapRef} className="relative border-2 border-ink-700 bg-ink-900">
+      {/* school filter — a lens over the one tree, not a subsection */}
+      <div className="flex items-center gap-1 px-1.5 pt-1.5 pb-1 overflow-x-auto [scrollbar-width:none]">
+        <ToolbarChip active={!school} onClick={() => setSchool(null)} label="Все школы" />
+        {schools.map((branch) => {
+          const meta = BRANCH_META[branch] ?? { name: branch, icon: '📌' };
+          return (
+            <ToolbarChip
+              key={branch}
+              active={school === branch}
+              onClick={() => setSchool(school === branch ? null : branch)}
+              label={`${meta.icon} ${meta.name}`}
+            />
+          );
+        })}
+      </div>
+
+      <div ref={stageRef} className="relative" style={{ height: mapH }}>
         <div
-          className="absolute top-0 left-0 origin-top-left"
-          style={{
-            width: forest.width,
-            height: forest.height,
-            transform: `scale(${scale})`,
+          ref={scrollRef}
+          onScroll={syncViewport}
+          className="absolute inset-0 overflow-auto [scrollbar-width:thin] touch-pan-x touch-pan-y cursor-grab active:cursor-grabbing"
+          onPointerDown={(e) => {
+            if (e.pointerType !== 'mouse') return;
+            const el = scrollRef.current;
+            if (!el) return;
+            dragRef.current = { x: e.clientX, y: e.clientY, sl: el.scrollLeft, st: el.scrollTop, moved: false };
+            el.setPointerCapture(e.pointerId);
+          }}
+          onPointerMove={(e) => {
+            const d = dragRef.current;
+            const el = scrollRef.current;
+            if (!d || !el || e.pointerType !== 'mouse') return;
+            const dx = e.clientX - d.x;
+            const dy = e.clientY - d.y;
+            if (!d.moved && Math.hypot(dx, dy) > 5) d.moved = true;
+            if (d.moved) {
+              el.scrollLeft = d.sl - dx;
+              el.scrollTop = d.st - dy;
+            }
+          }}
+          onPointerUp={() => {
+            const d = dragRef.current;
+            dragRef.current = null;
+            if (d && d.moved) {
+              suppressClickRef.current = true;
+              window.setTimeout(() => (suppressClickRef.current = false), 120);
+            }
           }}
         >
-          <svg width={forest.width} height={forest.height} className="absolute inset-0" aria-hidden="true">
+          {/* spacer sized in zoomed pixels so the scrollbars know the map's size */}
+          <div style={{ width: forest.width * scale, height: forest.height * scale }} />
+          {/* the map itself at natural size, scaled as one picture */}
+          <div
+            className="absolute top-0 left-0 origin-top-left"
+            style={{
+              width: forest.width,
+              height: forest.height,
+              transform: `scale(${scale})`,
+            }}
+          >
+            <svg width={forest.width} height={forest.height} className="absolute inset-0" aria-hidden="true">
+              {forest.clusters.map((c, ci) =>
+                c.layout.edges.map((e, i) => {
+                  const childSkill = c.skills.find((s) => s.id === e.childId);
+                  const childLvl = childSkill ? skillLevel(childSkill.id) : 0;
+                  const isLocked = childSkill ? !unlocked(childSkill) : false;
+                  const isDim = childSkill ? dimmed(childSkill.branch) : false;
+                  const baseOpacity = childLvl > 0 ? 0.9 : isLocked ? 0.5 : 0.7;
+                  const midY = e.y1 + (e.y2 - e.y1) / 2;
+                  return (
+                    <path
+                      key={`${ci}-${i}`}
+                      d={`M ${e.x1 + c.ox} ${e.y1 + c.oy} L ${e.x1 + c.ox} ${midY + c.oy} L ${e.x2 + c.ox} ${midY + c.oy} L ${e.x2 + c.ox} ${e.y2 + c.oy}`}
+                      stroke={childLvl > 0 ? 'var(--moss)' : isLocked ? 'var(--line)' : 'var(--line-strong)'}
+                      strokeWidth={2}
+                      fill="none"
+                      strokeDasharray={isLocked ? '4 4' : undefined}
+                      opacity={isDim ? baseOpacity * 0.14 : baseOpacity}
+                    />
+                  );
+                })
+              )}
+            </svg>
+
             {forest.clusters.map((c, ci) =>
-              c.layout.edges.map((e, i) => {
-                const childSkill = c.skills.find((s) => s.id === e.childId);
-                const childLvl = childSkill ? skillLevel(childSkill.id) : 0;
-                const isLocked = childSkill ? !unlocked(childSkill) : false;
-                const midY = e.y1 + (e.y2 - e.y1) / 2;
+              c.layout.nodes.map(({ skill, x, y }) => {
+                const level = skillLevel(skill.id);
+                const isMain = mainSkillId === skill.id;
+                const isUnlocked = unlocked(skill);
+                const isLearned = level > 0;
+                const xp = skillXp(skill.id);
+                const xpPercent = Math.min(100, Math.round((xp / Math.max(1, xpToNext(level))) * 100));
+                const gate = isUnlocked ? null : firstGate(skill);
+                const nx = x + c.ox;
+                const ny = y + c.oy;
+                const isDim = dimmed(skill.branch);
+
+                const frame = isMain
+                  ? 'border-gold-700 bg-gold-900/15'
+                  : isLearned
+                    ? 'border-moss-700 bg-moss-900/20'
+                    : isUnlocked
+                      ? 'border-ink-600 bg-ink-900'
+                      : 'border-ink-700 bg-ink-900/60';
+
                 return (
-                  <path
-                    key={`${ci}-${i}`}
-                    d={`M ${e.x1 + c.ox} ${e.y1 + c.oy} L ${e.x1 + c.ox} ${midY + c.oy} L ${e.x2 + c.ox} ${midY + c.oy} L ${e.x2 + c.ox} ${e.y2 + c.oy}`}
-                    stroke={childLvl > 0 ? 'var(--moss)' : isLocked ? 'var(--line)' : 'var(--line-strong)'}
-                    strokeWidth={2}
-                    fill="none"
-                    strokeDasharray={isLocked ? '4 4' : undefined}
-                    opacity={childLvl > 0 ? 0.9 : isLocked ? 0.5 : 0.7}
-                  />
+                  <button
+                    key={`${ci}-${skill.id}`}
+                    onClick={() => {
+                      if (suppressClickRef.current) {
+                        suppressClickRef.current = false;
+                        return;
+                      }
+                      if (isUnlocked) onPick(skill.id);
+                    }}
+                    disabled={!isUnlocked}
+                    title={
+                      isMain
+                        ? `Основной навык — учёба и работа качают его (ур. ${level})`
+                        : !isUnlocked && gate
+                          ? `${skill.flavor} Нужно: ${gate.name} ${gate.need}+`
+                          : `Сделать основным: ${skill.name}`
+                    }
+                    className={`absolute -translate-x-1/2 flex flex-col items-center justify-center border-2 text-center transition-transform active:translate-y-[1px] ${
+                      isUnlocked && !isMain ? 'hover:border-ink-400' : ''
+                    } ${frame} ${isDim ? 'opacity-[0.15] pointer-events-none' : isUnlocked ? '' : 'opacity-75'}`}
+                    style={{ left: nx, top: ny, width: NODE_W, height: NODE_H }}
+                  >
+                    <span className="relative">
+                      <EmojiToken className="!w-7 !h-7 !text-[14px]">{SKILL_EMOJI[skill.id] ?? '📌'}</EmojiToken>
+                      {isMain && (
+                        <span className="absolute -top-1 -right-1 bg-ink-900 border border-gold-700 p-[1px]">
+                          <PixelIcon name="target" size={8} className="text-gold-300" />
+                        </span>
+                      )}
+                    </span>
+
+                    {!small && (
+                      <>
+                        <span
+                          className={`w-full px-1 mt-1 text-[10px] leading-[1.15] font-semibold truncate ${
+                            isMain
+                              ? 'text-gold-200'
+                              : isLearned
+                                ? 'text-ink-100'
+                                : isUnlocked
+                                  ? 'text-ink-300'
+                                  : 'text-ink-500'
+                          }`}
+                          title={skill.name}
+                        >
+                          {skill.name}
+                        </span>
+                        <span className="w-full h-[16px] px-1.5 mt-0.5 flex items-center gap-1">
+                          {isLearned ? (
+                            <>
+                              <span className="meter flex-1 !h-[3px]">
+                                <span style={{ width: `${xpPercent}%`, background: 'var(--sky)' }} />
+                              </span>
+                              <span
+                                className={`num text-[10px] font-bold leading-none ${
+                                  isMain ? 'text-gold-200' : 'text-moss-300'
+                                }`}
+                              >
+                                {level}
+                              </span>
+                            </>
+                          ) : !isUnlocked && gate ? (
+                            <span
+                              className="flex items-center gap-1 min-w-0 w-full justify-center text-[9px] text-ink-400"
+                              title={`Нужно: ${gate.name} ${gate.need}+`}
+                            >
+                              <PixelIcon name="lock" size={7} className="shrink-0 text-ink-500" />
+                              <span className="truncate">
+                                {gate.name} {gate.need}
+                              </span>
+                            </span>
+                          ) : null}
+                        </span>
+                      </>
+                    )}
+                  </button>
                 );
               })
             )}
-          </svg>
+          </div>
+        </div>
 
-          {forest.clusters.map((c, ci) =>
-            c.layout.nodes.map(({ skill, x, y }) => {
-              const level = skillLevel(skill.id);
-              const isMain = mainSkillId === skill.id;
-              const isUnlocked = unlocked(skill);
-              const isLearned = level > 0;
-              const xp = skillXp(skill.id);
-              const xpPercent = Math.min(100, Math.round((xp / Math.max(1, xpToNext(level))) * 100));
-              const gate = isUnlocked ? null : firstGate(skill);
-              const nx = x + c.ox;
-              const ny = y + c.oy;
+        {/* zoom controls + minimap toggle */}
+        <div className="absolute top-2 right-2 z-10 flex flex-col items-end gap-1.5">
+          <div className="flex gap-1">
+            <MapBtn title="Отдалить" onClick={() => zoomBy(1 / 1.4)} label="−" />
+            <MapBtn title="Приблизить" onClick={() => zoomBy(1.4)} label="+" />
+            <MapBtn title="Показать всё дерево" onClick={fitAll} label="⌂" />
+            <MapBtn
+              title={showMini ? 'Спрятать мини-карту' : 'Мини-карта'}
+              active={showMini}
+              onClick={() => setShowMini((v) => !v)}
+              label="▦"
+            />
+          </div>
 
-              const frame = isMain
-                ? 'border-gold-700 bg-gold-900/15'
-                : isLearned
-                  ? 'border-moss-700 bg-moss-900/20'
-                  : isUnlocked
-                    ? 'border-ink-600 bg-ink-900'
-                    : 'border-ink-700 bg-ink-900/60';
-
-              return (
-                <button
-                  key={`${ci}-${skill.id}`}
-                  onClick={() => {
-                    if (suppressClickRef.current) {
-                      suppressClickRef.current = false;
-                      return;
-                    }
-                    if (isUnlocked) onPick(skill.id);
-                  }}
-                  disabled={!isUnlocked}
-                  title={
-                    isMain
-                      ? `Основной навык — учёба и работа качают его (ур. ${level})`
-                      : !isUnlocked && gate
-                        ? `${skill.flavor} Нужно: ${gate.name} ${gate.need}+`
-                        : `Сделать основным: ${skill.name}`
-                  }
-                  className={`absolute -translate-x-1/2 flex flex-col items-center justify-center border-2 text-center transition-transform active:translate-y-[1px] ${
-                    isUnlocked && !isMain ? 'hover:border-ink-400' : ''
-                  } ${isUnlocked ? '' : 'opacity-75'} ${frame}`}
-                  style={{ left: nx, top: ny, width: NODE_W, height: NODE_H }}
-                >
-                  <span className="relative">
-                    <EmojiToken className="!w-7 !h-7 !text-[14px]">{SKILL_EMOJI[skill.id] ?? '📌'}</EmojiToken>
-                    {isMain && (
-                      <span className="absolute -top-1 -right-1 bg-ink-900 border border-gold-700 p-[1px]">
-                        <PixelIcon name="target" size={8} className="text-gold-300" />
-                      </span>
-                    )}
-                  </span>
-
-                  {!small && (
-                    <>
-                      <span
-                        className={`w-full px-1 mt-1 text-[10px] leading-[1.15] font-semibold truncate ${
-                          isMain
-                            ? 'text-gold-200'
-                            : isLearned
-                              ? 'text-ink-100'
-                              : isUnlocked
-                                ? 'text-ink-300'
-                                : 'text-ink-500'
-                        }`}
-                        title={skill.name}
-                      >
-                        {skill.name}
-                      </span>
-                      <span className="w-full h-[16px] px-1.5 mt-0.5 flex items-center gap-1">
-                        {isLearned ? (
-                          <>
-                            <span className="meter flex-1 !h-[3px]">
-                              <span style={{ width: `${xpPercent}%`, background: 'var(--sky)' }} />
-                            </span>
-                            <span
-                              className={`num text-[10px] font-bold leading-none ${
-                                isMain ? 'text-gold-200' : 'text-moss-300'
-                              }`}
-                            >
-                              {level}
-                            </span>
-                          </>
-                        ) : !isUnlocked && gate ? (
-                          <span
-                            className="flex items-center gap-1 min-w-0 w-full justify-center text-[9px] text-ink-400"
-                            title={`Нужно: ${gate.name} ${gate.need}+`}
-                          >
-                            <PixelIcon name="lock" size={7} className="shrink-0 text-ink-500" />
-                            <span className="truncate">
-                              {gate.name} {gate.need}
-                            </span>
-                          </span>
-                        ) : null}
-                      </span>
-                    </>
-                  )}
-                </button>
-              );
-            })
+          {/* minimap — the whole tree at a glance; tap/drag to jump */}
+          {showMini && (
+            <div
+              ref={mmWrapRef}
+              className="border-2 border-ink-600 bg-ink-900/95 p-1 touch-none cursor-crosshair select-none"
+              onPointerDown={(e) => {
+                mmDownRef.current = true;
+                e.currentTarget.setPointerCapture(e.pointerId);
+                jumpMini(e);
+              }}
+              onPointerMove={(e) => {
+                if (mmDownRef.current) jumpMini(e);
+              }}
+              onPointerUp={() => {
+                mmDownRef.current = false;
+              }}
+            >
+              <svg width={mmW} height={mmH} className="block">
+                <rect width={mmW} height={mmH} fill="var(--well)" />
+                {miniDots.map((d) => (
+                  <rect
+                    key={d.key}
+                    x={Math.round((d.x - 1) * 10) / 10}
+                    y={Math.round((d.y - 1) * 10) / 10}
+                    width={2}
+                    height={2}
+                    fill={d.color}
+                    opacity={d.dim ? 0.12 : 1}
+                  />
+                ))}
+                <rect
+                  ref={vpRef}
+                  x={0}
+                  y={0}
+                  width={10}
+                  height={10}
+                  fill="rgba(233,237,244,0.08)"
+                  stroke="var(--sky)"
+                  strokeWidth={1}
+                />
+              </svg>
+            </div>
           )}
         </div>
-      </div>
 
-      {/* zoom controls */}
-      <div className="absolute top-2 right-2 z-10 flex gap-1">
-        <MapBtn title="Отдалить" onClick={() => zoomBy(1 / 1.4)} label="−" />
-        <MapBtn title="Приблизить" onClick={() => zoomBy(1.4)} label="+" />
-        <MapBtn title="Показать всё дерево" onClick={fit} label="⌂" />
-      </div>
-
-      <div className="absolute bottom-1.5 left-2 right-2 z-10 flex items-end justify-between gap-2 pointer-events-none">
-        <p className="text-2xs text-ink-600 leading-tight">одно дерево всех школ · тяни, чтобы смотреть</p>
-        <span className="num text-2xs text-ink-600 shrink-0">{Math.round(scale * 100)}%</span>
+        <div className="absolute bottom-1.5 left-2 right-2 z-10 flex items-end justify-between gap-2 pointer-events-none">
+          <p className="text-2xs text-ink-600 leading-tight">
+            {school ? (
+              <>
+                показана школа <span className="text-ink-400 font-semibold">{BRANCH_META[school]?.name ?? school}</span>{' '}
+                · тап по «Все школы» — вернуть
+              </>
+            ) : (
+              <>одно дерево всех школ · тяни, чтобы смотреть</>
+            )}
+          </p>
+          <span className="num text-2xs text-ink-600 shrink-0">{Math.round(scale * 100)}%</span>
+        </div>
       </div>
     </div>
   );
 };
 
-const MapBtn: React.FC<{ title: string; onClick: () => void; label: string }> = ({ title, onClick, label }) => (
+const MapBtn: React.FC<{ title: string; onClick: () => void; label: string; active?: boolean }> = ({
+  title,
+  onClick,
+  label,
+  active,
+}) => (
   <button
     title={title}
     aria-label={title}
+    aria-pressed={active}
     onClick={onClick}
-    className="btn btn-secondary !min-h-[30px] !min-w-[30px] !px-0 !py-0 text-sm leading-none flex items-center justify-center select-none"
+    className={`!min-h-[30px] !min-w-[30px] !px-0 !py-0 text-sm leading-none flex items-center justify-center select-none ${
+      active ? 'btn btn-primary' : 'btn btn-secondary'
+    }`}
+  >
+    {label}
+  </button>
+);
+
+const ToolbarChip: React.FC<{ label: string; active: boolean; onClick: () => void }> = ({ label, active, onClick }) => (
+  <button
+    onClick={onClick}
+    aria-pressed={active}
+    className={`shrink-0 px-2 py-1 text-2xs font-semibold border-2 whitespace-nowrap transition-colors touch-target !min-h-[28px] ${
+      active
+        ? 'border-gold-700 bg-gold-900/20 text-gold-200'
+        : 'border-ink-700 bg-ink-900 text-ink-400 hover:border-ink-500 hover:text-ink-200'
+    }`}
   >
     {label}
   </button>
