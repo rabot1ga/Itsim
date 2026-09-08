@@ -60,16 +60,18 @@
 
 ---
 
-## 4. Каркас: топбар, деньги, HUD, таббар
+## 4. Каркас: топбар, HUD, таббар
 
 `components/ResourceBar.tsx`:
 
-1. **Топбар** — «День N», справа кнопка «⋮» (шторка «Ещё»).
-2. **Полоска денег** — крупные `1 250 ₽` табличными цифрами, рядом — монеты
-   мета-валюты, если есть.
-3. **HUD** — портрет + уровень и XP-бар, затем три `stat-bar`: ⚡ Энергия
-   (синяя, `значение/max`), 😊 Настроение (оранжевое), ❤️ Здоровье (красное).
-   Ниже 25% полоса краснеет — проблему видно, не читая цифр.
+1. **Топбар** — одна полоса 46px: деньги `1 250 ₽` табличными цифрами (и монеты
+   мета-валюты, если есть), справа «День N» и кнопка «⋮». На под-экранах слева
+   добавляется «‹», а перед днём — компактная ⚡. Заголовка приложения нет.
+2. **HUD** (только на Главной) — одна карточка: портрет 60px, справа уровень
+   основного навыка + грейд, XP-бар и три компактных метра в строку: ⚡ Энергия
+   (синяя), 😊 Настроение (оранжевое), ❤️ Здоровье (красное). Ниже 25% число
+   краснеет — проблему видно, не читая цифр; точное «значение / max» — в
+   тултипе.
 
 `components/GameScreen.tsx` — контент + таббар 56px (5 вкладок) + шторка «Ещё»
 на 10 строк (`.menu-row`: эмодзи → название → подсказка → шеврон).
@@ -409,38 +411,38 @@
 
 ## Приложение А. Какой файл за что отвечает (клиент)
 
-| Файл                                                | Что рисует                                                  |
-| --------------------------------------------------- | ----------------------------------------------------------- |
-| `App.tsx`                                           | сплэш → онбординг → игра                                    |
-| `components/ResourceBar.tsx`                        | топбар, деньги, HUD (3 ресурса + XP)                        |
-| `components/GameScreen.tsx`                         | контент, таббар (5 вкладок), шторка «Ещё» (10 строк)        |
-| `components/ui.tsx`                                 | примитивы дизайн-системы (заголовки, метры, чипы, пустышки) |
-| `components/EventCard.tsx`                          | карточка события и карточка результата                      |
-| `components/HomeRoomCard.tsx`                       | карточка комнаты на «Главной»                               |
-| `components/CareerPressureCard.tsx`                 | стоимость дня + требования грейда                           |
-| `components/InterviewPanel.tsx`                     | квиз-собеседование                                          |
-| `components/ProjectBoard.tsx`                       | проекты с дедлайном и чек-листом                            |
-| `components/SprintCard.tsx`                         | недельный спринт                                            |
-| `components/StarsShop.tsx`                          | покупки за Telegram Stars                                   |
-| `components/GainStream.tsx`                         | плавающие «+N» после действий                               |
-| `screens/DayView.tsx`                               | Главная (§5)                                                |
-| `screens/CareerView.tsx`                            | Работа (§6)                                                 |
-| `screens/SkillsView.tsx` + `screens/SkillList.tsx`  | Обучение (§7)                                               |
-| `screens/ShopView.tsx` + `screens/shopCatalogue.ts` | Магазин (§8)                                                |
-| `screens/FriendsView.tsx`                           | Друзья (§9)                                                 |
-| `screens/ProfileView.tsx`                           | Профиль (§10)                                               |
-| `screens/AchievementsView.tsx`                      | Цели и ачивки (§10)                                         |
-| `screens/LeaderboardView.tsx`                       | Топ игроков (§10)                                           |
-| `screens/SettingsView.tsx`                          | Настройки (§10)                                             |
-| `screens/OnboardingView.tsx`                        | Онбординг (§3)                                              |
-| `screens/RoomView.tsx`                              | Дом: комната, редактор, гардероб, NFT, шар-карточка         |
-| `screens/OfficeView.tsx`                            | Офис (§11)                                                  |
-| `screens/MiningView.tsx`                            | Майнинг: доход, прогноз 7 дней, оборудование                |
-| `screens/WalletView.tsx`                            | Кошелёк: Solana, кросс-коллекции, NFT                       |
-| `screens/PetView.tsx`                               | Питомец: кормление, аксессуары                              |
-| `screens/EndingView.tsx`                            | Финалы карьеры                                              |
-| `components/room/RoomRenderer.tsx`                  | слоистый рендер комнаты + персонаж                          |
-| `components/room/OfficeRenderer.tsx`                | слоистый рендер офиса                                       |
-| `components/room/RoomEditor.tsx` / `Wardrobe.tsx`   | редактор комнаты и гардероб (§12)                           |
-| `components/room/ShareCard.tsx`                     | шар-карточка (Canvas → PNG)                                 |
-| `components/pixel/PixelIcon.tsx`                    | пиксельные иконки таббара                                   |
+| Файл                                                | Что рисует                                                          |
+| --------------------------------------------------- | ------------------------------------------------------------------- |
+| `App.tsx`                                           | сплэш → онбординг → игра                                            |
+| `components/ResourceBar.tsx`                        | топбар (деньги, день, «⋮») и HUD Главной (портрет + XP + 3 ресурса) |
+| `components/GameScreen.tsx`                         | контент, таббар (5 вкладок), шторка «Ещё» (10 строк)                |
+| `components/ui.tsx`                                 | примитивы дизайн-системы (заголовки, метры, чипы, пустышки)         |
+| `components/EventCard.tsx`                          | карточка события и карточка результата                              |
+| `components/HomeRoomCard.tsx`                       | карточка комнаты на «Главной»                                       |
+| `components/CareerPressureCard.tsx`                 | стоимость дня + требования грейда                                   |
+| `components/InterviewPanel.tsx`                     | квиз-собеседование                                                  |
+| `components/ProjectBoard.tsx`                       | проекты с дедлайном и чек-листом                                    |
+| `components/SprintCard.tsx`                         | недельный спринт                                                    |
+| `components/StarsShop.tsx`                          | покупки за Telegram Stars                                           |
+| `components/GainStream.tsx`                         | плавающие «+N» после действий                                       |
+| `screens/DayView.tsx`                               | Главная (§5)                                                        |
+| `screens/CareerView.tsx`                            | Работа (§6)                                                         |
+| `screens/SkillsView.tsx` + `screens/SkillList.tsx`  | Обучение (§7)                                                       |
+| `screens/ShopView.tsx` + `screens/shopCatalogue.ts` | Магазин (§8)                                                        |
+| `screens/FriendsView.tsx`                           | Друзья (§9)                                                         |
+| `screens/ProfileView.tsx`                           | Профиль (§10)                                                       |
+| `screens/AchievementsView.tsx`                      | Цели и ачивки (§10)                                                 |
+| `screens/LeaderboardView.tsx`                       | Топ игроков (§10)                                                   |
+| `screens/SettingsView.tsx`                          | Настройки (§10)                                                     |
+| `screens/OnboardingView.tsx`                        | Онбординг (§3)                                                      |
+| `screens/RoomView.tsx`                              | Дом: комната, редактор, гардероб, NFT, шар-карточка                 |
+| `screens/OfficeView.tsx`                            | Офис (§11)                                                          |
+| `screens/MiningView.tsx`                            | Майнинг: доход, прогноз 7 дней, оборудование                        |
+| `screens/WalletView.tsx`                            | Кошелёк: Solana, кросс-коллекции, NFT                               |
+| `screens/PetView.tsx`                               | Питомец: кормление, аксессуары                                      |
+| `screens/EndingView.tsx`                            | Финалы карьеры                                                      |
+| `components/room/RoomRenderer.tsx`                  | слоистый рендер комнаты + персонаж                                  |
+| `components/room/OfficeRenderer.tsx`                | слоистый рендер офиса                                               |
+| `components/room/RoomEditor.tsx` / `Wardrobe.tsx`   | редактор комнаты и гардероб (§12)                                   |
+| `components/room/ShareCard.tsx`                     | шар-карточка (Canvas → PNG)                                         |
+| `components/pixel/PixelIcon.tsx`                    | пиксельные иконки таббара                                           |

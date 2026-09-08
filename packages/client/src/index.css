@@ -193,34 +193,15 @@ select {
   border-bottom: 1px solid var(--line);
 }
 .topbar-row {
-  height: 52px;
+  min-height: 46px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 0 6px;
-}
-.topbar-title {
-  flex: 1;
-  min-width: 0;
-  text-align: center;
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text);
-  letter-spacing: 0.01em;
-}
-.topbar-title span {
-  display: block;
-  font-size: 10px;
-  font-weight: 500;
-  color: var(--text-mute);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  line-height: 1.3;
+  gap: 6px;
+  padding: 7px 8px;
 }
 .topbar-btn {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -245,24 +226,19 @@ select {
   background: rgba(var(--rgb-green) / 0.12);
 }
 
-/* Currency strip — money on the left, meta-coins on the right. */
-.wallet-strip {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 10px 8px;
-}
+/* Currency pills — money on the left, day and menu on the right. */
 .wallet-pill {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  height: 30px;
-  padding: 0 10px;
+  height: 28px;
+  padding: 0 9px;
   border-radius: var(--radius-chip);
   background: var(--surface);
   border: 1px solid var(--line);
   font-size: 13px;
   font-weight: 700;
+  white-space: nowrap;
   color: var(--green);
 }
 .wallet-pill.is-gold {
@@ -272,25 +248,36 @@ select {
   color: var(--text-dim);
   font-weight: 600;
 }
-.wallet-strip .wallet-spacer {
+.wallet-spacer {
   flex: 1;
+  min-width: 0;
+}
+@media (max-width: 380px) {
+  .topbar-row {
+    gap: 4px;
+  }
+  .wallet-pill {
+    padding: 0 7px;
+    font-size: 12px;
+  }
 }
 
 /* ── HUD (home) ──────────────────────────────────────────────────────────── */
 
 .hud {
-  display: grid;
-  gap: 10px;
-  padding: 0 10px 10px;
-}
-.hud-identity {
   display: flex;
   align-items: center;
   gap: 12px;
+  margin: 0 10px 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-card);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-card);
 }
 .hud-portrait {
-  width: 56px;
-  height: 56px;
+  width: 60px;
+  height: 60px;
   flex-shrink: 0;
   border-radius: var(--radius-tile);
   overflow: hidden;
@@ -300,13 +287,14 @@ select {
 .hud-identity-copy {
   flex: 1;
   min-width: 0;
+  display: grid;
+  gap: 6px;
 }
 .hud-level-row {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 8px;
-  margin-bottom: 5px;
 }
 .hud-level {
   font-size: 14px;
@@ -327,7 +315,7 @@ select {
 }
 .hud-xp {
   position: relative;
-  height: 16px;
+  height: 14px;
   border-radius: var(--radius-chip);
   background: var(--surface-alt);
   overflow: hidden;
@@ -350,14 +338,15 @@ select {
   color: #eaf6ee;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.55);
 }
+/* Vitals live next to the portrait: emoji · thin track · number. */
 .hud-vitals {
-  display: grid;
-  gap: 8px;
-  padding: 12px;
-  border-radius: var(--radius-card);
-  background: var(--surface);
-  border: 1px solid var(--line);
-  box-shadow: var(--shadow-card);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.hud-vitals .stat-bar {
+  flex: 1;
+  min-width: 0;
 }
 
 /* ── Stat bar ────────────────────────────────────────────────────────────── */
@@ -410,6 +399,26 @@ select {
 }
 .stat-bar.is-low .stat-bar-value {
   color: var(--red);
+}
+
+/* Single-line variant for the HUD and other tight rows. */
+.stat-bar.is-compact {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.stat-bar.is-compact .emoji {
+  font-size: 12px;
+  line-height: 1;
+}
+.stat-bar.is-compact .stat-bar-track {
+  flex: 1;
+  min-width: 18px;
+  height: 6px;
+}
+.stat-bar.is-compact .stat-bar-value {
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ── Surfaces ────────────────────────────────────────────────────────────── */

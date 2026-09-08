@@ -111,6 +111,10 @@ export const RESOURCE: Record<string, { emoji: string; color: string; label: str
 /**
  * Resource meter — label + emoji on the left, `value / max` on the right,
  * a pill track underneath filled in the resource's own colour.
+ *
+ * `compact` collapses it to a single line (emoji · track · number) for tight
+ * places such as the home HUD next to the portrait; the label survives as the
+ * accessible name and the tooltip.
  */
 export const StatBar: React.FC<{
   resource?: keyof typeof RESOURCE | string;
@@ -119,13 +123,42 @@ export const StatBar: React.FC<{
   color?: string;
   value: number;
   max: number;
+  compact?: boolean;
   className?: string;
-}> = ({ resource, emoji, label, color, value, max, className = '' }) => {
+}> = ({ resource, emoji, label, color, value, max, compact = false, className = '' }) => {
   const token = resource ? RESOURCE[resource] : undefined;
   const safeMax = Number.isFinite(max) && max > 0 ? max : 1;
   const safeValue = Number.isFinite(value) ? Math.max(0, Math.min(safeMax, value)) : 0;
   const pct = (safeValue / safeMax) * 100;
   const name = label ?? token?.label ?? '';
+  const track = (
+    <span
+      className="stat-bar-track"
+      role="progressbar"
+      aria-label={name}
+      aria-valuemin={0}
+      aria-valuemax={safeMax}
+      aria-valuenow={Math.round(safeValue)}
+    >
+      <span className="stat-bar-fill" style={{ width: `${pct}%`, background: color ?? token?.color }} />
+    </span>
+  );
+
+  if (compact) {
+    return (
+      <div
+        className={`stat-bar is-compact ${pct < 25 ? 'is-low' : ''} ${className}`}
+        title={`${name}: ${Math.round(safeValue)}/${safeMax}`}
+      >
+        <span className="emoji" aria-hidden="true">
+          {emoji ?? token?.emoji ?? '•'}
+        </span>
+        {track}
+        <span className="stat-bar-value num">{Math.round(safeValue)}</span>
+      </div>
+    );
+  }
+
   return (
     <div
       className={`stat-bar ${pct < 25 ? 'is-low' : ''} ${className}`}
@@ -141,16 +174,7 @@ export const StatBar: React.FC<{
         {Math.round(safeValue)}
         <small> / {safeMax}</small>
       </span>
-      <span
-        className="stat-bar-track"
-        role="progressbar"
-        aria-label={name}
-        aria-valuemin={0}
-        aria-valuemax={safeMax}
-        aria-valuenow={Math.round(safeValue)}
-      >
-        <span className="stat-bar-fill" style={{ width: `${pct}%`, background: color ?? token?.color }} />
-      </span>
+      {track}
     </div>
   );
 };

@@ -5,9 +5,10 @@ import { PlayerPortrait } from './PlayerPortrait';
 import { StatBar } from './ui';
 
 /**
- * Top chrome: title bar with the «⋮» menu, a currency strip, and — on the home
- * screen — the HUD from the reference: portrait + level + XP, then the three
- * vitals (energy / mood / health), each in its own fixed colour.
+ * Top chrome — deliberately shallow so the screen below gets the pixels:
+ * one strip with money, day, the «⋮» menu (plus a back arrow away from home),
+ * and — on the home screen — a single HUD card where the vitals sit next to
+ * the portrait as compact meters instead of three full-width bars.
  */
 
 const GRADE_LABEL: Record<string, string> = {
@@ -70,23 +71,11 @@ export const ResourceBar: React.FC = () => {
   return (
     <header className="topbar">
       <div className="topbar-row">
-        <button className="topbar-btn" aria-label="На главную" onClick={() => setView('main')}>
-          ‹
-        </button>
-        <div className="topbar-title">
-          IT Life<span>mini app</span>
-        </div>
-        <button
-          className="topbar-btn"
-          aria-label="Меню"
-          aria-expanded={Boolean(moreOpen)}
-          onClick={() => setMoreOpen(!moreOpen)}
-        >
-          ⋮
-        </button>
-      </div>
-
-      <div className="wallet-strip">
+        {!home && (
+          <button className="topbar-btn" aria-label="На главную" onClick={() => setView('main')}>
+            ‹
+          </button>
+        )}
         <span className={`wallet-pill num ${moneyPop ? 'num-pop' : ''}`} aria-label="Деньги">
           <span aria-hidden="true">💰</span>
           {Math.round(player.money ?? 0).toLocaleString('ru-RU')} ₽
@@ -105,42 +94,47 @@ export const ResourceBar: React.FC = () => {
           </span>
         )}
         <span className="wallet-pill is-dim num">День {player.currentDay ?? 1}</span>
+        <button
+          className="topbar-btn"
+          aria-label="Меню"
+          aria-expanded={Boolean(moreOpen)}
+          onClick={() => setMoreOpen(!moreOpen)}
+        >
+          ⋮
+        </button>
       </div>
 
       {home && (
-        <div className="hud">
-          <section className="hud-identity" aria-label="Персонаж и основной навык">
-            <button className="hud-portrait" aria-label="Открыть профиль" onClick={() => setView('profile')}>
-              <PlayerPortrait player={player} size={56} />
-            </button>
-            <div className="hud-identity-copy">
-              <div className="hud-level-row">
-                <span className="hud-level">
-                  lvl {skill.level}
-                  <small>{SKILL_NAMES[id] ?? id}</small>
-                </span>
-                <span className="hud-day">{GRADE_LABEL[player.grade] ?? player.grade}</span>
-              </div>
-              <div
-                className="hud-xp"
-                role="progressbar"
-                aria-label="Опыт основного навыка"
-                aria-valuemin={0}
-                aria-valuemax={maxed ? 100 : need}
-                aria-valuenow={maxed ? 100 : Math.min(need, skill.xp)}
-              >
-                <i style={{ width: `${pct}%` }} />
-                <b className="num">{maxed ? 'Максимум' : `${skill.xp} / ${need} XP`}</b>
-              </div>
+        <section className="hud" aria-label="Персонаж и состояние">
+          <button className="hud-portrait" aria-label="Открыть профиль" onClick={() => setView('profile')}>
+            <PlayerPortrait player={player} size={60} />
+          </button>
+          <div className="hud-identity-copy">
+            <div className="hud-level-row">
+              <span className="hud-level">
+                lvl {skill.level}
+                <small>{SKILL_NAMES[id] ?? id}</small>
+              </span>
+              <span className="hud-day">{GRADE_LABEL[player.grade] ?? player.grade}</span>
             </div>
-          </section>
-
-          <div className="hud-vitals">
-            <StatBar resource="energy" value={player.energy} max={player.maxEnergy || 10} />
-            <StatBar resource="mood" value={player.motivation} max={100} />
-            <StatBar resource="health" value={player.health} max={100} />
+            <div
+              className="hud-xp"
+              role="progressbar"
+              aria-label="Опыт основного навыка"
+              aria-valuemin={0}
+              aria-valuemax={maxed ? 100 : need}
+              aria-valuenow={maxed ? 100 : Math.min(need, skill.xp)}
+            >
+              <i style={{ width: `${pct}%` }} />
+              <b className="num">{maxed ? 'Максимум' : `${skill.xp} / ${need} XP`}</b>
+            </div>
+            <div className="hud-vitals">
+              <StatBar compact resource="energy" value={player.energy} max={player.maxEnergy || 10} />
+              <StatBar compact resource="mood" value={player.motivation} max={100} />
+              <StatBar compact resource="health" value={player.health} max={100} />
+            </div>
           </div>
-        </div>
+        </section>
       )}
     </header>
   );
