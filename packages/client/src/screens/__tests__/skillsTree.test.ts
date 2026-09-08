@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
-import { layoutBranch } from '../SkillsView';
+import { layoutBranch, NODE_W } from '../skillTreeLayout';
 
 /**
  * The skill screen draws an actual tree (RPG style) from content: nodes hang
@@ -63,8 +63,8 @@ describe('layoutBranch', () => {
     }
     // canvas covers every node's right edge
     for (const n of layout.nodes) {
-      expect(n.x + 46).toBeLessThanOrEqual(layout.width + 0.001);
-      expect(n.x - 46).toBeGreaterThanOrEqual(-0.001);
+      expect(n.x + NODE_W / 2).toBeLessThanOrEqual(layout.width + 0.001);
+      expect(n.x - NODE_W / 2).toBeGreaterThanOrEqual(-0.001);
     }
     // every edge references a drawn child
     for (const e of layout.edges) {

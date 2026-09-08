@@ -4,6 +4,7 @@ import { haptic } from '../lib/telegram';
 import { xpToNext, canUnlockPerk } from '@itsim/shared';
 import { PixelIcon } from '../components/pixel/PixelIcon';
 import { EmojiToken, SpriteBadge } from '../components/ui';
+import { layoutBranch, NODE_H, NODE_W } from './skillTreeLayout';
 
 /**
  * Skill screen — RPG skill trees, one per branch.
@@ -118,96 +119,6 @@ const PERK_EMOJI: Record<string, string> = {
   perk_gold_rush: '🪙',
   perk_hustler: '🧳',
 };
-
-/* ── Tree geometry ─────────────────────────────────────────────────────────
- * One column per leaf (a skill with no children in this branch). A parent
- * sits centered over the columns of its descendants; rows are skill depths.
- */
-const NODE_W = 92;
-const NODE_H = 70;
-const COL_STEP = 96;
-const ROW_STEP = 104;
-const PAD = 14;
-
-interface PlacedNode {
-  skill: SkillInfo;
-  x: number;
-  y: number;
-}
-
-interface TreeEdge {
-  x1: number;
-  y1: number;
-  x2: number;
-  y2: number;
-  childId: string;
-}
-
-interface TreeLayout {
-  nodes: PlacedNode[];
-  edges: TreeEdge[];
-  width: number;
-  height: number;
-}
-
-export function layoutBranch(skills: SkillInfo[]): TreeLayout {
-  const ids = new Set(skills.map((s) => s.id));
-  const childOf = new Map<string, SkillInfo[]>();
-  for (const s of skills) {
-    if (s.parent && ids.has(s.parent)) {
-      const arr = childOf.get(s.parent) ?? [];
-      arr.push(s);
-      childOf.set(s.parent, arr);
-    }
-  }
-  const roots = skills.filter((s) => !s.parent || !ids.has(s.parent));
-
-  // depth of every node (guards against sharing a node via two paths)
-  const depthOf = new Map<string, number>();
-  const visit = (s: SkillInfo, d: number) => {
-    if ((depthOf.get(s.id) ?? Infinity) <= d) return;
-    depthOf.set(s.id, d);
-    for (const c of childOf.get(s.id) ?? []) visit(c, d + 1);
-  };
-  for (const r of roots) visit(r, 0);
-
-  // leaf-column extents: leaves get consecutive columns in DFS order
-  const ext = new Map<string, [number, number]>();
-  let leafCount = 0;
-  const walk = (s: SkillInfo): void => {
-    const kids = childOf.get(s.id) ?? [];
-    if (kids.length === 0) {
-      ext.set(s.id, [leafCount, leafCount]);
-      leafCount += 1;
-      return;
-    }
-    for (const k of kids) walk(k);
-    ext.set(s.id, [ext.get(kids[0].id)![0], ext.get(kids[kids.length - 1].id)![1]]);
-  };
-  for (const r of roots) walk(r);
-
-  const nodes: PlacedNode[] = skills.map((s) => {
-    const [a, b] = ext.get(s.id) ?? [0, 0];
-    const centerX = PAD + NODE_W / 2 + ((a + b) / 2) * COL_STEP;
-    return { skill: s, x: centerX, y: PAD + (depthOf.get(s.id) ?? 0) * ROW_STEP };
-  });
-  const nodeOf = new Map(nodes.map((n) => [n.skill.id, n]));
-
-  const edges: TreeEdge[] = [];
-  for (const s of skills) {
-    const parent = nodeOf.get(s.id);
-    if (!parent) continue;
-    for (const c of childOf.get(s.id) ?? []) {
-      const child = nodeOf.get(c.id);
-      if (!child) continue;
-      edges.push({ x1: parent.x, y1: parent.y + NODE_H, x2: child.x, y2: child.y, childId: c.id });
-    }
-  }
-
-  const width = PAD * 2 + NODE_W + Math.max(0, leafCount - 1) * COL_STEP;
-  const height = (Math.max(0, ...nodes.map((n) => n.y + NODE_H)) || NODE_H) + PAD;
-  return { nodes, edges, width, height };
-}
 
 export const SkillsView: React.FC = () => {
   const player = useGameStore((s) => s.player);
