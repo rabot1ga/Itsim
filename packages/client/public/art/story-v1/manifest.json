@@ -127,8 +127,8 @@
       "file": "/art/story-v1/parcel.webp",
       "width": 384,
       "height": 230,
-      "bytes": 12426,
-      "sha256": "66f45d6d8fed571d01f059de9837a797efb6c27fa87be9e2c2b4af91952d0a32",
+      "bytes": 15200,
+      "sha256": "d8d04f03ad3fb11d23a2b7fc822ecd7d97f2b558711a879f12d44502330bb617",
       "source": "event-atlas.png",
       "crop": {
         "left": 430,

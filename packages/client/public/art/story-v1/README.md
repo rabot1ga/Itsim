@@ -11,9 +11,10 @@ of player furniture or genetics. The existing live room editor is retained.
 
 ## Iteration 2 (later the same day)
 
-Five of the original scenes were regenerated from the user's `1.png` TODO board
-to make the compositions match the explicit subjects on it (the originals were
-on-style but too generic). Affected ids and the new subject each one carries:
+All ten event scenes were aligned to the explicit subjects on the user's
+`1.png` TODO board. The original batch was on-style but several scenes were
+too generic and didn't match the board. Affected ids and the new subject
+each one carries:
 
 | id       | Subject on 1.png                                              |
 | -------- | ------------------------------------------------------------- |
@@ -22,12 +23,11 @@ on-style but too generic). Affected ids and the new subject each one carries:
 | shop     | New laptop with a red "SALE 30%" price tag                    |
 | server   | Red monitor: "SERVER ERROR 500" + shocked developer           |
 | bug      | Monitor: "Ошибка в коде" + sad-face emoji + cockroach         |
+| parcel   | Glowing green mystery box with "?" + "ANONYMOUS" tag          |
 
-The previous batch is kept in `_old/` for provenance. The remaining five (night /
-pet / bicycle / rest / parcel) already matched the TODO board well, so they were
-left untouched. **TODO:** regenerate `parcel` to show a glowing green mystery box
-with a `?` instead of a developer opening a parcel — `parcel` is still on the
-board but AI generation has been rate-limited this turn.
+The previous batch is kept in `_old/` for provenance. The remaining four
+(night / pet / bicycle / rest) already matched the TODO board and were
+left untouched.
 
 Generated masters are outside Git at `/home/user/art-work` for this session.
 The atlas included white gutters despite the no-gutter prompt; every scene was
