@@ -17,10 +17,10 @@ export const HomeRoomCard: React.FC = () => {
         </button>
       </div>
       <img
-        src="/reference-ui/room.webp"
+        src="/art/story-v1/room.webp"
         alt="Иллюстрация комнаты разработчика: стол, компьютер, кресло и окно в ночной город"
-        width={280}
-        height={205}
+        width={640}
+        height={480}
       />
       <span className="reference-room-caption">Эскиз комнаты · твои предметы и расстановка — в редакторе</span>
     </section>

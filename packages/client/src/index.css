@@ -1903,3 +1903,225 @@ svg path.map-route-flow {
 .reference-app .skill-list-row.is-locked .skill-list-symbol {
   opacity: 0.45;
 }
+
+/* Reference 2.png: one story card, not an emoji badge inside a generic panel. */
+.story-card {
+  overflow: hidden;
+  border: 2px solid #343c45;
+  border-radius: 7px;
+  background: #101922;
+  box-shadow: inset 1px 1px 0 #ffffff09;
+}
+.story-card-kicker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 34px;
+  color: #d9dee4;
+  font-size: 12px;
+  background: #0c141d;
+}
+.story-card-art {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 384/230;
+  object-fit: cover;
+  image-rendering: pixelated;
+  border-block: 1px solid #293744;
+}
+.story-card-copy {
+  padding: 13px 14px 12px;
+}
+.story-card-copy h2 {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.35;
+  text-align: center;
+  color: #f0ede5;
+}
+.story-card-copy p {
+  margin-top: 9px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #b8c0cc;
+}
+.story-choices {
+  display: grid;
+  gap: 12px;
+  padding: 0 14px 12px;
+}
+.story-choice {
+  width: 100%;
+  min-height: 44px;
+  padding: 9px 11px;
+  text-align: left;
+  font-size: 13px;
+  line-height: 1.4;
+  border: 1px solid;
+  border-radius: 3px;
+  color: #f3f0e7;
+  box-shadow:
+    inset 0 2px 0 #ffffff10,
+    0 2px 0 #080d13;
+}
+.story-choice-green {
+  background: linear-gradient(#3d5f26, #2a431c);
+  border-color: #668642;
+}
+.story-choice-amber {
+  background: linear-gradient(#75501b, #583b16);
+  border-color: #a77827;
+}
+.story-choice-red {
+  background: linear-gradient(#722a26, #54201d);
+  border-color: #9b3d34;
+}
+.story-choice-purple {
+  background: linear-gradient(#50345e, #382741);
+  border-color: #745083;
+}
+.story-choice:hover:not(:disabled) {
+  filter: brightness(1.15);
+}
+.story-choice:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.story-effects {
+  display: grid;
+  margin-top: 7px;
+}
+.story-effects > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 5px 0;
+  border-bottom: 1px solid #29343d;
+  font-size: 11px;
+  line-height: 1.4;
+}
+.story-effects dt {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #c7cbd3;
+  min-width: 0;
+}
+.story-effects dt span {
+  overflow-wrap: anywhere;
+}
+.story-effects dd {
+  flex-shrink: 0;
+}
+.story-effects .is-positive dd,
+.story-effects .is-positive svg {
+  color: #9dc563;
+}
+.story-effects .is-negative dd,
+.story-effects .is-negative svg {
+  color: #ea8474;
+}
+.story-requirements {
+  font-size: 11px;
+  color: #e0b976;
+  margin: 6px 0;
+}
+.story-footnote {
+  color: #8998a7;
+  font-size: 10px;
+  padding: 0 14px 12px;
+}
+.story-error {
+  color: #efa596;
+  font-size: 12px;
+  padding: 0 14px 12px;
+}
+
+.profile-portrait-button {
+  flex-shrink: 0;
+  width: 66px;
+  height: 66px;
+}
+.profile-card {
+  border: 2px solid #343f49;
+  background: #151f29;
+  border-radius: 6px;
+  padding: 12px;
+}
+.profile-identity {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+.profile-identity img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  image-rendering: pixelated;
+  border: 1px solid #384553;
+}
+.profile-identity h3 {
+  color: #eef0e9;
+  font-size: 18px;
+  font-weight: 600;
+}
+.profile-identity p {
+  color: #aeb9c5;
+  font-size: 12px;
+  margin: 4px 0;
+}
+.profile-identity span {
+  color: #8f9cad;
+  font-size: 11px;
+}
+.profile-stats > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-top: 1px solid #2a3541;
+  font-size: 12px;
+}
+.profile-stats dt {
+  color: #a4afbc;
+}
+.profile-stats dd {
+  color: #e0e6db;
+  text-align: right;
+  overflow-wrap: anywhere;
+  max-width: 60%;
+}
+.profile-money {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0;
+  color: #a4ca67;
+  font-size: 17px;
+}
+.profile-links {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+}
+.profile-links button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  font-size: 12px;
+  text-align: left;
+  border-bottom: 1px solid #34414e;
+}
+.profile-links button svg:last-child {
+  margin-left: auto;
+  color: #a1c56f;
+}
+.wallet-energy {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}

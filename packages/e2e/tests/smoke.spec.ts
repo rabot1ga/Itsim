@@ -16,25 +16,37 @@ async function startFreshGame(page: Page): Promise<void> {
 
 const energyMeter = (page: Page) => page.locator('div[title^="Энергия:"]');
 
+async function resolveStory(page: Page): Promise<void> {
+  const card = page.locator('.story-card');
+  if (await card.isVisible()) {
+    await card.locator('button:not(:disabled)').first().click();
+    await expect(card).toHaveCount(0);
+  }
+}
+
 test('fresh run: three actions → end of day → buy cosmetics → telemetry', async ({ page, request }) => {
   // ── boot into the game ───────────────────────────────────────────────────
   await startFreshGame(page);
   // state loads with the daily check-in (+300 ₽); HUD shows a full battery
   await expect(energyMeter(page)).toHaveAttribute('title', /^Энергия: 10\/10$/);
 
-  // ── the day's three free-ish actions drain energy ───────────────────────
-  await page.getByRole('button', { name: /^YouTube туториалы/ }).click();
-  await expect(energyMeter(page)).toHaveAttribute('title', /^Энергия: 8\/10$/);
-
-  await page.getByRole('button', { name: /^Читать книгу/ }).click();
-  await expect(energyMeter(page)).toHaveAttribute('title', /^Энергия: 7\/10$/);
-
-  await page.getByRole('button', { name: /^Английский/ }).click();
-  await expect(energyMeter(page)).toHaveAttribute('title', /^Энергия: 5\/10$/);
+  // Real random events may interrupt any action, not only end-of-day.
+  for (const [name, energyCost] of [
+    ['YouTube туториалы', 2],
+    ['Читать книгу', 1],
+    ['Английский', 2],
+  ] as const) {
+    const beforeTitle = await energyMeter(page).getAttribute('title');
+    const before = Number(beforeTitle?.match(/Энергия: (\d+)/)?.[1]);
+    await page.getByRole('button', { name: new RegExp(`^${name}`) }).click();
+    await expect(energyMeter(page)).toHaveAttribute('title', new RegExp(`^Энергия: ${before - energyCost}/10$`));
+    await resolveStory(page);
+  }
 
   // ── end of day: server rolls day 1, day 2 opens with a fresh battery ────
   await page.getByRole('button', { name: /^Завершить день / }).click();
   await expect(energyMeter(page)).toHaveAttribute('title', /^Энергия: 10\/10$/);
+  await resolveStory(page);
   await expect(page.getByRole('button', { name: /^Завершить день 2/ })).toBeVisible();
 
   // ── shop: buy a cheap decor item (Кактус на стол, 500 ₽) ────────────────

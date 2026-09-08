@@ -77,13 +77,14 @@ const Meter: React.FC<{
 
 export const ResourceBar: React.FC = () => {
   const player = useGameStore((s) => s.player);
+  const activeEvent = useGameStore((s) => s.activeEvent);
   const currentView = useGameStore((s) => s.currentView);
   const setView = useGameStore((s) => s.setView);
   const setMoreOpen = useGameStore((s) => s.setMoreOpen);
   const moreOpen = useGameStore((s) => s.moreOpen);
   const moneyPop = usePop(player?.money ?? 0);
   if (!player) return null;
-  const home = !currentView || currentView === 'main';
+  const home = (!currentView || currentView === 'main') && !activeEvent;
   const id = player.mainSkillId || 'javascript';
   const skill = player.skills?.[id] ?? { level: 0, xp: 0 };
   const maxed = skill.level >= 100;
@@ -112,7 +113,9 @@ export const ResourceBar: React.FC = () => {
       {home ? (
         <>
           <section className="reference-identity" aria-label="Персонаж и основной навык">
-            <img src="/reference-ui/portrait.webp" alt="Стандартный портрет героя" width={66} height={66} />
+            <button className="profile-portrait-button" aria-label="Открыть профиль" onClick={() => setView('profile')}>
+              <img src="/art/story-v1/portrait.webp" alt="Стандартный портрет героя" width={66} height={66} />
+            </button>
             <div>
               <div className="reference-identity-meta">
                 <span>
@@ -154,10 +157,10 @@ export const ResourceBar: React.FC = () => {
             <PixelIcon name="coin" size={16} />
             {player.money.toLocaleString('ru-RU')} ₽
           </span>
-          <span>
+          <div className="wallet-energy" title={`Энергия: ${Math.round(player.energy)}/${player.maxEnergy}`}>
             <PixelIcon name="bolt" size={13} />
             {player.energy} / {player.maxEnergy}
-          </span>
+          </div>
           <span>День {player.currentDay ?? 1}</span>
         </div>
       )}

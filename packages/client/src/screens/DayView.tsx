@@ -262,12 +262,16 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
   // Native Telegram MainButton replaces the in-page button when available.
   useEffect(() => {
     if (!useNativeCta) return;
+    if (activeEvent) {
+      hideMainButton();
+      return;
+    }
     const handler = () => {
       void finishDay();
     };
     showMainButton(`Завершить день ${currentDay}`, handler);
     return () => hideMainButton(handler);
-  }, [useNativeCta, finishDay, currentDay]);
+  }, [useNativeCta, finishDay, currentDay, activeEvent]);
 
   if (!player) return null;
 
@@ -285,23 +289,27 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
     { id: 'social', label: 'Социальное', actions: ACTIONS.filter((a) => a.category === 'social') },
   ];
 
+  if (activeEvent) {
+    return (
+      <EventCard
+        key={activeEvent.id}
+        eventId={activeEvent.id}
+        title={activeEvent.title}
+        description={activeEvent.description}
+        tags={activeEvent.tags ?? []}
+        choices={activeEvent.choices ?? []}
+        player={player}
+        error={error}
+        onChoose={(i) => chooseEvent(activeEvent.id, i)}
+      />
+    );
+  }
+
   return (
     <div className="space-y-4 animate-fade-in">
       <HomeRoomCard />
       {/* Daily check-in reward — once per real day */}
       {checkIn && <CheckInBanner checkIn={checkIn} />}
-
-      {/* Active event — the day's story card (P0.9) */}
-      {activeEvent && (
-        <EventCard
-          key={activeEvent.id}
-          title={activeEvent.title}
-          description={activeEvent.description}
-          tags={activeEvent.tags ?? []}
-          choices={activeEvent.choices ?? []}
-          onChoose={(i) => chooseEvent(activeEvent.id, i)}
-        />
-      )}
 
       {/* Error */}
       {error && (

@@ -122,12 +122,12 @@ export const ShopView: React.FC = () => {
               <article key={item.id} className="panel shop-product" aria-label={item.name}>
                 <span className="shop-product-art">
                   {item.type === 'headphones' ? (
-                    <img src="/reference-ui/headphones.svg" alt="" width={48} height={48} />
+                    <img src="/art/equipment/headphones.svg" alt="" width={48} height={48} />
                   ) : item.id === 'mechanical_keyboard' ? (
-                    <img src="/reference-ui/keyboard.webp" alt="" width={64} height={40} />
+                    <img src="/art/equipment/keyboard.svg" alt="" width={64} height={40} />
                   ) : item.type === 'pc' || item.type === 'chair' ? (
                     <img
-                      src={`/reference-ui/${item.type === 'pc' ? 'laptop' : 'chair'}.webp`}
+                      src={`/art/equipment/${item.type === 'pc' ? 'laptop' : 'chair'}.svg`}
                       alt=""
                       width={64}
                       height={64}

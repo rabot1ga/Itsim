@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { haptic } from '../lib/telegram';
+import { ProfileView } from '../screens/ProfileView';
 import { FriendsView } from '../screens/FriendsView';
 import { DayView } from '../screens/DayView';
 import { OfficeView } from '../screens/OfficeView';
@@ -23,6 +24,7 @@ const TABS = [
 ] as const;
 
 const MORE = [
+  { view: 'profile', icon: 'person', label: 'Профиль', hint: 'Статистика, цели и гардероб' },
   { view: 'room', icon: 'house', label: 'Дом', hint: 'Предметы, расстановка и внешность' },
   { view: 'shop', icon: 'bag', label: 'Магазин', hint: 'Техника, мебель, жильё' },
   { view: 'achievements', icon: 'trophy', label: 'Трофеи', hint: 'Ачивки и челленджи' },
@@ -48,6 +50,8 @@ export const GameScreen: React.FC = () => {
 
   const renderView = () => {
     switch (currentView) {
+      case 'profile':
+        return <ProfileView />;
       case 'friends':
         return <FriendsView />;
       case 'main':
