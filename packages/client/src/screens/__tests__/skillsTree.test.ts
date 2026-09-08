@@ -1,6 +1,6 @@
-// @vitest-environment jsdom
+import fs from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { layoutBranch, NODE_W } from '../skillTreeLayout';
+import { layoutBranch, layoutForest, skillComponents, NODE_W, NODE_H } from '../skillTreeLayout';
 
 /**
  * The skill screen draws an actual tree (RPG style) from content: nodes hang
@@ -73,5 +73,67 @@ describe('layoutBranch', () => {
         true
       );
     }
+  });
+});
+
+/**
+ * The whole-skills-screen view is ONE tree, Path of Exile style: no branch
+ * subsections. layoutForest splits the content graph into connected groves
+ * (schools that require each other stay linked) and packs them into balanced
+ * columns on a single canvas. Invariants:
+ *  - every skill appears exactly once on the map;
+ *  - components never overlap (each column is a vertical strip, components
+ *    are stacked inside it);
+ *  - the canvas is finite and covers every node.
+ */
+
+const REAL_SKILLS = JSON.parse(
+  fs.readFileSync(new URL('../../../../content/skills.json', import.meta.url), 'utf8')
+) as Array<{ id: string; name: string; branch: string; parent?: string }>;
+
+describe('layoutForest', () => {
+  it('partitions all real skills into components linked by parents', () => {
+    const comps = skillComponents(REAL_SKILLS);
+    expect(comps.flat().length).toBe(REAL_SKILLS.length);
+    expect(comps.length).toBeGreaterThan(1);
+    // every cross-school dependency keeps its two ends in one component
+    const ml = comps.find((c) => c.some((s) => s.id === 'machine_learning'))!;
+    expect(ml.some((s) => s.id === 'python')).toBe(true);
+  });
+
+  it('lays every real skill out exactly once with no overlapping groves', () => {
+    const forest = layoutForest(REAL_SKILLS, 2);
+    const placed = forest.clusters.flatMap((c) => c.layout.nodes.map((n) => n.skill.id));
+    expect(new Set(placed).size).toBe(REAL_SKILLS.length);
+    for (const a of forest.clusters) {
+      for (const b of forest.clusters) {
+        if (a === b) continue;
+        const noOverlap =
+          a.ox + a.width <= b.ox + 0.001 ||
+          b.ox + b.width <= a.ox + 0.001 ||
+          a.oy + a.height <= b.oy + 0.001 ||
+          b.oy + b.height <= a.oy + 0.001;
+        expect(noOverlap).toBe(true);
+      }
+    }
+    for (const c of forest.clusters) {
+      for (const n of c.layout.nodes) {
+        expect(n.x + c.ox + NODE_W / 2).toBeLessThanOrEqual(forest.width + 0.001);
+        expect(n.y + c.oy + NODE_H / 2).toBeLessThanOrEqual(forest.height + 0.001);
+        expect(Number.isFinite(n.x) && Number.isFinite(n.y)).toBe(true);
+      }
+    }
+  });
+  it('centers a parent over its children inside one grove', () => {
+    const forest = layoutForest(REAL_SKILLS, 2);
+    const js = forest.clusters.find((c) => c.skills.some((s) => s.id === 'javascript'))!;
+    const jsNode = js.layout.nodes.find((n) => n.skill.id === 'javascript')!;
+    const reactNode = js.layout.nodes.find((n) => n.skill.id === 'react')!;
+    const defiNode = js.layout.nodes.find((n) => n.skill.id === 'defi')!;
+    // JavaScript is the root that react..defi hang from — higher on the map
+    expect(js.oy + jsNode.y).toBeLessThan(js.oy + reactNode.y);
+    // and its column sits inside the fan spanned by its leaf descendants
+    expect(jsNode.x).toBeGreaterThan(reactNode.x);
+    expect(jsNode.x).toBeLessThan(defiNode.x);
   });
 });
