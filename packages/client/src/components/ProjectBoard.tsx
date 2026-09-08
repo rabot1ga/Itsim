@@ -1,15 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import { ProjectDef, projectBlockedReason, projectComplete, projectDaysLeft, projectProgress } from '@itsim/shared';
+import {
+  ProjectDef,
+  bidChance,
+  consolationPayment,
+  projectBlockedReason,
+  projectComplete,
+  projectDaysLeft,
+  projectProgress,
+} from '@itsim/shared';
 import { useGameStore } from '../store/gameStore';
 import { Spinner } from './ui';
 
 /**
- * Project board — the «Работа» screen of reference 1.png.
+ * Биржа заказов — the «Работа» screen of reference 1.png.
  *
- * The reference shows a contract with a deadline, a progress bar, a checklist
- * of tasks and a list of offers with a payment. All of that is real state
- * here: the catalogue comes from /api/content/projects and every tap is a
- * server action, so a deadline that passes really costs reputation.
+ * A contract is not handed out on tap any more: the player answers the ad
+ * («Откликнуться», −3 ⚡), and the client sleeps on it. In the morning one of
+ * three things happens — signed, paid for the test task, or picked someone
+ * else. That is why the freelance action and the board are one thing now
+ * instead of two doors to the same money.
  */
 
 function fmtMoney(amount: number): string {
@@ -35,6 +44,9 @@ const PROJECT_EMOJI: Record<string, string> = {
   mug: '☕',
 };
 const projectEmoji = (icon?: string) => PROJECT_EMOJI[icon ?? ''] ?? '📁';
+
+/** Energy the server charges for a bid (`EXTRA_ENERGY_COSTS.freelance`). */
+const BID_ENERGY = 3;
 
 export const ProjectBoard: React.FC = () => {
   const player = useGameStore((s) => s.player);
@@ -69,13 +81,15 @@ export const ProjectBoard: React.FC = () => {
   };
 
   const active = player.activeProject ?? null;
+  const bid = player.freelanceBid ?? null;
+  const bidDef = bid ? ((projects ?? []).find((p) => p.id === bid.projectId) ?? null) : null;
   const activeDef = active ? ((projects ?? []).find((p) => p.id === active.id) ?? null) : null;
   const skillLevel = player.skills?.[player.mainSkillId ?? '']?.level ?? 0;
   const done = new Set(player.projectsDone ?? []);
 
   return (
-    <section className="project-board" aria-label="Проекты">
-      <h3 className="section-title">Проекты</h3>
+    <section className="project-board" aria-label="Заказы">
+      <h3 className="section-title">Биржа заказов</h3>
 
       {failed && (
         <div role="alert" className="well text-xs text-clay-300">
@@ -86,6 +100,19 @@ export const ProjectBoard: React.FC = () => {
         </div>
       )}
       {!projects && !failed && <Spinner label="Загрузка проектов…" />}
+
+      {bid && (
+        <article className="card card-sm panel-note panel-note-sky" aria-label="Отклик отправлен">
+          <p className="text-sm text-ink-100">
+            <span aria-hidden="true">📨 </span>
+            Отклик на «{bidDef?.title ?? 'заказ'}» отправлен
+          </p>
+          <p className="text-xs text-ink-400 mt-1 leading-relaxed">
+            Заказчик ответит утром: шанс <span className="num">{Math.round(bid.chance * 100)}%</span>. Не выгорит —
+            останется оплаченное тестовое.
+          </p>
+        </article>
+      )}
 
       {active && activeDef && (
         <article className="project-active" aria-label={`Активный проект: ${activeDef.title}`}>
@@ -159,10 +186,12 @@ export const ProjectBoard: React.FC = () => {
 
       {projects && projects.length > 0 && (
         <>
-          <h4 className="project-tasks-title">Доступные проекты</h4>
+          <h4 className="project-tasks-title">Открытые заказы</h4>
           <div className="space-y-2">
             {projects.map((def) => {
-              const blocked = projectBlockedReason(def, { activeProject: active, skillLevel });
+              const blocked = projectBlockedReason(def, { activeProject: active, skillLevel, pendingBid: bid });
+              const chance = bidChance(def, { skillLevel, reputation: player.reputation ?? 0 });
+              const tired = player.energy < BID_ENERGY;
               return (
                 <article key={def.id} className="project-offer" aria-label={def.title}>
                   <span className="text-lg leading-none shrink-0" aria-hidden="true">
@@ -174,15 +203,22 @@ export const ProjectBoard: React.FC = () => {
                     <p className="project-terms num">
                       Оплата: {fmtMoney(def.payment)} · дедлайн {def.deadlineDays} дн. · {def.tasks.length} задач
                     </p>
+                    {!blocked && (
+                      <p className="project-terms">
+                        Шанс получить: <span className="num">{Math.round(chance * 100)}%</span> · мимо —{' '}
+                        <span className="num">{fmtMoney(consolationPayment(def))}</span> за тестовое
+                      </p>
+                    )}
                     {done.has(def.id) && <p className="project-terms">Уже сдавался в этой жизни</p>}
                     {blocked && <p className="project-blocked">{blocked}</p>}
                   </div>
                   <button
                     className="btn btn-sm btn-primary project-take"
-                    disabled={busy || blocked !== null}
-                    onClick={() => act('take_project', { projectId: def.id })}
+                    disabled={busy || blocked !== null || tired}
+                    title={tired ? `Нужно ${BID_ENERGY} ⚡` : 'Ответ придёт утром'}
+                    onClick={() => act('freelance', { projectId: def.id })}
                   >
-                    Взять
+                    Откликнуться
                   </button>
                 </article>
               );
@@ -191,8 +227,11 @@ export const ProjectBoard: React.FC = () => {
         </>
       )}
       {projects && projects.length === 0 && !failed && (
-        <p className="text-xs text-ink-400">Заказчики пока молчат — проектов нет.</p>
+        <p className="text-xs text-ink-400">Заказчики пока молчат — заказов нет.</p>
       )}
+      <p className="text-2xs text-ink-600">
+        Один отклик в день, −{BID_ENERGY} ⚡. Заказчик отвечает утром: контракт, оплаченное тестовое или отказ.
+      </p>
     </section>
   );
 };

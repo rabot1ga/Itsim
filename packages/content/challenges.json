@@ -5,28 +5,39 @@
     "match": "prefix",
     "count": 3,
     "description": "Выполни 3 учебных действия",
-    "reward": { "money": 2000, "motivation": 5 }
+    "reward": {
+      "money": 2000,
+      "motivation": 5
+    }
   },
   {
     "id": "ch_work_3",
     "action": "work_task",
     "count": 3,
     "description": "Закрой 3 рабочие задачи",
-    "reward": { "money": 3000, "motivation": 3 }
+    "reward": {
+      "money": 3000,
+      "motivation": 3
+    }
   },
   {
     "id": "ch_freelance_1",
     "action": "freelance",
     "count": 1,
-    "description": "Выполни 1 фриланс-заказ",
-    "reward": { "money": 2500 }
+    "description": "Откликнись на заказ на бирже",
+    "reward": {
+      "money": 2500
+    }
   },
   {
     "id": "ch_networking_1",
     "action": "networking",
     "count": 1,
     "description": "Сходи на нетворкинг",
-    "reward": { "money": 1500, "motivation": 3 }
+    "reward": {
+      "money": 1500,
+      "motivation": 3
+    }
   },
   {
     "id": "ch_rest_2",
@@ -34,62 +45,86 @@
     "match": "prefix",
     "count": 2,
     "description": "Отдохни 2 раза",
-    "reward": { "money": 1000, "motivation": 5 }
+    "reward": {
+      "money": 1000,
+      "motivation": 5
+    }
   },
   {
     "id": "ch_sidejob_1",
     "action": "side_job",
     "count": 1,
     "description": "Возьми любую подработку",
-    "reward": { "money": 2000 }
+    "reward": {
+      "money": 2000
+    }
   },
   {
     "id": "ch_petproject_1",
     "action": "pet_project",
     "count": 1,
     "description": "Поработай над пет-проектом",
-    "reward": { "money": 2500, "reputation": 1 }
+    "reward": {
+      "money": 2500,
+      "reputation": 1
+    }
   },
   {
     "id": "ch_english_1",
     "action": "study_english",
     "count": 1,
     "description": "Позанимайся английским",
-    "reward": { "money": 1500 }
+    "reward": {
+      "money": 1500
+    }
   },
   {
     "id": "ch_bar_1",
     "action": "rest_bar",
     "count": 1,
     "description": "Сходи в бар",
-    "reward": { "money": 1200, "motivation": 3 }
+    "reward": {
+      "money": 1200,
+      "motivation": 3
+    }
   },
   {
     "id": "ch_shop_1",
     "action": "buy_item",
     "count": 1,
     "description": "Купи что-нибудь в магазине",
-    "reward": { "money": 1000 }
+    "reward": {
+      "money": 1000
+    }
   },
   {
     "id": "ch_gym_1",
     "action": "rest_gym",
     "count": 1,
     "description": "Сходи в зал",
-    "reward": { "money": 1500, "motivation": 3 }
+    "reward": {
+      "money": 1500,
+      "motivation": 3
+    }
   },
   {
     "id": "ch_walk_2",
     "action": "rest_walk",
     "count": 2,
     "description": "Погуляй 2 раза",
-    "reward": { "money": 800, "motivation": 5 }
+    "reward": {
+      "money": 800,
+      "motivation": 5
+    }
   },
   {
     "id": "ch_feed_pet_1",
     "action": "feed_pet",
     "count": 1,
     "description": "Покорми питомца",
-    "reward": { "money": 1000, "motivation": 3 }
+    "reward": {
+      "money": 1000,
+      "motivation": 3
+    }
   }
 ]

@@ -20,7 +20,7 @@ import { clamp } from './utils';
  *     and reported, so an accidental server downgrade cannot corrupt it.
  */
 
-export const CURRENT_STATE_VERSION = 2;
+export const CURRENT_STATE_VERSION = 3;
 
 export interface MigrationResult<T = PlayerState> {
   state: T;
@@ -56,7 +56,9 @@ const MIGRATIONS: Migration[] = [
         state.mainSkillId = best?.id ?? 'javascript';
       }
       if (typeof state.lastPromotionDay !== 'number') {
-        state.lastPromotionDay = state.job ? Math.max(0, (state.currentDay ?? 1) - (state.job.daysSinceLastPromotion ?? 0)) : 0;
+        state.lastPromotionDay = state.job
+          ? Math.max(0, (state.currentDay ?? 1) - (state.job.daysSinceLastPromotion ?? 0))
+          : 0;
       }
       if (typeof state.ctoCooldownUntilDay !== 'number') state.ctoCooldownUntilDay = 0;
       if (typeof state.brokeDays !== 'number') state.brokeDays = 0;
@@ -75,6 +77,18 @@ const MIGRATIONS: Migration[] = [
       if (!state.softSkills || typeof state.softSkills !== 'object') state.softSkills = {};
     },
   },
+  {
+    to: 3,
+    name: 'v3_freelance_bids',
+    /**
+     * v2 → v3: projects are no longer taken with a button, they are bid for
+     * (`freelanceBid`, resolved at the turn of the day). Old saves simply have
+     * no pending bid; an active project keeps running untouched.
+     */
+    up(state: any) {
+      if (state.freelanceBid === undefined) state.freelanceBid = null;
+    },
+  },
 ];
 
 const SOFT_SKILL_DEFAULTS: Record<string, { level: number; xp: number }> = {
@@ -91,7 +105,17 @@ export function normalizeState(state: any): void {
   for (const key of ['skills', 'softSkills', 'eventHistory', 'relationships'] as const) {
     if (!state[key] || typeof state[key] !== 'object' || Array.isArray(state[key])) state[key] = {};
   }
-  for (const key of ['perks', 'items', 'achievements', 'pendingEvents', 'pendingOffers', 'activeCourses', 'recentEventTags', 'entitlements', 'badges'] as const) {
+  for (const key of [
+    'perks',
+    'items',
+    'achievements',
+    'pendingEvents',
+    'pendingOffers',
+    'activeCourses',
+    'recentEventTags',
+    'entitlements',
+    'badges',
+  ] as const) {
     if (!Array.isArray(state[key])) state[key] = [];
   }
   for (const [id, def] of Object.entries(SOFT_SKILL_DEFAULTS)) {
@@ -100,7 +124,8 @@ export function normalizeState(state: any): void {
     else if (typeof cur.xp !== 'number' || !Number.isFinite(cur.xp)) cur.xp = 0;
   }
 
-  const num = (value: any, fallback: number) => (typeof value === 'number' && Number.isFinite(value) ? value : fallback);
+  const num = (value: any, fallback: number) =>
+    typeof value === 'number' && Number.isFinite(value) ? value : fallback;
 
   state.currentDay = Math.max(1, Math.floor(num(state.currentDay, 1)));
   state.money = Math.max(0, Math.round(num(state.money, 0)));
@@ -114,6 +139,14 @@ export function normalizeState(state: any): void {
   state.totalActions = Math.max(0, Math.floor(num(state.totalActions, 0)));
   state.daysSinceRegistration = Math.max(1, Math.floor(num(state.daysSinceRegistration, 1)));
   state.jobWarnings = Math.max(0, Math.floor(num(state.jobWarnings, 0)));
+
+  // A bid without a project id is noise the day cycle would trip over.
+  const bid = state.freelanceBid;
+  if (bid && (typeof bid.projectId !== 'string' || !bid.projectId)) state.freelanceBid = null;
+  else if (bid) {
+    bid.chance = clamp(num(bid.chance, 0.3), 0, 1);
+    bid.day = Math.max(1, Math.floor(num(bid.day, state.currentDay)));
+  } else if (bid === undefined) state.freelanceBid = null;
 
   // Skill entries can arrive as bare numbers from very old saves
   for (const [id, value] of Object.entries(state.skills as Record<string, any>)) {

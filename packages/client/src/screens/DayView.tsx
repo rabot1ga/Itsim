@@ -23,7 +23,7 @@ const DESTINATIONS = [
 const CHALLENGE_TEXT: Record<string, string> = {
   ch_study_3: 'Выполни 3 учебных действия',
   ch_work_3: 'Закрой 3 рабочие задачи',
-  ch_freelance_1: 'Выполни 1 фриланс-заказ',
+  ch_freelance_1: 'Откликнись на заказ на бирже',
   ch_networking_1: 'Сходи на нетворкинг',
   ch_rest_2: 'Отдохни 2 раза',
   ch_sidejob_1: 'Возьми любую подработку',

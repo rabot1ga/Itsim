@@ -300,6 +300,8 @@ export interface PlayerState {
 
   /** contract with a deadline; missing = no project taken */
   activeProject?: PlayerProject | null;
+  /** отклик на заказ, отправленный сегодня; ответ приходит при смене дня */
+  freelanceBid?: FreelanceBid | null;
   /** ids of projects delivered in this life */
   projectsDone?: string[];
 
@@ -453,6 +455,22 @@ export interface ProjectDef {
 }
 
 /** The one project a player is working on right now. */
+/**
+ * A pitch for a contract from the board.
+ *
+ * Taking a project used to be a button: tap and it is yours. That made the
+ * freelance action redundant and the board risk-free. Now the player *bids* —
+ * spends energy, waits a night, and the client either picks them, throws a
+ * paid test task, or goes silent.
+ */
+export interface FreelanceBid {
+  projectId: string;
+  /** день, когда отправлен отклик */
+  day: number;
+  /** шанс выиграть контракт, зафиксирован в момент отклика (0..1) */
+  chance: number;
+}
+
 export interface PlayerProject {
   id: string;
   startedDay: number;
