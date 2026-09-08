@@ -320,6 +320,29 @@ export interface PlayerState {
   dailyStreak?: number;
   /** last check-in day, YYYY-MM-DD in the game-day timezone */
   lastCheckInDate?: string;
+
+  // Meta layer (P1.1 «Новая жизнь»): the only thing that survives a reset
+  /** prestige ledger — persists across lives, never resets */
+  meta?: MetaLife;
+}
+
+/**
+ * Prestige («Новая жизнь», P1.1). A player who reached a career ending can
+ * start over; the career itself resets to day 1 while this ledger, earned
+ * achievements, monetization entitlements and the check-in streak survive.
+ * Every finished life stacks a permanent XP multiplier (metaXpMult).
+ */
+export interface MetaLife {
+  /** how many lives have been completed (0 = first life, no reset yet) */
+  lives: number;
+  /** career endings seen, oldest first, deduped — cosmetic «воспоминания» */
+  memories: CareerEnding[];
+  /** the best grade ever reached across lives */
+  bestGrade?: Grade;
+  /** the deepest game day ever reached across lives */
+  deepestDay?: number;
+  /** lifetime total actions across all lives */
+  lifetimeActions?: number;
 }
 
 export interface SkillLevel {

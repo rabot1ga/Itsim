@@ -13,6 +13,7 @@ export * from './mining';
 export * from './items';
 export * from './interviewQuestions';
 export * from './checkIn';
+export * from './meta';
 export * from './utils';
 export * from './roomDecor';
 export * from './isoFinishes';

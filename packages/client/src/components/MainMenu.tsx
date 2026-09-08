@@ -8,7 +8,8 @@ import { PixelText } from './pixel/PixelText';
 export const MainMenu: React.FC = () => {
   const { setScreen, setView, player } = useGameStore();
 
-  const hasProgress = player && (player.currentDay ?? 1) > 1;
+  // a second life is progress too, even while it is still day 1
+  const hasProgress = Boolean(player && ((player.currentDay ?? 1) > 1 || (player.meta?.lives ?? 0) > 0));
 
   return (
     <div className="flex-1 flex flex-col items-center justify-between p-6 overflow-y-auto">
@@ -32,6 +33,15 @@ export const MainMenu: React.FC = () => {
             <span className="num">День {player.currentDay}</span>
             <span className="text-ink-700">·</span>
             <span className="text-ink-200 font-semibold">{gradeLabel(player.grade)}</span>
+            {(player.meta?.lives ?? 0) > 0 && (
+              <>
+                <span className="text-ink-700">·</span>
+                <span className="flex items-center gap-1 text-gold-300 font-semibold" title="Прожито жизней">
+                  <PixelIcon name="flame" size={9} />
+                  <span className="num">жизнь {player.meta!.lives}</span>
+                </span>
+              </>
+            )}
             <span className="text-ink-700">·</span>
             <span className="num text-moss-300 font-semibold">{formatMoney(player.money ?? 0)}</span>
           </p>

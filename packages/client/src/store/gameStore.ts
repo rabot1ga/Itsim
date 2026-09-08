@@ -120,6 +120,8 @@ interface GameState {
   setMoreOpen: (open: boolean) => void;
   performAction: (actionId: string, params?: any) => Promise<boolean>;
   advanceDay: () => Promise<void>;
+  /** prestige reset (P1.1): fresh career, meta ledger + achievements survive */
+  startNewLife: () => Promise<boolean>;
   chooseEvent: (eventId: string, choiceIndex: number) => Promise<void>;
   applyToCompany: (companyId: string) => Promise<boolean>;
   acceptOffer: (companyId: string) => Promise<boolean>;
@@ -298,6 +300,35 @@ export const useGameStore = create<GameState>((set, get) => ({
       console.error('Advance day error:', err);
       haptic('error');
       set({ error: 'Сервер недоступен' });
+    }
+  },
+
+  startNewLife: async () => {
+    try {
+      const res = await api('/game/new-life', { method: 'POST' });
+      if (res.data?.state) {
+        haptic('success');
+        set({
+          player: res.data.state,
+          activeEvent: null,
+          error: null,
+          gains: [],
+          mining: null,
+          careerOutlook: null,
+          costOfDay: null,
+        });
+        // Repopulate check-in / mining / outlook from the fresh state
+        await get().refreshState();
+        return true;
+      }
+      haptic('error');
+      set({ error: res.data?.error || 'Не удалось начать новую жизнь' });
+      return false;
+    } catch (err) {
+      console.error('New life error:', err);
+      haptic('error');
+      set({ error: 'Сервер недоступен' });
+      return false;
     }
   },
 

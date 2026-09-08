@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { PixelIcon } from './pixel/PixelIcon';
+import { metaXpBonusPct } from '@itsim/shared';
+import { haptic } from '../lib/telegram';
 
 /**
  * Career pressure card (v2.1 balance layer).
@@ -32,10 +34,30 @@ export const CareerPressureCard: React.FC = () => {
   const cost = useGameStore((s) => s.costOfDay);
   const outlook = useGameStore((s) => s.careerOutlook);
   const performAction = useGameStore((s) => s.performAction);
+  const startNewLife = useGameStore((s) => s.startNewLife);
   const [costOpen, setCostOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  // two-tap confirm for the destructive prestige reset: first tap arms it and
+  // starts a 5s timer, second tap executes — a fat-fingered restart is a day lost
+  const [confirmLife, setConfirmLife] = useState(false);
+  const confirmLifeTimer = useRef<number | undefined>(undefined);
 
   if (!player) return null;
+
+  const handleNewLife = async () => {
+    if (!confirmLife) {
+      setConfirmLife(true);
+      confirmLifeTimer.current = window.setTimeout(() => setConfirmLife(false), 5000);
+      return;
+    }
+    if (confirmLifeTimer.current) window.clearTimeout(confirmLifeTimer.current);
+    haptic('medium');
+    setBusy(true);
+    const ok = await startNewLife();
+    setBusy(false);
+    setConfirmLife(false);
+    if (!ok) haptic('error');
+  };
 
   const fmt = (n: number) => `${Math.round(n).toLocaleString('ru-RU')} ₽`;
 
@@ -47,7 +69,9 @@ export const CareerPressureCard: React.FC = () => {
       {player.careerEnding && (
         <>
           <div className="border-l-[3px] border-l-gold-300 pl-2">
-            <div className="text-2xs font-semibold uppercase tracking-[0.09em] text-gold-300">Финал</div>
+            <div className="text-2xs font-semibold uppercase tracking-[0.09em] text-gold-300">
+              Финал · {metaXpBonusPct(player.meta) > 0 ? `жизнь ${player.meta!.lives} завершена` : 'глава прожита'}
+            </div>
             <div className="text-sm font-semibold text-white mt-0.5">
               {ENDING_LABELS[player.careerEnding] ?? player.careerEnding}
             </div>
@@ -56,6 +80,41 @@ export const CareerPressureCard: React.FC = () => {
                 ? 'Ты в борде. Поздравляем: теперь ты отвечаешь за чужие карьеры и за свой сон.'
                 : 'Игра продолжается — это отмеченная глава, а не титр. Но назад дороги уже нет.'}
             </div>
+
+            {/* Prestige (P1.1): what survives and what the next life gives back */}
+            <div className="mt-2 space-y-1 text-xs leading-relaxed">
+              {metaXpBonusPct(player.meta) > 0 && (
+                <p className="flex items-center gap-1.5 text-gold-300/90">
+                  <PixelIcon name="flame" size={10} className="shrink-0" />
+                  Мета-бонус: навсегда <span className="num">+{metaXpBonusPct(player.meta)}% XP</span>
+                </p>
+              )}
+              <p className="text-ink-500">Ачивки, покупки и стрик входа не сгорают. Навыки, деньги и вещи — да.</p>
+            </div>
+
+            <button
+              onClick={() => void handleNewLife()}
+              disabled={busy}
+              className={`btn btn-secondary w-full text-sm mt-2.5 ${confirmLife ? '!text-clay-300' : ''}`}
+            >
+              <PixelIcon
+                name={busy ? 'clock' : 'play'}
+                size={12}
+                className={confirmLife ? 'text-clay-300' : 'text-gold-300'}
+              />
+              {busy
+                ? 'Начинаем…'
+                : confirmLife
+                  ? 'Точно? Всё начнётся с дня 1'
+                  : player.meta && player.meta.lives > 0
+                    ? `♻ Начать жизнь ${player.meta.lives + 1}`
+                    : '♻ Начать новую жизнь'}
+            </button>
+            {confirmLife && (
+              <p className="mt-1 text-2xs text-clay-300 leading-tight">
+                Следующая жизнь даст +15% XP навсегда. Нажми ещё раз — или просто подожди.
+              </p>
+            )}
           </div>
           {(cost || showOutlook) && <div className="divider" />}
         </>

@@ -10,6 +10,9 @@ import {
   applyCheckIn,
   checkInReward,
   gameDate,
+  canStartNewLife,
+  buildNewLife,
+  metaXpMult,
   advanceLastTick,
   applyXp,
   applySoftXp,
@@ -746,11 +749,9 @@ export async function gameRoutes(app: FastifyInstance) {
       return reply.status(400).send({ error: 'Собеседование не назначено' });
     }
     if (state.currentDay < app.interviewDay) {
-      return reply
-        .status(400)
-        .send({
-          error: `Собеседование назначено на день ${app.interviewDay}. Приходи вовремя — а пока подтяни скиллы`,
-        });
+      return reply.status(400).send({
+        error: `Собеседование назначено на день ${app.interviewDay}. Приходи вовремя — а пока подтяни скиллы`,
+      });
     }
 
     const content = getContent();
@@ -944,6 +945,59 @@ export async function gameRoutes(app: FastifyInstance) {
   });
 
   /**
+   * POST /api/game/new-life — prestige reset (P1.1).
+   *
+   * Available after a career ending: the career restarts from day 1 while the
+   * meta ledger (lives/memories/best grade/deepest day), achievements, Stars
+   * entitlements and the real-world check-in streak survive. Each finished
+   * life stacks a permanent +15% XP (cap +75%) — see shared/engine/meta.ts.
+   */
+  app.post('/new-life', async (request, reply) => {
+    const user = (request as any).telegramUser;
+    const userId = String(user.id);
+    const state = loadState(userId) as StoredState | null;
+    if (!state) {
+      return reply.status(404).send({ error: 'Game not started' });
+    }
+    if (!canStartNewLife(state)) {
+      return reply
+        .status(400)
+        .send({ error: 'Новая жизнь открывается после финала карьеры: CTO, выгорание или уход из IT' });
+    }
+
+    const next = {
+      ...buildNewLife(state),
+      telegramId: userId,
+      lastTickAt: Date.now(),
+      ratingScore: 0,
+      activeEventId: null,
+      freelanceDoneToday: false,
+      lastFreelanceDay: 0,
+      sideJobDoneToday: false,
+      petFedToday: false,
+      networkingToday: 0,
+      firstName: state.firstName,
+      mainSkillId: 'javascript',
+    } as StoredState;
+    deriveGenetics(next);
+    resetDailyChallenge(next, getContent());
+    next.maxEnergy = recalcMaxEnergy(next, getContent());
+    saveState(userId, next);
+
+    const lives = next.meta?.lives ?? 1;
+    const pct = Math.round((metaXpMult(next.meta) - 1) * 100);
+    return {
+      state: respondState(
+        next,
+        pct > 0
+          ? `♻ Жизнь ${lives} началась с чистого листа. Ачивки и покупки с тобой — и навсегда +${pct}% к XP.`
+          : `♻ Жизнь ${lives} началась с чистого листа.`
+      ),
+      activeEvent: null,
+    };
+  });
+
+  /**
    * POST /api/game/reset — start over (dev convenience)
    */
   app.post('/reset', async (request) => {
@@ -1000,7 +1054,7 @@ function xpMotivation(state: StoredState, content: any): number {
  * Raw XP multiplied by owned item bonuses (headphones, macbook, ...)
  */
 function xpGain(state: StoredState, content: any, base: number): number {
-  return Math.round(base * itemXpMult(state.items, content.items));
+  return Math.round(base * itemXpMult(state.items, content.items) * metaXpMult(state.meta));
 }
 
 /**
