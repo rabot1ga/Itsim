@@ -1,6 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
-import { hideMainButton, isMainButtonSupported, setMainButtonProgress, showMainButton } from '../lib/telegram';
+import {
+  hideMainButton,
+  isMainButtonSupported,
+  isMainButtonVisible,
+  setMainButtonProgress,
+  showMainButton,
+} from '../lib/telegram';
 
 /**
  * «Завершить день» — the one button that moves the game forward.
@@ -24,7 +30,9 @@ export const DayEndDock: React.FC<DayEndDockProps> = ({ visible }) => {
   const player = useGameStore((s) => s.player);
   const advanceDay = useGameStore((s) => s.advanceDay);
   const [finishing, setFinishing] = useState(false);
-  const useNativeCta = isMainButtonSupported();
+  /** the client claimed to support MainButton but never drew it */
+  const [nativeFailed, setNativeFailed] = useState(false);
+  const useNativeCta = isMainButtonSupported() && !nativeFailed;
   const currentDay = player?.currentDay ?? 1;
   const shown = visible && Boolean(player);
 
@@ -55,6 +63,19 @@ export const DayEndDock: React.FC<DayEndDockProps> = ({ visible }) => {
     showMainButton(`Завершить день ${currentDay}`, handler);
     return () => hideMainButton(handler);
   }, [useNativeCta, shown, finishDay, currentDay]);
+
+  /**
+   * Trust, then verify: if the native button never becomes visible (an old
+   * client, a rejected API call), the dock takes the job back rather than
+   * leaving the player with no way to end the day.
+   */
+  useEffect(() => {
+    if (!useNativeCta || !shown) return;
+    const timer = window.setTimeout(() => {
+      if (!isMainButtonVisible()) setNativeFailed(true);
+    }, 400);
+    return () => window.clearTimeout(timer);
+  }, [useNativeCta, shown, currentDay]);
 
   if (!shown || useNativeCta || !player) return null;
 

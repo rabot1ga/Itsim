@@ -421,7 +421,9 @@ React 18 + TypeScript + Tailwind + Zustand. Состояние — `store/gameSt
 - `initTelegramApp()`: `ready()` + `expand()`, тёмный chrome, `disableVerticalSwipes()`,
   синхронизация высоты вьюпорта.
 - **MainButton**: нативная кнопка «Завершить день N →» с прогрессом; в браузере — док
-  `DayEndDock` над таббаром (вне скролла, виден на всех «рабочих» вкладках).
+  `DayEndDock` над таббаром (вне скролла, виден на всех «рабочих» вкладках). Клиент
+  определяется через `isTelegramRuntime()`: SDK грузится и вне Telegram, а его
+  `MainButton` там ничего не рисует.
 - **BackButton**: таб → «День» → меню → скрыта.
 - **Хаптика** через `haptic()`: табы/выбор — `selection`, действия — `tap`,
   покупки/конец дня — `medium`, оффер/ачивка — `success`, ошибки — `error`.

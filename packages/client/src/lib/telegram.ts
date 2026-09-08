@@ -38,6 +38,8 @@ interface TelegramWebApp {
   expand: () => void;
   /** Raw init data for server-side validation (empty in plain browsers). */
   initData?: string;
+  /** 'ios' | 'android' | 'tdesktop' | … — 'unknown' when the SDK runs outside Telegram. */
+  platform?: string;
   viewportHeight?: number;
   viewportStableHeight?: number;
   onEvent: (event: string, cb: () => void) => void;
@@ -65,6 +67,23 @@ export function getTelegram(): TelegramWebApp | undefined {
 
 export function isTelegram(): boolean {
   return !!window.Telegram?.WebApp;
+}
+
+/**
+ * Is this an actual Telegram client, or just our page with the SDK loaded?
+ *
+ * `index.html` always pulls telegram-web-app.js, so in a plain browser
+ * `window.Telegram.WebApp` exists anyway — with a full MainButton object whose
+ * `show()` resolves to nothing, because there is no Telegram chrome to draw
+ * it in. Trusting that object cost the browser build its «Завершить день»
+ * button. Outside a real client the SDK reports platform 'unknown' and empty
+ * initData; that pair is the honest signal.
+ */
+export function isTelegramRuntime(): boolean {
+  const tg = getTelegram();
+  if (!tg) return false;
+  if (tg.platform && tg.platform !== 'unknown') return true;
+  return Boolean(tg.initData);
 }
 
 let initialized = false;
@@ -178,7 +197,7 @@ export function haptic(kind: HapticKind = 'tap'): void {
 // ---------------------------------------------------------------------------
 
 export function isMainButtonSupported(): boolean {
-  return !!getTelegram()?.MainButton;
+  return isTelegramRuntime() && !!getTelegram()?.MainButton;
 }
 
 export function showMainButton(text: string, onClick: () => void): void {
@@ -201,6 +220,15 @@ export function hideMainButton(onClick?: () => void): void {
     if (btn.isVisible) btn.hide();
   } catch {
     /* noop */
+  }
+}
+
+/** Did the client actually put the native button on screen? */
+export function isMainButtonVisible(): boolean {
+  try {
+    return Boolean(getTelegram()?.MainButton?.isVisible);
+  } catch {
+    return false;
   }
 }
 
