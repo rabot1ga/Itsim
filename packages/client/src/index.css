@@ -1870,6 +1870,16 @@ svg path.map-route-flow {
   color: #b99257;
   background: #111821;
 }
+.reference-friend-portrait {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  object-fit: cover;
+  image-rendering: pixelated;
+  border: 1px solid #36414c;
+  border-radius: 3px;
+  background: #0c1118;
+}
 .reference-friend h3 {
   font-size: 13px;
 }

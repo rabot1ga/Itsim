@@ -91,6 +91,8 @@ export async function contentRoutes(app: FastifyInstance) {
 
   /**
    * GET /api/content/npcs — colleagues for the office screen (docs/design.md §11)
+   * Returns the avatar filename too so the client can render individual portraits
+   * instead of a shared generic icon.
    */
   app.get('/npcs', async () => {
     const { npcs } = getContent();
@@ -100,6 +102,8 @@ export async function contentRoutes(app: FastifyInstance) {
         name: n.name,
         role: n.role,
         description: n.description,
+        avatar: typeof n.avatar === 'string' ? n.avatar : null,
+        initialRelation: typeof n.initialRelation === 'number' ? n.initialRelation : 0,
       })),
     };
   });
