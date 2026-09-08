@@ -273,6 +273,18 @@
         {
           "id": "pet_bulldog",
           "file": "room/pet/pet_bulldog.svg"
+        },
+        {
+          "id": "pet_parrot",
+          "file": "room/pet/pet_parrot.svg"
+        },
+        {
+          "id": "pet_hamster",
+          "file": "room/pet/pet_hamster.svg"
+        },
+        {
+          "id": "pet_fish",
+          "file": "room/pet/pet_fish.svg"
         }
       ]
     }

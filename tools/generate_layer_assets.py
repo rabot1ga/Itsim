@@ -777,6 +777,50 @@ def room_pet(variant):
   <path d="M850 716 Q880 740 910 716 L910 700 Q880 724 850 700 Z" fill="#f5f5f0"/>
   <path d="M844 684 L872 684 M888 684 L916 684" stroke="#6b5540" stroke-width="5"/>
   <circle cx="906" cy="700" r="7" fill="#d98880" stroke="none"/>'''
+    elif variant == 'pet_parrot':
+        shadows = shadow(880, 758, 50, 12, 0.14)
+        p = '''
+  <rect x="836" y="748" width="88" height="9" rx="4" fill="#8a6238"/>
+  <rect x="872" y="680" width="14" height="68" fill="#a0805c"/>
+  <path d="M880 662 Q860 610 880 576 Q900 610 880 662 Z" fill="#2e8b57"/>
+  <circle cx="880" cy="552" r="30" fill="#22c55e"/>
+  <circle cx="893" cy="546" r="4.5" fill="#20242a" stroke="none"/>
+  <path d="M900 556 L934 566 L900 578 Z" fill="#facc15"/>
+  <path d="M896 580 L922 588 L898 596 Z" fill="#b45309"/>
+  <ellipse cx="858" cy="628" rx="14" ry="34" fill="#166534" transform="rotate(12 858 628)"/>
+  <path d="M900 660 Q958 700 940 758 Q922 722 886 706 Z" fill="#166534"/>
+  <ellipse cx="872" cy="676" rx="13" ry="20" fill="#bbf7d0"/>
+  <path d="M874 700 L866 720 M882 702 L886 718" stroke="#b5651d" stroke-width="6"/>'''
+    elif variant == 'pet_hamster':
+        shadows = shadow(880, 762, 62, 14, 0.14)
+        p = '''
+  <circle cx="880" cy="694" r="62" fill="#dbeafe" opacity="0.4"/>
+  <circle cx="880" cy="694" r="62" fill="none" opacity="0.9"/>
+  <circle cx="858" cy="662" r="11" fill="#b45309"/>
+  <circle cx="902" cy="662" r="11" fill="#b45309"/>
+  <circle cx="860" cy="664" r="5" fill="#fde8d2" stroke="none"/>
+  <circle cx="900" cy="664" r="5" fill="#fde8d2" stroke="none"/>
+  <ellipse cx="880" cy="702" rx="34" ry="30" fill="#d99a4e"/>
+  <ellipse cx="880" cy="716" rx="18" ry="13" fill="#f7e7d0"/>
+  <circle cx="870" cy="694" r="4" fill="#20242a" stroke="none"/>
+  <circle cx="890" cy="694" r="4" fill="#20242a" stroke="none"/>
+  <circle cx="882" cy="712" r="4" fill="#e86b5a" stroke="none"/>
+  <path d="M880 698 L882 708 L878 708 Z" fill="none"/>
+  <ellipse cx="856" cy="724" rx="9" ry="6" fill="#b98d60"/>
+  <ellipse cx="904" cy="724" rx="9" ry="6" fill="#b98d60"/>
+  <path d="M852 636 Q830 646 822 664 M908 636 Q930 646 938 664" stroke="#a9c6e0" stroke-width="3" fill="none"/>'''
+    elif variant == 'pet_fish':
+        shadows = shadow(880, 758, 56, 12, 0.14)
+        p = '''
+  <rect x="828" y="560" width="104" height="164" rx="18" fill="#ddeaf7" opacity="0.5"/>
+  <rect x="838" y="628" width="84" height="88" rx="10" fill="#7dd3fc" opacity="0.35"/>
+  <path d="M852 684 Q880 700 908 684 Q900 646 880 646 Q858 646 852 684 Z" fill="#f59e0b"/>
+  <path d="M854 680 L820 656 L822 710 Z" fill="#ef8c1e"/>
+  <path d="M846 696 L824 720 M844 706 L836 724" stroke="#f59e0b" stroke-width="5"/>
+  <circle cx="896" cy="674" r="4" fill="#20242a" stroke="none"/>
+  <circle cx="902" cy="608" r="5" fill="#ffffff" opacity="0.7" stroke="none"/>
+  <circle cx="912" cy="588" r="3.5" fill="#ffffff" opacity="0.7" stroke="none"/>
+  <path d="M884 690 L880 700 M874 692 L872 702" stroke="#b45309" stroke-width="4"/>'''
     return svg(R, R, p, shadows=shadows)
 
 
@@ -814,7 +858,8 @@ def main():
         write(f'room/setup/{v}.svg', room_setup(v))
     for v in ['atmo_none', 'atmo_plant', 'atmo_cactus', 'atmo_coffee', 'atmo_rug', 'atmo_lamp']:
         write(f'room/plant/{v}.svg', room_plant(v))
-    for v in ['pet_none', 'pet_cat', 'pet_dog', 'pet_cactus', 'pet_robo', 'pet_spider', 'pet_bulldog']:
+    for v in ['pet_none', 'pet_cat', 'pet_dog', 'pet_cactus', 'pet_robo', 'pet_spider', 'pet_bulldog',
+              'pet_parrot', 'pet_hamster', 'pet_fish']:
         write(f'room/pet/{v}.svg', room_pet(v))
 
     print(f'✓ generated layer assets into {OUT}')

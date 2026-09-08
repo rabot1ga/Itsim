@@ -22,7 +22,7 @@ interface SideJobInfo {
 }
 
 /** Feedable pets — cosmetic accessories (pet_bow/...) are not dinner guests */
-const REAL_PETS = ['pet_cat', 'pet_dog', 'pet_cactus', 'pet_robo', 'pet_spider', 'pet_bulldog'];
+const REAL_PETS = ['pet_cat', 'pet_dog', 'pet_cactus', 'pet_robo', 'pet_spider', 'pet_bulldog', 'pet_parrot', 'pet_hamster', 'pet_fish'];
 
 const ACTIONS = [
   // Study

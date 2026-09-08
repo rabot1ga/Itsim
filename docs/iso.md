@@ -30,7 +30,7 @@ origin  = { x: MARGIN.x·k + depth * 32, y: MARGIN.top·k + wallH }
 
 ## 2. Библиотека спрайтов
 
-`packages/client/public/iso/` — 106 PNG плюс `manifest.json`:
+`packages/client/public/iso/` — 108 PNG плюс `manifest.json`:
 
 ```jsonc
 {
@@ -74,8 +74,9 @@ npx tsx tools/isogen/preview-people.ts /tmp/iso/people.png --count 36 --scale 3 
 Цветовые варианты одной вещи не рисуются заново, а получаются из базового спрайта:
 `node tools/isogen/tint.mjs <in.png> <out.png> <targetHex>` поворачивает оттенок
 доминирующего цвета в целевой (обводка, блики и структура затенения остаются
-нетронутыми). Так из `rug_rolled` получился `rug_moss` (#7fae7a), из `armchair` —
-`armchair_clay` (#c2565a); раскладка комнаты выбирает вариант по своему seed.
+нетронутыми). Так из `rug_rolled` получились `rug_moss` (#7fae7a) и `rug_sand`
+(#cfa06a), из `armchair` — `armchair_clay` (#c2565a) и `armchair_teal` (#3f8a94);
+раскладка комнаты выбирает цветовую семью по своему seed.
 
 ### Ориентация настенных спрайтов
 

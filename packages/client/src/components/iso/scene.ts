@@ -144,13 +144,14 @@ export function buildRoomScene(
   if (level >= 2) place(a, 'coffee_table', [1, 1], [[w - 3, d - 2], [3, d - 2]]);
   if (level >= 3) place(a, 'sofa', [2, 1], [[w - 3, d - 1], [w - 2, d - 1]]);
   if (level >= 3) place(a, 'side_cabinet', [1, 1], [[w - 1, d - 1], [w - 1, d - 2], [w - 1, d - 3], [0, d - 1], [0, d - 2], [1, d - 1], [w - 2, d - 4]]);
-  if (level >= 2) place(a, swapped ? 'armchair_clay' : 'armchair', [1, 1], [[w - 2, d - 2], [w - 2, d - 3], [w - 3, d - 2]]);
+  if (level >= 2) place(a, ['armchair', 'armchair_clay', 'armchair_teal'][pick(3)], [1, 1], [[w - 2, d - 2], [w - 2, d - 3], [w - 3, d - 2]]);
   if (level >= 3) place(a, 'palm', [1, 1], [[1, d - 2], [1, d - 1], [w - 2, d - 2]]);
   if (level >= 4) place(a, 'arcade', [1, 1], at([w - 2, 3], [w - 2, 4], [w - 3, 3]));
   if (level >= 1) place(a, 'floor_lamp', [1, 1], [[w - 2, d - 2], [1, d - 2], [w - 2, d - 3]]);
   if (level <= 1) place(a, 'boxes', [1, 1], [[3, d - 1], [2, d - 2]]);
-  // the rug comes in two colourways (rug_rolled / rug_moss, tinted by isogen)
-  if (level === 0) place(a, swapped ? 'rug_moss' : 'rug_rolled', [2, 1], [[2, d - 2], [1, d - 2]]);
+  // the rug comes in three colourways (rug_rolled/rug_moss/rug_sand, tinted by
+  // isogen) — one drawing, a seed-picked finish, like wall paint and flooring
+  if (level === 0) place(a, ['rug_rolled', 'rug_moss', 'rug_sand'][pick(3)], [2, 1], [[2, d - 2], [1, d - 2]]);
   if (level >= 2) place(a, 'beanbag', [1, 1], [[w - 2, 2], [w - 2, 3]]);
   // a bench by the door — the flat has enough rooms for real visitors by now
   if (level >= 2) place(a, 'bench', [1, 1], [[3, d - 1], [4, d - 1], [2, d - 1], [w - 1, d - 1], [0, d - 1], [3, d - 2], [4, d - 2], [w - 2, d - 1]]);
@@ -168,6 +169,9 @@ export function buildRoomScene(
     pet_cactus: 'pet_cactus',
     pet_robo: 'pet_robo',
     pet_spider: 'pet_spider',
+    pet_parrot: 'pet_parrot',
+    pet_fish: 'pet_fish',
+    pet_hamster: 'pet_hamster',
   };
   const petId = [...items].find((id) => PET_SPRITES[id]);
   if (petId) {
@@ -184,17 +188,36 @@ export function buildRoomScene(
     }
     const tiles: [number, number] = sprite.endsWith('_sleep') && base !== 'pet_cat' ? [2, 1] : [1, 1];
 
-    place(a, 'pet_bed', [1, 1], [[2, d - 2], [1, d - 2], [3, d - 2]]);
-    place(a, sprite, tiles, [[3, d - 2], [2, d - 1], [4, d - 2], [1, d - 1]]);
+    // A pet corner near the front: the bed hugs the open side, the animal
+    // stands beside it and a bowl waits in front. Candidate sets are mirrored
+    // left/right, because the dorm's rug can fence the whole back row off.
+    place(a, 'pet_bed', [1, 1], [
+      [2, d - 2], [1, d - 2], [3, d - 2], [4, d - 2],
+      [w - 3, d - 2], [w - 2, d - 2], [w - 1, d - 2], [w - 1, d - 3],
+      [2, d - 1], [w - 2, d - 1], [1, d - 1], [w - 1, d - 1],
+      [3, d - 3], [w - 2, d - 3], [4, d - 3], [w - 3, d - 3],
+    ]);
+    place(a, sprite, tiles, [
+      [3, d - 2], [2, d - 1], [4, d - 2], [1, d - 1],
+      [w - 2, d - 2], [w - 1, d - 2], [w - 2, d - 1], [w - 1, d - 1],
+      [4, d - 1], [3, d - 1], [w - 3, d - 1], [5, d - 2], [w - 3, d - 2],
+    ]);
     // a bowl only where the pose does not already come with one
     if (!sprite.endsWith('_eat')) {
       place(a, player.petFedToday ? 'pet_bowl_full' : 'pet_bowl', [1, 1], [
         [4, d - 1],
         [3, d - 1],
         [2, d - 2],
+        [5, d - 1],
+        [w - 2, d - 1],
+        [w - 1, d - 1],
+        [w - 3, d - 1],
+        [2, d - 1],
+        [w - 2, d - 2],
+        [w - 1, d - 2],
       ]);
     }
-    if (petId === 'pet_cat') place(a, 'cat_tower', [1, 1], [[0, d - 2], [w - 1, d - 3]]);
+    if (petId === 'pet_cat') place(a, 'cat_tower', [1, 1], [[0, d - 2], [w - 1, d - 3], [w - 1, d - 2], [4, d - 3]]);
   }
   if (level === 0 && !petId) place(a, 'box_open', [1, 1], [[2, d - 2], [3, d - 2]]);
 

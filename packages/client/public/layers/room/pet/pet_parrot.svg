@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000" width="1000" height="1000"><defs>
+  <linearGradient id="skinGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#969696"/><stop offset="1" stop-color="#767676"/>
+  </linearGradient>
+  <linearGradient id="hairGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#5c5c5c"/><stop offset="1" stop-color="#3c3c3c"/>
+  </linearGradient>
+  <linearGradient id="wallGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#a6abb5"/><stop offset="1" stop-color="#898e99"/>
+  </linearGradient>
+  <linearGradient id="floorGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#5f5f5f"/><stop offset="1" stop-color="#424242"/>
+  </linearGradient>
+  <linearGradient id="glassGrad" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#ddeaf7"/><stop offset="1" stop-color="#a9c6e0"/>
+  </linearGradient>
+  <linearGradient id="woodGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#b98d60"/><stop offset="1" stop-color="#8a6238"/>
+  </linearGradient>
+  <linearGradient id="steelGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#8b93a3"/><stop offset="1" stop-color="#5d6672"/>
+  </linearGradient>
+</defs><ellipse cx="880" cy="756" rx="50" ry="12" fill="#000000" opacity="0.14" stroke="none"/><g stroke="#1e2430" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+  <rect x="836" y="748" width="88" height="9" rx="4" fill="#8a6238"/>
+  <rect x="872" y="680" width="14" height="68" fill="#a0805c"/>
+  <path d="M880 662 Q860 610 880 576 Q900 610 880 662 Z" fill="#2e8b57"/>
+  <circle cx="880" cy="552" r="30" fill="#22c55e"/>
+  <circle cx="893" cy="546" r="4.5" fill="#20242a" stroke="none"/>
+  <path d="M900 556 L934 566 L900 578 Z" fill="#facc15"/>
+  <path d="M896 580 L922 588 L898 596 Z" fill="#b45309"/>
+  <ellipse cx="858" cy="628" rx="14" ry="34" fill="#166534" transform="rotate(12 858 628)"/>
+  <path d="M900 660 Q958 700 940 758 Q922 722 886 706 Z" fill="#166534"/>
+  <ellipse cx="872" cy="676" rx="13" ry="20" fill="#bbf7d0"/>
+  <path d="M874 700 L866 720 M882 702 L886 718" stroke="#b5651d" stroke-width="6"/>
+</g></svg>

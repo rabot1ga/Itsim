@@ -116,19 +116,56 @@ describe('buildRoomScene', () => {
   });
 
   it('gives the student flat its rolled rug in one of the tinted colourways', () => {
+    const rugs = ['rug_rolled', 'rug_moss', 'rug_sand'];
     for (const seed of seeds) {
       const scene = buildRoomScene(player({ housingLevel: 0, genetics: { seed } }), SPRITES, manifest.tile);
       const got = new Set(scene.items.map((i) => i.sprite));
-      expect(got.has('rug_rolled') || got.has('rug_moss'), seed).toBe(true);
+      expect(rugs.some((r) => got.has(r)), seed).toBe(true);
     }
   });
 
   it('gives the furnished flat a chair and an armchair in a tinted colourway', () => {
+    const armchairs = ['armchair', 'armchair_clay', 'armchair_teal'];
     for (const seed of seeds) {
       const scene = buildRoomScene(player({ housingLevel: 2, genetics: { seed } }), SPRITES, manifest.tile);
       const got = new Set(scene.items.map((i) => i.sprite));
-      expect(got.has('armchair') || got.has('armchair_clay'), seed).toBe(true);
+      expect(armchairs.some((c) => got.has(c)), seed).toBe(true);
       expect(got.has('beanbag'), seed).toBe(true);
+    }
+  });
+
+  const NEW_PETS = ['pet_parrot', 'pet_hamster', 'pet_fish'];
+
+  it('places each newer pet with a bed and a bowl (and no moving boxes)', () => {
+    for (const pet of NEW_PETS) {
+      expect(SPRITES[pet], pet).toBeDefined();
+      for (const seed of seeds) {
+        const scene = buildRoomScene(
+          player({ housingLevel: 0, items: [pet], genetics: { seed } }),
+          SPRITES,
+          manifest.tile
+        );
+        const got = new Set(scene.items.map((i) => i.sprite));
+        expect(got.has(pet), `${pet} (seed ${seed})`).toBe(true);
+        expect(got.has('pet_bed'), `${pet} (seed ${seed})`).toBe(true);
+        expect(got.has('pet_bowl'), `${pet} (seed ${seed})`).toBe(true);
+        expect(got.has('box_open'), `${pet} (seed ${seed})`).toBe(false);
+      }
+    }
+  });
+
+  it('swaps the empty bowl for a full one once the pet is fed', () => {
+    for (const pet of NEW_PETS) {
+      for (const seed of seeds) {
+        const scene = buildRoomScene(
+          player({ housingLevel: 0, items: [pet], petFedToday: true, genetics: { seed } }),
+          SPRITES,
+          manifest.tile
+        );
+        const got = new Set(scene.items.map((i) => i.sprite));
+        expect(got.has('pet_bowl_full'), `${pet} (seed ${seed})`).toBe(true);
+        expect(got.has('pet_bowl'), `${pet} (seed ${seed})`).toBe(false);
+      }
     }
   });
 });

@@ -1504,6 +1504,26 @@
         1,
         1
       ]
+    },
+    "rug_sand": {
+      "file": "/iso/rug_sand.png",
+      "w": 86,
+      "h": 59,
+      "kind": "floor",
+      "tiles": [
+        2,
+        1
+      ]
+    },
+    "armchair_teal": {
+      "file": "/iso/armchair_teal.png",
+      "w": 56,
+      "h": 54,
+      "kind": "floor",
+      "tiles": [
+        1,
+        1
+      ]
     }
   }
 }

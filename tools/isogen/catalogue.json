@@ -901,6 +901,24 @@
         1
       ],
       "scale": 0.88
+    },
+    {
+      "slice": "tints_02",
+      "id": "rug_sand",
+      "tiles": [
+        2,
+        1
+      ],
+      "scale": 0.9
+    },
+    {
+      "slice": "tints_03",
+      "id": "armchair_teal",
+      "tiles": [
+        1,
+        1
+      ],
+      "scale": 0.88
     }
   ]
 }
