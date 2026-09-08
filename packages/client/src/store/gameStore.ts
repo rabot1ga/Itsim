@@ -33,6 +33,16 @@ async function api(path: string, init: RequestInit = {}): Promise<{ ok: boolean;
 export const apiRequest = api;
 
 /**
+ * Fire-and-forget product telemetry (roadmap P0.3). The server appends to
+ * NDJSON; a failure must never slow down or break the game.
+ */
+function track(event: string, payload?: Record<string, unknown>): void {
+  api('/telemetry', { method: 'POST', body: JSON.stringify({ event, payload }) }).catch(() => {
+    /* telemetry is best-effort */
+  });
+}
+
+/**
  * A number that just changed, on its way up the screen.
  *
  * Idle games live on this: a tap has to *pay out* visibly, or the loop feels
@@ -209,7 +219,10 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 
   setScreen: (screen) => set({ screen, moreOpen: false }),
-  setView: (view) => set({ currentView: view, moreOpen: false }),
+  setView: (view) => {
+    set({ currentView: view, moreOpen: false });
+    track('screen_view', { view });
+  },
   setMoreOpen: (open) => set({ moreOpen: open }),
   clearError: () => set({ error: null }),
 
@@ -249,6 +262,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       else if (actionId === 'buy_item' || actionId === 'upgrade_housing') haptic('medium');
       else if (actionId === 'customize_room' || actionId === 'customize_avatar') haptic('selection');
       else haptic('tap');
+      track('action', { actionId });
       return true;
     } catch (err) {
       console.error('Action error:', err);
@@ -278,6 +292,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         set({ error: res.data?.error || 'Не удалось завершить день' });
       } else {
         haptic('medium');
+        track('day_end', { day: res.data?.state?.currentDay });
       }
     } catch (err) {
       console.error('Advance day error:', err);
@@ -301,6 +316,7 @@ export const useGameStore = create<GameState>((set, get) => ({
           error: null,
           gains: [...s.gains, ...diffGains(before, res.data.state)].slice(-6),
         }));
+        track('event_choice', { eventId });
       }
       if (!res.ok) {
         haptic('error');
@@ -402,6 +418,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       if (res.data?.state) {
         haptic('selection');
         set({ player: res.data.state, error: null });
+        track('skill_pick', { skillId });
         return true;
       }
       haptic('error');
