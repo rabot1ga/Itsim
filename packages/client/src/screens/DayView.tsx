@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { CareerPressureCard } from '../components/CareerPressureCard';
 import { PixelIcon } from '../components/pixel/PixelIcon';
+import { tipForDay } from './dayTips';
 import { hideMainButton, isMainButtonSupported, setMainButtonProgress, showMainButton } from '../lib/telegram';
 
 interface DayViewProps {
@@ -134,6 +135,50 @@ const YesterdayLog: React.FC<{ text: string }> = ({ text }) => {
   );
 };
 
+/** localStorage key: the last day whose tip the player dismissed */
+const ONBOARD_DISMISS_KEY = 'itsim_tip_dismissed_day';
+
+/** First-week coaching card — one tip per day, dismissible until next day. */
+const OnboardingTip: React.FC<{ day: number }> = ({ day }) => {
+  const [dismissed, setDismissed] = useState(() => {
+    try {
+      return localStorage.getItem(ONBOARD_DISMISS_KEY) === String(day);
+    } catch {
+      return false;
+    }
+  });
+  const tip = tipForDay(day);
+  if (!tip || dismissed) return null;
+
+  const hide = () => {
+    setDismissed(true);
+    try {
+      localStorage.setItem(ONBOARD_DISMISS_KEY, String(day));
+    } catch {
+      /* storage unavailable — fine, tip re-shows next visit */
+    }
+  };
+
+  return (
+    <section className="panel panel-note panel-note-sky animate-pop-in">
+      <div className="flex items-start gap-2">
+        <PixelIcon name={tip.icon} size={13} className="text-sky-300 mt-0.5 shrink-0" />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-ink-100 leading-tight">{tip.title}</p>
+          <p className="text-xs text-ink-300 leading-relaxed mt-1">{tip.body}</p>
+        </div>
+        <button
+          onClick={hide}
+          aria-label="Скрыть совет"
+          className="text-2xs text-ink-600 hover:text-ink-300 transition-colors shrink-0 touch-target !min-h-[28px] px-1 -mt-1"
+        >
+          ✕
+        </button>
+      </div>
+    </section>
+  );
+};
+
 export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
   const player = useGameStore((s) => s.player);
   const activeEvent = useGameStore((s) => s.activeEvent);
@@ -197,6 +242,9 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
 
   return (
     <div className="space-y-4 animate-fade-in">
+      {/* First week: one pointer per day instead of a wall of grids */}
+      <OnboardingTip day={currentDay} />
+
       {/* Active event */}
       {activeEvent && (
         <section className="panel panel-note panel-note-gold animate-pop-in">
@@ -294,6 +342,14 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
 
       {/* Career pressure: living costs + what the next gate really needs */}
       <CareerPressureCard />
+
+      {/* Low energy: tell the player the way out instead of leaving actions grey */}
+      {player.energy <= 2 && (
+        <p className="flex items-center gap-2 text-xs text-ochre-300 leading-tight px-0.5">
+          <PixelIcon name="bolt" size={11} className="text-ochre-400 shrink-0" />
+          Энергия на исходе. «Поспать» восстановит её — а сон всегда доступен, даже при нуле.
+        </p>
+      )}
 
       {/* Actions by category */}
       {categories.map((cat) => (
