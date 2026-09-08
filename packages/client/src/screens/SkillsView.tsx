@@ -6,8 +6,23 @@ import { PixelIcon } from '../components/pixel/PixelIcon';
 import { EmojiToken, SpriteBadge } from '../components/ui';
 
 /**
- * Talent tree — rendered from content (skills.json) grouped by branch.
- * New branches (ai_ml, cybersec, gamedev, blockchain) appear automatically.
+ * Skill screen — RPG skill trees, one per branch.
+ *
+ * skills.json already *is* a tree (every skill has a parent and an unlock
+ * gate), it was just being shown as a flat list of rows inside accordions.
+ * Now each open branch draws its actual shape: nodes hang from their parents
+ * on connectors, roots sit on top, cross-branch requirements (e.g. AI/ML
+ * needs backend Python) act as foreign roots with their own lock captions —
+ * exactly like a talent tree where another school gates your node.
+ *
+ * Node states:
+ *   · learned (level > 0)   — moss frame, thin XP bar under the name
+ *   · available (level 0)   — neutral frame, tap to make it your main skill
+ *   · main skill            — gold frame + target marker
+ *   · locked                — dimmed, dashed connector, "need X lvl" caption
+ * Tap an unlocked node to train it (main skill); the whole branch opens on
+ * tap of its header. Layout is computed from content, so new branches appear
+ * automatically — a tree drawn by data, not by hand.
  */
 
 const BRANCH_META: Record<string, { name: string; icon: string; color: string }> = {
@@ -23,15 +38,40 @@ const BRANCH_META: Record<string, { name: string; icon: string; color: string }>
 };
 
 const SKILL_EMOJI: Record<string, string> = {
-  javascript: '🟨', react: '⚛️', nextjs: '▲', css: '🎨', typescript: '🔷',
-  python: '🐍', java: '☕', spring: '🌱', sql: '🗃️', nodejs: '🟢', git: '🔀', go: '🐹',
-  swift: '🐦', kotlin: '🟣', android: '🤖',
-  manual_testing: '👆', automation_testing: '🤖', selenium: '🧪',
-  docker: '🐳', linux: '🐧',
-  machine_learning: '🧠', neural_networks: '🕸️', data_science: '📊', prompt_engineering: '💬',
-  network_security: '🌐', pentest: '🎯', cryptography: '🔐',
-  game_design: '🎲', unity: '🟪', godot: '👾',
-  solidity: '📜', web3: '🧩', rust_solana: '🦀', defi: '💹',
+  javascript: '🟨',
+  react: '⚛️',
+  nextjs: '▲',
+  css: '🎨',
+  typescript: '🔷',
+  python: '🐍',
+  java: '☕',
+  spring: '🌱',
+  sql: '🗃️',
+  nodejs: '🟢',
+  git: '🔀',
+  go: '🐹',
+  swift: '🐦',
+  kotlin: '🟣',
+  android: '🤖',
+  manual_testing: '👆',
+  automation_testing: '🤖',
+  selenium: '🧪',
+  docker: '🐳',
+  linux: '🐧',
+  machine_learning: '🧠',
+  neural_networks: '🕸️',
+  data_science: '📊',
+  prompt_engineering: '💬',
+  network_security: '🌐',
+  pentest: '🎯',
+  cryptography: '🔐',
+  game_design: '🎲',
+  unity: '🟪',
+  godot: '👾',
+  solidity: '📜',
+  web3: '🧩',
+  rust_solana: '🦀',
+  defi: '💹',
 };
 
 interface SkillInfo {
@@ -78,6 +118,96 @@ const PERK_EMOJI: Record<string, string> = {
   perk_gold_rush: '🪙',
   perk_hustler: '🧳',
 };
+
+/* ── Tree geometry ─────────────────────────────────────────────────────────
+ * One column per leaf (a skill with no children in this branch). A parent
+ * sits centered over the columns of its descendants; rows are skill depths.
+ */
+const NODE_W = 92;
+const NODE_H = 70;
+const COL_STEP = 96;
+const ROW_STEP = 104;
+const PAD = 14;
+
+interface PlacedNode {
+  skill: SkillInfo;
+  x: number;
+  y: number;
+}
+
+interface TreeEdge {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  childId: string;
+}
+
+interface TreeLayout {
+  nodes: PlacedNode[];
+  edges: TreeEdge[];
+  width: number;
+  height: number;
+}
+
+export function layoutBranch(skills: SkillInfo[]): TreeLayout {
+  const ids = new Set(skills.map((s) => s.id));
+  const childOf = new Map<string, SkillInfo[]>();
+  for (const s of skills) {
+    if (s.parent && ids.has(s.parent)) {
+      const arr = childOf.get(s.parent) ?? [];
+      arr.push(s);
+      childOf.set(s.parent, arr);
+    }
+  }
+  const roots = skills.filter((s) => !s.parent || !ids.has(s.parent));
+
+  // depth of every node (guards against sharing a node via two paths)
+  const depthOf = new Map<string, number>();
+  const visit = (s: SkillInfo, d: number) => {
+    if ((depthOf.get(s.id) ?? Infinity) <= d) return;
+    depthOf.set(s.id, d);
+    for (const c of childOf.get(s.id) ?? []) visit(c, d + 1);
+  };
+  for (const r of roots) visit(r, 0);
+
+  // leaf-column extents: leaves get consecutive columns in DFS order
+  const ext = new Map<string, [number, number]>();
+  let leafCount = 0;
+  const walk = (s: SkillInfo): void => {
+    const kids = childOf.get(s.id) ?? [];
+    if (kids.length === 0) {
+      ext.set(s.id, [leafCount, leafCount]);
+      leafCount += 1;
+      return;
+    }
+    for (const k of kids) walk(k);
+    ext.set(s.id, [ext.get(kids[0].id)![0], ext.get(kids[kids.length - 1].id)![1]]);
+  };
+  for (const r of roots) walk(r);
+
+  const nodes: PlacedNode[] = skills.map((s) => {
+    const [a, b] = ext.get(s.id) ?? [0, 0];
+    const centerX = PAD + NODE_W / 2 + ((a + b) / 2) * COL_STEP;
+    return { skill: s, x: centerX, y: PAD + (depthOf.get(s.id) ?? 0) * ROW_STEP };
+  });
+  const nodeOf = new Map(nodes.map((n) => [n.skill.id, n]));
+
+  const edges: TreeEdge[] = [];
+  for (const s of skills) {
+    const parent = nodeOf.get(s.id);
+    if (!parent) continue;
+    for (const c of childOf.get(s.id) ?? []) {
+      const child = nodeOf.get(c.id);
+      if (!child) continue;
+      edges.push({ x1: parent.x, y1: parent.y + NODE_H, x2: child.x, y2: child.y, childId: c.id });
+    }
+  }
+
+  const width = PAD * 2 + NODE_W + Math.max(0, leafCount - 1) * COL_STEP;
+  const height = (Math.max(0, ...nodes.map((n) => n.y + NODE_H)) || NODE_H) + PAD;
+  return { nodes, edges, width, height };
+}
 
 export const SkillsView: React.FC = () => {
   const player = useGameStore((s) => s.player);
@@ -131,9 +261,19 @@ export const SkillsView: React.FC = () => {
   const skillLevel = (id: string) => player.skills?.[id]?.level ?? 0;
   const skillXp = (id: string) => player.skills?.[id]?.xp ?? 0;
 
+  const nameOf = (id: string) => skills.find((s) => s.id === id)?.name ?? id;
+
   const unlocked = (s: SkillInfo): boolean => {
     if (!s.unlockAt) return true;
     return Object.entries(s.unlockAt).every(([parent, need]) => skillLevel(parent) >= need);
+  };
+  /** first gate that is not met yet — shown as the "need X lvl" caption */
+  const firstGate = (s: SkillInfo): { name: string; need: number } | null => {
+    if (!s.unlockAt) return null;
+    for (const [parent, need] of Object.entries(s.unlockAt)) {
+      if (skillLevel(parent) < need) return { name: nameOf(parent), need };
+    }
+    return null;
   };
 
   const branches = [...new Set(skills.map((s) => s.branch))];
@@ -143,7 +283,10 @@ export const SkillsView: React.FC = () => {
     <div className="space-y-4 animate-fade-in">
       {error && (
         <div className="panel panel-note panel-note-clay cursor-pointer" onClick={clearError}>
-          <p className="flex items-start gap-2 text-sm text-clay-300"><PixelIcon name="warn" size={12} className="mt-0.5" />{error}</p>
+          <p className="flex items-start gap-2 text-sm text-clay-300">
+            <PixelIcon name="warn" size={12} className="mt-0.5" />
+            {error}
+          </p>
         </div>
       )}
 
@@ -155,7 +298,8 @@ export const SkillsView: React.FC = () => {
         <span className="num text-xs text-ink-500">{totalLevels} уровней</span>
       </div>
       <p className="text-xs text-ink-500 -mt-2 leading-relaxed">
-        Тапни по навыку, чтобы сделать его основным — учёба и работа качают именно его.
+        Дерево ветки открывается тапом по школе. Тапни по навыку, чтобы качать его — учёба и работа прокачивают
+        выбранный.
       </p>
 
       {/* Pinned main skill — always one tap away */}
@@ -195,7 +339,7 @@ export const SkillsView: React.FC = () => {
         </div>
       </div>
 
-      {/* Hard skills by branch (dynamic from content) */}
+      {/* Hard skills by branch — each branch is a drawn tree, not a list */}
       {branches.map((branchId) => {
         const meta = BRANCH_META[branchId] ?? { name: branchId, icon: '📌', color: 'border-ink-500' };
         const branchSkills = skills.filter((s) => s.branch === branchId);
@@ -219,63 +363,25 @@ export const SkillsView: React.FC = () => {
                 </span>
               </span>
               <span className="meter w-14 shrink-0">
-                <span
-                  style={{ width: `${Math.round(progress * 100)}%`, background: 'var(--moss)' }}
-                />
+                <span style={{ width: `${Math.round(progress * 100)}%`, background: 'var(--moss)' }} />
               </span>
               <PixelIcon name="chevron" size={10} className={`accordion-chevron text-ink-500 ${open ? 'open' : ''}`} />
             </button>
             <div className={`accordion-body ${open ? 'open' : ''}`}>
               <div className="accordion-inner">
-                <div className="px-2 pb-2.5 space-y-1">
-              {branchSkills.map((s) => {
-                const level = skillLevel(s.id);
-                const xp = skillXp(s.id);
-                const isUnlocked = unlocked(s);
-                const xpPercent = Math.min(100, Math.round((xp / xpToNext(level)) * 100));
-                const lockedBy = s.unlockAt
-                  ? Object.entries(s.unlockAt).find(([p, need]) => skillLevel(p) < need)
-                  : undefined;
-
-                const isMain = player.mainSkillId === s.id;
-                return (
-                  <button
-                    key={s.id}
-                    onClick={() => isUnlocked && setMainSkill(s.id)}
-                    disabled={!isUnlocked}
-                    title={isUnlocked ? (isMain ? 'Основной навык' : 'Сделать основным') : s.flavor}
-                    className={`w-full flex items-center gap-2 text-left px-2 py-2 min-h-[46px] border transition-colors ${
-                      isMain
-                        ? 'border-gold-700 bg-gold-900/20'
-                        : 'border-transparent hover:bg-ink-700/40'
-                    } ${!isUnlocked ? 'opacity-45' : ''}`}
-                  >
-                    <EmojiToken className="!w-6 !h-6 !text-[12px]">
-                      {SKILL_EMOJI[s.id] ?? '📌'}
-                    </EmojiToken>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between gap-2 text-xs">
-                        <span className="text-ink-200 truncate flex items-center gap-1.5">
-                          {s.name}
-                          {isMain && <PixelIcon name="target" size={9} className="text-gold-300" />}
-                          {!isUnlocked && lockedBy && (
-                            <span className="flex items-center gap-1 text-ink-500">
-                              <PixelIcon name="lock" size={9} />
-                              <span className="num">
-                                {lockedBy[0]} {lockedBy[1]}+
-                              </span>
-                            </span>
-                          )}
-                        </span>
-                        <span className="num text-ink-100 font-semibold">{level}</span>
-                      </div>
-                      <div className="meter mt-1">
-                        <span style={{ width: `${xpPercent}%`, background: 'var(--sky)' }} />
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
+                <div className="overflow-x-auto">
+                  <SkillTree
+                    skills={branchSkills}
+                    skillLevel={skillLevel}
+                    skillXp={skillXp}
+                    unlocked={unlocked}
+                    firstGate={firstGate}
+                    mainSkillId={player.mainSkillId}
+                    onPick={(id) => {
+                      haptic('selection');
+                      setMainSkill(id);
+                    }}
+                  />
                 </div>
               </div>
             </div>
@@ -304,8 +410,8 @@ export const SkillsView: React.FC = () => {
                   owned
                     ? 'border-moss-700 bg-moss-900/20'
                     : canUnlock
-                    ? 'border-gold-700 bg-gold-900/15'
-                    : 'border-ink-700 bg-ink-900'
+                      ? 'border-gold-700 bg-gold-900/15'
+                      : 'border-ink-700 bg-ink-900'
                 }`}
               >
                 <EmojiToken>{PERK_EMOJI[perk.id] ?? '✨'}</EmojiToken>
@@ -317,9 +423,7 @@ export const SkillsView: React.FC = () => {
                   <p className="text-xs text-ink-500 mt-0.5 leading-relaxed" title={perk.flavor}>
                     {perk.flavor}
                   </p>
-                  <p className="text-2xs text-ink-600 mt-0.5">
-                    Требует: {describeRequires(perk.requires, skills)}
-                  </p>
+                  <p className="text-2xs text-ink-600 mt-0.5">Требует: {describeRequires(perk.requires, skills)}</p>
                 </div>
                 {!owned && (
                   <button
@@ -337,6 +441,138 @@ export const SkillsView: React.FC = () => {
           })}
           {perks.length === 0 && <p className="text-xs text-ink-500">Загрузка перков…</p>}
         </div>
+      </div>
+    </div>
+  );
+};
+
+/* ── The drawn tree ─────────────────────────────────────────────────────── */
+
+interface SkillTreeProps {
+  skills: SkillInfo[];
+  skillLevel: (id: string) => number;
+  skillXp: (id: string) => number;
+  unlocked: (s: SkillInfo) => boolean;
+  firstGate: (s: SkillInfo) => { name: string; need: number } | null;
+  mainSkillId: string | null | undefined;
+  onPick: (id: string) => void;
+}
+
+const SkillTree: React.FC<SkillTreeProps> = ({
+  skills,
+  skillLevel,
+  skillXp,
+  unlocked,
+  firstGate,
+  mainSkillId,
+  onPick,
+}) => {
+  const { nodes, edges, width, height } = layoutBranch(skills);
+
+  return (
+    <div className="relative px-2 pt-2" style={{ minWidth: 'max-content' }}>
+      <div className="relative" style={{ width, height }}>
+        {/* connectors under the nodes */}
+        <svg width={width} height={height} className="absolute inset-0" aria-hidden="true">
+          {edges.map((e, i) => {
+            const childSkill = skills.find((s) => s.id === e.childId);
+            const childLvl = childSkill ? skillLevel(childSkill.id) : 0;
+            const isChildLocked = childSkill ? !unlocked(childSkill) : false;
+            const midY = e.y1 + (e.y2 - e.y1) / 2;
+            const color = childLvl > 0 ? 'var(--moss)' : isChildLocked ? 'var(--line)' : 'var(--line-strong)';
+            return (
+              <path
+                key={i}
+                d={`M ${e.x1} ${e.y1} L ${e.x1} ${midY} L ${e.x2} ${midY} L ${e.x2} ${e.y2}`}
+                stroke={color}
+                strokeWidth={2}
+                fill="none"
+                strokeDasharray={isChildLocked ? '4 4' : undefined}
+                opacity={childLvl > 0 ? 0.9 : isChildLocked ? 0.5 : 0.7}
+              />
+            );
+          })}
+        </svg>
+
+        {nodes.map(({ skill, x, y }) => {
+          const level = skillLevel(skill.id);
+          const isMain = mainSkillId === skill.id;
+          const isUnlocked = unlocked(skill);
+          const isLearned = level > 0;
+          const xp = skillXp(skill.id);
+          const xpPercent = Math.min(100, Math.round((xp / Math.max(1, xpToNext(level))) * 100));
+          const gate = isUnlocked ? null : firstGate(skill);
+
+          const frame = isMain
+            ? 'border-gold-700 bg-gold-900/15'
+            : isLearned
+              ? 'border-moss-700 bg-moss-900/20'
+              : isUnlocked
+                ? 'border-ink-600 bg-ink-900'
+                : 'border-ink-700 bg-ink-900/60';
+
+          return (
+            <button
+              key={skill.id}
+              onClick={() => isUnlocked && onPick(skill.id)}
+              disabled={!isUnlocked}
+              title={
+                isMain
+                  ? `Основной навык — учёба и работа качают его (ур. ${level})`
+                  : !isUnlocked
+                    ? `${skill.flavor} Нужно: ${gate?.name} ${gate?.need}`
+                    : `Сделать основным: ${skill.name}`
+              }
+              className={`absolute -translate-x-1/2 flex flex-col items-center justify-center border-2 text-center transition-transform active:translate-y-[1px] disabled:cursor-not-allowed ${
+                isUnlocked && !isMain ? 'hover:border-ink-400 hover:-translate-y-[1px]' : ''
+              } ${!isUnlocked ? 'opacity-75' : ''} ${frame}`}
+              style={{ left: x, top: y, width: NODE_W, height: NODE_H }}
+            >
+              <span className="relative">
+                <EmojiToken className="!w-7 !h-7 !text-[14px]">{SKILL_EMOJI[skill.id] ?? '📌'}</EmojiToken>
+                {isMain && (
+                  <span className="absolute -top-1 -right-1 bg-ink-900 border border-gold-700 p-[1px]">
+                    <PixelIcon name="target" size={8} className="text-gold-300" />
+                  </span>
+                )}
+              </span>
+
+              <span
+                className={`w-full px-1 mt-1 text-[10px] leading-[1.15] font-semibold truncate ${
+                  isMain ? 'text-gold-200' : isLearned ? 'text-ink-100' : isUnlocked ? 'text-ink-300' : 'text-ink-500'
+                }`}
+                title={skill.name}
+              >
+                {skill.name}
+              </span>
+
+              <span className="w-full h-[16px] px-1.5 mt-0.5 flex items-center gap-1">
+                {isLearned ? (
+                  <>
+                    <span className="meter flex-1 !h-[3px]">
+                      <span style={{ width: `${xpPercent}%`, background: 'var(--sky)' }} />
+                    </span>
+                    <span
+                      className={`num text-[10px] font-bold leading-none ${isMain ? 'text-gold-200' : 'text-moss-300'}`}
+                    >
+                      {level}
+                    </span>
+                  </>
+                ) : !isUnlocked && gate ? (
+                  <span
+                    className="flex items-center gap-1 min-w-0 w-full justify-center text-[9px] text-ink-400"
+                    title={`Нужно: ${gate.name} ${gate.need}+`}
+                  >
+                    <PixelIcon name="lock" size={7} className="shrink-0 text-ink-500" />
+                    <span className="truncate">
+                      {gate.name} {gate.need}
+                    </span>
+                  </span>
+                ) : null}
+              </span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
