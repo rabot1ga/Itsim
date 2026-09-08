@@ -360,8 +360,64 @@ export const BalanceSchema = z.object({
   // Career endings (ТЗ «Финалы») — terminal states reached by living conditions
   endings: z
     .object({
+      // terminal triggers (negative paths)
       burnoutDays: z.number().int().min(1).default(7),
       brokeDaysToQuit: z.number().int().min(1).default(15),
+      // positive-endings thresholds (gated by player state)
+      exit: z
+        .object({
+          minReputation: z.number().int().min(0).default(80),
+          minMoney: z.number().int().min(0).default(100_000_000),
+          minGrade: z.enum(['senior', 'teamlead', 'architect', 'cto']).default('senior'),
+          title: z.string().default('🚀 Экзит · Стартап-единорог'),
+          description: z.string().default(
+            'Ты ушёл в свой проект, и его оценили в 100 млн. Жизнь на своих условиях — самый дорогой приз.'
+          ),
+        })
+        .default({}),
+      free_artist: z
+        .object({
+          minReputation: z.number().int().min(0).default(40),
+          maxMoney: z.number().int().min(0).default(1_000_000),
+          minGrade: z.enum(['middle', 'senior', 'teamlead', 'architect', 'cto']).default('senior'),
+          title: z.string().default('💻 Свободный художник'),
+          description: z.string().default(
+            'Никакого офиса. Только ты, клиенты и код. Меньше денег — больше свободы.'
+          ),
+        })
+        .default({}),
+      teacher: z
+        .object({
+          minReputation: z.number().int().min(0).default(60),
+          minMentoredJuniors: z.number().int().min(1).default(50),
+          title: z.string().default('🎓 Учитель'),
+          description: z.string().default('50 джунов выросли под твоим менторством. Их успехи — твои.'),
+        })
+        .default({}),
+      cto: z
+        .object({
+          minReputation: z.number().int().min(0).default(68),
+          minLeadership: z.number().int().min(0).default(32),
+          title: z.string().default('🏢 Корпоративный бог · CTO'),
+          description: z.string().default('Борд избрал тебя CTO. Корпорация — это ты.'),
+        })
+        .default({}),
+      burnout: z
+        .object({
+          title: z.string().default('🔥 Выгорание'),
+          description: z.string().default(
+            'Здоровье и мотивация в нуле. Тело и психика сказали «стоп». Следующая жизнь — с +15% XP.'
+          ),
+        })
+        .default({}),
+      left_it: z
+        .object({
+          title: z.string().default('💀 Ушёл из IT'),
+          description: z.string().default(
+            'Денег нет, перспектив тоже. Ты закрыл редактор и пошёл учиться на повара. Следующая жизнь — с чистого листа.'
+          ),
+        })
+        .default({}),
     })
     .optional(),
 });

@@ -20,9 +20,9 @@ const SIZE_LABELS: Record<string, string> = {
 };
 
 const TEAM = [
-  { npcId: 'teamlead', emoji: '🧑‍💼', layer: 'lead' },
-  { npcId: 'junior_colleague', emoji: '👩‍💻', layer: 'junior' },
-  { npcId: 'toxic_senior', emoji: '😠', layer: 'toxic' },
+  { npcId: 'teamlead', layer: 'lead' },
+  { npcId: 'junior_colleague', layer: 'junior' },
+  { npcId: 'toxic_senior', layer: 'toxic' },
 ];
 
 function relationMeta(value: number): { icon: string; label: string; cls: string } {
@@ -163,9 +163,27 @@ export const OfficeView: React.FC = () => {
             const meta = npcs.find((n: any) => n.id === t.npcId);
             const value = player.relationships?.[t.npcId] ?? 0;
             const rel = relationMeta(value);
+            // Same source as FriendsView: avatar field in npcs.json (.png),
+            // we serve the optimised .webp in /art/npcs/.
+            const portrait = meta?.avatar ? `/art/npcs/${String(meta.avatar).replace(/\.png$/i, '.webp')}` : null;
             return (
               <div key={t.npcId} className="panel !p-2.5 text-center" title={meta?.description ?? ''}>
-                <EmojiToken className="mx-auto">{t.emoji}</EmojiToken>
+                {portrait ? (
+                  <img
+                    src={portrait}
+                    width={44}
+                    height={44}
+                    loading="lazy"
+                    decoding="async"
+                    alt=""
+                    className="reference-friend-portrait mx-auto"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).style.display = 'none';
+                    }}
+                  />
+                ) : (
+                  <EmojiToken className="mx-auto">🧑‍💻</EmojiToken>
+                )}
                 <p className="text-xs font-medium text-ink-100 truncate mt-1.5">
                   {meta?.name ?? t.npcId}
                 </p>

@@ -3,6 +3,16 @@ import { getContent } from '../services/contentService.js';
 
 export async function contentRoutes(app: FastifyInstance) {
   /**
+   * GET /api/content/balance — runtime tuning (XP curves, costs, endings, …)
+   *
+   * Public read; the client uses it to show live ending thresholds in the
+   * «Финалы» screen so the player sees what is still required.
+   */
+  app.get('/balance', async () => {
+    return { balance: getContent().balance };
+  });
+
+  /**
    * GET /api/content/manifest
    * Content manifest for client caching
    */

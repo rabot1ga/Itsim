@@ -33,8 +33,13 @@ const GRADE_LABELS: Record<string, string> = {
   cto: 'CTO',
 };
 
-/** Top three get a gilded rank plate; everybody else gets a quiet number. */
-const RANK_TONE = ['text-gold-300 border-gold-700', 'text-ink-100 border-ink-600', 'text-wood-300 border-wood-700'];
+/** Top three get a coloured rank plate (gold/silver/bronze); everybody else gets a quiet number. */
+const RANK_TONE: Record<number, string> = {
+  1: 'text-gold-300 border-gold-700',
+  2: 'text-ink-100 border-ink-500',
+  3: 'text-wood-300 border-wood-700',
+};
+const DEFAULT_RANK_TONE = 'text-ink-500 border-ink-700';
 
 const Row: React.FC<{ row: LeaderRow }> = ({ row }) => (
   <div
@@ -44,7 +49,7 @@ const Row: React.FC<{ row: LeaderRow }> = ({ row }) => (
   >
     <span
       className={`num w-7 h-7 shrink-0 grid place-items-center border text-xs font-semibold ${
-        RANK_TONE[row.rank - 1] ?? 'text-ink-500 border-ink-700'
+        RANK_TONE[row.rank] ?? DEFAULT_RANK_TONE
       }`}
     >
       {row.rank}

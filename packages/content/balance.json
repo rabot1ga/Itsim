@@ -310,7 +310,41 @@
     },
     "endings": {
         "burnoutDays": 7,
-        "brokeDaysToQuit": 15
+        "brokeDaysToQuit": 15,
+        "exit": {
+            "minReputation": 80,
+            "minMoney": 100000000,
+            "minGrade": "senior",
+            "title": "🚀 Экзит · Стартап-единорог",
+            "description": "Ты ушёл в свой проект, и его оценили в 100 млн. Жизнь на своих условиях — самый дорогой приз."
+        },
+        "free_artist": {
+            "minReputation": 40,
+            "maxMoney": 1000000,
+            "minGrade": "senior",
+            "title": "💻 Свободный художник",
+            "description": "Никакого офиса. Только ты, клиенты и код. Меньше денег — больше свободы."
+        },
+        "teacher": {
+            "minReputation": 60,
+            "minMentoredJuniors": 50,
+            "title": "🎓 Учитель",
+            "description": "50 джунов выросли под твоим менторством. Их успехи — твои."
+        },
+        "cto": {
+            "minReputation": 68,
+            "minLeadership": 32,
+            "title": "🏢 Корпоративный бог · CTO",
+            "description": "Борд избрал тебя CTO. Корпорация — это ты."
+        },
+        "burnout": {
+            "title": "🔥 Выгорание",
+            "description": "Здоровье и мотивация в нуле. Тело и психика сказали «стоп». Следующая жизнь — с +15% XP."
+        },
+        "left_it": {
+            "title": "💀 Ушёл из IT",
+            "description": "Денег нет, перспектив тоже. Ты закрыл редактор и пошёл учиться на повара. Следующая жизнь — с чистого листа."
+        }
     },
     "softSkills": {
         "saturatesAt": 30,
