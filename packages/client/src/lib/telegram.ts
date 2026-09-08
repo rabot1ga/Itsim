@@ -71,7 +71,7 @@ let initialized = false;
 
 /** Call once at startup (main.tsx). Safe to call in a plain browser. */
 /** The app background (--bg in index.css) — Telegram's chrome is painted to match. */
-export const APP_INK = '#11151c';
+export const APP_INK = '#0d1117';
 
 /** Re-apply header/background colours (safe to call again after a theme change). */
 export function applyTelegramChrome(): void {
@@ -264,4 +264,32 @@ export function openInvoice(url: string, callback?: (status: InvoiceStatus) => v
   }
   window.open(url, '_blank');
   callback?.('pending');
+}
+
+// ---------------------------------------------------------------------------
+// Sharing / invites
+// ---------------------------------------------------------------------------
+
+/**
+ * Open a t.me link (invite, share). Inside Telegram it uses the native
+ * navigation; in a browser it opens a tab so the flow stays testable.
+ */
+export function openTelegramLink(url: string): void {
+  const tg = getTelegram();
+  if (tg?.openTelegramLink) {
+    try {
+      tg.openTelegramLink(url);
+      return;
+    } catch {
+      /* fall through */
+    }
+  }
+  window.open(url, '_blank', 'noopener');
+}
+
+/** Invite deep link for the referral flow: `startapp=ref_<telegramId>`. */
+export function inviteLink(botName: string, telegramId: string | number): string {
+  const text = encodeURIComponent('Симулятор жизни айтишника — залетай, у меня уже своя квартира и кот.');
+  const target = encodeURIComponent(`https://t.me/${botName}?startapp=ref_${telegramId}`);
+  return `https://t.me/share/url?url=${target}&text=${text}`;
 }

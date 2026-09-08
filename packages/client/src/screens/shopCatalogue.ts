@@ -81,7 +81,7 @@ const EFFECT_LABELS: Record<string, [string, boolean]> = {
   speedBonus: ['скорость', true],
   xpBonus: ['опыт', true],
   energyBonus: ['энергия', false],
-  motivationBonus: ['мотивация', false],
+  motivationBonus: ['настроение', false],
   healthBonus: ['здоровье', false],
   hashrate: ['MH/s', false],
   electricitySave: ['экономия электричества', true],

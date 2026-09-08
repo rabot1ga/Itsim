@@ -1,19 +1,21 @@
 import React from 'react';
 import { useGameStore } from '../store/gameStore';
-import { PixelIcon } from './pixel/PixelIcon';
 
-/** Frontal reference illustration. The live saved layout remains in the room editor. */
+/** Home preview of the room; tapping the header opens the full editor. */
 export const HomeRoomCard: React.FC = () => {
   const player = useGameStore((state) => state.player);
   const setView = useGameStore((state) => state.setView);
   if (!player) return null;
 
   return (
-    <section className="reference-room" aria-label="Твоя комната">
-      <div className="reference-room-heading">
-        <h2>Комната</h2>
+    <section className="room-card" aria-label="Твоя комната">
+      <div className="room-card-head">
+        <h2>
+          <span aria-hidden="true">🛋</span>
+          Комната
+        </h2>
         <button onClick={() => setView('room')} aria-label="Обустроить комнату">
-          Обустроить <PixelIcon name="arrow" size={9} />
+          Обустроить →
         </button>
       </div>
       <img
@@ -22,7 +24,7 @@ export const HomeRoomCard: React.FC = () => {
         width={640}
         height={480}
       />
-      <span className="reference-room-caption">Эскиз комнаты · твои предметы и расстановка — в редакторе</span>
+      <span className="room-card-caption">Эскиз комнаты · твои предметы и расстановка — в редакторе</span>
     </section>
   );
 };

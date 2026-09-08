@@ -1,12 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
-import { Spinner, EmptyState, SpriteBadge } from '../components/ui';
-import { PixelIcon } from '../components/pixel/PixelIcon';
+import { Spinner, EmptyState, ScreenTitle, SectionTitle } from '../components/ui';
 
 /**
  * Pet — экран питомца: состояние, инвентарь, кормление.
  *
- * Делит питомцев на «настоящих» (еда, мотивация) и косметические аксессуары
+ * Делит питомцев на «настоящих» (еда, настроение) и косметические аксессуары
  * (бант/корона/очки) — те же определения, что в `DayView` и в серверной
  * валидации `feed_pet`.
  */
@@ -22,16 +21,16 @@ const REAL_PETS = [
   'pet_fish',
 ];
 
-const PET_META: Record<string, { icon: string; name: string; mood: string }> = {
-  pet_cat: { icon: 'cat', name: 'Кот', mood: 'мурчит' },
-  pet_dog: { icon: 'bone', name: 'Собака', mood: 'виляет хвостом' },
-  pet_cactus: { icon: 'leaf', name: 'Кактус', mood: 'невозмутим' },
-  pet_robo: { icon: 'chip', name: 'Робо-питомец', mood: 'мигает диодом' },
-  pet_spider: { icon: 'bug', name: 'Паук', mood: 'плетёт паутину' },
-  pet_bulldog: { icon: 'bone', name: 'Бульдог', mood: 'сопит' },
-  pet_parrot: { icon: 'chat', name: 'Попугай', mood: 'повторяет за тобой' },
-  pet_hamster: { icon: 'leaf', name: 'Хомяк', mood: 'крутит колесо' },
-  pet_fish: { icon: 'drop', name: 'Рыбка', mood: 'смотрит из аквариума' },
+const PET_META: Record<string, { name: string; mood: string }> = {
+  pet_cat: { name: 'Кот', mood: 'мурчит' },
+  pet_dog: { name: 'Собака', mood: 'виляет хвостом' },
+  pet_cactus: { name: 'Кактус', mood: 'невозмутим' },
+  pet_robo: { name: 'Робо-питомец', mood: 'мигает диодом' },
+  pet_spider: { name: 'Паук', mood: 'плетёт паутину' },
+  pet_bulldog: { name: 'Бульдог', mood: 'сопит' },
+  pet_parrot: { name: 'Попугай', mood: 'повторяет за тобой' },
+  pet_hamster: { name: 'Хомяк', mood: 'крутит колесо' },
+  pet_fish: { name: 'Рыбка', mood: 'смотрит из аквариума' },
 };
 
 const PET_EMOJI: Record<string, string> = {
@@ -48,7 +47,7 @@ const PET_EMOJI: Record<string, string> = {
 
 const FEED_COST = 500;
 const FEED_ENERGY = 1;
-const FEED_MOTIVATION = 3;
+const FEED_MOOD = 3;
 
 export const PetView: React.FC = () => {
   const player = useGameStore((s) => s.player);
@@ -70,13 +69,10 @@ export const PetView: React.FC = () => {
     return () => controller.abort();
   }, []);
 
-  const owned = player?.items ?? [];
+  const owned = useMemo<string[]>(() => player?.items ?? [], [player?.items]);
   const realPetIds = useMemo(() => owned.filter((id: string) => REAL_PETS.includes(id)), [owned]);
   const accessoryIds = useMemo(
-    () =>
-      owned.filter(
-        (id: string) => items?.some((i) => i.id === id) && !REAL_PETS.includes(id)
-      ),
+    () => owned.filter((id: string) => items?.some((i) => i.id === id) && !REAL_PETS.includes(id)),
     [owned, items]
   );
   const boughtPetIds = useMemo(
@@ -88,7 +84,7 @@ export const PetView: React.FC = () => {
 
   const fed = Boolean(player.petFedToday);
   const petId = realPetIds[0];
-  const meta = petId ? PET_META[petId] ?? null : null;
+  const meta = petId ? (PET_META[petId] ?? null) : null;
 
   const feed = async () => {
     if (busy) return;
@@ -116,39 +112,37 @@ export const PetView: React.FC = () => {
 
   return (
     <div className="space-y-4 animate-fade-in">
-      <div className="shop-heading">
-        <h2 className="flex items-center gap-2 text-base font-semibold text-white">
-          <SpriteBadge sprite="heart" size={32} />
-          Питомец
-        </h2>
-        <span
-          className={`num text-xs ${fed ? 'text-moss-300' : 'text-ochre-300'}`}
-          aria-label={fed ? 'Сыт' : 'Голодный'}
-        >
-          {fed ? 'сыт' : 'голодный'}
-        </span>
-      </div>
+      <ScreenTitle
+        emoji="🐾"
+        meta={
+          <span className={fed ? 'text-moss-300' : 'text-ochre-300'} aria-label={fed ? 'Сыт' : 'Голодный'}>
+            {fed ? 'сыт' : 'голодный'}
+          </span>
+        }
+      >
+        Питомец
+      </ScreenTitle>
 
       {/* Hero — the current pet or a CTA to buy one */}
       {meta ? (
-        <article className="panel text-center" aria-label="Текущий питомец">
+        <article className="card text-center" aria-label="Текущий питомец">
           <p className="text-5xl leading-none mb-2" aria-hidden="true">
             {PET_EMOJI[petId] ?? '🐾'}
           </p>
           <h3 className="text-base font-semibold text-white">{meta.name}</h3>
           <p className="text-2xs text-ink-500 mt-0.5">{meta.mood}</p>
           <div className="grid grid-cols-3 gap-2 mt-3">
-            <div className="px-2 py-1.5 border border-ink-700 bg-ink-900">
-              <p className="text-2xs text-ink-500">Корм</p>
-              <p className="num text-sm text-ink-200">{FEED_COST} ₽</p>
+            <div className="well text-center">
+              <p className="text-2xs text-ink-500">🍖 Корм</p>
+              <p className="num text-sm text-ink-100">{FEED_COST} ₽</p>
             </div>
-            <div className="px-2 py-1.5 border border-ink-700 bg-ink-900">
-              <p className="text-2xs text-ink-500">Энергия</p>
-              <p className="num text-sm text-ink-200">−{FEED_ENERGY}</p>
+            <div className="well text-center">
+              <p className="text-2xs text-ink-500">⚡ Энергия</p>
+              <p className="num text-sm text-ink-100">−{FEED_ENERGY}</p>
             </div>
-            <div className="px-2 py-1.5 border border-ink-700 bg-ink-900">
-              <p className="text-2xs text-ink-500">Мотивация</p>
-              <p className="num text-sm text-moss-300">+{FEED_MOTIVATION}</p>
+            <div className="well text-center">
+              <p className="text-2xs text-ink-500">😊 Настроение</p>
+              <p className="num text-sm text-moss-300">+{FEED_MOOD}</p>
             </div>
           </div>
           <button
@@ -166,13 +160,14 @@ export const PetView: React.FC = () => {
           )}
         </article>
       ) : (
-        <div className="panel">
+        <div className="card">
           <EmptyState
-            icon="heart"
+            bare
+            emoji="🐾"
             title="У тебя пока нет питомца"
-            hint="Питомец даёт +3 мотивации каждый день и делает комнату менее одинокой."
+            hint="Питомец даёт +3 настроения каждый день и делает комнату менее одинокой."
           />
-          <button className="btn btn-primary w-full mt-2" onClick={() => useGameStore.getState().setView('shop')}>
+          <button className="btn btn-primary w-full mt-3" onClick={() => useGameStore.getState().setView('shop')}>
             В магазин
           </button>
         </div>
@@ -180,19 +175,18 @@ export const PetView: React.FC = () => {
 
       {/* Owned accessories (bows, crowns, glasses) */}
       {accessoryIds.length > 0 && (
-        <article className="panel" aria-label="Аксессуары">
-          <h3 className="text-sm font-semibold text-ink-100 mb-2">Аксессуары</h3>
-          <p className="text-2xs text-ink-500 mb-2">
-            Бантики, короны и очки не едят, но и мотивации не дают. Коллекционируй ради витрины.
+        <article className="card" aria-label="Аксессуары">
+          <SectionTitle className="mb-1">Аксессуары</SectionTitle>
+          <p className="subtle mb-3">
+            Бантики, короны и очки не едят, но и настроения не дают. Коллекционируй ради витрины.
           </p>
           <ul className="space-y-1.5">
             {accessoryIds.map((id: string) => (
-              <li
-                key={id}
-                className="flex items-center gap-2 px-2 py-1.5 border border-ink-700 bg-ink-900"
-              >
-                <PixelIcon name="sparkle" size={11} className="text-gold-300 shrink-0" />
-                <span className="text-sm text-ink-200 flex-1 truncate">{id.replace('pet_', '').replace(/_/g, ' ')}</span>
+              <li key={id} className="well flex items-center gap-2">
+                <span aria-hidden="true">✨</span>
+                <span className="text-sm text-ink-100 flex-1 truncate">
+                  {id.replace('pet_', '').replace(/_/g, ' ')}
+                </span>
                 <span className="text-2xs text-moss-300">на питомце</span>
               </li>
             ))}
@@ -205,18 +199,15 @@ export const PetView: React.FC = () => {
         <Spinner label="Открываем каталог…" />
       ) : (
         boughtPetIds.length > 0 && (
-          <article className="panel" aria-label="Другие питомцы">
-            <h3 className="text-sm font-semibold text-ink-100 mb-2">В каталоге</h3>
+          <article className="card" aria-label="Другие питомцы">
+            <SectionTitle className="mb-3">В каталоге</SectionTitle>
             <ul className="space-y-1.5">
               {boughtPetIds.map((id: string) => (
-                <li
-                  key={id}
-                  className="flex items-center gap-2 px-2 py-1.5 border border-ink-700 bg-ink-900"
-                >
+                <li key={id} className="well flex items-center gap-2">
                   <span className="text-base" aria-hidden="true">
                     {PET_EMOJI[id] ?? '🐾'}
                   </span>
-                  <span className="text-sm text-ink-200 flex-1 truncate">
+                  <span className="text-sm text-ink-100 flex-1 truncate">
                     {PET_META[id]?.name ?? id.replace('pet_', '').replace(/_/g, ' ')}
                   </span>
                   <span className="text-2xs text-ink-500">в магазине</span>

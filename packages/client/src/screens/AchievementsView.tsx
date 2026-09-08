@@ -1,24 +1,30 @@
 import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
-import { Spinner, SpriteBadge } from '../components/ui';
-import { PixelIcon } from '../components/pixel/PixelIcon';
+import { Spinner, ScreenTitle, SectionTitle, ResChip } from '../components/ui';
 
 /**
  * Achievements screen — all 17 achievements with earned state and
  * client-side progress bars (computed from player state + conditions).
  */
 
-/**
- * Own pixel icon per goal type. Emoji were unreliable — a device without the
- * right font showed empty boxes where the goal should be.
- */
-const GOAL_ICON: Record<string, string> = {
-  grade_reached: 'briefcase',
-  money_made: 'coin',
-  skill_level: 'book',
-  days_survived: 'calendar',
-  events_seen: 'dice',
-  special: 'star',
+/** One emoji per goal type — the chrome speaks emoji (docs/design-system.md §1). */
+const GOAL_EMOJI: Record<string, string> = {
+  grade_reached: '💼',
+  money_made: '💰',
+  skill_level: '📚',
+  days_survived: '📅',
+  events_seen: '🎲',
+  special: '⭐',
+};
+
+/** Coins paid out for a finished goal — mirrors the meta ledger on the server. */
+const GOAL_REWARD: Record<string, number> = {
+  grade_reached: 150,
+  money_made: 100,
+  skill_level: 80,
+  days_survived: 60,
+  events_seen: 60,
+  special: 120,
 };
 
 interface AchievementInfo {
@@ -68,7 +74,9 @@ export const AchievementsView: React.FC = () => {
         switch (a.condition.target) {
           case 'fullstack':
             return {
-              value: Math.max(0, (player.skills?.['javascript']?.level ?? 0)) + Math.max(0, (player.skills?.['python']?.level ?? 0)),
+              value:
+                Math.max(0, player.skills?.['javascript']?.level ?? 0) +
+                Math.max(0, player.skills?.['python']?.level ?? 0),
               target: 60,
             };
           case 'burnout':
@@ -88,65 +96,78 @@ export const AchievementsView: React.FC = () => {
   };
 
   const earnedCount = achievements.filter((a) => earned.has(a.id)).length;
+  const goals = achievements.filter((a) => !earned.has(a.id));
+  const trophies = achievements.filter((a) => earned.has(a.id));
+
+  const GoalRow: React.FC<{ a: AchievementInfo; done: boolean }> = ({ a, done }) => {
+    const { value, target } = progress(a);
+    const pct = Math.max(0, Math.min(100, (value / Math.max(1, target)) * 100));
+    return (
+      <div className={`card card-sm goal-row ${done ? 'panel-note panel-note-gold' : ''}`}>
+        <span className={`goal-check ${done ? 'is-done' : ''}`} aria-hidden="true">
+          {done ? '✓' : ''}
+        </span>
+        <span className={`goal-icon ${done ? 'is-done' : ''}`} aria-hidden="true">
+          {GOAL_EMOJI[a.condition.type] ?? '🏆'}
+        </span>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between gap-2">
+            <span className={`text-sm font-semibold ${done ? 'text-gold-300' : 'text-ink-100'}`}>{a.name}</span>
+            <span className="goal-reward num">
+              {done ? 'выполнено' : `+${GOAL_REWARD[a.condition.type] ?? 60}`}
+              {!done && <span aria-hidden="true">🪙</span>}
+            </span>
+          </div>
+          <p className="text-xs text-ink-500 leading-relaxed mt-0.5">{a.description}</p>
+          {!done && (
+            <div className="flex items-center gap-2 mt-2">
+              <div className="meter flex-1">
+                <span style={{ width: `${pct}%`, background: 'var(--green-dark)' }} />
+              </div>
+              <span className="num text-2xs text-ink-500 whitespace-nowrap">
+                {fmt(value)}/{fmt(target)}
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-4 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <h2 className="flex items-center gap-2 text-base font-semibold text-white">
-          <SpriteBadge sprite="diploma" size={32} />
-          Цели
-        </h2>
-        <span className="num text-xs text-ink-500">
-          {earnedCount}/{achievements.length || 17}
-        </span>
-      </div>
+      <ScreenTitle emoji="🎯" meta={`${earnedCount} / ${achievements.length || 17}`}>
+        Цели
+      </ScreenTitle>
 
-      <div className="space-y-2">
-        {achievements.map((a) => {
-          const isEarned = earned.has(a.id);
-          const { value, target } = progress(a);
-          const pct = Math.max(0, Math.min(100, (value / Math.max(1, target)) * 100));
+      {achievements.length === 0 && <Spinner label="Загрузка целей…" />}
 
-          return (
-            <div
-              key={a.id}
-              className={`panel !p-3 flex items-center gap-3 goal-row ${
-                isEarned ? 'panel-note panel-note-gold' : ''
-              }`}
-            >
-              {/* Reference 1.png «Цели»: a checkbox reads as a goal, not a medal. */}
-              <span className={`goal-check ${isEarned ? 'is-done' : ''}`} aria-hidden="true">
-                {isEarned ? <PixelIcon name="check" size={11} /> : null}
-              </span>
-              <span className={`goal-icon ${isEarned ? 'is-done' : ''}`}>
-                <PixelIcon name={GOAL_ICON[a.condition.type] ?? 'trophy'} size={14} />
-              </span>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between gap-2">
-                  <span
-                    className={`text-sm font-medium ${isEarned ? 'text-gold-300' : 'text-ink-200'}`}
-                  >
-                    {a.name}
-                  </span>
-                  {isEarned && <span className="text-2xs text-gold-300 shrink-0">выполнено</span>}
-                </div>
-                <p className="text-xs text-ink-500 leading-relaxed">{a.description}</p>
-                {!isEarned && (
-                  <div className="flex items-center gap-2 mt-1">
-                    <div className="meter flex-1">
-                      <span style={{ width: `${pct}%`, background: 'var(--gold-deep)' }} />
-                    </div>
-                    <span className="num text-2xs text-ink-600 whitespace-nowrap">
-                      {fmt(value)}/{fmt(target)}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          );
-        })}
-        {achievements.length === 0 && <Spinner label="Загрузка достижений…" />}
-      </div>
+      {goals.length > 0 && (
+        <>
+          <SectionTitle>В работе</SectionTitle>
+          <div className="space-y-2">
+            {goals.map((a) => (
+              <GoalRow key={a.id} a={a} done={false} />
+            ))}
+          </div>
+        </>
+      )}
+
+      {trophies.length > 0 && (
+        <>
+          <SectionTitle>Ачивки ({trophies.length})</SectionTitle>
+          <div className="space-y-2">
+            {trophies.map((a) => (
+              <GoalRow key={a.id} a={a} done />
+            ))}
+          </div>
+        </>
+      )}
+
+      <p className="subtle">
+        Цели платят монетами <span aria-hidden="true">🪙</span> — их курс не сгорает при «новой жизни».{' '}
+        <ResChip tone="gold">мета-валюта</ResChip>
+      </p>
     </div>
   );
 };

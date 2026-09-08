@@ -18,7 +18,7 @@ describe('HUD resource meters', () => {
     expect(energy.getAttribute('aria-valuenow')).toBe('10');
     expect(energy.getAttribute('aria-valuemax')).toBe('16');
     expect(screen.getByRole('progressbar', { name: 'Здоровье' }).getAttribute('aria-valuenow')).toBe('80');
-    expect(screen.getByRole('progressbar', { name: 'Мотивация' }).getAttribute('aria-valuenow')).toBe('50');
+    expect(screen.getByRole('progressbar', { name: 'Настроение' }).getAttribute('aria-valuenow')).toBe('50');
   });
 
   it('clamps malformed or out-of-range values without NaN widths', () => {
@@ -28,7 +28,7 @@ describe('HUD resource meters', () => {
       render(<ResourceBar />);
       expect(screen.getByRole('progressbar', { name: 'Энергия' }).getAttribute('aria-valuenow')).toBe('0');
       expect(screen.getByRole('progressbar', { name: 'Здоровье' }).getAttribute('aria-valuenow')).toBe('0');
-      expect(screen.getByRole('progressbar', { name: 'Мотивация' }).getAttribute('aria-valuenow')).toBe('100');
+      expect(screen.getByRole('progressbar', { name: 'Настроение' }).getAttribute('aria-valuenow')).toBe('100');
     } finally {
       Object.assign(fixture.player, original);
     }

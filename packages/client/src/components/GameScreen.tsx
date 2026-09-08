@@ -15,10 +15,11 @@ import { EndingView } from '../screens/EndingView';
 import { MiningView } from '../screens/MiningView';
 import { WalletView } from '../screens/WalletView';
 import { PetView } from '../screens/PetView';
+import { SettingsView } from '../screens/SettingsView';
 import { PixelIcon } from './pixel/PixelIcon';
 import { GainStream } from './GainStream';
 
-/** The reference's five destinations stay visible; secondary screens live in the header menu. */
+/** The reference's five destinations stay visible; everything else lives in «⋮». */
 const TABS = [
   { view: 'main', icon: 'house', label: 'Главная' },
   { view: 'career', icon: 'briefcase', label: 'Работа' },
@@ -27,20 +28,22 @@ const TABS = [
   { view: 'friends', icon: 'people', label: 'Друзья' },
 ] as const;
 
+/** «⋮» menu — a list of rows, because a list is scanned in one second. */
 const MORE = [
-  { view: 'profile', icon: 'person', label: 'Профиль', hint: 'Статистика, цели и гардероб' },
-  { view: 'room', icon: 'house', label: 'Дом', hint: 'Предметы, расстановка и внешность' },
-  { view: 'achievements', icon: 'trophy', label: 'Цели', hint: 'Цели, достижения и прогресс' },
-  { view: 'leaderboard', icon: 'chart', label: 'Топ', hint: 'Рейтинг игроков' },
-  { view: 'office', icon: 'people', label: 'Офис', hint: 'Команда и задачи' },
-  { view: 'mining', icon: 'coin', label: 'Майнинг', hint: 'Ферма, хешрейт, прогноз' },
-  { view: 'wallet', icon: 'box', label: 'Кошелёк', hint: 'NFT-инвентарь и Solana-кошелёк' },
-  { view: 'pet', icon: 'heart', label: 'Питомец', hint: 'Состояние, корм, мотивация' },
-  { view: 'endings', icon: 'trophy', label: 'Финалы', hint: 'Шесть финалов карьеры и прогресс' },
+  { view: 'profile', emoji: '👤', label: 'Профиль', hint: 'Статистика, опыт, достижения' },
+  { view: 'room', emoji: '🏠', label: 'Дом', hint: 'Комната, декор, гардероб' },
+  { view: 'achievements', emoji: '🎯', label: 'Цели', hint: 'Цели, ачивки и награды' },
+  { view: 'leaderboard', emoji: '🏆', label: 'Топ игроков', hint: 'Рейтинг по карьере и репутации' },
+  { view: 'office', emoji: '🖥', label: 'Офис', hint: 'Команда, задачи, настроение' },
+  { view: 'mining', emoji: '⛏', label: 'Майнинг', hint: 'Ферма, доход, прогноз' },
+  { view: 'wallet', emoji: '💼', label: 'Кошелёк', hint: 'NFT-инвентарь и Solana' },
+  { view: 'pet', emoji: '🐾', label: 'Питомец', hint: 'Еда, настроение, аксессуары' },
+  { view: 'endings', emoji: '🏁', label: 'Финалы', hint: 'Шесть путей завершить карьеру' },
+  { view: 'settings', emoji: '⚙️', label: 'Настройки', hint: 'Уведомления, звук, данные' },
 ] as const;
 
 export const GameScreen: React.FC = () => {
-  const { currentView, setView, setScreen, advanceDay, loadNft, moreOpen, setMoreOpen } = useGameStore();
+  const { currentView, setView, advanceDay, loadNft, moreOpen, setMoreOpen } = useGameStore();
   const player = useGameStore((s) => s.player);
 
   /** an offer on the table is the one thing worth a marker in the nav */
@@ -50,9 +53,9 @@ export const GameScreen: React.FC = () => {
     await advanceDay();
   };
 
-  // Preload NFT info when opening the room
+  // Preload NFT info when opening the room or the wallet
   useEffect(() => {
-    if (currentView === 'room') loadNft();
+    if (currentView === 'room' || currentView === 'wallet') loadNft();
   }, [currentView, loadNft]);
 
   const renderView = () => {
@@ -85,6 +88,8 @@ export const GameScreen: React.FC = () => {
         return <WalletView />;
       case 'pet':
         return <PetView />;
+      case 'settings':
+        return <SettingsView />;
       default:
         return <DayView onAdvanceDay={handleAdvanceDay} />;
     }
@@ -102,98 +107,52 @@ export const GameScreen: React.FC = () => {
       <GainStream />
 
       {/* Content area */}
-      <div id="game-scroll" className="flex-1 overflow-y-auto p-3 space-y-3">
+      <div id="game-scroll" className="flex-1 overflow-y-auto space-y-3">
         {renderView()}
       </div>
 
-      {/* «Ещё» sheet — a navigation detour, never a state you can get stuck in.
-          Closing it is one tap, one native back press (see App.tsx) or simply
-          picking a destination; setView in the store closes it for us. */}
+      {/* «⋮» sheet — a navigation detour, never a state you can get stuck in. */}
       {moreOpen && (
         <>
           <button
-            aria-label="Закрыть меню «Ещё»"
+            aria-label="Закрыть меню"
             onClick={() => setMoreOpen(false)}
-            className="absolute inset-0 z-20 bg-black/50 animate-fade-in"
+            className="sheet-backdrop animate-fade-in"
           />
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label="Ещё"
-            className="absolute inset-x-0 bottom-0 z-30 animate-slide-up"
-          >
-            <div className="border-t border-x border-ink-600 bg-ink-900 rounded-t-[20px] p-3 pb-2 safe-area-pb shadow-[0_-18px_44px_-24px_rgba(0,0,0,0.9)]">
-              <div className="h-1 w-9 bg-ink-700 mx-auto mb-3" />
-              <div className="flex items-center gap-2 mb-3">
-                <PixelIcon name="plus" size={12} className="text-gold-300" />
-                <span className="text-xs font-bold uppercase tracking-[0.12em] text-ink-300">Ещё</span>
-                <span className="flex-1 border-t border-dashed border-ink-700" />
-                <button
-                  onClick={() => setMoreOpen(false)}
-                  className="flex items-center gap-1.5 text-2xs text-ink-500 hover:text-ink-200 transition-colors touch-target px-1"
-                >
-                  <PixelIcon name="chevron" size={9} />
-                  Закрыть
-                </button>
-              </div>
-              {/* A hub is a list, not a shelf: one destination per row with its
-                  icon anchored left, so a glance scans four real places instead
-                  of four identical tiles. */}
-              <div className="max-h-[min(420px,58vh)] overflow-y-auto -mx-1 px-1">
-                {MORE.map((item, i) => {
-                  const isCurrent = currentView === item.view;
-                  return (
-                    <button
-                      key={item.view}
-                      onClick={() => nav(item.view)}
-                      aria-current={isCurrent ? 'true' : undefined}
-                      className={`group flex w-full items-center gap-3 text-left min-h-[52px] py-2 border-b border-ink-800 last:border-0 ${
-                        i > 0 ? 'mt-0.5' : ''
-                      } ${isCurrent ? '' : 'active:bg-ink-800/60'}`}
-                    >
-                      {/* the notch: where you are right now */}
-                      {isCurrent && <span className="self-stretch w-[3px] shrink-0 bg-gold-300" aria-hidden="true" />}
-                      <span
-                        className={`w-9 h-9 shrink-0 flex items-center justify-center border-2 bg-ink-800 ${
-                          isCurrent
-                            ? 'border-gold-700 text-gold-300'
-                            : 'border-ink-700 text-ink-300 group-hover:border-ink-600'
-                        }`}
-                      >
-                        <PixelIcon name={item.icon} size={16} />
-                      </span>
-                      <span className="flex-1 min-w-0">
-                        <span className="flex items-center gap-2 text-sm font-semibold text-ink-100">{item.label}</span>
-                        <span className="block text-2xs text-ink-500 leading-tight mt-0.5">{item.hint}</span>
-                      </span>
-                      {isCurrent ? (
-                        <span className="text-2xs font-bold uppercase tracking-[0.08em] text-gold-300 shrink-0">
-                          здесь
-                        </span>
-                      ) : (
-                        <PixelIcon name="chevron" size={9} className="text-ink-600 -rotate-90 shrink-0" />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-              <button
-                className="btn btn-secondary w-full mt-2"
-                onClick={() => {
-                  setMoreOpen(false);
-                  setView('main');
-                  setScreen('game');
-                }}
-              >
-                На главную
-              </button>
+          <div role="dialog" aria-modal="true" aria-label="Меню" className="sheet animate-slide-up safe-area-pb">
+            <div className="sheet-grip" />
+            <div className="sheet-list">
+              {MORE.map((item) => {
+                const isCurrent = currentView === item.view;
+                return (
+                  <button
+                    key={item.view}
+                    onClick={() => nav(item.view)}
+                    aria-current={isCurrent ? 'true' : undefined}
+                    className="menu-row"
+                  >
+                    <span className="emoji" aria-hidden="true">
+                      {item.emoji}
+                    </span>
+                    <span className="menu-row-copy">
+                      <span className="menu-row-title">{item.label}</span>
+                      <span className="menu-row-hint">{item.hint}</span>
+                    </span>
+                    {isCurrent ? (
+                      <span className="menu-row-mark">здесь</span>
+                    ) : (
+                      <PixelIcon name="chevron" size={9} className="menu-row-chevron -rotate-90" />
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </>
       )}
 
       {/* Bottom navigation */}
-      <nav className="tabbar safe-area-pb" aria-label="Основная навигация">
+      <nav className="tabbar" aria-label="Основная навигация">
         {TABS.map((tab) => (
           <NavButton
             key={tab.view}

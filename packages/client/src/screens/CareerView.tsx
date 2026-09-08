@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { InterviewPanel } from '../components/InterviewPanel';
-import { Spinner } from '../components/ui';
+import { Spinner, ScreenTitle, SectionTitle, ResChip } from '../components/ui';
 import { ProjectBoard } from '../components/ProjectBoard';
-import { PixelIcon } from '../components/pixel/PixelIcon';
+import { CareerPressureCard } from '../components/CareerPressureCard';
 
 interface GateInfo {
   grade: string;
@@ -112,19 +112,16 @@ export const CareerView: React.FC = () => {
 
   return (
     <div className="space-y-4 animate-fade-in">
-      <h2 className="flex items-center gap-2 text-base font-semibold text-white">
-        <PixelIcon name="briefcase" size={20} className="text-ochre-300" />
-        Работа
-      </h2>
+      <ScreenTitle emoji="💼">Работа</ScreenTitle>
 
       {error && (
-        <p role="alert" className="panel text-sm text-clay-300">
+        <p role="alert" className="card card-sm text-sm text-clay-300">
           {error}
         </p>
       )}
 
       {/* Current job */}
-      <div className={`panel panel-note ${player.job ? 'panel-note-moss' : 'panel-note-ochre'}`}>
+      <div className={`card panel-note ${player.job ? 'panel-note-moss' : 'panel-note-ochre'}`}>
         {player.job ? (
           <>
             <div className="flex items-center justify-between mb-1.5">
@@ -150,8 +147,8 @@ export const CareerView: React.FC = () => {
 
       <ProjectBoard />
 
-      <section className="reference-work-actions" aria-label="Быстрые действия">
-        <h3>Быстрые действия</h3>
+      <section className="quick-actions" aria-label="Быстрые действия">
+        <SectionTitle className="mb-1">Быстрые действия</SectionTitle>
         {[
           { id: 'work_task', name: 'Рабочая задача', energy: 4, job: true },
           { id: 'pet_project', name: 'Развивать пет-проект', energy: 3, job: false },
@@ -164,8 +161,7 @@ export const CareerView: React.FC = () => {
           >
             <span>{action.name}</span>
             <span>
-              {action.job && !player.job ? 'Нужна работа' : `−${action.energy} энергии`}{' '}
-              <PixelIcon name="arrow" size={10} />
+              {action.job && !player.job ? 'Нужна работа' : <ResChip tone="blue">−{action.energy} ⚡</ResChip>}→
             </span>
           </button>
         ))}
@@ -174,21 +170,28 @@ export const CareerView: React.FC = () => {
       {/* Office entry */}
       {player.job && (
         <button onClick={() => setView('office')} className="tile w-full flex items-center gap-3">
-          <PixelIcon name="briefcase" size={16} className="text-ink-300" />
+          <span className="tile-icon" aria-hidden="true">
+            🖥
+          </span>
           <span className="flex-1 min-w-0">
             <span className="block text-sm font-medium text-ink-100">Мой офис</span>
             <span className="block text-xs text-ink-500 truncate">
               {player.job.position} · команда, задачи и настроение дня
             </span>
           </span>
-          <PixelIcon name="arrow" size={11} className="text-ink-500 shrink-0" />
+          <span className="text-ink-500 shrink-0" aria-hidden="true">
+            →
+          </span>
         </button>
       )}
 
+      {/* Promotion pressure: cost of the day + what the next grade really needs */}
+      <CareerPressureCard />
+
       {/* Job offers */}
       {offers.length > 0 && (
-        <div className="panel panel-note panel-note-moss animate-pop-in">
-          <h3 className="section-title mb-2">Офферы</h3>
+        <div className="card panel-note panel-note-moss animate-pop-in">
+          <SectionTitle className="mb-2">Офферы</SectionTitle>
           <div className="space-y-2">
             {offers.map((o: any) => (
               <div key={o.companyId} className="well p-2.5">
@@ -202,14 +205,14 @@ export const CareerView: React.FC = () => {
                     <button
                       disabled={busy}
                       onClick={() => act(() => acceptOffer(o.companyId))}
-                      className="btn btn-primary !min-h-[38px] !px-3 text-xs"
+                      className="btn btn-sm btn-primary"
                     >
                       Принять
                     </button>
                     <button
                       disabled={busy}
                       onClick={() => act(() => declineOffer(o.companyId))}
-                      className="btn btn-ghost !min-h-[38px] !px-3 text-xs"
+                      className="btn btn-sm btn-ghost"
                     >
                       Отклонить
                     </button>
@@ -226,8 +229,8 @@ export const CareerView: React.FC = () => {
 
       {/* Application status */}
       {application && (
-        <div className="panel panel-note panel-note-sky">
-          <h3 className="eyebrow mb-2">Твой отклик</h3>
+        <div className="card panel-note panel-note-sky">
+          <SectionTitle className="mb-2">Твой отклик</SectionTitle>
           {application.status === 'interview_scheduled' && (
             <p className="text-sm text-ink-300 leading-relaxed">
               {application.position} — собеседование на {application.interviewDay} день. Готовься, скрести пальцы.
@@ -245,8 +248,8 @@ export const CareerView: React.FC = () => {
       )}
 
       {/* Companies */}
-      <div className="game-card">
-        <h3 className="section-title mb-2">Доступные компании</h3>
+      <div className="card">
+        <SectionTitle className="mb-3">Доступные компании</SectionTitle>
         {!loaded && <Spinner label="Загрузка компаний…" />}
         {loadError && (
           <div role="alert" className="text-sm text-clay-300">
@@ -285,7 +288,7 @@ export const CareerView: React.FC = () => {
                   <button
                     disabled={busy}
                     onClick={() => act(() => applyToCompany(c.id))}
-                    className="btn btn-primary career-apply text-xs"
+                    className="btn btn-sm btn-primary mt-3 ml-auto flex"
                   >
                     Откликнуться
                   </button>
@@ -296,9 +299,9 @@ export const CareerView: React.FC = () => {
         </div>
       </div>
       {/* Grade progress — real content gates, not a hardcoded copy */}
-      <details className="game-card career-grades">
+      <details className="card career-grades">
         <summary className="flex items-center justify-between mb-2">
-          <span className="section-title">Грейды · требования к росту</span>
+          <span className="section-title">Повышение грейда · требования</span>
         </summary>
         <div className="space-y-1.5">
           {(gates.length ? gates : []).map((g) => {
@@ -310,11 +313,15 @@ export const CareerView: React.FC = () => {
             return (
               <div
                 key={g.grade}
-                className={` px-2 py-1.5 border ${isNext ? 'border-gold-700 bg-gold-900/15' : 'border-transparent'}`}
+                className={`px-2 py-1.5 rounded-xl border ${
+                  isNext ? 'border-gold-500 bg-gold-900/20' : 'border-transparent'
+                }`}
               >
                 <div className="flex items-center gap-2 text-xs">
                   <span
-                    className={`w-1.5 h-1.5 ${isReached ? 'bg-moss-400' : g.special ? 'bg-gold-500' : 'bg-ink-600'}`}
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      isReached ? 'bg-moss-300' : g.special ? 'bg-gold-300' : 'bg-ink-600'
+                    }`}
                   />
                   <span className={`w-24 ${isReached ? 'text-ink-100' : 'text-ink-500'}`}>{g.label ?? g.grade}</span>
                   <span className={`num flex-1 ${isReached ? 'text-ink-300' : 'text-ink-600'}`}>

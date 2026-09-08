@@ -5,7 +5,7 @@ for (const width of [320, 390, 480]) {
     await page.setViewportSize({ width, height: 844 });
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');
-    await expect(page.locator('[data-ui-revision="08"]')).toBeVisible();
+    await expect(page.locator('[data-ui-revision="09"]')).toBeVisible();
     await expect(page.getByRole('button', { name: /^(Начать игру|Продолжить)/ })).toHaveCount(0);
     const nav = page.getByRole('navigation', { name: 'Основная навигация' });
     expect(await nav.getByRole('button').allTextContents()).toEqual([
@@ -32,11 +32,12 @@ for (const width of [320, 390, 480]) {
       ).toBe(false);
     }
     await expect(page.getByRole('article', { name: 'Саня', exact: true })).toBeVisible();
-    await page.getByRole('button', { name: 'Ещё', exact: true }).click();
-    await page
-      .getByRole('dialog', { name: 'Ещё', exact: true })
-      .getByRole('button', { name: 'На главную', exact: true })
-      .click();
+    await page.getByRole('button', { name: 'Меню', exact: true }).click();
+    const sheet = page.getByRole('dialog', { name: 'Меню', exact: true });
+    await expect(sheet.getByRole('button', { name: /Настройки/ })).toBeVisible();
+    await sheet.getByRole('button', { name: /Профиль/ }).click();
+    await expect(page.getByRole('heading', { name: 'Профиль' })).toBeVisible();
+    await page.getByRole('button', { name: 'На главную', exact: true }).click();
     await expect(room).toBeVisible();
   });
 }
@@ -46,7 +47,7 @@ test('learning and shop keep reference-sized rows, not giant cards', async ({ pa
   await page.goto('/');
   const nav = page.getByRole('navigation', { name: 'Основная навигация' });
   await nav.getByRole('button', { name: 'Обучение', exact: true }).click();
-  const skill = page.getByRole('article', { name: 'JavaScript', exact: true });
+  const skill = page.getByRole('button', { name: 'JavaScript', exact: true });
   await expect(skill).toBeVisible();
   expect((await skill.boundingBox())!.height).toBeLessThanOrEqual(90);
   await nav.getByRole('button', { name: 'Магазин', exact: true }).click();

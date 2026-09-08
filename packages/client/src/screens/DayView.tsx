@@ -2,9 +2,9 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { HomeRoomCard } from '../components/HomeRoomCard';
 import { CareerPressureCard } from '../components/CareerPressureCard';
-import { EventCard } from '../components/EventCard';
+import { EventCard, EventOutcomeCard, type EventChoice } from '../components/EventCard';
 import { SprintCard } from '../components/SprintCard';
-import { PixelIcon } from '../components/pixel/PixelIcon';
+import { ResChip, SectionTitle } from '../components/ui';
 import { tipForDay } from './dayTips';
 import { hideMainButton, isMainButtonSupported, setMainButtonProgress, showMainButton } from '../lib/telegram';
 
@@ -40,39 +40,39 @@ const REAL_PETS = [
 
 const ACTIONS = [
   // Study
-  { id: 'study_youtube', icon: 'screen', name: 'YouTube туториалы', energy: 2, cost: 0, category: 'study' },
-  { id: 'study_book', icon: 'book', name: 'Читать книгу', energy: 1, cost: 1500, category: 'study' },
-  { id: 'study_stepik', icon: 'cap', name: 'Stepik курс', energy: 2, cost: 2000, category: 'study' },
-  { id: 'study_course', icon: 'laptop', name: 'Платный курс', energy: 3, cost: 15000, category: 'study' },
-  { id: 'study_english', icon: 'globe', name: 'Английский', energy: 2, cost: 0, category: 'study' },
-  { id: 'study_english_course', icon: 'chat', name: 'Курс английского', energy: 3, cost: 3000, category: 'study' },
+  { id: 'study_youtube', emoji: '📺', name: 'YouTube туториалы', energy: 2, cost: 0, category: 'study' },
+  { id: 'study_book', emoji: '📚', name: 'Читать книгу', energy: 1, cost: 1500, category: 'study' },
+  { id: 'study_stepik', emoji: '🎓', name: 'Stepik курс', energy: 2, cost: 2000, category: 'study' },
+  { id: 'study_course', emoji: '💻', name: 'Платный курс', energy: 3, cost: 15000, category: 'study' },
+  { id: 'study_english', emoji: '🇬🇧', name: 'Английский', energy: 2, cost: 0, category: 'study' },
+  { id: 'study_english_course', emoji: '🗣️', name: 'Курс английского', energy: 3, cost: 3000, category: 'study' },
 
   // Work
-  { id: 'work_task', icon: 'briefcase', name: 'Рабочая задача', energy: 4, cost: 0, category: 'work' },
-  { id: 'work_overtime', icon: 'moon', name: 'Переработка', energy: 5, cost: 0, category: 'work' },
-  { id: 'pet_project', icon: 'rocket', name: 'Пет-проект', energy: 3, cost: 0, category: 'work' },
-  { id: 'freelance', icon: 'code', name: 'Фриланс-заказ', energy: 4, cost: 0, category: 'work' },
+  { id: 'work_task', emoji: '💼', name: 'Рабочая задача', energy: 4, cost: 0, category: 'work' },
+  { id: 'work_overtime', emoji: '🌙', name: 'Переработка', energy: 5, cost: 0, category: 'work' },
+  { id: 'pet_project', emoji: '🚀', name: 'Пет-проект', energy: 3, cost: 0, category: 'work' },
+  { id: 'freelance', emoji: '🧑‍💻', name: 'Фриланс-заказ', energy: 4, cost: 0, category: 'work' },
 
   // Rest
-  { id: 'rest_sleep', icon: 'sleep', name: 'Поспать', energy: 0, cost: 0, category: 'rest' },
-  { id: 'rest_walk', icon: 'walk', name: 'Прогулка', energy: 1, cost: 0, category: 'rest' },
-  { id: 'rest_bar', icon: 'mug', name: 'Бар с друзьями', energy: 2, cost: 2000, category: 'rest' },
-  { id: 'rest_hobby', icon: 'dice', name: 'Хобби', energy: 1, cost: 0, category: 'rest' },
-  { id: 'rest_gym', icon: 'dumbbell', name: 'Качалка', energy: 2, cost: 3000, category: 'rest' },
+  { id: 'rest_sleep', emoji: '😴', name: 'Поспать', energy: 0, cost: 0, category: 'rest' },
+  { id: 'rest_walk', emoji: '🚶', name: 'Прогулка', energy: 1, cost: 0, category: 'rest' },
+  { id: 'rest_bar', emoji: '🍻', name: 'Бар с друзьями', energy: 2, cost: 2000, category: 'rest' },
+  { id: 'rest_hobby', emoji: '🎲', name: 'Хобби', energy: 1, cost: 0, category: 'rest' },
+  { id: 'rest_gym', emoji: '🏋️', name: 'Качалка', energy: 2, cost: 3000, category: 'rest' },
 
   // Social
-  { id: 'networking', icon: 'people', name: 'Нетворкинг', energy: 2, cost: 0, category: 'social' },
+  { id: 'networking', emoji: '🤝', name: 'Нетворкинг', energy: 2, cost: 0, category: 'social' },
 ];
 
-/** Content ships emoji for side jobs; the interface speaks pixels. */
-const SIDE_JOB_ICONS: Record<string, string> = {
-  courier: 'box',
-  barista: 'mug',
-  loader: 'box',
-  night_guard: 'moon',
-  taxi: 'car',
-  tutor: 'cap',
-  streamer: 'screen',
+/** Side gigs keep their own emoji — the chrome speaks emoji everywhere. */
+const SIDE_JOB_EMOJI: Record<string, string> = {
+  courier: '📦',
+  barista: '☕',
+  loader: '🪑',
+  night_guard: '🌙',
+  taxi: '🚕',
+  tutor: '🎓',
+  streamer: '🎬',
 };
 
 const CHALLENGE_TEXT: Record<string, string> = {
@@ -97,12 +97,9 @@ const CostRow: React.FC<{ energy: number; cost?: number; children?: React.ReactN
   cost,
   children,
 }) => (
-  <div className="flex items-center gap-2.5 text-2xs text-ink-500">
-    <span className="flex items-center gap-1">
-      <PixelIcon name="bolt" size={9} className="text-sky-300/70" />
-      <span className="num">{energy}</span>
-    </span>
-    {!!cost && <span className="num">{formatMoney(cost)} ₽</span>}
+  <div className="flex flex-wrap items-center gap-1.5">
+    <ResChip tone="blue">−{energy} ⚡</ResChip>
+    {!!cost && <ResChip tone="negative">−{formatMoney(cost)} ₽</ResChip>}
     {children}
   </div>
 );
@@ -114,20 +111,20 @@ const CostRow: React.FC<{ energy: number; cost?: number; children?: React.ReactN
 const YesterdayLog: React.FC<{ text: string }> = ({ text }) => {
   const [open, setOpen] = useState(false);
   return (
-    <section className="panel">
+    <section className="card">
       <button
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         className="w-full flex items-center gap-2 text-left touch-target"
       >
-        <PixelIcon name="clock" size={11} className="text-ink-500 shrink-0" />
-        <span className="text-2xs font-bold uppercase tracking-[0.09em] text-ink-500 shrink-0">Вчера</span>
+        <span className="shrink-0" aria-hidden="true">
+          🕘
+        </span>
+        <span className="text-xs font-bold uppercase tracking-[0.06em] text-ink-500 shrink-0">Вчера</span>
         {!open && <span className="flex-1 min-w-0 truncate text-xs text-ink-400">{text.replace(/\n/g, ' · ')}</span>}
-        <PixelIcon
-          name="chevron"
-          size={9}
-          className={`text-ink-600 shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
-        />
+        <span aria-hidden="true" className={`accordion-chevron shrink-0 ${open ? 'is-open' : ''}`}>
+          ▾
+        </span>
       </button>
       <div className={`accordion-body ${open ? 'open' : ''}`}>
         <div className="accordion-inner">
@@ -163,9 +160,11 @@ const OnboardingTip: React.FC<{ day: number }> = ({ day }) => {
   };
 
   return (
-    <section className="panel panel-note panel-note-sky animate-pop-in">
+    <section className="card panel-note panel-note-sky animate-pop-in">
       <div className="flex items-start gap-2">
-        <PixelIcon name={tip.icon} size={13} className="text-sky-300 mt-0.5 shrink-0" />
+        <span className="text-base leading-none mt-0.5 shrink-0" aria-hidden="true">
+          {tip.icon}
+        </span>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-ink-100 leading-tight">{tip.title}</p>
           <p className="text-xs text-ink-300 leading-relaxed mt-1">{tip.body}</p>
@@ -203,9 +202,11 @@ const CheckInBanner: React.FC<{ checkIn: any }> = ({ checkIn }) => {
   if (!visible || !checkIn?.claimed) return null;
   const { streak, money, nextMoney } = checkIn;
   return (
-    <section className="panel panel-note panel-note-gold animate-pop-in">
+    <section className="card panel-note panel-note-gold animate-pop-in">
       <div className="flex items-start gap-2">
-        <PixelIcon name="flame" size={14} className="text-ochre-300 mt-0.5 shrink-0" />
+        <span className="text-base leading-none mt-0.5 shrink-0" aria-hidden="true">
+          🔥
+        </span>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-white leading-tight">
             Стрик: {streak} {streak === 1 ? 'день' : streak < 5 ? 'дня' : 'дней'} подряд
@@ -234,6 +235,8 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
   const mining = useGameStore((s) => s.mining);
   const [sideJobs, setSideJobs] = useState<Record<string, SideJobInfo>>({});
   const [finishing, setFinishing] = useState(false);
+  /** the choice the player just made, shown as a receipt until they continue */
+  const [outcome, setOutcome] = useState<{ title: string; tags: string[]; choice: EventChoice } | null>(null);
   const useNativeCta = isMainButtonSupported();
 
   useEffect(() => {
@@ -242,6 +245,15 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
       .then((data) => setSideJobs(data.sideJobs ?? {}))
       .catch(() => setSideJobs({}));
   }, []);
+
+  /** Commit a choice, then keep its consequences on screen until dismissed. */
+  const decide = async (event: any, index: number) => {
+    const choice = event.choices?.[index];
+    await chooseEvent(event.id, index);
+    if (!useGameStore.getState().activeEvent && choice) {
+      setOutcome({ title: event.title, tags: event.tags ?? [], choice });
+    }
+  };
 
   const finishDay = useCallback(async () => {
     if (finishing) return;
@@ -300,7 +312,19 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
         choices={activeEvent.choices ?? []}
         player={player}
         error={error}
-        onChoose={(i) => chooseEvent(activeEvent.id, i)}
+        onChoose={(i) => decide(activeEvent, i)}
+      />
+    );
+  }
+
+  // The receipt of the decision the server has just applied.
+  if (outcome) {
+    return (
+      <EventOutcomeCard
+        title={outcome.title}
+        tags={outcome.tags}
+        choice={outcome.choice}
+        onDismiss={() => setOutcome(null)}
       />
     );
   }
@@ -313,9 +337,9 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
 
       {/* Error */}
       {error && (
-        <button onClick={clearError} className="panel panel-note panel-note-clay w-full text-left animate-pop-in">
+        <button onClick={clearError} className="card panel-note panel-note-clay w-full text-left animate-pop-in">
           <p className="flex items-start gap-2 text-sm text-clay-300">
-            <PixelIcon name="warn" size={12} className="mt-0.5" />
+            <span aria-hidden="true">⚠️</span>
             <span>{error}</span>
           </p>
           <p className="text-2xs text-ink-500 mt-1 pl-5">Нажми, чтобы скрыть</p>
@@ -329,10 +353,10 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
 
       {/* Mining farm (passive income) */}
       {mining && (
-        <section className="panel animate-pop-in">
+        <section className="card animate-pop-in">
           <div className="flex items-center justify-between mb-1.5">
             <span className="flex items-center gap-1.5 text-sm font-semibold text-ink-100">
-              <PixelIcon name="chip" size={12} className="text-ink-400" />
+              <span aria-hidden="true">⛏</span>
               Майнинг-ферма
             </span>
             <span className="num text-2xs text-ink-500">{mining.hashrate} MH/s</span>
@@ -354,15 +378,15 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
       {/* Goal of the day — a target above the toolbox reads as direction,
           a target buried under it reads as homework */}
       {player.dailyChallenge && (
-        <section className={`panel panel-note ${player.dailyChallenge.done ? 'panel-note-moss' : 'panel-note-sky'}`}>
+        <section className={`card panel-note ${player.dailyChallenge.done ? 'panel-note-moss' : 'panel-note-sky'}`}>
           <div className="flex items-center justify-between gap-2 mb-1">
             <span className="flex items-center gap-1.5 text-2xs font-bold uppercase tracking-[0.09em] text-ink-400">
-              <PixelIcon name="target" size={11} className={player.dailyChallenge.done ? 'text-moss-300' : ''} />
+              <span aria-hidden="true">🎯</span>
               Задание дня
             </span>
             {player.dailyChallenge.done ? (
               <span className="flex items-center gap-1 text-2xs font-bold text-moss-300 uppercase tracking-[0.06em]">
-                <PixelIcon name="check" size={10} />
+                <span aria-hidden="true">✅</span>
                 выполнено
               </span>
             ) : (
@@ -397,7 +421,9 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
       {/* Low energy: tell the player the way out instead of leaving actions grey */}
       {player.energy <= 2 && (
         <p className="flex items-center gap-2 text-xs text-ochre-300 leading-tight px-0.5">
-          <PixelIcon name="bolt" size={11} className="text-ochre-400 shrink-0" />
+          <span className="shrink-0" aria-hidden="true">
+            ⚡
+          </span>
           Энергия на исходе. «Поспать» восстановит её — а сон всегда доступен, даже при нуле.
         </p>
       )}
@@ -405,7 +431,7 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
       {/* Actions by category */}
       {categories.map((cat) => (
         <section key={cat.id}>
-          <h3 className="eyebrow mb-2">{cat.label}</h3>
+          <SectionTitle className="mb-2">{cat.label}</SectionTitle>
           <div className="grid grid-cols-2 gap-2">
             {cat.actions.map((action) => {
               const enabled = canAct(action.energy) && canAfford(action.cost);
@@ -416,8 +442,8 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
                   disabled={!enabled}
                   className="tile tile-action"
                 >
-                  <span className="tile-icon">
-                    <PixelIcon name={action.icon} size={16} />
+                  <span className="tile-icon" aria-hidden="true">
+                    {action.emoji}
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block text-sm font-semibold text-ink-100 leading-tight mb-1.5">{action.name}</span>
@@ -433,7 +459,7 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
       {/* Side jobs (non-IT gigs) */}
       {Object.keys(sideJobs).length > 0 && (
         <section>
-          <h3 className="eyebrow mb-2">Подработки не в IT</h3>
+          <SectionTitle className="mb-2">Подработки не в IT</SectionTitle>
           <div className="grid grid-cols-2 gap-2">
             {Object.entries(sideJobs).map(([jobId, job]) => {
               const skillLevel = player.skills?.[player.mainSkillId ?? 'javascript']?.level ?? 0;
@@ -448,29 +474,24 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
                   title={!minSkillMet ? `Нужен навык ${job.minSkill}+` : job.name}
                   className="tile tile-action"
                 >
-                  <span className="tile-icon">
-                    <PixelIcon name={SIDE_JOB_ICONS[jobId] ?? 'box'} size={16} />
+                  <span className="tile-icon" aria-hidden="true">
+                    {SIDE_JOB_EMOJI[jobId] ?? '📦'}
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block text-sm font-semibold text-ink-100 leading-tight mb-1.5">{job.name}</span>
                     <CostRow energy={job.energy}>
-                      <span className="num text-moss-300">
+                      <ResChip tone="positive">
                         +{formatMoney(payout)}
                         {job.paymentVar ? '±' : ''} ₽
-                      </span>
-                      {!minSkillMet && (
-                        <span className="flex items-center gap-1 text-ink-600">
-                          <PixelIcon name="lock" size={9} />
-                          <span className="num">{job.minSkill}+</span>
-                        </span>
-                      )}
+                      </ResChip>
+                      {!minSkillMet && <ResChip tone="orange">🔒 {job.minSkill}+</ResChip>}
                     </CostRow>
                   </span>
                 </button>
               );
             })}
           </div>
-          <p className="text-2xs text-ink-600 mt-1.5">Одна подработка в день. Здоровье и мотивация — по курсу.</p>
+          <p className="text-2xs text-ink-600 mt-1.5">Одна подработка в день. Здоровье и настроение — по курсу.</p>
         </section>
       )}
 
@@ -481,7 +502,7 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
           disabled={!!player.petFedToday}
           className="btn btn-secondary w-full text-sm"
         >
-          <PixelIcon name="bone" size={12} className={player.petFedToday ? 'text-moss-400' : ''} />
+          <span aria-hidden="true">🐾</span>
           {player.petFedToday ? 'Питомец сыт до завтра' : 'Покормить питомца · 500 ₽'}
         </button>
       )}
@@ -489,7 +510,7 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
       {/* Banked offline days */}
       {(player.bankedDays ?? 0) > 0 && (
         <button onClick={() => performAction('use_banked_day')} className="btn btn-secondary w-full text-sm">
-          <PixelIcon name="clock" size={12} className="text-gold-300" />
+          <span aria-hidden="true">🕒</span>
           <span>
             Банк офлайн-дней: <span className="num">{player.bankedDays}</span> — использовать
           </span>
@@ -505,8 +526,7 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
               'Считаем день…'
             ) : (
               <>
-                Завершить день <span className="num">{player.currentDay ?? 1}</span>
-                <PixelIcon name="arrow" size={12} />
+                Завершить день <span className="num">{player.currentDay ?? 1}</span> →
               </>
             )}
           </button>

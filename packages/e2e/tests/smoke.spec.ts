@@ -19,8 +19,12 @@ const energyMeter = (page: Page) => page.locator('div[title^="Энергия:"]'
 async function resolveStory(page: Page): Promise<void> {
   const card = page.locator('.story-card');
   if (await card.isVisible()) {
-    await card.locator('button:not(:disabled)').first().click();
-    await expect(card).toHaveCount(0);
+    await card.locator('.story-choice:not(:disabled)').first().click();
+    // The choice collapses into a result card that waits for a deliberate tap.
+    const done = page.getByRole('button', { name: 'Продолжить' });
+    await expect(done).toBeVisible({ timeout: 15_000 });
+    await done.click();
+    await expect(page.locator('.story-card')).toHaveCount(0);
   }
 }
 
@@ -50,16 +54,15 @@ test('fresh run: three actions → end of day → buy cosmetics → telemetry', 
   await expect(page.getByRole('button', { name: /^Завершить день 2/ })).toBeVisible();
 
   // ── shop: buy a cheap decor item (Кактус на стол, 500 ₽) ────────────────
-  await page.getByRole('button', { name: /^Ещё/ }).click();
   await page
-    .getByRole('dialog', { name: 'Ещё', exact: true })
-    .getByRole('button', { name: /^Магазин/ })
+    .getByRole('navigation', { name: 'Основная навигация' })
+    .getByRole('button', { name: 'Магазин', exact: true })
     .click();
   await page
     .getByRole('group', { name: 'Категории товаров' })
     .getByRole('button', { name: 'Для дома', exact: true })
     .click();
-  const plantRow = page.locator('.panel').filter({ hasText: 'Кактус на стол' });
+  const plantRow = page.locator('.card').filter({ hasText: 'Кактус на стол' });
   await expect(plantRow.getByRole('button', { name: /^Купить$/ })).toBeVisible();
   await plantRow.getByRole('button', { name: /^Купить$/ }).click();
   await expect(plantRow).toContainText('куплено', { timeout: 15_000 });

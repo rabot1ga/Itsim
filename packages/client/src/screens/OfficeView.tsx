@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { haptic } from '../lib/telegram';
-import { CareerPressureCard } from '../components/CareerPressureCard';
 import { IsoOffice } from '../components/iso/IsoOffice';
 import { officeMoodOf } from '../components/room/OfficeRenderer';
-import { PixelIcon } from '../components/pixel/PixelIcon';
-import { EmojiToken, SpriteBadge } from '../components/ui';
+import { EmojiToken, ScreenTitle, SectionTitle, EmptyState, Skeleton } from '../components/ui';
 
 /**
  * Office (docs/design.md §11) — a skin over the same work actions, rendered with
@@ -25,11 +23,11 @@ const TEAM = [
   { npcId: 'toxic_senior', layer: 'toxic' },
 ];
 
-function relationMeta(value: number): { icon: string; label: string; cls: string } {
-  if (value >= 30) return { icon: 'heart', label: 'друг', cls: 'text-moss-400' };
-  if (value >= 0) return { icon: 'heart', label: 'нейтрально', cls: 'text-ink-400' };
-  if (value >= -30) return { icon: 'heart', label: 'натянуто', cls: 'text-ochre-400' };
-  return { icon: 'warn', label: 'конфликт', cls: 'text-clay-400' };
+function relationMeta(value: number): { emoji: string; label: string; cls: string } {
+  if (value >= 30) return { emoji: '💚', label: 'друг', cls: 'text-moss-300' };
+  if (value >= 0) return { emoji: '🙂', label: 'нейтрально', cls: 'text-ink-400' };
+  if (value >= -30) return { emoji: '😕', label: 'натянуто', cls: 'text-ochre-300' };
+  return { emoji: '⚠️', label: 'конфликт', cls: 'text-clay-300' };
 }
 
 export const OfficeView: React.FC = () => {
@@ -68,17 +66,17 @@ export const OfficeView: React.FC = () => {
   if (!player.job) {
     return (
       <div className="space-y-4 animate-fade-in">
-        <button onClick={back} className="flex items-center gap-1.5 text-sm text-ink-400">
-          <PixelIcon name="chevron" size={10} className="rotate-90" />
-          Карьера
+        <button onClick={back} className="link-back">
+          ← Карьера
         </button>
-        <div className="panel text-center py-10">
-          <PixelIcon name="briefcase" size={32} className="text-ink-600 mx-auto mb-3" />
-          <h2 className="text-base font-semibold text-white mb-1">Офиса пока нет</h2>
-          <p className="text-sm text-ink-400 mb-4 max-w-[32ch] mx-auto leading-relaxed">
-            Сначала найди работу — тогда здесь появится твой open-space
-          </p>
-          <button onClick={back} className="btn btn-primary !min-h-[38px] text-sm">
+        <div className="card">
+          <EmptyState
+            bare
+            emoji="💼"
+            title="Офиса пока нет"
+            hint="Сначала найди работу — тогда здесь появится твой open-space"
+          />
+          <button onClick={back} className="btn btn-primary w-full mt-3">
             К вакансиям
           </button>
         </div>
@@ -103,36 +101,29 @@ export const OfficeView: React.FC = () => {
   const canAct = (energy: number) => (player.energy ?? 0) >= energy;
 
   const ACTIONS = [
-    { id: 'work_task', icon: 'briefcase', name: 'Закрыть задачу', energy: 4 },
-    { id: 'work_overtime', icon: 'moon', name: 'Овертайм', energy: 5 },
-    { id: 'networking', icon: 'chat', name: 'Стендап / 1:1', energy: 2 },
+    { id: 'work_task', emoji: '💻', name: 'Закрыть задачу', energy: 4 },
+    { id: 'work_overtime', emoji: '🌙', name: 'Овертайм', energy: 5 },
+    { id: 'networking', emoji: '💬', name: 'Стендап / 1:1', energy: 2 },
   ];
 
   return (
     <div className="space-y-4 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <button onClick={back} className="flex items-center gap-1.5 text-sm text-ink-400">
-          <PixelIcon name="chevron" size={10} className="rotate-90" />
-          Карьера
-        </button>
-        <span className="text-xs text-ink-500">
-          {company ? SIZE_LABELS[company.size] ?? company.size : 'Офис'}
-        </span>
-      </div>
+      <button onClick={back} className="link-back">
+        ← Карьера
+      </button>
 
-      <h2 className="flex items-center gap-2 text-base font-semibold text-white -mt-2">
-        <SpriteBadge sprite="desk_office" size={32} />
+      <ScreenTitle emoji="🏢" meta={<span>{company ? (SIZE_LABELS[company.size] ?? company.size) : 'Офис'}</span>}>
         {company?.name ?? 'Мой офис'}
-      </h2>
+      </ScreenTitle>
 
       {error && (
-        <div className="game-card border-clay-500/40 bg-clay-500/10 cursor-pointer" onClick={clearError}>
-          <p className="flex items-start gap-2 text-sm text-clay-300"><PixelIcon name="warn" size={12} className="mt-0.5" />{error}</p>
+        <div role="alert" className="card card-sm cursor-pointer" onClick={clearError}>
+          <p className="text-sm text-clay-300">⚠ {error}</p>
         </div>
       )}
       {loadError && (
-        <div className="game-card border-clay-500/40 bg-clay-500/10">
-          <p className="flex items-start gap-2 text-sm text-clay-300"><PixelIcon name="warn" size={12} className="mt-0.5" />{loadError}</p>
+        <div role="alert" className="card card-sm">
+          <p className="text-sm text-clay-300">⚠ {loadError}</p>
         </div>
       )}
 
@@ -150,14 +141,12 @@ export const OfficeView: React.FC = () => {
           player={player}
         />
       ) : (
-        <div className="aspect-square border-2 border-ink-700 bg-ink-800 flex items-center justify-center text-sm text-ink-500">
-          Открываем офис…
-        </div>
+        <Skeleton className="aspect-square" />
       )}
 
       {/* Team */}
       <div>
-        <h3 className="section-title mb-2">Команда</h3>
+        <SectionTitle className="mb-2">Команда</SectionTitle>
         <div className="grid grid-cols-3 gap-2">
           {TEAM.map((t) => {
             const meta = npcs.find((n: any) => n.id === t.npcId);
@@ -167,7 +156,7 @@ export const OfficeView: React.FC = () => {
             // we serve the optimised .webp in /art/npcs/.
             const portrait = meta?.avatar ? `/art/npcs/${String(meta.avatar).replace(/\.png$/i, '.webp')}` : null;
             return (
-              <div key={t.npcId} className="panel !p-2.5 text-center" title={meta?.description ?? ''}>
+              <div key={t.npcId} className="card card-sm text-center" title={meta?.description ?? ''}>
                 {portrait ? (
                   <img
                     src={portrait}
@@ -176,7 +165,7 @@ export const OfficeView: React.FC = () => {
                     loading="lazy"
                     decoding="async"
                     alt=""
-                    className="reference-friend-portrait mx-auto"
+                    className="npc-portrait mx-auto"
                     onError={(e) => {
                       (e.currentTarget as HTMLImageElement).style.display = 'none';
                     }}
@@ -184,48 +173,37 @@ export const OfficeView: React.FC = () => {
                 ) : (
                   <EmojiToken className="mx-auto">🧑‍💻</EmojiToken>
                 )}
-                <p className="text-xs font-medium text-ink-100 truncate mt-1.5">
-                  {meta?.name ?? t.npcId}
-                </p>
-                <p className={`flex items-center justify-center gap-1 text-2xs mt-0.5 ${rel.cls}`}>
-                  <PixelIcon name={rel.icon} size={9} />
+                <p className="text-xs font-medium text-ink-100 truncate mt-1.5">{meta?.name ?? t.npcId}</p>
+                <p className={`flex items-center justify-center gap-1 text-2xs mt-0.5 ${rel.cls}`} title={rel.label}>
+                  <span aria-hidden="true">{rel.emoji}</span>
                   <span className="num">{value > 0 ? `+${value}` : value}</span>
                 </p>
               </div>
             );
           })}
         </div>
-        <p className="text-2xs text-ink-600 mt-1.5">Отношения качаются событиями и нетворкингом</p>
+        <p className="subtle mt-2">Отношения качаются событиями и нетворкингом</p>
       </div>
 
       {/* Office actions — the same work API, office flavor */}
       <div>
-        <h3 className="section-title mb-2">Рабочий день</h3>
+        <SectionTitle className="mb-2">Рабочий день</SectionTitle>
         <div className="grid grid-cols-3 gap-2">
           {ACTIONS.map((a) => {
             const enabled = canAct(a.energy);
             return (
-              <button
-                key={a.id}
-                onClick={() => performAction(a.id)}
-                disabled={!enabled}
-                className="tile text-center !flex !flex-col !items-center"
-              >
-                <PixelIcon name={a.icon} size={15} className="text-ink-300" />
-                <p className="text-xs font-medium text-ink-100 mt-1.5 leading-tight">{a.name}</p>
-                <p className="flex items-center justify-center gap-1 text-2xs text-ink-500 mt-1">
-                  <PixelIcon name="bolt" size={9} className="text-sky-300/70" />
-                  <span className="num">{a.energy}</span>
-                </p>
+              <button key={a.id} onClick={() => performAction(a.id)} disabled={!enabled} className="tile text-center">
+                <span className="tile-icon" aria-hidden="true">
+                  {a.emoji}
+                </span>
+                <p className="tile-label">{a.name}</p>
+                <p className="tile-meta num">⚡ {a.energy}</p>
               </button>
             );
           })}
         </div>
-        <p className="text-2xs text-ink-600 mt-1.5">Учёба и отдых — во вкладке «День»</p>
+        <p className="subtle mt-2">Учёба и отдых — на «Главной»</p>
       </div>
-
-      {/* Promotion progress (same panel as Day) */}
-      <CareerPressureCard />
     </div>
   );
 };

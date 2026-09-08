@@ -1,13 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import {
-  ProjectDef,
-  projectBlockedReason,
-  projectComplete,
-  projectDaysLeft,
-  projectProgress,
-} from '@itsim/shared';
+import { ProjectDef, projectBlockedReason, projectComplete, projectDaysLeft, projectProgress } from '@itsim/shared';
 import { useGameStore } from '../store/gameStore';
-import { PixelIcon } from './pixel/PixelIcon';
 import { Spinner } from './ui';
 
 /**
@@ -29,6 +22,19 @@ function deadlineLabel(daysLeft: number): string {
   if (daysLeft === 1) return '1 день';
   return `${daysLeft} дн.`;
 }
+
+/** Content ships pixel-icon names; the chrome speaks emoji. */
+const PROJECT_EMOJI: Record<string, string> = {
+  screen: '🖥',
+  chat: '💬',
+  rocket: '🚀',
+  briefcase: '💼',
+  chart: '📈',
+  cap: '🎓',
+  coin: '🪙',
+  mug: '☕',
+};
+const projectEmoji = (icon?: string) => PROJECT_EMOJI[icon ?? ''] ?? '📁';
 
 export const ProjectBoard: React.FC = () => {
   const player = useGameStore((s) => s.player);
@@ -63,7 +69,7 @@ export const ProjectBoard: React.FC = () => {
   };
 
   const active = player.activeProject ?? null;
-  const activeDef = active ? (projects ?? []).find((p) => p.id === active.id) ?? null : null;
+  const activeDef = active ? ((projects ?? []).find((p) => p.id === active.id) ?? null) : null;
   const skillLevel = player.skills?.[player.mainSkillId ?? '']?.level ?? 0;
   const done = new Set(player.projectsDone ?? []);
 
@@ -84,7 +90,9 @@ export const ProjectBoard: React.FC = () => {
       {active && activeDef && (
         <article className="project-active" aria-label={`Активный проект: ${activeDef.title}`}>
           <div className="project-active-head">
-            <PixelIcon name={activeDef.icon} size={16} className="text-sky-300" />
+            <span className="text-lg leading-none" aria-hidden="true">
+              {projectEmoji(activeDef.icon)}
+            </span>
             <div className="min-w-0">
               <p className="project-title">{activeDef.title}</p>
               <p className="project-subtitle">{activeDef.subtitle}</p>
@@ -99,7 +107,7 @@ export const ProjectBoard: React.FC = () => {
             aria-valuemax={100}
             aria-valuenow={projectProgress(activeDef, active)}
           >
-            <span style={{ width: `${projectProgress(activeDef, active)}%`, background: 'var(--moss)' }} />
+            <span style={{ width: `${projectProgress(activeDef, active)}%`, background: 'var(--green)' }} />
           </div>
           <p className={`project-deadline ${projectDaysLeft(active, player.currentDay) < 0 ? 'is-late' : ''}`}>
             Дедлайн: день {active.deadlineDay} · {deadlineLabel(projectDaysLeft(active, player.currentDay))}
@@ -114,16 +122,13 @@ export const ProjectBoard: React.FC = () => {
                 <li key={task.id} className={isDone ? 'is-done' : ''}>
                   <span className="project-task-title">{task.title}</span>
                   {isDone ? (
-                    <span className="project-task-done">
-                      <PixelIcon name="check" size={10} /> готово
-                    </span>
+                    <span className="project-task-done">✓ готово</span>
                   ) : (
                     <button
                       disabled={busy || !affordable}
                       onClick={() => act('project_task', { projectId: activeDef.id, taskId: task.id })}
                     >
-                      +{task.xp} XP · −{task.energy}
-                      <PixelIcon name="arrow" size={9} />
+                      +{task.xp} XP · −{task.energy} ⚡
                     </button>
                   )}
                 </li>
@@ -133,13 +138,13 @@ export const ProjectBoard: React.FC = () => {
 
           <div className="project-active-actions">
             <button
-              className="btn btn-primary text-xs"
+              className="btn btn-sm btn-primary"
               disabled={busy || !projectComplete(activeDef, active)}
               onClick={() => act('deliver_project')}
             >
               {projectComplete(activeDef, active) ? `Сдать за ${fmtMoney(activeDef.payment)}` : 'Сдать проект'}
             </button>
-            <button className="btn btn-ghost text-xs" disabled={busy} onClick={() => act('drop_project')}>
+            <button className="btn btn-sm btn-ghost" disabled={busy} onClick={() => act('drop_project')}>
               Отказаться
             </button>
           </div>
@@ -160,7 +165,9 @@ export const ProjectBoard: React.FC = () => {
               const blocked = projectBlockedReason(def, { activeProject: active, skillLevel });
               return (
                 <article key={def.id} className="project-offer" aria-label={def.title}>
-                  <PixelIcon name={def.icon} size={16} className="text-ink-300 shrink-0 mt-0.5" />
+                  <span className="text-lg leading-none shrink-0" aria-hidden="true">
+                    {projectEmoji(def.icon)}
+                  </span>
                   <div className="min-w-0 flex-1">
                     <p className="project-title">{def.title}</p>
                     <p className="project-subtitle">{def.subtitle}</p>
@@ -171,7 +178,7 @@ export const ProjectBoard: React.FC = () => {
                     {blocked && <p className="project-blocked">{blocked}</p>}
                   </div>
                   <button
-                    className="btn btn-primary project-take text-xs"
+                    className="btn btn-sm btn-primary project-take"
                     disabled={busy || blocked !== null}
                     onClick={() => act('take_project', { projectId: def.id })}
                   >

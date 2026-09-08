@@ -2,7 +2,6 @@ import React from 'react';
 import { LayerManifest, GeneticTraits, GeneticsConfig, AvatarCustomization } from '@itsim/shared';
 import { Composition, buildLayerStack } from './layers';
 import { ProceduralAvatar } from './ProceduralAvatar';
-import { PixelIcon } from '../pixel/PixelIcon';
 
 /**
  * Layered procedural room — DESIGN.md sections 1-2.
@@ -35,7 +34,17 @@ export const RoomRenderer: React.FC<{
   petWear?: string[];
   /** pet was fed today → happy bubble */
   petFed?: boolean;
-}> = ({ roomManifest, avatarManifest, traits, geneticsConfig, housingLevel, composition, avatarCustom, petWear, petFed }) => {
+}> = ({
+  roomManifest,
+  avatarManifest,
+  traits,
+  geneticsConfig,
+  housingLevel,
+  composition,
+  avatarCustom,
+  petWear,
+  petFed,
+}) => {
   const layers = buildLayerStack(roomManifest, composition, traits, geneticsConfig);
 
   // Wardrobe wins; owned headphones still auto-equip when the slot is untouched.
@@ -65,17 +74,12 @@ export const RoomRenderer: React.FC<{
       {composition.pet && composition.pet !== 'pet_none' && (
         <>
           {petAccessory(petWear) && (
-            <span className="absolute left-[79%] top-[53%] text-2xl select-none">
-              {petAccessory(petWear)}
-            </span>
+            <span className="absolute left-[79%] top-[53%] text-2xl select-none">{petAccessory(petWear)}</span>
           )}
           {petFed && (
-            <PixelIcon
-              name="heart"
-              size={10}
-              title="Питомец сыт"
-              className="absolute left-[88%] top-[61%] text-moss-300"
-            />
+            <span title="Питомец сыт" aria-hidden="true" className="absolute left-[88%] top-[61%] text-xs select-none">
+              ❤️
+            </span>
           )}
         </>
       )}
@@ -144,7 +148,17 @@ export function buildRoomComposition(opts: {
   // owned pets (cross-collection skins take priority)
   let pet = crossBySlot.pet ?? null;
   if (!pet) {
-    const petIds = ['pet_bulldog', 'pet_cat', 'pet_dog', 'pet_cactus', 'pet_robo', 'pet_spider', 'pet_parrot', 'pet_hamster', 'pet_fish'];
+    const petIds = [
+      'pet_bulldog',
+      'pet_cat',
+      'pet_dog',
+      'pet_cactus',
+      'pet_robo',
+      'pet_spider',
+      'pet_parrot',
+      'pet_hamster',
+      'pet_fish',
+    ];
     for (const pid of petIds) {
       if (items.includes(pid)) {
         pet = pid;
@@ -165,9 +179,7 @@ export function buildRoomComposition(opts: {
   };
 
   // Avatar accessory override from owned headphones
-  composition.avatarAccessory = itemLayer('sony_headphones', 'cheap_headphones')
-    ? 'acc_headphones'
-    : null;
+  composition.avatarAccessory = itemLayer('sony_headphones', 'cheap_headphones') ? 'acc_headphones' : null;
 
   // Room editor: explicit player choice wins over everything automatic
   if (custom?.slots) {

@@ -4,13 +4,12 @@ import { buildRoomComposition } from '../components/room/RoomRenderer';
 import { IsoRoom } from '../components/iso/IsoRoom';
 import { IsoRoomEditor } from '../components/iso/IsoRoomEditor';
 import { entryName } from '../components/room/RoomEditor';
-import { EmptyState, SpriteBadge } from '../components/ui';
+import { EmptyState, ScreenTitle, SectionTitle } from '../components/ui';
 import { Wardrobe } from '../components/room/Wardrobe';
 import { ShareCard } from '../components/room/ShareCard';
 import { haptic } from '../lib/telegram';
 import { buildAvatarData, fetchPixelPack, PixelAvatarData } from '../components/room/pixelAvatar';
 import { PixelIdentity } from '../components/room/PixelIdentity';
-import { PixelIcon } from '../components/pixel/PixelIcon';
 
 /**
  * «Дом» — procedural room (DESIGN.md), NFT inventory (mock Solana),
@@ -76,9 +75,7 @@ export const RoomView: React.FC = () => {
     : null;
 
   // A repaint overrides the genetic wall tint everywhere (room + share card)
-  const displayTraits = traits && player?.room?.wallColor
-    ? { ...traits, wallColor: player.room.wallColor }
-    : traits;
+  const displayTraits = traits && player?.room?.wallColor ? { ...traits, wallColor: player.room.wallColor } : traits;
 
   const handleBind = async () => {
     const ok = await bindWallet(walletInput.trim());
@@ -87,33 +84,32 @@ export const RoomView: React.FC = () => {
 
   return (
     <div className="space-y-4 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <h2 className="flex items-center gap-2 text-base font-semibold text-white">
-          <SpriteBadge sprite="bed" size={32} />
-          Дом
-        </h2>
-        {traits && (
-          <span className="num text-2xs text-ink-600 truncate max-w-[140px]" title={traits.seed}>
-            seed {traits.seed.slice(0, 8)}…
-          </span>
-        )}
-      </div>
+      <ScreenTitle
+        emoji="🏠"
+        meta={
+          traits ? (
+            <span className="num truncate max-w-[120px]" title={traits.seed}>
+              seed {traits.seed.slice(0, 8)}…
+            </span>
+          ) : undefined
+        }
+      >
+        Дом
+      </ScreenTitle>
 
       {/* Room */}
       <IsoRoom player={player} />
 
       {/* Pet status */}
       {ready && composition?.pet && composition.pet !== 'pet_none' && (
-        <div className="panel !py-2.5 flex items-center gap-2.5">
-          <PixelIcon name="bone" size={14} className="text-ink-400" />
+        <div className="card card-sm flex items-center gap-2.5">
+          <span className="text-lg" aria-hidden="true">
+            🐾
+          </span>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-ink-100 truncate">
-              {entryName(composition.pet)}
-            </p>
+            <p className="text-sm font-medium text-ink-100 truncate">{entryName(composition.pet)}</p>
             <p className={`text-xs ${player.petFedToday ? 'text-moss-300' : 'text-ochre-300'}`}>
-              {player.petFedToday
-                ? 'сыт и счастлив до завтра'
-                : 'голоден — покорми во вкладке «День»'}
+              {player.petFedToday ? 'сыт и счастлив до завтра' : 'голоден — покорми во вкладке «День»'}
             </p>
           </div>
         </div>
@@ -121,19 +117,22 @@ export const RoomView: React.FC = () => {
 
       {/* Room editor */}
       {ready && (
-        <div className="game-card">
+        <div className="card">
           <button
             onClick={() => {
               haptic('selection');
               setEditorOpen((v) => !v);
             }}
-            className="w-full flex items-center justify-between touch-target active:scale-[0.98] transition-all"
+            aria-expanded={editorOpen}
+            className="w-full flex items-center justify-between touch-target"
           >
             <span className="flex items-center gap-2 text-sm font-semibold text-ink-100">
-              <PixelIcon name="house" size={12} className="text-ink-400" />
+              <span aria-hidden="true">🛋</span>
               Настроить комнату
             </span>
-            <PixelIcon name="chevron" size={10} className={`accordion-chevron text-ink-500 ${editorOpen ? 'open' : ''}`} />
+            <span aria-hidden="true" className={`accordion-chevron ${editorOpen ? 'is-open' : ''}`}>
+              ▾
+            </span>
           </button>
           <div className={`accordion-body ${editorOpen ? 'open' : ''}`}>
             <div className="accordion-inner">
@@ -147,19 +146,22 @@ export const RoomView: React.FC = () => {
 
       {/* Wardrobe */}
       {ready && (
-        <div className="game-card">
+        <div className="card">
           <button
             onClick={() => {
               haptic('selection');
               setWardrobeOpen((v) => !v);
             }}
-            className="w-full flex items-center justify-between touch-target active:scale-[0.98] transition-all"
+            aria-expanded={wardrobeOpen}
+            className="w-full flex items-center justify-between touch-target"
           >
             <span className="flex items-center gap-2 text-sm font-semibold text-ink-100">
-              <PixelIcon name="person" size={12} className="text-ink-400" />
+              <span aria-hidden="true">👕</span>
               Гардероб
             </span>
-            <PixelIcon name="chevron" size={10} className={`accordion-chevron text-ink-500 ${wardrobeOpen ? 'open' : ''}`} />
+            <span aria-hidden="true" className={`accordion-chevron ${wardrobeOpen ? 'is-open' : ''}`}>
+              ▾
+            </span>
           </button>
           <div className={`accordion-body ${wardrobeOpen ? 'open' : ''}`}>
             <div className="accordion-inner">
@@ -171,15 +173,17 @@ export const RoomView: React.FC = () => {
         </div>
       )}
 
-      {pixelAvatarData && pixelPack && (
-        <PixelIdentity pack={pixelPack} data={pixelAvatarData} />
+      {pixelAvatarData && pixelPack && <PixelIdentity pack={pixelPack} data={pixelAvatarData} />}
+
+      {error && (
+        <div role="alert" className="card card-sm">
+          <p className="text-sm text-clay-300">⚠ {error}</p>
+        </div>
       )}
 
-      {error && <div className="panel panel-note panel-note-clay"><p className="flex items-start gap-2 text-sm text-clay-300"><PixelIcon name="warn" size={12} className="mt-0.5" />{error}</p></div>}
-
       {/* Wallet */}
-      <div className="game-card">
-        <h3 className="section-title mb-2">Кошелёк Solana</h3>
+      <div className="card">
+        <SectionTitle className="mb-3">Кошелёк Solana</SectionTitle>
         {player.walletAddress ? (
           <p className="num text-xs text-moss-300 break-all">{player.walletAddress}</p>
         ) : (
@@ -188,7 +192,7 @@ export const RoomView: React.FC = () => {
               value={walletInput}
               onChange={(e) => setWalletInput(e.target.value)}
               placeholder="Base58 адрес…"
-              className="flex-1 min-w-0 bg-ink-800 border-2 border-ink-700 px-3 py-2.5 text-base text-ink-200"
+              className="input flex-1 min-w-0"
               inputMode="text"
               autoComplete="off"
               autoCapitalize="none"
@@ -196,41 +200,38 @@ export const RoomView: React.FC = () => {
               spellCheck={false}
               enterKeyHint="done"
             />
-            <button
-              onClick={handleBind}
-              disabled={walletInput.trim().length < 32}
-              className="px-4 py-2.5 text-sm bg-sky-600 hover:bg-sky-700 active:scale-95 disabled:opacity-50 text-white touch-target font-medium shrink-0 transition-all"
-            >
+            <button onClick={handleBind} disabled={walletInput.trim().length < 32} className="btn btn-primary shrink-0">
               Привязать
             </button>
           </div>
         )}
-        <p className="text-xs text-ink-500 mt-2">
-          Генетика персонажа детерминированно привязана к кошельку (DESIGN.md 3.1). В проде — через Solana Wallet Adapter.
+        <p className="subtle mt-3">
+          Генетика персонажа детерминированно привязана к кошельку (DESIGN.md 3.1). В проде — через Solana Wallet
+          Adapter.
         </p>
       </div>
 
       {/* NFT inventory */}
-      <div className="game-card">
-        <h3 className="section-title mb-2">NFT-предметы (мок)</h3>
+      <div className="card">
+        <SectionTitle className="mb-3">NFT-предметы (мок)</SectionTitle>
         {(inventory ?? []).length === 0 ? (
           <EmptyState
             bare
-            icon="box"
+            emoji="📦"
             title="NFT пока нет"
             hint="Загляни в магазин (Herman Miller, MacBook…) — покупка смонтится в кошелёк."
           />
         ) : (
           <div className="space-y-1.5">
             {(inventory ?? []).map((nft: any) => (
-              <div key={nft.name} className="flex items-center justify-between bg-ink-800/60 px-3 py-2">
-                <div>
-                  <p className="text-xs text-ink-200">{nft.name}</p>
-                  <p className="text-[10px] font-mono text-ink-500">
+              <div key={nft.name} className="well flex items-center justify-between">
+                <div className="min-w-0">
+                  <p className="text-sm text-ink-100">{nft.name}</p>
+                  <p className="num text-2xs text-ink-500 truncate">
                     {nft.attributes?.map((a: any) => `${a.trait_type}:${a.value}`).join(' · ')}
                   </p>
                 </div>
-                <span className="text-[10px] text-sky-400 font-mono">{nft.symbol}</span>
+                <span className="num text-2xs text-sky-300">{nft.symbol}</span>
               </div>
             ))}
           </div>
@@ -238,8 +239,8 @@ export const RoomView: React.FC = () => {
       </div>
 
       {/* Cross-collection synergies */}
-      <div className="game-card">
-        <h3 className="section-title mb-2">Cross-collection (мок-детект)</h3>
+      <div className="card">
+        <SectionTitle className="mb-3">Cross-collection (мок-детект)</SectionTitle>
         <div className="space-y-2">
           {crossCollections.map((c: any) => {
             const held = (heldCollections ?? []).includes(c.collectionId);
@@ -254,20 +255,23 @@ export const RoomView: React.FC = () => {
                       : [...(heldCollections ?? []), c.collectionId]
                   )
                 }
-                className={`w-full flex items-center justify-between gap-2 px-3 py-2.5 border text-left transition-all touch-target active:scale-[0.98] ${
-                  held ? 'border-moss-500/50 bg-moss-800/20' : 'border-ink-700 bg-ink-800/50'
-                }`}
+                className={`tile w-full flex items-center justify-between gap-2 text-left ${held ? 'is-chosen' : ''}`}
               >
-                <div>
-                  <p className="text-xs text-ink-200">{c.collectionName}</p>
-                  <p className="text-2xs text-ink-500">{c.nftType} → {c.layerId}{bonuses ? ` · ${bonuses}` : ''}</p>
+                <div className="min-w-0">
+                  <p className="text-sm text-ink-100">{c.collectionName}</p>
+                  <p className="text-2xs text-ink-500 truncate">
+                    {c.nftType} → {c.layerId}
+                    {bonuses ? ` · ${bonuses}` : ''}
+                  </p>
                 </div>
-                <PixelIcon name={held ? 'check' : 'plus'} size={10} className={held ? 'text-moss-300' : 'text-ink-400'} />
+                <span aria-hidden="true" className={held ? 'text-moss-300' : 'text-ink-500'}>
+                  {held ? '✓' : '+'}
+                </span>
               </button>
             );
           })}
         </div>
-        <p className="text-xs text-ink-500 mt-2">
+        <p className="subtle mt-3">
           В проде владение коллекциями читается on-chain (Helius RPC). Здесь — мок для теста бонусов.
         </p>
       </div>

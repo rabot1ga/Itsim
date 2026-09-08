@@ -1,12 +1,19 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useGameStore } from './store/gameStore';
 import { GameScreen } from './components/GameScreen';
 import { ResourceBar } from './components/ResourceBar';
 import { showBackButton, hideBackButton, applyTelegramChrome } from './lib/telegram';
-import { PixelText } from './components/pixel/PixelText';
+import { OnboardingView, ONBOARDING_KEY } from './screens/OnboardingView';
 
 const App: React.FC = () => {
   const { initialized, screen, currentView, moreOpen, setView, setMoreOpen, initGame } = useGameStore();
+  const [onboarded, setOnboarded] = useState(() => {
+    try {
+      return localStorage.getItem(ONBOARDING_KEY) === '1';
+    } catch {
+      return true;
+    }
+  });
 
   useEffect(() => {
     // Paint Telegram's own header/background in our ink so the app has no seams.
@@ -49,19 +56,26 @@ const App: React.FC = () => {
     return () => hideBackButton(toMain);
   }, [initialized, screen, currentView, moreOpen, setView, setMoreOpen]);
 
+  const finishOnboarding = () => {
+    try {
+      localStorage.setItem(ONBOARDING_KEY, '1');
+    } catch {
+      /* storage unavailable — the tour simply repeats next launch */
+    }
+    setOnboarded(true);
+  };
+
   if (!initialized) {
     return (
-      <div className="app-container items-center justify-center">
-        <div className="text-center animate-fade-in">
-          <PixelText scale={4} className="text-gold-300 mx-auto">
-            IT LIFE
-          </PixelText>
-          <div className="mt-2 text-2xs font-semibold uppercase tracking-[0.42em] text-ink-500 pl-1">Simulator</div>
-          <div className="mt-7 flex justify-center gap-1" aria-label="Загрузка">
+      <div className="app-container">
+        <div className="splash animate-fade-in">
+          <div className="splash-word">IT LIFE</div>
+          <div className="splash-sub">Simulator</div>
+          <div className="mt-4 flex justify-center gap-1.5" aria-label="Загрузка">
             {[0, 1, 2].map((i) => (
               <span
                 key={i}
-                className="w-1.5 h-1.5 bg-ink-600 animate-pulse-soft"
+                className="w-1.5 h-1.5 rounded-full bg-ink-600 animate-pulse-soft"
                 style={{ animationDelay: `${i * 0.18}s` }}
               />
             ))}
@@ -71,8 +85,16 @@ const App: React.FC = () => {
     );
   }
 
+  if (!onboarded) {
+    return (
+      <div className="app-container">
+        <OnboardingView onDone={finishOnboarding} />
+      </div>
+    );
+  }
+
   return (
-    <div className="app-container reference-app" data-ui-revision="08">
+    <div className="app-container" data-ui-revision="09">
       {(screen === 'game' || screen === 'menu') && (
         <>
           <ResourceBar />

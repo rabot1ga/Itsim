@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { haptic } from '../lib/telegram';
-import { PixelIcon } from './pixel/PixelIcon';
 
 /**
  * Interview mini-game — gamified learning (quiz with explanations).
@@ -120,30 +119,28 @@ export const InterviewPanel: React.FC = () => {
   // Network/server failures used to be swallowed: the state existed but was
   // never rendered, so a failed request looked like a frozen button.
   const errorNote = error ? (
-    <div className="mb-3 flex items-start gap-2 px-3 py-2 text-xs border-2 border-clay-700 bg-clay-900/40 text-clay-200">
-      <PixelIcon name="warn" size={11} className="mt-0.5" />
+    <div
+      role="alert"
+      className="mb-3 flex items-start gap-2 rounded-xl border border-clay-500/50 bg-clay-900/30 px-3 py-2 text-xs text-clay-200"
+    >
+      <span aria-hidden="true">⚠</span>
       {error}
     </div>
   ) : null;
 
   if (phase === 'idle') {
     return (
-      <div className="panel panel-note panel-note-sky animate-pop-in">
+      <div className="card panel-note panel-note-sky animate-pop-in">
         {errorNote}
         <h3 className="flex items-center gap-1.5 text-sm font-semibold text-white mb-1">
-          <PixelIcon name="chat" size={12} className="text-sky-300" />
+          <span aria-hidden="true">💬</span>
           Собеседование-квиз
         </h3>
         <p className="text-xs text-ink-400 mb-3 leading-relaxed">
-          Ответь на 3 вопроса по своей специализации. Каждый ответ даёт XP —
-          правильный больше, неправильный меньше (но тоже даёт: учишься на ошибках).
-          Результат влияет на шанс оффера.
+          Ответь на 3 вопроса по своей специализации. Каждый ответ даёт XP — правильный больше, неправильный меньше (но
+          тоже даёт: учишься на ошибках). Результат влияет на шанс оффера.
         </p>
-        <button
-          onClick={start}
-          disabled={busy}
-          className="btn btn-primary w-full"
-        >
+        <button onClick={start} disabled={busy} className="btn btn-primary w-full">
           {busy ? 'Готовим вопросы…' : 'Начать собеседование'}
         </button>
       </div>
@@ -154,20 +151,16 @@ export const InterviewPanel: React.FC = () => {
     const picked = chosen[q.id];
     const result = answers[q.id];
     return (
-      <div className="panel panel-note panel-note-sky animate-fade-in">
+      <div className="card panel-note panel-note-sky animate-fade-in">
         {errorNote}
         <div className="flex items-center justify-between mb-2">
           <span className="num text-xs text-ink-400">
             Вопрос {idx + 1} из {questions.length}
           </span>
-          <span className="chip">
-            {TIER_LABELS[q.tier] ?? q.tier}
-          </span>
+          <span className="chip">{TIER_LABELS[q.tier] ?? q.tier}</span>
         </div>
         <div className="meter mb-3">
-          <span
-            style={{ width: `${((idx + 1) / questions.length) * 100}%`, background: 'var(--sky)' }}
-          />
+          <span style={{ width: `${((idx + 1) / questions.length) * 100}%`, background: 'var(--blue)' }} />
         </div>
         <p className="text-sm text-white font-medium mb-3 leading-relaxed">{q.text}</p>
         <div className="space-y-2">
@@ -178,8 +171,8 @@ export const InterviewPanel: React.FC = () => {
 
             let cls = '';
             if (result !== undefined) {
-              if (isCorrectOption) cls = '!border-moss-600 !bg-moss-900/30';
-              else if (isWrongPick) cls = '!border-clay-600 !bg-clay-900/30';
+              if (isCorrectOption) cls = '!border-moss-500 !bg-moss-900/30';
+              else if (isWrongPick) cls = '!border-clay-500 !bg-clay-900/30';
               else cls = 'opacity-50';
             }
 
@@ -190,14 +183,18 @@ export const InterviewPanel: React.FC = () => {
                 disabled={result !== undefined || busy}
                 className={`tile w-full flex items-start gap-2 text-sm text-ink-100 touch-target ${cls}`}
               >
-                <span className="num text-xs text-ink-500 mt-0.5">
-                  {String.fromCharCode(65 + i)}
-                </span>
+                <span className="num text-xs text-ink-500 mt-0.5">{String.fromCharCode(65 + i)}</span>
                 <span className="flex-1">{option}</span>
                 {isCorrectOption && (
-                  <PixelIcon name="check" size={11} className="text-moss-400 mt-0.5" />
+                  <span className="text-moss-300" aria-hidden="true">
+                    ✓
+                  </span>
                 )}
-                {isWrongPick && <PixelIcon name="warn" size={11} className="text-clay-400 mt-0.5" />}
+                {isWrongPick && (
+                  <span className="text-clay-300" aria-hidden="true">
+                    ✕
+                  </span>
+                )}
               </button>
             );
           })}
@@ -205,21 +202,17 @@ export const InterviewPanel: React.FC = () => {
         {result && (
           <div className="mt-3 animate-fade-in">
             <div
-              className={`px-3 py-2.5 text-xs leading-relaxed border ${
+              className={`rounded-xl border px-3 py-2.5 text-xs leading-relaxed ${
                 result.correct
-                  ? 'bg-moss-900/30 border-moss-700 text-moss-200'
-                  : 'bg-ochre-900/30 border-ochre-700 text-ochre-200'
+                  ? 'bg-moss-900/30 border-moss-500/50 text-moss-200'
+                  : 'bg-ochre-900/30 border-ochre-500/50 text-ochre-200'
               }`}
             >
               <span className="font-semibold">{result.correct ? 'Верно. ' : 'Не совсем. '}</span>
               {result.explanation}
             </div>
-            <button
-              onClick={next}
-              className="btn btn-primary w-full mt-2"
-            >
+            <button onClick={next} className="btn btn-primary w-full mt-2">
               {idx + 1 < questions.length ? 'Следующий вопрос' : 'К итогам'}
-              <PixelIcon name="arrow" size={11} />
             </button>
           </div>
         )}
@@ -229,16 +222,12 @@ export const InterviewPanel: React.FC = () => {
 
   if (phase === 'summary') {
     return (
-      <div className="panel panel-note panel-note-sky animate-fade-in">
+      <div className="card panel-note panel-note-sky animate-fade-in">
         <h3 className="eyebrow mb-2">Итоги собеседования</h3>
         <div className="text-center py-3">
-          <PixelIcon
-            name={correctCount === questions.length ? 'trophy' : 'target'}
-            size={28}
-            className={`mx-auto mb-2 ${
-              correctCount === questions.length ? 'text-gold-300' : 'text-ink-500'
-            }`}
-          />
+          <p className="text-3xl leading-none mb-2" aria-hidden="true">
+            {correctCount === questions.length ? '🏆' : '🎯'}
+          </p>
           <p className="num text-xl font-semibold text-white">
             {correctCount} из {questions.length}
           </p>
@@ -246,15 +235,11 @@ export const InterviewPanel: React.FC = () => {
             {correctCount === questions.length
               ? 'Идеально! Интервьюер уже готовит оффер.'
               : correctCount > 0
-              ? 'Неплохо! Каждый ответ — это опыт.'
-              : 'Тяжеловато, но за каждый вопрос ты получил XP — знания растут.'}
+                ? 'Неплохо! Каждый ответ — это опыт.'
+                : 'Тяжеловато, но за каждый вопрос ты получил XP — знания растут.'}
           </p>
         </div>
-        <button
-          onClick={complete}
-          disabled={busy}
-          className="btn btn-primary w-full"
-        >
+        <button onClick={complete} disabled={busy} className="btn btn-primary w-full">
           {busy ? 'Интервьюер совещается…' : 'Узнать решение'}
         </button>
       </div>
@@ -264,17 +249,11 @@ export const InterviewPanel: React.FC = () => {
   if (phase === 'result' && finish) {
     const isOffer = finish.result === 'offer';
     return (
-      <div
-        className={`panel panel-note animate-pop-in ${
-          isOffer ? 'panel-note-moss' : 'panel-note-clay'
-        }`}
-      >
+      <div className={`card panel-note animate-pop-in ${isOffer ? 'panel-note-moss' : 'panel-note-clay'}`}>
         <div className="text-center py-2">
-          <PixelIcon
-            name={isOffer ? 'trophy' : 'warn'}
-            size={26}
-            className={`mx-auto mb-2 ${isOffer ? 'text-gold-300' : 'text-clay-400'}`}
-          />
+          <p className="text-3xl leading-none mb-2" aria-hidden="true">
+            {isOffer ? '🎉' : '💔'}
+          </p>
           <h3 className={`text-base font-semibold ${isOffer ? 'text-moss-300' : 'text-clay-300'}`}>
             {isOffer ? 'Оффер получен' : 'Отказ'}
           </h3>

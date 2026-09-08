@@ -211,7 +211,7 @@ export interface AvatarCustomization {
   shoeColor?: string | null;
   beard?: string | null;
   top?: string | null;
-  /** trousers/shorts — the avatar is drawn full-body (docs/ui.md §9) */
+  /** trousers/shorts — the avatar is drawn full-body (docs/design.md §12) */
   bottom?: string | null;
   accessory?: string | null;
 }
