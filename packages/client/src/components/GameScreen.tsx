@@ -34,7 +34,7 @@ const MORE = [
 const MORE_VIEWS: string[] = MORE.map((m) => m.view);
 
 export const GameScreen: React.FC = () => {
-  const { currentView, setView, advanceDay, loadNft, moreOpen, setMoreOpen } = useGameStore();
+  const { currentView, setView, setScreen, advanceDay, loadNft, moreOpen, setMoreOpen } = useGameStore();
   const player = useGameStore((s) => s.player);
 
   /** an offer on the table is the one thing worth a marker in the nav */
@@ -159,6 +159,15 @@ export const GameScreen: React.FC = () => {
                   );
                 })}
               </div>
+              <button
+                className="btn btn-secondary w-full mt-2"
+                onClick={() => {
+                  setMoreOpen(false);
+                  setScreen('menu');
+                }}
+              >
+                Главное меню
+              </button>
             </div>
           </div>
         </>

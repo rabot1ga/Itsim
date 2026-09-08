@@ -1,6 +1,6 @@
 # Event artwork
 
-Cropped illustration panels from the user-provided root `1.png`, encoded as WebP
+Cropped illustration panels from the user-provided root `2.png`, encoded as WebP
 (280×160). No card UI is baked into the images. Decorative category art only;
 actual story, choices and rewards remain live text from game content.
 

@@ -1,112 +1,92 @@
 import React from 'react';
 import { useGameStore } from '../store/gameStore';
 import { haptic } from '../lib/telegram';
-import { IsoRoom } from './iso/IsoRoom';
 import { PixelIcon } from './pixel/PixelIcon';
 import { PixelText } from './pixel/PixelText';
 
+const DESTINATIONS = [
+  { view: 'career', icon: 'briefcase', title: 'Работа', hint: 'Найди свою команду' },
+  { view: 'skills', icon: 'book', title: 'Обучение', hint: 'Выбери направление' },
+  { view: 'shop', icon: 'bag', title: 'Магазин', hint: 'Собери свой сетап' },
+  { view: 'room', icon: 'house', title: 'Моя комната', hint: 'Место, где всё началось' },
+];
+
+/** Reference-inspired entry screen. The illustration is decorative, not the player's avatar. */
 export const MainMenu: React.FC = () => {
   const { setScreen, setView, player } = useGameStore();
-
-  // a second life is progress too, even while it is still day 1
   const hasProgress = Boolean(player && ((player.currentDay ?? 1) > 1 || (player.meta?.lives ?? 0) > 0));
+  const enter = (view: string) => {
+    haptic('selection');
+    setView(view);
+    setScreen('game');
+  };
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-between p-6 overflow-y-auto">
-      <div className="flex-1 flex flex-col items-center justify-center w-full max-w-[300px]">
-        {/* Hero — your own room with you standing in it */}
-        <div className="w-full animate-fade-in">
-          {player ? <IsoRoom player={player} /> : <div className="aspect-[4/3] border-2 border-ink-700 bg-ink-800" />}
+    <main className="start-menu" aria-label="Главное меню" data-ui-revision="05">
+      <header className="start-brand">
+        <PixelText scale={2}>IT LIFE</PixelText>
+        <span>СИМУЛЯТОР ЖИЗНИ</span>
+        <span className="start-revision" title="Версия визуального интерфейса">
+          UI 05
+        </span>
+      </header>
+
+      <section className="start-hero" aria-labelledby="start-title">
+        <div className="start-hero-art">
+          <img src="/events/night.webp" alt="" width={280} height={160} loading="eager" />
+          <span className="start-hero-caption">
+            <PixelIcon name="moon" size={11} />
+            Ещё одна строка кода. Ещё один шаг вперёд.
+          </span>
         </div>
-
-        {/* Wordmark */}
-        <h1 className="flex flex-col items-center gap-2 mt-6">
-          <PixelText scale={4} className="text-gold-300">
-            IT LIFE
-          </PixelText>
-          <span className="text-2xs font-semibold uppercase tracking-[0.42em] text-ink-500 pl-1">Simulator</span>
-        </h1>
-
-        {/* One line of context: where you left off, or what this is */}
-        {hasProgress ? (
-          <p className="well flex items-center gap-2 text-xs text-ink-400 mt-4 px-3 py-2">
-            <span className="num">День {player.currentDay}</span>
-            <span className="text-ink-700">·</span>
-            <span className="text-ink-200 font-semibold">{gradeLabel(player.grade)}</span>
-            {(player.meta?.lives ?? 0) > 0 && (
-              <>
-                <span className="text-ink-700">·</span>
-                <span className="flex items-center gap-1 text-gold-300 font-semibold" title="Прожито жизней">
-                  <PixelIcon name="flame" size={9} />
-                  <span className="num">жизнь {player.meta!.lives}</span>
-                </span>
-              </>
-            )}
-            <span className="text-ink-700">·</span>
-            <span className="num text-moss-300 font-semibold">{formatMoney(player.money ?? 0)}</span>
+        <div className="start-hero-copy">
+          <p className="start-kicker">Твоя карьера. Твои решения.</p>
+          <h1 id="start-title">
+            Симулятор жизни <strong>АЙТИШНИКА</strong>
+          </h1>
+          <p className="start-description">
+            Учись, работай, обустраивай комнату.
+            <br />И постарайся не выгореть.
           </p>
-        ) : (
-          <p className="text-ink-400 text-sm max-w-[30ch] text-center mt-4 leading-relaxed">
-            Карьера, навыки, деньги и попытка не выгореть.
-          </p>
-        )}
+        </div>
+      </section>
 
-        {/* The only action on this screen */}
-        <button
-          onClick={() => {
-            haptic('medium');
-            setScreen('game');
-          }}
-          className="btn btn-primary btn-lg w-full mt-6"
-        >
-          <PixelIcon name="play" size={13} />
-          {hasProgress ? `Продолжить · день ${player.currentDay}` : 'Начать игру'}
-        </button>
+      <section className="start-save" aria-label="Текущая игра">
+        <span className="start-save-icon">
+          <PixelIcon name="calendar" size={19} />
+        </span>
+        <div>
+          <p>{hasProgress ? 'Твоя история продолжается' : 'Всё начинается с первого дня'}</p>
+          <span>
+            День {player?.currentDay ?? 1} · {gradeLabel(player?.grade ?? 'unemployed')}
+          </span>
+        </div>
+        <span className="start-save-money num">{(player?.money ?? 0).toLocaleString('ru-RU')} ₽</span>
+      </section>
 
-        {/* Quiet shortcuts, only once there is something to look at */}
-        {hasProgress && (
-          <div className="flex items-center gap-5 mt-4">
-            <MenuLink
-              icon="house"
-              label="Мой дом"
-              onClick={() => {
-                setView('room');
-                setScreen('game');
-              }}
-            />
-            <span className="w-px h-3 bg-ink-700" />
-            <MenuLink
-              icon="chart"
-              label="Топ игроков"
-              onClick={() => {
-                setView('leaderboard');
-                setScreen('game');
-              }}
-            />
-          </div>
-        )}
-      </div>
+      <button className="btn btn-primary start-play" onClick={() => enter('main')}>
+        <PixelIcon name="play" size={15} />
+        {hasProgress ? `Продолжить · день ${player!.currentDay}` : 'Начать игру'}
+        <PixelIcon name="arrow" size={12} />
+      </button>
 
-      {/* Footer */}
-      <div className="mt-8 text-center text-2xs text-ink-600 tracking-[0.04em]">
-        <p>v2.0.0 · Telegram Mini App</p>
-      </div>
-    </div>
+      <nav className="start-destinations" aria-label="Разделы игры">
+        {DESTINATIONS.map((item) => (
+          <button key={item.view} onClick={() => enter(item.view)}>
+            <PixelIcon name={item.icon} size={19} />
+            <span>
+              <strong>{item.title}</strong>
+              <small>{item.hint}</small>
+            </span>
+          </button>
+        ))}
+      </nav>
+      <footer className="start-footer">
+        Живи. Работай. Развивайся.<span>IT Life · интерфейс 05</span>
+      </footer>
+    </main>
   );
 };
-
-const MenuLink: React.FC<{ icon: string; label: string; onClick: () => void }> = ({ icon, label, onClick }) => (
-  <button
-    onClick={() => {
-      haptic('selection');
-      onClick();
-    }}
-    className="flex items-center gap-1.5 text-xs text-ink-400 hover:text-ink-200 transition-colors min-h-[44px]"
-  >
-    <PixelIcon name={icon} size={11} className="text-ink-500" />
-    {label}
-  </button>
-);
 
 function gradeLabel(grade: string): string {
   const labels: Record<string, string> = {
@@ -120,10 +100,4 @@ function gradeLabel(grade: string): string {
     cto: 'CTO',
   };
   return labels[grade] ?? grade;
-}
-
-function formatMoney(amount: number): string {
-  if (amount >= 1000000) return `${(amount / 1000000).toFixed(1)} млн ₽`;
-  if (amount >= 1000) return `${(amount / 1000).toFixed(0)} тыс ₽`;
-  return `${amount} ₽`;
 }

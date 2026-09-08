@@ -1012,7 +1012,7 @@ svg path.map-route-flow {
   image-rendering: crisp-edges;
 }
 
-/* Reference 1.png: illustration → story → choices with readable consequences. */
+/* Reference 2.png: illustration → story → choices with readable consequences. */
 .ev-story-label {
   position: relative;
   padding: 9px 12px;
@@ -1077,7 +1077,7 @@ svg path.map-route-flow {
   color: #d1e6ad;
 }
 
-/* Home / HUD — reference 2.png, using the player's live room and resources. */
+/* Home / HUD — reference 1.png, using the player's live room and resources. */
 .hud-meter-label {
   font-size: 10px;
   color: var(--text-dim);
@@ -1404,5 +1404,203 @@ svg path.map-route-flow {
 @media (max-width: 359px) {
   .skill-list-filters {
     grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* UI 05 — entry screen now belongs to the same illustrated game as the inner screens. */
+.start-menu {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: max(12px, env(safe-area-inset-top, 0px)) 14px 16px;
+  background: #0c1118;
+}
+.start-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  color: #c7d3b5;
+}
+.start-brand > span {
+  font-size: 8px;
+  letter-spacing: 0.12em;
+  color: var(--text-mute);
+}
+.start-brand .start-revision {
+  margin-left: auto;
+  padding: 4px 6px;
+  border: 1px solid #35452a;
+  color: var(--accent);
+  white-space: nowrap;
+}
+.start-hero {
+  overflow: hidden;
+  border: 2px solid #384038;
+  border-radius: 5px;
+  background: #101820;
+  box-shadow:
+    inset 0 1px 0 #ffffff12,
+    3px 3px 0 #05080d;
+}
+.start-hero-art {
+  position: relative;
+  background: #09121f;
+}
+.start-hero-art img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 7 / 4;
+  object-fit: cover;
+  image-rendering: pixelated;
+}
+.start-hero-caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  padding: 8px 10px;
+  color: #d0d8c6;
+  background: #09101be8;
+  border-top: 1px solid #26313e;
+  font-size: 10px;
+}
+.start-hero-copy {
+  padding: 16px 14px 14px;
+}
+.start-kicker {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #c7a879;
+  margin-bottom: 6px;
+}
+.start-hero h1 {
+  font-size: clamp(19px, 5.5vw, 25px);
+  line-height: 1.25;
+  color: #f3eddb;
+  font-weight: 700;
+}
+.start-hero h1 strong {
+  display: block;
+  font-family: 'Courier New', monospace;
+  font-size: clamp(29px, 8.4vw, 39px);
+  font-weight: 900;
+  letter-spacing: -0.035em;
+  color: #a3ce58;
+  text-shadow: 0 3px 0 #31491e;
+  margin: 3px 0 10px;
+}
+.start-description {
+  font-size: 12px;
+  line-height: 1.55;
+  color: #b1bac5;
+}
+.start-save {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  padding: 12px 0;
+}
+.start-save-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 38px;
+  border: 1px solid var(--line-strong);
+  background: var(--well);
+  color: #99b879;
+}
+.start-save > div {
+  min-width: 0;
+  flex: 1;
+}
+.start-save p {
+  font-size: 11px;
+  color: var(--text);
+}
+.start-save div > span {
+  display: block;
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-top: 3px;
+}
+.start-save-money {
+  font-size: 12px;
+  color: var(--accent);
+  overflow-wrap: anywhere;
+  max-width: 32%;
+}
+.start-play {
+  width: 100%;
+  min-height: 52px;
+  font-size: 16px;
+}
+.start-play > svg:last-child {
+  margin-left: auto;
+}
+.start-play > svg:first-child {
+  margin-right: auto;
+}
+.start-destinations {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+.start-destinations button {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  min-height: 66px;
+  padding: 10px;
+  text-align: left;
+  border: 1px solid #343d48;
+  border-radius: 4px;
+  background: linear-gradient(#1b2430, #141c26);
+  color: #a5bf84;
+}
+.start-destinations button:hover {
+  border-color: var(--accent-deep);
+}
+.start-destinations button > span {
+  min-width: 0;
+}
+.start-destinations strong {
+  display: block;
+  font-size: 13px;
+  color: #e0e5db;
+}
+.start-destinations small {
+  display: block;
+  font-size: 10px;
+  color: #97a0ae;
+  margin-top: 3px;
+}
+.start-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: 14px;
+  color: #9babb0;
+  font-size: 10px;
+}
+.start-footer span {
+  color: var(--text-mute);
+}
+@media (max-width: 359px) {
+  .start-destinations button {
+    gap: 6px;
+    padding: 8px;
+  }
+  .start-brand > span:not(.start-revision) {
+    letter-spacing: 0;
   }
 }
