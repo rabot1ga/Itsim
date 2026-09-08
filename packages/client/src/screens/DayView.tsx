@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
+import { HomeRoomCard } from '../components/HomeRoomCard';
 import { CareerPressureCard } from '../components/CareerPressureCard';
 import { EventCard } from '../components/EventCard';
 import { SprintCard } from '../components/SprintCard';
@@ -289,9 +290,6 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
       {/* Daily check-in reward — once per real day */}
       {checkIn && <CheckInBanner checkIn={checkIn} />}
 
-      {/* First week: one pointer per day instead of a wall of grids */}
-      <OnboardingTip day={currentDay} />
-
       {/* Active event — the day's story card (P0.9) */}
       {activeEvent && (
         <EventCard
@@ -314,6 +312,9 @@ export const DayView: React.FC<DayViewProps> = ({ onAdvanceDay }) => {
           <p className="text-2xs text-ink-500 mt-1 pl-5">Нажми, чтобы скрыть</p>
         </button>
       )}
+
+      <HomeRoomCard />
+      <OnboardingTip day={currentDay} />
 
       {/* Yesterday's log — one line, expandable */}
       {player._lastEvent && <YesterdayLog text={player._lastEvent} />}

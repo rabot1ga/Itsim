@@ -10,11 +10,11 @@
    House rules:
      · the pixel world — rooms, offices, characters, animals, iso sprites and
        pixel icons — stays untouched and stays crisp (image-rendering: pixelated);
-     · the UI around it is a soft card layer: rounded surfaces, layered
+     · the UI around it is a compact framed layer: small corner cuts, layered
        shadows, a hairline frame with a lit top edge — geometry lives in the
        --radius* / --shadow* tokens so the whole look retunes in one place;
-     · one warm accent (gold) for "act on this", every state keeps its colour:
-       gold = reward/CTA, moss = money/good, clay = danger, sky = info,
+     · green for primary actions and navigation; every state keeps its colour:
+       gold = reward, moss = money/good, clay = danger, sky = info,
        ochre = motivation;
      · numbers are tabular and never jump while ticking;
      · motion stays short and functional and dies under prefers-reduced-motion.
@@ -36,6 +36,8 @@
   --text-mute: #7b8494;
   --text-faint: #5c6575;
 
+  --accent: #a3ce58;
+  --accent-deep: #597d30;
   --gold: #f4d35e;
   --gold-deep: #c2932f;
   --sky: #a9c6e0;
@@ -44,10 +46,10 @@
   --clay: #c2565a;
 
   /* Card geometry — retune the whole UI here. */
-  --radius-card: 18px;
-  --radius-tile: 14px;
-  --radius-control: 12px;
-  --radius-well: 10px;
+  --radius-card: 8px;
+  --radius-tile: 5px;
+  --radius-control: 4px;
+  --radius-well: 4px;
   --radius-chip: 999px;
   --tap: 44px;
 
@@ -408,17 +410,15 @@ select {
   border-radius: calc(var(--radius-control) + 2px);
 }
 
-/* The one loud thing on screen: the accent CTA. Dark text on lamp-gold. */
+/* Reference palette: green actions; gold remains currency and rewards. */
 .btn-primary {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0) 55%),
-    linear-gradient(180deg, #f9df85 0%, #f0c94e 60%, #dfae34 100%);
-  border-color: #b98d2a;
-  color: #1b1f27;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.25);
+  background: linear-gradient(180deg, #466a2a, #304d1e);
+  border-color: var(--accent-deep);
+  color: #f3f7ea;
+  text-shadow: 0 1px 0 #172510;
   box-shadow:
-    var(--glow-gold),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.5);
+    inset 0 1px 0 #ffffff20,
+    0 2px 0 #0c1409;
 }
 .btn-primary:not(:disabled):active {
   filter: brightness(0.97);
@@ -529,7 +529,7 @@ select {
 
 /*
  * Four destinations, thumb-sized, always in the same order. The active one is
- * a warm gold capsule: at a glance you see *where you are* before you read.
+ * a green framed tile: at a glance you see *where you are* before you read.
  */
 .tabbar {
   display: flex;
@@ -564,10 +564,10 @@ select {
   }
 }
 .tabbar-item[data-active='true'] {
-  color: var(--gold);
-  background: linear-gradient(180deg, rgba(244, 211, 94, 0.12), rgba(244, 211, 94, 0.04));
-  border-color: rgba(244, 211, 94, 0.22);
-  box-shadow: inset 0 1px 0 0 rgba(244, 211, 94, 0.1);
+  color: var(--accent);
+  background: #a3ce580c;
+  border-color: transparent;
+  box-shadow: inset 0 2px 0 var(--accent-deep);
 }
 .tabbar-item:not([data-active='true']):active {
   transform: translateY(1px);
@@ -1075,4 +1075,72 @@ svg path.map-route-flow {
 }
 .ev-card .ev-choice-primary .ev-choice-arrow {
   color: #d1e6ad;
+}
+
+/* Home / HUD — reference 2.png, using the player's live room and resources. */
+.hud-meter-label {
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+}
+.hud-meter-max {
+  color: var(--text-dim);
+  font-size: 10px;
+  font-weight: 400;
+}
+.game-hud {
+  padding-top: max(8px, env(safe-area-inset-top, 0px));
+}
+.home-room-card {
+  overflow: hidden;
+  background: #121922;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-card);
+  box-shadow: inset 0 1px 0 #ffffff0d;
+}
+.home-room-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+}
+.home-room-heading h2 {
+  font-size: 16px;
+  font-weight: 700;
+}
+.home-room-kicker {
+  display: block;
+  color: var(--text-dim);
+  font-size: 10px;
+  margin-bottom: 2px;
+}
+.home-room-heading .btn {
+  padding: 8px;
+  font-size: 12px;
+}
+.home-room-card .home-room-scene {
+  border: 0;
+  border-block: 1px solid var(--line);
+  max-height: 240px;
+}
+.home-room-shortcuts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.home-room-shortcuts button {
+  min-height: 44px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+.home-room-shortcuts button + button {
+  border-left: 1px solid var(--line);
+}
+.home-room-shortcuts button:hover {
+  color: var(--accent);
+  background: #a3ce580c;
 }

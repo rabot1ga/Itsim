@@ -56,12 +56,15 @@ const Meter: React.FC<{
   max: number;
   color: string;
 }> = ({ icon, label, value, max, color }) => {
-  const pct = Math.max(0, Math.min(100, (value / max) * 100));
+  const safeMax = Number.isFinite(max) && max > 0 ? max : 1;
+  const safeValue = Number.isFinite(value) ? Math.max(0, Math.min(safeMax, value)) : 0;
+  const pct = (safeValue / safeMax) * 100;
   const low = pct < 25;
   const pop = usePop(Math.round(value));
 
   return (
-    <div className="flex-1 min-w-0" title={`${label}: ${Math.round(value)}/${max}`}>
+    <div className="flex-1 min-w-0" title={`${label}: ${Math.round(safeValue)}/${safeMax}`}>
+      <div className="hud-meter-label">{label}</div>
       <div className="flex items-center gap-1 mb-1">
         <PixelIcon name={icon} size={11} className={low ? 'text-clay-400' : 'text-ink-400'} title={label} />
         <span
@@ -69,10 +72,18 @@ const Meter: React.FC<{
             pop ? 'num-pop' : ''
           }`}
         >
-          {Math.round(value)}
+          {Math.round(safeValue)}
+          <span className="hud-meter-max"> / {safeMax}</span>
         </span>
       </div>
-      <div className="meter">
+      <div
+        className="meter"
+        role="progressbar"
+        aria-label={label}
+        aria-valuemin={0}
+        aria-valuemax={safeMax}
+        aria-valuenow={safeValue}
+      >
         <span className={low ? 'animate-pulse-soft' : ''} style={{ width: `${pct}%`, background: color }} />
       </div>
     </div>
@@ -90,7 +101,7 @@ export const ResourceBar: React.FC = () => {
   const gilded = GRADE_GOLD.has(player.grade);
 
   return (
-    <header className="shrink-0 bg-ink-900 border-b-2 border-ink-700 px-3 pt-2 pb-2.5 space-y-2 safe-area-pt">
+    <header className="game-hud shrink-0 bg-ink-900 border-b-2 border-ink-700 px-3 pt-2 pb-2.5 space-y-2 safe-area-pt">
       <div className="flex items-center justify-between gap-2">
         {/* The scoreboard: the day is context, money is the number the loop
             is scored on — so it is the largest thing in the bar. */}
@@ -127,8 +138,8 @@ export const ResourceBar: React.FC = () => {
       {/* Vitals the player spends this tap: energy gates actions, health and
           motivation gate burnout. Reputation/rating live where they matter. */}
       <div className="flex items-end gap-2.5">
-        <Meter icon="bolt" label="Энергия" value={player.energy} max={player.maxEnergy || 16} color="var(--sky)" />
-        <Meter icon="heart" label="Здоровье" value={player.health} max={100} color="var(--moss)" />
+        <Meter icon="bolt" label="Энергия" value={player.energy} max={player.maxEnergy || 16} color="var(--accent)" />
+        <Meter icon="heart" label="Здоровье" value={player.health} max={100} color="var(--clay)" />
         <Meter icon="flame" label="Мотивация" value={player.motivation} max={100} color="var(--ochre)" />
       </div>
     </header>

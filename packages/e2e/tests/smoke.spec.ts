@@ -41,7 +41,10 @@ test('fresh run: three actions → end of day → buy cosmetics → telemetry', 
 
   // ── shop: buy a cheap decor item (Кактус на стол, 500 ₽) ────────────────
   await page.getByRole('button', { name: /^Ещё/ }).click();
-  await page.getByRole('button', { name: /^Магазин/ }).click();
+  await page
+    .getByRole('dialog', { name: 'Ещё', exact: true })
+    .getByRole('button', { name: /^Магазин/ })
+    .click();
   const plantRow = page.locator('.panel').filter({ hasText: 'Кактус на стол' });
   await expect(plantRow.getByRole('button', { name: /^Купить$/ })).toBeVisible();
   await plantRow.getByRole('button', { name: /^Купить$/ }).click();
