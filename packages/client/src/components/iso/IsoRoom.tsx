@@ -115,7 +115,7 @@ export const IsoRoom: React.FC<{
 
   const view = useMemo(() => {
     if (!manifest) return null;
-    const scene = buildRoomScene(player);
+    const scene = buildRoomScene(player, manifest.sprites, manifest.tile);
     const vp = viewport(scene.size, manifest.tile);
     const polys = shellPolygons(vp, scene.size, scene.palette, manifest.tile);
 

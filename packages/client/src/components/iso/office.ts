@@ -1,4 +1,5 @@
-import { PlacedItem, RoomSize, WallSide } from './geometry';
+import { PlacedItem, RoomSize, SpriteMeta, TILE, TileSize, WallSide } from './geometry';
+import { Allocator, allocator, free, occupy, place as placeItem, standingSpot } from './allocator';
 import { RoomPalette } from './scene';
 import { characterLook, rolls } from './palette';
 import { CHARACTER_BASES } from './palette';
@@ -102,24 +103,7 @@ const PALETTES: Record<CompanyKind, RoomPalette> = {
   },
 };
 
-interface Allocator {
-  size: RoomSize;
-  taken: boolean[];
-  items: PlacedItem[];
-}
-
-function free(a: Allocator, gx: number, gy: number, w: number, d: number): boolean {
-  if (gx < 0 || gy < 0 || gx + w > a.size.w || gy + d > a.size.d) return false;
-  for (let x = gx; x < gx + w; x++) {
-    for (let y = gy; y < gy + d; y++) if (a.taken[y * a.size.w + x]) return false;
-  }
-  return true;
-}
-
-function occupy(a: Allocator, gx: number, gy: number, w: number, d: number): void {
-  for (let x = gx; x < gx + w; x++) for (let y = gy; y < gy + d; y++) a.taken[y * a.size.w + x] = true;
-}
-
+/** Same signature as the room's allocator, but the office wants the cell back. */
 function place(
   a: Allocator,
   sprite: string,
@@ -127,27 +111,29 @@ function place(
   candidates: Array<[number, number]>,
   extra: Partial<PlacedItem> = {}
 ): [number, number] | null {
-  for (const [gx, gy] of candidates) {
-    if (!free(a, gx, gy, tiles[0], tiles[1])) continue;
-    occupy(a, gx, gy, tiles[0], tiles[1]);
-    a.items.push({ kind: 'floor', sprite, gx, gy, tiles, ...extra } as PlacedItem);
-    return [gx, gy];
-  }
-  return null;
+  const before = a.items.length;
+  placeItem(a, sprite, tiles, candidates, extra);
+  if (a.items.length === before) return null;
+  const put = a.items[a.items.length - 1] as { gx: number; gy: number };
+  return [put.gx, put.gy];
 }
 
 function wall(a: Allocator, sprite: string, side: WallSide, along: number, top: number): void {
   a.items.push({ kind: 'wall', sprite, side, along, top });
 }
 
-export function buildOfficeScene(input: OfficeInput): OfficeScene {
+export function buildOfficeScene(
+  input: OfficeInput,
+  sprites: Record<string, SpriteMeta> = {},
+  tile: TileSize = TILE
+): OfficeScene {
   const kind = KIND_BY_SIZE[input.companySize ?? ''] ?? 'cowork';
   const size = SIZES[kind];
   const { w, d } = size;
   const seed = input.seed ?? input.companyId ?? kind;
   const pick = rolls(`${seed}:office`);
 
-  const a: Allocator = { size, taken: new Array(w * d).fill(false), items: [] };
+  const a = allocator(size, sprites, tile);
 
   // ── workstations: rows of desks along the back-right wall ───────────────
   const rows = kind === 'garage' ? 1 : kind === 'cowork' ? 2 : 2;
@@ -195,8 +181,8 @@ export function buildOfficeScene(input: OfficeInput): OfficeScene {
   for (let i = 0; i < wanted; i++) {
     const [gx, gy] = desks[i];
     const cell: [number, number] = [gx, Math.min(d - 1, gy + 2)];
-    if (!free(a, cell[0], cell[1], 1, 1)) continue;
-    occupy(a, cell[0], cell[1], 1, 1);
+    if (!free(a, cell[0], cell[1])) continue;
+    occupy(a, cell[0], cell[1]);
     const look = characterLook({ fallbackSeed: `${seed}:crew:${i}` });
     crew.push({
       kind: 'char',
@@ -208,17 +194,9 @@ export function buildOfficeScene(input: OfficeInput): OfficeScene {
     });
   }
 
-  // ── the player takes the first free desk-side cell ──────────────────────
-  let spot: [number, number] = [Math.floor(w / 2), d - 2];
-  outer: for (let gy = d - 1; gy >= 0; gy--) {
-    for (let gx = 0; gx < w; gx++) {
-      if (free(a, gx, gy, 1, 1)) {
-        spot = [gx, gy];
-        break outer;
-      }
-    }
-  }
-  occupy(a, spot[0], spot[1], 1, 1);
+  // ── the player takes an open cell near the front, in full view ──────────
+  const spot = standingSpot(a, [Math.floor(w / 2), d - 2]);
+  occupy(a, spot[0], spot[1]);
 
   const palette = { ...PALETTES[kind] };
   if (input.mood === 'night') {

@@ -1,4 +1,5 @@
-import { PlacedItem, RoomSize, WallSide } from './geometry';
+import { PlacedItem, RoomSize, SpriteMeta, TILE, TileSize, WallSide } from './geometry';
+import { Allocator, allocator, occupy, place, standingSpot } from './allocator';
 import { FLOOR_STYLES, FloorStyle, WALL_PAINTS, WallPaint, floorsFor, paintsFor } from './styles';
 import { rolls } from './palette';
 
@@ -11,7 +12,8 @@ import { rolls } from './palette';
  *
  * Placement is an allocator, not a fixed picture: each piece asks for a few
  * preferred cells and takes the first free one, so a half-furnished room never
- * ends up with furniture inside furniture.
+ * ends up with furniture inside furniture — or, worse, a plant growing through
+ * the player (see allocator.ts: tall sprites reserve the tiles they eclipse).
  */
 
 export interface RoomScene {
@@ -78,52 +80,15 @@ export function roomSeed(player: ScenePlayer): string {
   return player.genetics?.seed ?? String(player.telegramId ?? 'player');
 }
 
-interface Allocator {
-  size: RoomSize;
-  taken: boolean[];
-  items: PlacedItem[];
-}
-
-function free(a: Allocator, gx: number, gy: number, w: number, d: number): boolean {
-  if (gx < 0 || gy < 0 || gx + w > a.size.w || gy + d > a.size.d) return false;
-  for (let x = gx; x < gx + w; x++) {
-    for (let y = gy; y < gy + d; y++) {
-      if (a.taken[y * a.size.w + x]) return false;
-    }
-  }
-  return true;
-}
-
-function occupy(a: Allocator, gx: number, gy: number, w: number, d: number): void {
-  for (let x = gx; x < gx + w; x++) {
-    for (let y = gy; y < gy + d; y++) {
-      a.taken[y * a.size.w + x] = true;
-    }
-  }
-}
-
-/** Put a sprite on the first free cell out of the preferred ones. */
-function place(
-  a: Allocator,
-  sprite: string,
-  tiles: [number, number],
-  candidates: Array<[number, number]>,
-  extra: Partial<PlacedItem> = {}
-): boolean {
-  for (const [gx, gy] of candidates) {
-    if (!free(a, gx, gy, tiles[0], tiles[1])) continue;
-    occupy(a, gx, gy, tiles[0], tiles[1]);
-    a.items.push({ kind: 'floor', sprite, gx, gy, tiles, ...extra } as PlacedItem);
-    return true;
-  }
-  return false;
-}
-
 function wall(a: Allocator, sprite: string, side: WallSide, along: number, top: number): void {
   a.items.push({ kind: 'wall', sprite, side, along, top });
 }
 
-export function buildRoomScene(player: ScenePlayer): RoomScene {
+export function buildRoomScene(
+  player: ScenePlayer,
+  sprites: Record<string, SpriteMeta> = {},
+  tile: TileSize = TILE
+): RoomScene {
   const level = Math.max(0, Math.min(4, player.housingLevel ?? 0));
   const size = SIZES[level];
   const items = new Set(player.items ?? []);
@@ -131,7 +96,7 @@ export function buildRoomScene(player: ScenePlayer): RoomScene {
   const hasAny = (...ids: string[]) => ids.some(has);
   const totalLevels = Object.values(player.skills ?? {}).reduce((s, v) => s + (v?.level ?? 0), 0);
 
-  const a: Allocator = { size, taken: new Array(size.w * size.d).fill(false), items: [] };
+  const a = allocator(size, sprites, tile);
   const { w, d } = size;
 
   // Finishes: the player's own choice wins, otherwise the seed picks from the
@@ -260,20 +225,9 @@ export function buildRoomScene(player: ScenePlayer): RoomScene {
   if (level >= 2 && pick(2) === 0) wall(a, 'string_lights', 'left', 2, 2);
   if (level >= 3 && pick(2) === 0) wall(a, 'hoop', 'right', 2, 4);
 
-  // ── the player stands in the free middle of the room ────────────────────
-  let spot: [number, number] = [Math.floor(w / 2), Math.max(1, d - 2)];
-  outer: for (let ring = 0; ring < Math.max(w, d); ring++) {
-    for (let gy = d - 1; gy >= 0; gy--) {
-      for (let gx = 0; gx < w; gx++) {
-        if (Math.abs(gx - Math.floor(w / 2)) + Math.abs(gy - (d - 2)) !== ring) continue;
-        if (free(a, gx, gy, 1, 1)) {
-          spot = [gx, gy];
-          break outer;
-        }
-      }
-    }
-  }
-  occupy(a, spot[0], spot[1], 1, 1);
+  // ── the player stands in the open, never behind the furniture ───────────
+  const spot = standingSpot(a, [Math.floor(w / 2), Math.max(1, d - 2)]);
+  occupy(a, spot[0], spot[1]);
 
   return {
     size,

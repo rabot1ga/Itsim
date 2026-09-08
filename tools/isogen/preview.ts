@@ -71,7 +71,7 @@ async function spriteBuffer(
 }
 
 async function renderRoom(player: ScenePlayer) {
-  const scene = buildRoomScene(player);
+  const scene = buildRoomScene(player, manifest.sprites, manifest.tile as never);
   const vp = viewport(scene.size);
   const polys = shellPolygons(vp, scene.size, scene.palette);
   const seed = roomSeed(player);

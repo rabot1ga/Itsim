@@ -54,7 +54,7 @@ export async function drawIsoRoom(
   const manifest = await loadIsoManifest();
   if (!manifest) return;
 
-  const scene = buildRoomScene(player);
+  const scene = buildRoomScene(player, manifest.sprites, manifest.tile);
   const vp = viewport(scene.size, manifest.tile);
   const seed = roomSeed(player);
   const look = characterLook({

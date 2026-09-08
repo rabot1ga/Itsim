@@ -54,7 +54,7 @@ async function spriteBuffer(
 }
 
 async function render(input: OfficeInput) {
-  const scene = buildOfficeScene(input);
+  const scene = buildOfficeScene(input, manifest.sprites, manifest.tile as never);
   const vp = viewport(scene.size);
   const polys = shellPolygons(vp, scene.size, scene.palette);
   const look = characterLook({ fallbackSeed: `${input.companyId}:me` });
