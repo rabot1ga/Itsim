@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { haptic } from '../lib/telegram';
 import { DayView } from '../screens/DayView';
@@ -34,9 +34,8 @@ const MORE = [
 const MORE_VIEWS: string[] = MORE.map((m) => m.view);
 
 export const GameScreen: React.FC = () => {
-  const { currentView, setView, advanceDay, loadNft } = useGameStore();
+  const { currentView, setView, advanceDay, loadNft, moreOpen, setMoreOpen } = useGameStore();
   const player = useGameStore((s) => s.player);
-  const [moreOpen, setMoreOpen] = useState(false);
 
   /** an offer on the table is the one thing worth a marker in the nav */
   const offerWaiting = Boolean(player?.pendingOffers?.length);
@@ -49,11 +48,6 @@ export const GameScreen: React.FC = () => {
   useEffect(() => {
     if (currentView === 'room') loadNft();
   }, [currentView, loadNft]);
-
-  // The sheet is a navigation detour, never a state you can get stuck in.
-  useEffect(() => {
-    setMoreOpen(false);
-  }, [currentView]);
 
   const renderView = () => {
     switch (currentView) {
@@ -94,41 +88,61 @@ export const GameScreen: React.FC = () => {
         {renderView()}
       </div>
 
-      {/* «Ещё» sheet */}
+      {/* «Ещё» sheet — a navigation detour, never a state you can get stuck in.
+          Closing it is one tap, one native back press (see App.tsx) or simply
+          picking a destination; setView in the store closes it for us. */}
       {moreOpen && (
         <>
           <button
-            aria-label="Закрыть"
+            aria-label="Закрыть меню «Ещё»"
             onClick={() => setMoreOpen(false)}
             className="absolute inset-0 z-20 bg-black/50 animate-fade-in"
           />
-          <div className="absolute inset-x-0 bottom-0 z-30 animate-slide-up">
-            <div className="border-t-2 border-x-2 border-ink-700 bg-ink-900 p-3 pb-2">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Ещё"
+            className="absolute inset-x-0 bottom-0 z-30 animate-slide-up"
+          >
+            <div className="border-t-2 border-x-2 border-ink-700 bg-ink-900 p-3 pb-2 safe-area-pb">
               <div className="h-1 w-9 bg-ink-700 mx-auto mb-3" />
-              <div className="grid grid-cols-2 gap-2">
-                {MORE.map((item) => (
-                  <button
-                    key={item.view}
-                    onClick={() => nav(item.view)}
-                    className={`tile flex items-start gap-2.5 ${
-                      currentView === item.view ? 'panel-note panel-note-gold' : ''
-                    }`}
-                  >
-                    <PixelIcon
-                      name={item.icon}
-                      size={15}
-                      className={currentView === item.view ? 'text-gold-300 mt-0.5' : 'text-ink-300 mt-0.5'}
-                    />
-                    <span className="min-w-0">
-                      <span className="block text-sm font-semibold text-ink-100">{item.label}</span>
-                      <span className="block text-2xs text-ink-500 leading-tight mt-0.5">{item.hint}</span>
-                    </span>
-                  </button>
-                ))}
+              <div className="flex items-center gap-2 mb-3">
+                <PixelIcon name="plus" size={12} className="text-gold-300" />
+                <span className="text-xs font-bold uppercase tracking-[0.12em] text-ink-300">Ещё</span>
+                <span className="flex-1 border-t border-dashed border-ink-700" />
+                <button
+                  onClick={() => setMoreOpen(false)}
+                  className="flex items-center gap-1.5 text-2xs text-ink-500 hover:text-ink-200 transition-colors touch-target !min-h-[28px] px-1"
+                >
+                  <PixelIcon name="chevron" size={9} />
+                  Закрыть
+                </button>
               </div>
-              <button onClick={() => setMoreOpen(false)} className="btn btn-ghost w-full mt-2 !min-h-[40px] text-sm">
-                Закрыть
-              </button>
+              <div className="grid grid-cols-2 gap-2">
+                {MORE.map((item) => {
+                  const isCurrent = currentView === item.view;
+                  return (
+                    <button
+                      key={item.view}
+                      onClick={() => nav(item.view)}
+                      className={`tile flex items-start gap-2.5 ${isCurrent ? 'panel-note panel-note-gold' : ''}`}
+                    >
+                      <PixelIcon
+                        name={item.icon}
+                        size={15}
+                        className={isCurrent ? 'text-gold-300 mt-0.5' : 'text-ink-300 mt-0.5'}
+                      />
+                      <span className="min-w-0">
+                        <span className="flex items-center gap-1.5">
+                          <span className="block text-sm font-semibold text-ink-100">{item.label}</span>
+                          {isCurrent && <PixelIcon name="check" size={9} className="text-moss-400" />}
+                        </span>
+                        <span className="block text-2xs text-ink-500 leading-tight mt-0.5">{item.hint}</span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </>
@@ -152,7 +166,7 @@ export const GameScreen: React.FC = () => {
           active={moreOpen || MORE_VIEWS.includes(currentView)}
           onClick={() => {
             haptic('selection');
-            setMoreOpen((v) => !v);
+            setMoreOpen(!moreOpen);
           }}
         />
       </nav>

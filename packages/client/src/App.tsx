@@ -7,7 +7,7 @@ import { showBackButton, hideBackButton, applyTelegramChrome } from './lib/teleg
 import { PixelText } from './components/pixel/PixelText';
 
 const App: React.FC = () => {
-  const { initialized, screen, currentView, setScreen, setView, initGame } = useGameStore();
+  const { initialized, screen, currentView, moreOpen, setScreen, setView, setMoreOpen, initGame } = useGameStore();
 
   useEffect(() => {
     // Paint Telegram's own header/background in our ink so the app has no seams.
@@ -24,12 +24,19 @@ const App: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Native Telegram BackButton: any tab → Day tab → main menu → (hidden, app can close).
-  // Office is a Career sub-screen, so it goes back to Career.
+  // Native Telegram BackButton: «Ещё» sheet → (any tab → Day tab → main menu →
+  // hidden, app can close). Office is a Career sub-screen, so it goes back to
+  // Career. The sheet is a detour, so the first back press only closes it —
+  // it never throws the player out of their current tab.
   useEffect(() => {
     if (!initialized || screen !== 'game') {
       hideBackButton();
       return;
+    }
+    if (moreOpen) {
+      const closeSheet = () => setMoreOpen(false);
+      showBackButton(closeSheet);
+      return () => hideBackButton(closeSheet);
     }
     if (currentView === 'main') {
       const toMenu = () => setScreen('menu');
@@ -44,7 +51,7 @@ const App: React.FC = () => {
     const toMain = () => setView('main');
     showBackButton(toMain);
     return () => hideBackButton(toMain);
-  }, [initialized, screen, currentView, setScreen, setView]);
+  }, [initialized, screen, currentView, moreOpen, setScreen, setView, setMoreOpen]);
 
   if (!initialized) {
     return (
@@ -53,9 +60,7 @@ const App: React.FC = () => {
           <PixelText scale={4} className="text-gold-300 mx-auto">
             IT LIFE
           </PixelText>
-          <div className="mt-2 text-2xs font-semibold uppercase tracking-[0.42em] text-ink-500 pl-1">
-            Simulator
-          </div>
+          <div className="mt-2 text-2xs font-semibold uppercase tracking-[0.42em] text-ink-500 pl-1">Simulator</div>
           <div className="mt-7 flex justify-center gap-1" aria-label="Загрузка">
             {[0, 1, 2].map((i) => (
               <span

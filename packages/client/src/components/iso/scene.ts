@@ -143,13 +143,17 @@ export function buildRoomScene(
   if (level >= 2) place(a, 'tv_stand', [2, 1], [[1, d - 1], [2, d - 1]]);
   if (level >= 2) place(a, 'coffee_table', [1, 1], [[w - 3, d - 2], [3, d - 2]]);
   if (level >= 3) place(a, 'sofa', [2, 1], [[w - 3, d - 1], [w - 2, d - 1]]);
-  if (level >= 2) place(a, 'armchair', [1, 1], [[w - 2, d - 2], [w - 2, d - 3], [w - 3, d - 2]]);
+  if (level >= 3) place(a, 'side_cabinet', [1, 1], [[w - 1, d - 1], [w - 1, d - 2], [w - 1, d - 3], [0, d - 1], [0, d - 2], [1, d - 1], [w - 2, d - 4]]);
+  if (level >= 2) place(a, swapped ? 'armchair_clay' : 'armchair', [1, 1], [[w - 2, d - 2], [w - 2, d - 3], [w - 3, d - 2]]);
   if (level >= 3) place(a, 'palm', [1, 1], [[1, d - 2], [1, d - 1], [w - 2, d - 2]]);
   if (level >= 4) place(a, 'arcade', [1, 1], at([w - 2, 3], [w - 2, 4], [w - 3, 3]));
   if (level >= 1) place(a, 'floor_lamp', [1, 1], [[w - 2, d - 2], [1, d - 2], [w - 2, d - 3]]);
   if (level <= 1) place(a, 'boxes', [1, 1], [[3, d - 1], [2, d - 2]]);
-  if (level === 0) place(a, 'rug_rolled', [2, 1], [[2, d - 2], [1, d - 2]]);
+  // the rug comes in two colourways (rug_rolled / rug_moss, tinted by isogen)
+  if (level === 0) place(a, swapped ? 'rug_moss' : 'rug_rolled', [2, 1], [[2, d - 2], [1, d - 2]]);
   if (level >= 2) place(a, 'beanbag', [1, 1], [[w - 2, 2], [w - 2, 3]]);
+  // a bench by the door — the flat has enough rooms for real visitors by now
+  if (level >= 2) place(a, 'bench', [1, 1], [[3, d - 1], [4, d - 1], [2, d - 1], [w - 1, d - 1], [0, d - 1], [3, d - 2], [4, d - 2], [w - 2, d - 1]]);
 
   // ── what the player earned ──────────────────────────────────────────────
   if (totalLevels >= 20) place(a, 'bookshelf', [1, 1], at([w - 2, 0], [w - 3, 0], [w - 2, 1]));
@@ -198,7 +202,10 @@ export function buildRoomScene(
   if (level >= 1) place(a, 'wardrobe', swapped ? [1, 2] : [2, 1], at([w - 3, 0], [w - 4, 0], [w - 3, 1]));
   if (level >= 2) place(a, 'dresser', swapped ? [1, 2] : [2, 1], [[1, d - 2], [w - 3, d - 2]]);
   if (level >= 1) place(a, 'kitchen_counter', swapped ? [1, 2] : [2, 1], at([w - 4, 1], [w - 3, 1], [w - 4, 2]));
-  if (level >= 2) place(a, 'stove', [1, 1], at([w - 2, 2], [w - 2, 1], [w - 3, 2]));
+  // the appliance trio wants a free wall run; candidates fan out along it so a
+  // mirrored (portrait) flat still gets its kitchen, not just the landscape one
+  if (level >= 2) place(a, 'stove', [1, 1], at([w - 2, 2], [w - 2, 1], [w - 3, 2], [w - 3, 3], [w - 4, 3]));
+  if (level >= 2) place(a, 'dishwasher', [1, 1], at([w - 3, 2], [w - 4, 2], [w - 3, 3], [w - 4, 3], [w - 2, 3], [w - 4, 4]));
   if (level >= 3) place(a, 'dining_table', [2, 2], [[3, d - 3], [4, d - 3], [2, d - 3]]);
   if (level >= 3) place(a, 'mirror', [1, 1], [[1, d - 3], [w - 2, d - 4]]);
   if (level >= 4) place(a, 'kitchen_sink', swapped ? [1, 2] : [2, 1], at([w - 4, 2], [w - 4, 3]));
@@ -221,7 +228,7 @@ export function buildRoomScene(
   if (hasAny('gaming_pc', 'mining_rig') || level >= 3) wall(a, 'neon_bolt', 'right', w - 2, 12);
   if (level >= 1) wall(a, 'wall_clock', 'right', Math.max(2, w - 3), 8);
   if (totalLevels >= 30) wall(a, 'diploma', 'left', Math.max(1, d - 6), 12);
-  if (level >= 2) wall(a, 'cabinets', 'right', Math.max(1, w - 3), 4);
+  if (level >= 2) wall(a, level >= 4 ? 'cabinets_long' : 'cabinets', 'right', Math.max(1, w - 3), 4);
   if (level >= 2 && pick(2) === 0) wall(a, 'string_lights', 'left', 2, 2);
   if (level >= 3 && pick(2) === 0) wall(a, 'hoop', 'right', 2, 4);
 

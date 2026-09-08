@@ -85,6 +85,8 @@ interface GameState {
   screen: Screen;
   player: any;
   currentView: string;
+  /** is the «Ещё» sheet open? kept in the store so the native BackButton can close it first */
+  moreOpen: boolean;
   error: string | null;
   activeEvent: any;
   /** promotion/election outlook from the server (career gates) */
@@ -103,6 +105,7 @@ interface GameState {
   refreshState: () => Promise<void>;
   setScreen: (screen: Screen) => void;
   setView: (view: string) => void;
+  setMoreOpen: (open: boolean) => void;
   performAction: (actionId: string, params?: any) => Promise<boolean>;
   advanceDay: () => Promise<void>;
   chooseEvent: (eventId: string, choiceIndex: number) => Promise<void>;
@@ -127,6 +130,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   screen: 'loading',
   player: null,
   currentView: 'main',
+  moreOpen: false,
   error: null,
   activeEvent: null,
   careerOutlook: null,
@@ -199,8 +203,9 @@ export const useGameStore = create<GameState>((set, get) => ({
     }
   },
 
-  setScreen: (screen) => set({ screen }),
-  setView: (view) => set({ currentView: view }),
+  setScreen: (screen) => set({ screen, moreOpen: false }),
+  setView: (view) => set({ currentView: view, moreOpen: false }),
+  setMoreOpen: (open) => set({ moreOpen: open }),
   clearError: () => set({ error: null }),
 
   dropGain: (id) => set((s) => ({ gains: s.gains.filter((g) => g.id !== id) })),

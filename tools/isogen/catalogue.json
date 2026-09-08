@@ -883,6 +883,24 @@
         1
       ],
       "scale": 0.4
+    },
+    {
+      "slice": "tints_00",
+      "id": "rug_moss",
+      "tiles": [
+        2,
+        1
+      ],
+      "scale": 0.9
+    },
+    {
+      "slice": "tints_01",
+      "id": "armchair_clay",
+      "tiles": [
+        1,
+        1
+      ],
+      "scale": 0.88
     }
   ]
 }
