@@ -104,7 +104,7 @@ export const GameScreen: React.FC = () => {
             aria-label="Ещё"
             className="absolute inset-x-0 bottom-0 z-30 animate-slide-up"
           >
-            <div className="border-t-2 border-x-2 border-ink-700 bg-ink-900 p-3 pb-2 safe-area-pb">
+            <div className="border-t border-x border-ink-600 bg-ink-900 rounded-t-[20px] p-3 pb-2 safe-area-pb shadow-[0_-18px_44px_-24px_rgba(0,0,0,0.9)]">
               <div className="h-1 w-9 bg-ink-700 mx-auto mb-3" />
               <div className="flex items-center gap-2 mb-3">
                 <PixelIcon name="plus" size={12} className="text-gold-300" />

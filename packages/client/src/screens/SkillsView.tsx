@@ -274,8 +274,10 @@ export const SkillsView: React.FC = () => {
               return (
                 <div
                   key={v.id}
-                  className={`snap-start w-[264px] shrink-0 border-2 flex flex-col gap-1.5 p-2 ${
-                    chosen ? 'border-gold-700 bg-gold-900/10' : 'border-ink-700 bg-ink-900'
+                  className={`snap-start w-[264px] shrink-0 border rounded-[14px] flex flex-col gap-1.5 p-2.5 shadow-[var(--shadow-raise)] ${
+                    chosen
+                      ? 'border-gold-700 bg-gradient-to-b from-gold-900/25 to-gold-900/5'
+                      : 'border-ink-700 bg-gradient-to-b from-ink-800 to-ink-900'
                   }`}
                 >
                   <div className="flex items-center gap-2 min-w-0">
@@ -433,7 +435,7 @@ const LegendDot: React.FC<{ color: string; dashed?: boolean; children: React.Rea
 }) => (
   <span className="inline-flex items-center gap-1.5">
     <span
-      className="w-3 h-3 inline-block bg-ink-900"
+      className="w-3 h-3 inline-block bg-ink-900 rounded-[4px]"
       style={{ border: `2px ${dashed ? 'dashed' : 'solid'} ${color}` }}
     />
     {children}
@@ -705,7 +707,10 @@ const SkillMap: React.FC<SkillMapProps> = ({
   });
 
   return (
-    <div ref={mapWrapRef} className="relative border-2 border-ink-700 bg-ink-900">
+    <div
+      ref={mapWrapRef}
+      className="relative border border-ink-600 bg-[#0d1219] rounded-[16px] overflow-hidden shadow-[var(--shadow-raise)]"
+    >
       {/* school filter — a lens over the one tree, not a subsection */}
       <div className="flex items-center gap-1 px-1.5 pt-1.5 pb-1 overflow-x-auto [scrollbar-width:none]">
         <ToolbarChip active={!school} onClick={() => setSchool(null)} label="Все школы" />
@@ -1070,7 +1075,7 @@ const ToolbarChip: React.FC<{ label: string; active: boolean; onClick: () => voi
   <button
     onClick={onClick}
     aria-pressed={active}
-    className={`shrink-0 px-2.5 text-xs font-semibold border-2 whitespace-nowrap transition-colors touch-target !min-h-[38px] ${
+    className={`shrink-0 px-3 text-xs font-semibold border rounded-full whitespace-nowrap transition-colors touch-target !min-h-[38px] ${
       active
         ? 'border-gold-700 bg-gold-900/20 text-gold-200'
         : 'border-ink-700 bg-ink-900 text-ink-400 hover:border-ink-500 hover:text-ink-200'
