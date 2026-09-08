@@ -7,7 +7,6 @@ import {
   AvatarCustomization,
   buildPixelComposition,
   combinationFromSeed,
-  renderPixelArt,
   resolveExcludes,
   pixelWardrobeCombo,
 } from '@itsim/shared';

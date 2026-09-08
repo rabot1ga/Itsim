@@ -1,8 +1,7 @@
 import React from 'react';
-import { LayerManifest } from '@itsim/shared';
+import { LayerManifest, GeneticTraits, GeneticsConfig, AvatarCustomization } from '@itsim/shared';
 import { Composition, buildLayerStack } from './layers';
-import { PixelAvatar } from './PixelAvatar';
-import { PixelAvatarData } from './pixelAvatar';
+import { ProceduralAvatar } from './ProceduralAvatar';
 
 /**
  * Office renderer (docs/design.md §11) — the same layer engine as the room
@@ -12,11 +11,11 @@ import { PixelAvatarData } from './pixelAvatar';
 export type OfficeMood = 'normal' | 'deadline' | 'friday' | 'night' | 'retro';
 
 export const OFFICE_MOOD_META: Record<OfficeMood, { label: string; entry: string }> = {
-  normal: { label: '☀️ Обычный день', entry: 'omood_none' },
-  deadline: { label: '🔥 Дедлайн!', entry: 'omood_deadline' },
-  friday: { label: '🎉 Пятница', entry: 'omood_friday' },
-  night: { label: '🌙 Ночной деплой', entry: 'omood_night' },
-  retro: { label: '🧘 Ретро', entry: 'omood_retro' },
+  normal: { label: 'Обычный день', entry: 'omood_none' },
+  deadline: { label: 'Дедлайн', entry: 'omood_deadline' },
+  friday: { label: 'Пятница', entry: 'omood_friday' },
+  night: { label: 'Ночной деплой', entry: 'omood_night' },
+  retro: { label: 'Ретро', entry: 'omood_retro' },
 };
 
 export interface OfficeCompositionInput {
@@ -101,12 +100,16 @@ export const OfficeRenderer: React.FC<{
   officeManifest: LayerManifest;
   composition: Composition;
   mood: OfficeMood;
-  pixelAvatar?: PixelAvatarData | null;
-}> = ({ officeManifest, composition, mood, pixelAvatar }) => {
+  /** the player, drawn full-body next to the hero desk */
+  avatarManifest?: LayerManifest | null;
+  traits?: GeneticTraits | null;
+  geneticsConfig?: GeneticsConfig | null;
+  avatarCustom?: AvatarCustomization | null;
+}> = ({ officeManifest, composition, mood, avatarManifest, traits, geneticsConfig, avatarCustom }) => {
   const layers = buildLayerStack(officeManifest, composition, null, null);
 
   return (
-    <div className="relative w-full aspect-square overflow-hidden rounded-2xl border border-slate-700 bg-slate-800">
+    <div className="relative w-full aspect-square overflow-hidden border-2 border-ink-700 bg-ink-800">
       {layers.map((layer) => (
         <img
           key={layer.slotId}
@@ -121,15 +124,26 @@ export const OfficeRenderer: React.FC<{
         />
       ))}
 
-      {/* The player sits at the hero desk */}
-      {pixelAvatar && (
-        <div className="absolute left-[40%] bottom-[7%] w-[30%]">
-          <PixelAvatar data={pixelAvatar} scale={8} className="rounded-lg" background="transparent" />
+      {/* The player stands at the hero desk */}
+      {avatarManifest && traits && geneticsConfig && (
+        <div className="absolute left-[38%] bottom-[4%] w-[30%]">
+          <ProceduralAvatar
+            manifest={avatarManifest}
+            traits={traits}
+            geneticsConfig={geneticsConfig}
+            compositionOverrides={{
+              ...(avatarCustom?.hair ? { hair: avatarCustom.hair } : {}),
+              ...(avatarCustom?.beard ? { beard: avatarCustom.beard } : {}),
+              ...(avatarCustom?.top ? { top: avatarCustom.top } : {}),
+              ...(avatarCustom?.bottom ? { bottom: avatarCustom.bottom } : {}),
+              ...(avatarCustom?.accessory ? { accessory: avatarCustom.accessory } : {}),
+            }}
+          />
         </div>
       )}
 
       {/* Mood badge */}
-      <div className="absolute top-2 left-2 px-2 py-1 rounded-lg bg-black/50 text-[10px] text-slate-200 font-medium">
+      <div className="absolute top-2 left-2 px-2 py-1 bg-black/50 text-[10px] text-ink-200 font-medium">
         {OFFICE_MOOD_META[mood].label}
       </div>
     </div>

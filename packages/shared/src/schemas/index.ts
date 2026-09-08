@@ -574,3 +574,41 @@ export const PixelGeneratorConfigSchema = z.object({
 });
 
 export type PixelArtFileInput = z.input<typeof PixelArtFileSchema>;
+
+// ---- Monetization (Telegram Stars) ----
+
+/**
+ * What a product gives the player. Deliberately narrow: cosmetics, banked days
+ * and badges only — see `content/monetization.json.policy` (no pay-to-win).
+ */
+export const ProductGrantsSchema = z.object({
+  /** extra days added to the offline energy bank (still capped at 7) */
+  bankedDays: z.number().int().min(0).max(7).optional(),
+  /** avatar/room layer ids unlocked forever */
+  cosmetics: z.array(z.string().min(1)).optional(),
+  /** profile badge id */
+  badge: z.string().min(1).optional(),
+});
+
+export const ProductSchema = z.object({
+  id: z.string().min(1),
+  title: z.string().min(1),
+  description: z.string().min(1),
+  /** price in Telegram Stars (XTR) */
+  stars: z.number().int().min(1).max(100000),
+  /** can be bought more than once */
+  repeatable: z.boolean().default(false),
+  /** per-day purchase cap for repeatable products */
+  dailyLimit: z.number().int().min(1).optional(),
+  grants: ProductGrantsSchema,
+});
+
+export const MonetizationSchema = z.object({
+  currency: z.literal('XTR').default('XTR'),
+  policy: z.string().optional(),
+  products: z.array(ProductSchema).min(1),
+});
+
+export type Product = z.infer<typeof ProductSchema>;
+export type ProductGrants = z.infer<typeof ProductGrantsSchema>;
+export type MonetizationConfig = z.infer<typeof MonetizationSchema>;

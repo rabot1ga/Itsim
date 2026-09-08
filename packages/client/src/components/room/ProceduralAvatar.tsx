@@ -4,8 +4,10 @@ import { Composition, buildLayerStack } from './layers';
 
 /**
  * Layered procedural avatar — DESIGN.md sections 1-2.
- * 500×500 layers stacked by manifest zOrder; grayscale layers tinted
- * via CSS filter from the player's genetic traits.
+ *
+ * A full-body figure: the manifest declares the canvas (500×760), so the box
+ * keeps the art's aspect ratio instead of assuming a square portrait.
+ * Grayscale layers are tinted via CSS filter from the player's genetic traits.
  */
 export const ProceduralAvatar: React.FC<{
   manifest: LayerManifest;
@@ -16,6 +18,7 @@ export const ProceduralAvatar: React.FC<{
 }> = ({ manifest, traits, geneticsConfig, className, compositionOverrides }) => {
   const composition: Composition = {
     body: 'body_base',
+    bottom: 'bottom_jeans',
     eyes: traits.eyeShape,
     hair: traits.hairStyle,
     beard: traits.beard,
@@ -25,9 +28,14 @@ export const ProceduralAvatar: React.FC<{
   };
 
   const layers = buildLayerStack(manifest, composition, traits, geneticsConfig);
+  const { width = 500, height = 760 } = manifest.resolution ?? {};
 
   return (
-    <div className={`relative aspect-square overflow-hidden ${className ?? ''}`} aria-label="Аватар игрока">
+    <div
+      className={`relative overflow-hidden ${className ?? ''}`}
+      style={{ aspectRatio: `${width} / ${height}` }}
+      aria-label="Аватар игрока"
+    >
       {layers.map((layer) => (
         <img
           key={layer.slotId}

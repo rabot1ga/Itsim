@@ -1,5 +1,5 @@
 import { PlayerState } from '../types';
-import { clamp } from './utils';
+import { CURRENT_STATE_VERSION } from './migrations';
 
 /**
  * Player creation and helpers
@@ -10,7 +10,7 @@ import { clamp } from './utils';
  */
 export function createNewPlayer(): PlayerState {
   return {
-    version: 1,
+    version: CURRENT_STATE_VERSION,
 
     currentDay: 1,
     grade: 'unemployed',

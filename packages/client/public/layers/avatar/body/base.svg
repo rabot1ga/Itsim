@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500"><defs>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 760" width="500" height="760"><defs>
   <linearGradient id="skinGrad" x1="0" y1="0" x2="0" y2="1">
     <stop offset="0" stop-color="#969696"/><stop offset="1" stop-color="#767676"/>
   </linearGradient>
@@ -35,6 +35,15 @@
   <path d="M246 176 Q250 182 254 176" stroke="#5a5f68" stroke-width="5" fill="none"/>
   <!-- smile -->
   <path d="M232 194 Q250 204 268 194" stroke="#5a5f68" stroke-width="5" fill="none"/>
+
+  <!-- hips -->
+  <rect x="176" y="430" width="148" height="80" rx="26" fill="#6a6a6a"/>
+  <!-- legs -->
+  <rect x="188" y="470" width="56" height="215" rx="26" fill="url(#skinGrad)"/>
+  <rect x="256" y="470" width="56" height="215" rx="26" fill="url(#skinGrad)"/>
+  <!-- feet -->
+  <rect x="176" y="676" width="72" height="40" rx="16" fill="#6a6a6a"/>
+  <rect x="252" y="676" width="72" height="40" rx="16" fill="#6a6a6a"/>
   <!-- torso -->
   <rect x="165" y="252" width="170" height="218" rx="42" fill="url(#skinGrad)"/>
   <!-- arms -->

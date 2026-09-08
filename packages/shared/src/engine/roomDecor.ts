@@ -28,10 +28,12 @@ export interface RoomUnlockContext {
   totalLevels: number;
   hasJob: boolean;
   heldCollections: string[];
+  /** layer ids unlocked by a Telegram Stars purchase (content/monetization.json) */
+  entitlements: string[];
 }
 
 export function buildRoomUnlockContext(
-  player: Pick<PlayerState, 'housingLevel' | 'items' | 'achievements' | 'skills' | 'job'>,
+  player: Pick<PlayerState, 'housingLevel' | 'items' | 'achievements' | 'skills' | 'job'> & { entitlements?: string[] },
   heldCollections: string[] = []
 ): RoomUnlockContext {
   const skills = player.skills ?? {};
@@ -43,6 +45,7 @@ export function buildRoomUnlockContext(
     totalLevels: Object.values(skills).reduce((sum, s) => sum + (s?.level ?? 0), 0),
     hasJob: player.job != null,
     heldCollections,
+    entitlements: player.entitlements ?? [],
   };
 }
 
@@ -63,6 +66,9 @@ export function roomEntryStatus(
   const ach = (id: string) => ctx.achievements.includes(id);
   const cross = (id: string) => ctx.heldCollections.includes(id);
   const lock = (hint: string): RoomEntryStatus => ({ unlocked: false, hint });
+
+  // Bought with Telegram Stars → unlocked forever, whatever the normal gate is.
+  if (ctx.entitlements.includes(entryId)) return { unlocked: true, hint: '' };
 
   switch (slot) {
     case 'bg': {

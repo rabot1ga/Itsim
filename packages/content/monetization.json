@@ -1,0 +1,45 @@
+{
+  "currency": "XTR",
+  "policy": "Никакого pay-to-win: за звёзды продаются только косметика, слоты банка дней и поддержка разработки. Ни навыков, ни денег, ни повышений.",
+  "products": [
+    {
+      "id": "support_coffee",
+      "title": "☕ Кофе разработчику",
+      "description": "Поддержать разработку игры. В профиле появится значок «Спонсор».",
+      "stars": 25,
+      "repeatable": true,
+      "grants": { "badge": "supporter" }
+    },
+    {
+      "id": "banked_day",
+      "title": "🗓 Дополнительный день в банке",
+      "description": "+1 день в банк офлайн-энергии (сверх обычного накопления, максимум 7).",
+      "stars": 50,
+      "repeatable": true,
+      "dailyLimit": 2,
+      "grants": { "bankedDays": 1 }
+    },
+    {
+      "id": "wardrobe_premium",
+      "title": "👕 Премиум-гардероб",
+      "description": "Открывает VR-шлем и корп-худи в гардеробе навсегда — без ачивок и работы.",
+      "stars": 150,
+      "repeatable": false,
+      "grants": {
+        "badge": "fashionista",
+        "cosmetics": ["acc_vr_headset", "top_hoodie_corp"]
+      }
+    },
+    {
+      "id": "room_neon_pack",
+      "title": "🌈 Неоновая комната",
+      "description": "Неоновая вывеска и RGB-стол в редакторе комнаты навсегда.",
+      "stars": 150,
+      "repeatable": false,
+      "grants": {
+        "badge": "neon",
+        "cosmetics": ["decor_neon", "desk_rgb"]
+      }
+    }
+  ]
+}

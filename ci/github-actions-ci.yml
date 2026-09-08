@@ -1,0 +1,103 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Keep CI in dev mode: no token, no network calls to api.telegram.org
+  NODE_ENV: test
+
+jobs:
+  verify:
+    name: lint · test · build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck (tsc, all packages)
+        run: npm run lint:types
+
+      - name: Lint (eslint)
+        run: npm run lint:code
+
+      - name: Format check (prettier)
+        run: npm run format:check
+        continue-on-error: true
+
+      - name: Validate content (schemas + cross-references)
+        run: npm run validate:content
+
+      - name: Unit tests — engine
+        run: npm run test -w packages/shared
+
+      - name: Unit tests — server
+        run: npm run test -w packages/server
+
+      - name: Unit tests — bot
+        run: npm run test -w packages/bot
+
+      - name: Unit tests — client (pixel icon set)
+        run: npm run test -w packages/client
+
+      - name: Balance simulator (40 agents × 365 days, corridor check)
+        run: npm run test -w packages/sim
+
+      - name: Pixel-art pipeline audit
+        run: npm run pixelgen:audit
+
+      - name: Build all packages
+        run: npm run build
+
+  content-guard:
+    name: content changes must pass strict validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Did this PR touch content?
+        id: changes
+        run: |
+          if git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -q '^packages/content/'; then
+            echo "touched=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "touched=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install dependencies
+        if: steps.changes.outputs.touched == 'true'
+        run: npm ci
+
+      - name: Strict content validation (warnings are fatal)
+        if: steps.changes.outputs.touched == 'true'
+        run: npm run build -w packages/shared && npx tsx packages/content/src/cli.ts --strict
+
+      - name: Balance simulator must stay inside its corridors
+        if: steps.changes.outputs.touched == 'true'
+        run: npm run test -w packages/sim

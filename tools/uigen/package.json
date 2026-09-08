@@ -1,0 +1,13 @@
+{
+  "name": "@itsim/uigen",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "9-slice interface frames, drawn pixel by pixel",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "devDependencies": {
+    "sharp": "^0.34.0"
+  }
+}

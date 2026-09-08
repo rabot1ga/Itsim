@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
-import { Spinner } from '../components/ui';
+import { Spinner, EmojiToken, SpriteBadge } from '../components/ui';
+import { PixelIcon } from '../components/pixel/PixelIcon';
 
 /**
  * Achievements screen — all 17 achievements with earned state and
@@ -98,8 +99,11 @@ export const AchievementsView: React.FC = () => {
   return (
     <div className="space-y-4 animate-fade-in">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold text-white">🏆 Достижения</h2>
-        <span className="text-xs text-slate-400">
+        <h2 className="flex items-center gap-2 text-base font-semibold text-white">
+          <SpriteBadge sprite="diploma" size={32} />
+          Достижения
+        </h2>
+        <span className="num text-xs text-ink-500">
           {earnedCount}/{achievements.length || 17}
         </span>
       </div>
@@ -113,30 +117,29 @@ export const AchievementsView: React.FC = () => {
           return (
             <div
               key={a.id}
-              className={`game-card !p-3 flex items-center gap-3 ${
-                isEarned ? 'border-amber-500/40' : 'opacity-80'
+              className={`panel !p-3 flex items-center gap-3 ${
+                isEarned ? 'panel-note panel-note-gold' : ''
               }`}
             >
-              <span className={`text-2xl ${isEarned ? '' : 'grayscale opacity-60'}`}>
+              <EmojiToken className={isEarned ? '' : 'grayscale opacity-45'}>
                 {ACHIEVEMENT_EMOJI[a.id] ?? '🏅'}
-              </span>
+              </EmojiToken>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
-                  <span className={`text-xs font-medium ${isEarned ? 'text-amber-300' : 'text-slate-300'}`}>
+                  <span
+                    className={`text-sm font-medium ${isEarned ? 'text-gold-300' : 'text-ink-200'}`}
+                  >
                     {a.name}
                   </span>
-                  {isEarned && <span className="text-[10px] text-emerald-400">✓</span>}
+                  {isEarned && <PixelIcon name="check" size={10} className="text-gold-300" />}
                 </div>
-                <p className="text-[10px] text-slate-500 leading-snug">{a.description}</p>
+                <p className="text-xs text-ink-500 leading-relaxed">{a.description}</p>
                 {!isEarned && (
                   <div className="flex items-center gap-2 mt-1">
-                    <div className="flex-1 h-1 bg-slate-700 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-amber-500 rounded-full transition-all"
-                        style={{ width: `${pct}%` }}
-                      />
+                    <div className="meter flex-1">
+                      <span style={{ width: `${pct}%`, background: 'var(--gold-deep)' }} />
                     </div>
-                    <span className="text-[9px] text-slate-500 tabular-nums whitespace-nowrap">
+                    <span className="num text-2xs text-ink-600 whitespace-nowrap">
                       {fmt(value)}/{fmt(target)}
                     </span>
                   </div>

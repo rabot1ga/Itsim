@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { haptic } from '../lib/telegram';
+import { PixelIcon } from './pixel/PixelIcon';
 
 /**
  * Interview mini-game — gamified learning (quiz with explanations).
@@ -62,6 +63,9 @@ export const InterviewPanel: React.FC = () => {
       }
       setChosen(restored);
       setPhase('playing');
+    } else {
+      haptic('error');
+      setError('Не удалось начать собеседование. Проверь связь и попробуй ещё раз.');
     }
   };
 
@@ -83,6 +87,7 @@ export const InterviewPanel: React.FC = () => {
       }));
     } else {
       haptic('error');
+      setError('Ответ не отправился — попробуй ещё раз.');
     }
   };
 
@@ -105,17 +110,31 @@ export const InterviewPanel: React.FC = () => {
       setPhase('result');
     } else {
       haptic('error');
+      setError('Не удалось завершить собеседование — результат не сохранён.');
     }
   };
 
   const correctCount = Object.values(answers).filter((a) => a.correct).length;
   const q = questions[idx];
 
+  // Network/server failures used to be swallowed: the state existed but was
+  // never rendered, so a failed request looked like a frozen button.
+  const errorNote = error ? (
+    <div className="mb-3 flex items-start gap-2 px-3 py-2 text-xs border-2 border-clay-700 bg-clay-900/40 text-clay-200">
+      <PixelIcon name="warn" size={11} className="mt-0.5" />
+      {error}
+    </div>
+  ) : null;
+
   if (phase === 'idle') {
     return (
-      <div className="game-card border-sky-500/40 bg-sky-500/5 animate-pop-in">
-        <h3 className="text-sm font-bold text-sky-300 mb-1">🎤 Собеседование-квиз</h3>
-        <p className="text-xs text-slate-300 mb-3">
+      <div className="panel panel-note panel-note-sky animate-pop-in">
+        {errorNote}
+        <h3 className="flex items-center gap-1.5 text-sm font-semibold text-white mb-1">
+          <PixelIcon name="chat" size={12} className="text-sky-300" />
+          Собеседование-квиз
+        </h3>
+        <p className="text-xs text-ink-400 mb-3 leading-relaxed">
           Ответь на 3 вопроса по своей специализации. Каждый ответ даёт XP —
           правильный больше, неправильный меньше (но тоже даёт: учишься на ошибках).
           Результат влияет на шанс оффера.
@@ -123,9 +142,9 @@ export const InterviewPanel: React.FC = () => {
         <button
           onClick={start}
           disabled={busy}
-          className="w-full py-3 bg-sky-600 hover:bg-sky-500 disabled:opacity-50 text-white rounded-xl font-bold transition-all active:scale-[0.98] touch-target"
+          className="btn btn-primary w-full"
         >
-          {busy ? 'Готовим вопросы...' : 'Начать собеседование'}
+          {busy ? 'Готовим вопросы…' : 'Начать собеседование'}
         </button>
       </div>
     );
@@ -135,33 +154,33 @@ export const InterviewPanel: React.FC = () => {
     const picked = chosen[q.id];
     const result = answers[q.id];
     return (
-      <div className="game-card border-sky-500/40 bg-sky-500/5 animate-fade-in">
+      <div className="panel panel-note panel-note-sky animate-fade-in">
+        {errorNote}
         <div className="flex items-center justify-between mb-2">
-          <span className="text-xs text-slate-400">
+          <span className="num text-xs text-ink-400">
             Вопрос {idx + 1} из {questions.length}
           </span>
-          <span className="chip bg-slate-800 text-sky-300 border border-slate-700">
+          <span className="chip">
             {TIER_LABELS[q.tier] ?? q.tier}
           </span>
         </div>
-        <div className="h-1 bg-slate-700 rounded-full overflow-hidden mb-3">
-          <div
-            className="h-full bg-sky-500 rounded-full transition-all"
-            style={{ width: `${((idx + 1) / questions.length) * 100}%` }}
+        <div className="meter mb-3">
+          <span
+            style={{ width: `${((idx + 1) / questions.length) * 100}%`, background: 'var(--sky)' }}
           />
         </div>
-        <p className="text-sm text-slate-100 font-medium mb-3">{q.text}</p>
+        <p className="text-sm text-white font-medium mb-3 leading-relaxed">{q.text}</p>
         <div className="space-y-2">
           {q.options.map((option, i) => {
             const isPicked = picked === i;
             const isCorrectOption = result !== undefined && i === result.correctIndex;
             const isWrongPick = isPicked && result !== undefined && !result.correct;
 
-            let cls = 'border-slate-700 bg-slate-800/60 hover:border-sky-500/50';
+            let cls = '';
             if (result !== undefined) {
-              if (isCorrectOption) cls = 'border-emerald-500 bg-emerald-900/30';
-              else if (isWrongPick) cls = 'border-red-500 bg-red-900/30';
-              else cls = 'border-slate-700 bg-slate-800/40 opacity-60';
+              if (isCorrectOption) cls = '!border-moss-600 !bg-moss-900/30';
+              else if (isWrongPick) cls = '!border-clay-600 !bg-clay-900/30';
+              else cls = 'opacity-50';
             }
 
             return (
@@ -169,12 +188,16 @@ export const InterviewPanel: React.FC = () => {
                 key={i}
                 onClick={() => choose(i)}
                 disabled={result !== undefined || busy}
-                className={`w-full text-left px-3 py-3 rounded-xl border text-sm text-slate-200 transition-all touch-target active:scale-[0.98] ${cls}`}
+                className={`tile w-full flex items-start gap-2 text-sm text-ink-100 touch-target ${cls}`}
               >
-                <span className="font-mono text-xs text-slate-500 mr-2">{String.fromCharCode(65 + i)}.</span>
-                {option}
-                {isCorrectOption && <span className="ml-2">✅</span>}
-                {isWrongPick && <span className="ml-2">❌</span>}
+                <span className="num text-xs text-ink-500 mt-0.5">
+                  {String.fromCharCode(65 + i)}
+                </span>
+                <span className="flex-1">{option}</span>
+                {isCorrectOption && (
+                  <PixelIcon name="check" size={11} className="text-moss-400 mt-0.5" />
+                )}
+                {isWrongPick && <PixelIcon name="warn" size={11} className="text-clay-400 mt-0.5" />}
               </button>
             );
           })}
@@ -182,20 +205,21 @@ export const InterviewPanel: React.FC = () => {
         {result && (
           <div className="mt-3 animate-fade-in">
             <div
-              className={`px-3 py-2.5 rounded-xl text-xs border ${
+              className={`px-3 py-2.5 text-xs leading-relaxed border ${
                 result.correct
-                  ? 'bg-emerald-900/30 border-emerald-600/40 text-emerald-200'
-                  : 'bg-amber-900/30 border-amber-600/40 text-amber-200'
+                  ? 'bg-moss-900/30 border-moss-700 text-moss-200'
+                  : 'bg-ochre-900/30 border-ochre-700 text-ochre-200'
               }`}
             >
-              <span className="font-bold">{result.correct ? '✅ Верно! ' : '❌ Не совсем. '}</span>
+              <span className="font-semibold">{result.correct ? 'Верно. ' : 'Не совсем. '}</span>
               {result.explanation}
             </div>
             <button
               onClick={next}
-              className="w-full mt-2 py-3 bg-sky-600 hover:bg-sky-500 text-white rounded-xl font-bold transition-all active:scale-[0.98] touch-target"
+              className="btn btn-primary w-full mt-2"
             >
-              {idx + 1 < questions.length ? 'Следующий вопрос →' : 'К итогам 📊'}
+              {idx + 1 < questions.length ? 'Следующий вопрос' : 'К итогам'}
+              <PixelIcon name="arrow" size={11} />
             </button>
           </div>
         )}
@@ -205,14 +229,20 @@ export const InterviewPanel: React.FC = () => {
 
   if (phase === 'summary') {
     return (
-      <div className="game-card border-sky-500/40 bg-sky-500/5 animate-fade-in">
-        <h3 className="text-sm font-bold text-sky-300 mb-2">📊 Итоги собеседования</h3>
-        <div className="text-center py-4">
-          <div className="text-4xl mb-2">{correctCount === questions.length ? '🏆' : correctCount > 0 ? '👍' : '💪'}</div>
-          <p className="text-xl font-bold text-white">
+      <div className="panel panel-note panel-note-sky animate-fade-in">
+        <h3 className="eyebrow mb-2">Итоги собеседования</h3>
+        <div className="text-center py-3">
+          <PixelIcon
+            name={correctCount === questions.length ? 'trophy' : 'target'}
+            size={28}
+            className={`mx-auto mb-2 ${
+              correctCount === questions.length ? 'text-gold-300' : 'text-ink-500'
+            }`}
+          />
+          <p className="num text-xl font-semibold text-white">
             {correctCount} из {questions.length}
           </p>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-ink-400 mt-1 leading-relaxed">
             {correctCount === questions.length
               ? 'Идеально! Интервьюер уже готовит оффер.'
               : correctCount > 0
@@ -223,9 +253,9 @@ export const InterviewPanel: React.FC = () => {
         <button
           onClick={complete}
           disabled={busy}
-          className="w-full py-3 bg-gradient-to-r from-sky-600 to-violet-600 hover:from-sky-500 hover:to-violet-500 disabled:opacity-50 text-white rounded-xl font-bold transition-all active:scale-[0.98] touch-target"
+          className="btn btn-primary w-full"
         >
-          {busy ? 'Интервьюер совещается...' : 'Узнать решение 🎯'}
+          {busy ? 'Интервьюер совещается…' : 'Узнать решение'}
         </button>
       </div>
     );
@@ -234,21 +264,27 @@ export const InterviewPanel: React.FC = () => {
   if (phase === 'result' && finish) {
     const isOffer = finish.result === 'offer';
     return (
-      <div className={`game-card animate-pop-in ${isOffer ? 'border-emerald-500/50 bg-emerald-500/5' : 'border-red-500/40 bg-red-500/5'}`}>
+      <div
+        className={`panel panel-note animate-pop-in ${
+          isOffer ? 'panel-note-moss' : 'panel-note-clay'
+        }`}
+      >
         <div className="text-center py-2">
-          <div className="text-4xl mb-2">{isOffer ? '🎉' : '😔'}</div>
-          <h3 className={`text-base font-bold ${isOffer ? 'text-emerald-300' : 'text-red-300'}`}>
-            {isOffer ? 'Оффер получен!' : 'Отказ'}
+          <PixelIcon
+            name={isOffer ? 'trophy' : 'warn'}
+            size={26}
+            className={`mx-auto mb-2 ${isOffer ? 'text-gold-300' : 'text-clay-400'}`}
+          />
+          <h3 className={`text-base font-semibold ${isOffer ? 'text-moss-300' : 'text-clay-300'}`}>
+            {isOffer ? 'Оффер получен' : 'Отказ'}
           </h3>
-          <p className="text-xs text-slate-300 mt-1">
-            Верно: {finish.correct}/{finish.total} · Шанс был: {finish.chance}%
+          <p className="num text-xs text-ink-300 mt-1">
+            Верно: {finish.correct}/{finish.total} · шанс был {finish.chance}%
           </p>
           {finish.xp?.length > 0 && (
-            <p className="text-[11px] text-primary-300 mt-2">
-              🎓 Обучение: {finish.xp.join(', ')} XP
-            </p>
+            <p className="num text-xs text-sky-300 mt-2">Обучение: {finish.xp.join(', ')} XP</p>
           )}
-          <p className="text-xs text-slate-400 mt-2 leading-snug">
+          <p className="text-xs text-ink-400 mt-2 leading-relaxed">
             {isOffer
               ? 'Загляни в блок «Офферы» выше и прими его!'
               : 'Не расстраивайся — подтяни навыки и откликайся снова. Опыт остался с тобой.'}

@@ -46,6 +46,8 @@ interface TelegramWebApp {
   setBackgroundColor?: (color: string) => void;
   disableVerticalSwipes?: () => void;
   enableVerticalSwipes?: () => void;
+  openInvoice?: (url: string, callback?: (status: 'paid' | 'cancelled' | 'failed' | 'pending') => void) => void;
+  openTelegramLink?: (url: string) => void;
   MainButton?: TelegramMainButton;
   BackButton?: TelegramBackButton;
   HapticFeedback?: TelegramHaptics;
@@ -68,6 +70,21 @@ export function isTelegram(): boolean {
 let initialized = false;
 
 /** Call once at startup (main.tsx). Safe to call in a plain browser. */
+/** The app background (--bg in index.css) — Telegram's chrome is painted to match. */
+export const APP_INK = '#11151c';
+
+/** Re-apply header/background colours (safe to call again after a theme change). */
+export function applyTelegramChrome(): void {
+  const tg = getTelegram();
+  if (!tg) return;
+  try {
+    tg.setHeaderColor?.(APP_INK);
+    tg.setBackgroundColor?.(APP_INK);
+  } catch {
+    /* noop */
+  }
+}
+
 export function initTelegramApp(): void {
   const tg = getTelegram();
   if (!tg || initialized) return;
@@ -100,8 +117,8 @@ export function initTelegramApp(): void {
 
   // Blend the native chrome into our dark theme.
   try {
-    tg.setHeaderColor?.('#0b1220');
-    tg.setBackgroundColor?.('#0b1220');
+    tg.setHeaderColor?.(APP_INK);
+    tg.setBackgroundColor?.(APP_INK);
   } catch {
     /* noop */
   }
@@ -222,4 +239,29 @@ export function hideBackButton(onClick?: () => void): void {
   } catch {
     /* noop */
   }
+}
+
+// ---------------------------------------------------------------------------
+// Payments (Telegram Stars)
+// ---------------------------------------------------------------------------
+
+export type InvoiceStatus = 'paid' | 'cancelled' | 'failed' | 'pending';
+
+/**
+ * Open a Stars invoice. Inside Telegram this is the native payment sheet;
+ * in a plain browser (local dev) we fall back to a new tab so the flow is at
+ * least inspectable.
+ */
+export function openInvoice(url: string, callback?: (status: InvoiceStatus) => void): void {
+  const tg = getTelegram();
+  if (tg?.openInvoice) {
+    try {
+      tg.openInvoice(url, (status) => callback?.(status));
+      return;
+    } catch {
+      /* fall through */
+    }
+  }
+  window.open(url, '_blank');
+  callback?.('pending');
 }

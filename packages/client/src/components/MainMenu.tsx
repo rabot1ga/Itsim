@@ -1,155 +1,100 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useGameStore } from '../store/gameStore';
 import { haptic } from '../lib/telegram';
-import { RoomRenderer, buildRoomComposition } from './room/RoomRenderer';
-import { buildAvatarData, fetchPixelPack, PixelAvatarData } from './room/pixelAvatar';
+import { IsoRoom } from './iso/IsoRoom';
+import { PixelIcon } from './pixel/PixelIcon';
+import { PixelText } from './pixel/PixelText';
 
 export const MainMenu: React.FC = () => {
   const { setScreen, setView, player } = useGameStore();
 
   const hasProgress = player && (player.currentDay ?? 1) > 1;
 
-  // Personal hero: the player's own room + avatar, rendered by the game engine.
-  const [roomManifest, setRoomManifest] = useState<any>(null);
-  const [avatarManifest, setAvatarManifest] = useState<any>(null);
-  const [geneticsConfig, setGeneticsConfig] = useState<any>(null);
-  const [pixelPack, setPixelPack] = useState<Awaited<ReturnType<typeof fetchPixelPack>>>(null);
-
-  useEffect(() => {
-    Promise.all([
-      fetch('/api/content/layers').then((r) => r.json()),
-      fetchPixelPack(),
-    ])
-      .then(([l, pixel]) => {
-        setRoomManifest(l.room);
-        setAvatarManifest(l.avatar);
-        setPixelPack(pixel);
-      })
-      .catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    fetch('/api/content/genetics')
-      .then((r) => r.json())
-      .then((g) => setGeneticsConfig(g.genetics))
-      .catch(() => {});
-  }, []);
-
-  const traits = player?.genetics;
-  const displayTraits =
-    traits && player?.room?.wallColor ? { ...traits, wallColor: player.room.wallColor } : traits;
-  const heroReady = roomManifest && avatarManifest && geneticsConfig && displayTraits;
-  const heroComposition = heroReady
-    ? buildRoomComposition({
-        traits: displayTraits,
-        housingLevel: player.housingLevel ?? 0,
-        items: player.items ?? [],
-        crossLayers: [],
-        custom: player.room,
-      })
-    : null;
-  const heroAvatar: PixelAvatarData | null =
-    pixelPack && traits ? buildAvatarData(pixelPack, traits, player?.avatar) : null;
-
   return (
     <div className="flex-1 flex flex-col items-center justify-between p-6 overflow-y-auto">
-      <div className="flex-1 flex flex-col items-center justify-center w-full max-w-sm">
-        {/* Hero — your own room, or the classic laptop while it loads */}
-        <div className="text-center mb-6 animate-fade-in w-full">
-          {heroReady && heroComposition ? (
-            <div className="max-w-[280px] mx-auto mb-4">
-              <RoomRenderer
-                roomManifest={roomManifest}
-                avatarManifest={avatarManifest}
-                traits={displayTraits}
-                geneticsConfig={geneticsConfig}
-                housingLevel={player.housingLevel ?? 0}
-                composition={heroComposition}
-                pixelAvatar={heroAvatar}
-                avatarCustom={player.avatar}
-                petWear={(player.items ?? []).filter((id: string) =>
-                  ['pet_bow', 'pet_glasses', 'pet_crown'].includes(id)
-                )}
-                petFed={!!player.petFedToday}
-              />
-            </div>
-          ) : (
-            <div className="text-7xl mb-4 animate-float drop-shadow-[0_8px_24px_rgba(56,189,248,0.35)]">💻</div>
-          )}
-          <h1 className="text-3xl font-black text-gradient animate-gradient">
-            IT Life Simulator
-          </h1>
-          <p className="text-slate-400 text-sm max-w-xs mx-auto mt-2 leading-relaxed">
-            {hasProgress
-              ? `С возвращением! День ${player.currentDay} · ${gradeLabel(player.grade)}`
-              : 'Симулятор жизни IT-специалиста. Начинай карьеру, качай навыки, избегай выгорания.'}
-          </p>
+      <div className="flex-1 flex flex-col items-center justify-center w-full max-w-[300px]">
+        {/* Hero — your own room with you standing in it */}
+        <div className="w-full animate-fade-in">
+          {player ? <IsoRoom player={player} /> : <div className="aspect-[4/3] border-2 border-ink-700 bg-ink-800" />}
         </div>
 
-        {/* Player progress summary */}
-        {hasProgress && (
-          <div className="w-full game-card mb-4 animate-pop-in !py-3">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-400">📅 День {player.currentDay}</span>
-              <span className="text-slate-300 font-medium">{gradeLabel(player.grade)}</span>
-              <span className="text-emerald-400 font-mono">{formatMoney(player.money ?? 0)}</span>
-            </div>
-          </div>
+        {/* Wordmark */}
+        <h1 className="flex flex-col items-center gap-2 mt-6">
+          <PixelText scale={4} className="text-gold-300">
+            IT LIFE
+          </PixelText>
+          <span className="text-2xs font-semibold uppercase tracking-[0.42em] text-ink-500 pl-1">Simulator</span>
+        </h1>
+
+        {/* One line of context: where you left off, or what this is */}
+        {hasProgress ? (
+          <p className="well flex items-center gap-2 text-xs text-ink-400 mt-4 px-3 py-2">
+            <span className="num">День {player.currentDay}</span>
+            <span className="text-ink-700">·</span>
+            <span className="text-ink-200 font-semibold">{gradeLabel(player.grade)}</span>
+            <span className="text-ink-700">·</span>
+            <span className="num text-moss-300 font-semibold">{formatMoney(player.money ?? 0)}</span>
+          </p>
+        ) : (
+          <p className="text-ink-400 text-sm max-w-[30ch] text-center mt-4 leading-relaxed">
+            Карьера, навыки, деньги и попытка не выгореть.
+          </p>
         )}
 
-        {/* Actions */}
-        <div className="w-full space-y-3 animate-fade-in">
-          <button
-            onClick={() => {
-              haptic('medium');
-              setScreen('game');
-            }}
-            className="w-full py-3.5 bg-gradient-to-r from-primary-600 to-violet-600 hover:from-primary-500 hover:to-violet-500 text-white rounded-2xl font-bold transition-all text-lg shadow-lg shadow-primary-900/40 active:scale-[0.98] touch-target"
-          >
-            {hasProgress ? '▶️ Продолжить игру' : '🚀 Начать игру'}
-          </button>
+        {/* The only action on this screen */}
+        <button
+          onClick={() => {
+            haptic('medium');
+            setScreen('game');
+          }}
+          className="btn btn-primary btn-lg w-full mt-6"
+        >
+          <PixelIcon name="play" size={13} />
+          {hasProgress ? `Продолжить · день ${player.currentDay}` : 'Начать игру'}
+        </button>
 
-          <div className="grid grid-cols-3 gap-2">
-            <MenuTile
-              icon="📊"
-              label="Лидерборд"
-              onClick={() => {
-                setView('leaderboard');
-                setScreen('game');
-              }}
-            />
-            <MenuTile
-              icon="🏠"
+        {/* Quiet shortcuts, only once there is something to look at */}
+        {hasProgress && (
+          <div className="flex items-center gap-5 mt-4">
+            <MenuLink
+              icon="house"
               label="Мой дом"
               onClick={() => {
                 setView('room');
                 setScreen('game');
               }}
             />
-            <MenuTile icon="⚙️" label="Настройки" />
+            <span className="w-px h-3 bg-ink-700" />
+            <MenuLink
+              icon="chart"
+              label="Топ игроков"
+              onClick={() => {
+                setView('leaderboard');
+                setScreen('game');
+              }}
+            />
           </div>
-        </div>
+        )}
       </div>
 
       {/* Footer */}
-      <div className="mt-8 text-center text-xs text-slate-600">
-        <p>v2.0.0 • Telegram Mini App</p>
-        <p className="mt-1">Сделано с ❤️ для айтишников</p>
+      <div className="mt-8 text-center text-2xs text-ink-600 tracking-[0.04em]">
+        <p>v2.0.0 · Telegram Mini App</p>
       </div>
     </div>
   );
 };
 
-const MenuTile: React.FC<{ icon: string; label: string; onClick?: () => void }> = ({ icon, label, onClick }) => (
+const MenuLink: React.FC<{ icon: string; label: string; onClick: () => void }> = ({ icon, label, onClick }) => (
   <button
     onClick={() => {
-      if (onClick) haptic('selection');
-      onClick?.();
+      haptic('selection');
+      onClick();
     }}
-    className="game-card !p-3 flex flex-col items-center justify-center gap-1 hover:border-slate-500 transition-all touch-target active:scale-95 min-h-[72px]"
+    className="flex items-center gap-1.5 text-xs text-ink-400 hover:text-ink-200 transition-colors min-h-[44px]"
   >
-    <span className="text-xl">{icon}</span>
-    <span className="text-[11px] text-slate-400">{label}</span>
+    <PixelIcon name={icon} size={11} className="text-ink-500" />
+    {label}
   </button>
 );
 

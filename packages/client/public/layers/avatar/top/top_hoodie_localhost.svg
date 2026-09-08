@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500"><defs>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 760" width="500" height="760"><defs>
   <linearGradient id="skinGrad" x1="0" y1="0" x2="0" y2="1">
     <stop offset="0" stop-color="#969696"/><stop offset="1" stop-color="#767676"/>
   </linearGradient>
@@ -21,9 +21,14 @@
     <stop offset="0" stop-color="#8b93a3"/><stop offset="1" stop-color="#5d6672"/>
   </linearGradient>
 </defs><g stroke="#1e2430" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+  <!-- sleeves -->
+  <path d="M176 246 Q130 254 124 288 L124 404 Q124 424 148 424 Q172 424 172 404 L176 300 Z" fill="#30343c"/>
+  <path d="M324 246 Q370 254 376 288 L376 404 Q376 424 352 424 Q328 424 328 404 L324 300 Z" fill="#30343c"/>
+  <path d="M124 398 L172 398 L172 412 Q172 424 148 424 Q124 424 124 412 Z" fill="#22252b"/>
+  <path d="M328 398 L376 398 L376 412 Q376 424 352 424 Q328 424 328 412 Z" fill="#22252b"/>
   <path d="M176 258 Q176 240 200 232 Q220 224 250 224 Q280 224 300 232 Q324 240 324 258 L328 452 Q328 478 296 478 L204 478 Q172 478 172 452 Z" fill="#30343c"/>
   <path d="M200 232 Q250 210 300 232 Q280 244 250 246 Q220 244 200 232 Z" fill="#3c414c" opacity="0.75"/>
   <path d="M244 300 L256 300 L253 318 L247 318 Z" fill="#3c414c"/>
   <path d="M172 452 L204 478 L296 478 L328 452 L318 460 L182 460 Z" fill="#000000" opacity="0.12"/></g>
-  <text x="250" y="366" font-family="monospace" font-size="30" fill="#4ade80" text-anchor="middle">localhost</text>
+  <text x="250" y="366" font-family="monospace" font-size="30" fill="#7fae7a" text-anchor="middle">localhost</text>
   <text x="250" y="396" font-family="monospace" font-size="16" fill="#64748b" text-anchor="middle">:3000</text></svg>

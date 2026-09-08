@@ -9,6 +9,11 @@ const API_BASE = '/api';
 // (Telegram-canonical pattern; no JWT lifecycle to break the preview)
 let authInitData: string | null = null;
 
+/**
+ * Authenticated API call. Exported as `apiRequest` for screens that fetch on
+ * their own (leaderboard) — every endpoint behind `telegramAuthHook` needs the
+ * `Authorization: tma <initData>` header, a bare `fetch()` gets a 401 in prod.
+ */
 async function api(path: string, init: RequestInit = {}): Promise<{ ok: boolean; status: number; data: any }> {
   const headers: Record<string, string> = {
     Authorization: authInitData ? `tma ${authInitData}` : '',
@@ -25,6 +30,56 @@ async function api(path: string, init: RequestInit = {}): Promise<{ ok: boolean;
   return { ok: res.ok, status: res.status, data };
 }
 
+export const apiRequest = api;
+
+/**
+ * A number that just changed, on its way up the screen.
+ *
+ * Idle games live on this: a tap has to *pay out* visibly, or the loop feels
+ * dead. The server returns the whole new state, so instead of parsing rewards
+ * we diff the two states and float whatever moved.
+ */
+export interface Gain {
+  id: number;
+  /** pixel icon name */
+  icon: string;
+  text: string;
+  tone: 'good' | 'bad';
+}
+
+const GAIN_FIELDS: Array<{ key: string; icon: string; unit?: string; round?: number }> = [
+  { key: 'money', icon: 'coin', unit: '₽' },
+  { key: 'energy', icon: 'bolt' },
+  { key: 'motivation', icon: 'flame' },
+  { key: 'health', icon: 'heart' },
+  { key: 'reputation', icon: 'star' },
+];
+
+let gainId = 0;
+
+/** What moved between two states, as floating labels. */
+export function diffGains(prev: any, next: any): Gain[] {
+  if (!prev || !next) return [];
+  const out: Gain[] = [];
+  for (const f of GAIN_FIELDS) {
+    const delta = Math.round((next[f.key] ?? 0) - (prev[f.key] ?? 0));
+    if (!delta) continue;
+    const sign = delta > 0 ? '+' : '−';
+    const value = Math.abs(delta).toLocaleString('ru-RU');
+    out.push({
+      id: ++gainId,
+      icon: f.icon,
+      text: `${sign}${value}${f.unit ? ` ${f.unit}` : ''}`,
+      tone: delta > 0 ? 'good' : 'bad',
+    });
+  }
+  const levels = (st: any) =>
+    Object.values(st?.skills ?? {}).reduce((sum: number, sk: any) => sum + (sk?.level ?? 0), 0);
+  const up = levels(next) - levels(prev);
+  if (up > 0) out.push({ id: ++gainId, icon: 'book', text: `+${up} ур.`, tone: 'good' });
+  return out;
+}
+
 interface GameState {
   initialized: boolean;
   screen: Screen;
@@ -39,9 +94,13 @@ interface GameState {
   inventory: any[];
   heldCollections: string[];
   mining: any;
+  /** numbers that just changed, rendered as floating labels */
+  gains: Gain[];
 
   // Actions
   initGame: (initData: string) => Promise<void>;
+  /** re-read /game/state (after a Stars purchase or a background change) */
+  refreshState: () => Promise<void>;
   setScreen: (screen: Screen) => void;
   setView: (view: string) => void;
   performAction: (actionId: string, params?: any) => Promise<boolean>;
@@ -51,6 +110,8 @@ interface GameState {
   acceptOffer: (companyId: string) => Promise<boolean>;
   declineOffer: (companyId: string) => Promise<boolean>;
   clearError: () => void;
+  /** drop a floating label once it has finished its flight */
+  dropGain: (id: number) => void;
   loadNft: () => Promise<void>;
   bindWallet: (address: string) => Promise<boolean>;
   setMockCollections: (collections: string[]) => Promise<void>;
@@ -73,6 +134,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   inventory: [],
   heldCollections: [],
   mining: null,
+  gains: [],
 
   initGame: async (initData: string) => {
     try {
@@ -125,9 +187,23 @@ export const useGameStore = create<GameState>((set, get) => ({
     }
   },
 
+  refreshState: async () => {
+    const res = await api('/game/state');
+    if (res.ok && res.data?.state) {
+      set({
+        player: res.data.state,
+        mining: res.data.mining ?? null,
+        careerOutlook: res.data.careerOutlook ?? null,
+        costOfDay: res.data.costOfDay ?? null,
+      });
+    }
+  },
+
   setScreen: (screen) => set({ screen }),
   setView: (view) => set({ currentView: view }),
   clearError: () => set({ error: null }),
+
+  dropGain: (id) => set((s) => ({ gains: s.gains.filter((g) => g.id !== id) })),
 
   performAction: async (actionId, params) => {
     const { player } = get();
@@ -143,14 +219,15 @@ export const useGameStore = create<GameState>((set, get) => ({
         }),
       });
       if (res.data?.state) {
-        set({
+        set((s) => ({
           player: res.data.state,
           activeEvent: res.data.activeEvent ?? null,
           mining: res.data.mining ?? null,
           careerOutlook: res.data.careerOutlook ?? get().careerOutlook,
           costOfDay: res.data.costOfDay ?? get().costOfDay,
           error: null,
-        });
+          gains: [...s.gains, ...diffGains(player, res.data.state)].slice(-6),
+        }));
       }
       if (!res.ok) {
         haptic('error');
@@ -172,17 +249,19 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 
   advanceDay: async () => {
+    const before = get().player;
     try {
       const res = await api('/game/advance-day', { method: 'POST' });
       if (res.data?.state) {
-        set({
+        set((s) => ({
+          gains: [...s.gains, ...diffGains(before, res.data.state)].slice(-6),
           player: res.data.state,
           activeEvent: res.data.activeEvent ?? null,
           mining: res.data.mining ?? null,
           careerOutlook: res.data.careerOutlook ?? null,
           costOfDay: res.data.costOfDay ?? null,
           error: null,
-        });
+        }));
       }
       if (!res.ok) {
         haptic('error');
@@ -198,6 +277,7 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 
   chooseEvent: async (eventId, choiceIndex) => {
+    const before = get().player;
     try {
       const res = await api('/game/event-choice', {
         method: 'POST',
@@ -205,7 +285,12 @@ export const useGameStore = create<GameState>((set, get) => ({
       });
       if (res.data?.state) {
         haptic('selection');
-        set({ player: res.data.state, activeEvent: null, error: null });
+        set((s) => ({
+          player: res.data.state,
+          activeEvent: null,
+          error: null,
+          gains: [...s.gains, ...diffGains(before, res.data.state)].slice(-6),
+        }));
       }
       if (!res.ok) {
         haptic('error');
@@ -232,10 +317,7 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   loadNft: async () => {
     try {
-      const [invRes, ccRes] = await Promise.all([
-        api('/nft/inventory'),
-        api('/nft/cross-collections'),
-      ]);
+      const [invRes, ccRes] = await Promise.all([api('/nft/inventory'), api('/nft/cross-collections')]);
       if (invRes.ok) set({ inventory: invRes.data?.nfts ?? [] });
       if (ccRes.ok) set({ heldCollections: ccRes.data?.held ?? [] });
     } catch (err) {

@@ -77,11 +77,6 @@ function union(...sets: Set<string>[]): Set<string> {
   return out;
 }
 
-function minus(a: Set<string>, b: Set<string>): Set<string> {
-  const out = new Set<string>();
-  for (const v of a) if (!b.has(v)) out.add(v);
-  return out;
-}
 
 /**
  * Paint a mask with automatic shading: outline on the silhouette edge,
@@ -224,15 +219,6 @@ function component(
   ];
 }
 
-/** left half of a symmetric mask (x ≤ 15) */
-function leftHalf(mask: Set<string>): Set<string> {
-  const out = new Set<string>();
-  for (const key of mask) {
-    const x = Number(key.split(',')[0]);
-    if (x <= Math.floor(AXIS)) out.add(key);
-  }
-  return out;
-}
 
 function faceComponent(id: string, label: string, mask: Set<string>, extra?: (m: Map<string, string>) => void): [string, Comp] {
   const map = grid();

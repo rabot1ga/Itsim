@@ -1,0 +1,7 @@
+dist/
+node_modules/
+artifacts/
+packages/server/data/
+packages/client/public/
+packages/content/**/*.json
+package-lock.json

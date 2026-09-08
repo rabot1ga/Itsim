@@ -203,7 +203,7 @@ export type RoomSlotId =
   | 'atmosphere'
   | 'pet';
 
-export type AvatarSlotId = 'hair' | 'beard' | 'top' | 'accessory';
+export type AvatarSlotId = 'hair' | 'beard' | 'top' | 'bottom' | 'accessory';
 
 /**
  * Wardrobe overrides (docs/design.md §12.5) — layered-manifest entry ids.
@@ -211,8 +211,16 @@ export type AvatarSlotId = 'hair' | 'beard' | 'top' | 'accessory';
  */
 export interface AvatarCustomization {
   hair?: string | null;
+  /** isometric recolour choices (hex from the shared palettes) */
+  skin?: string | null;
+  hairColor?: string | null;
+  topColor?: string | null;
+  bottomColor?: string | null;
+  shoeColor?: string | null;
   beard?: string | null;
   top?: string | null;
+  /** trousers/shorts — the avatar is drawn full-body (docs/ui.md §9) */
+  bottom?: string | null;
   accessory?: string | null;
 }
 
@@ -222,6 +230,10 @@ export interface RoomCustomization {
   slots: Partial<Record<RoomSlotId, string | null>>;
   /** wallColor palette id override (a repaint); missing = genetic */
   wallColor?: string;
+  /** isometric wall finish id (see isoFinishes); missing = seeded */
+  paint?: string;
+  /** isometric flooring id (see isoFinishes); missing = seeded */
+  floor?: string;
 }
 
 // ---- Player State ----
@@ -304,6 +316,12 @@ export interface PlayerState {
 
   // Daily challenge progress
   dailyChallenge?: DailyChallengeState;
+
+  // Monetization (Telegram Stars) — cosmetics only, see content/monetization.json
+  /** layer ids unlocked by a purchase */
+  entitlements?: string[];
+  /** profile badges (supporter, fashionista, …) */
+  badges?: string[];
 }
 
 export interface SkillLevel {

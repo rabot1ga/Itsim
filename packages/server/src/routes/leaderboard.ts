@@ -1,70 +1,48 @@
 import { FastifyInstance } from 'fastify';
-import { readdirSync, readFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { telegramAuthHook } from '../middleware/telegramAuth.js';
+import { getLeaderboard } from '../services/leaderboardIndex.js';
 
 /**
- * Leaderboard — computed from real persisted player states
- * (packages/server/data/*.json). Replaces the hardcoded mock.
+ * Leaderboard — computed from real persisted player states via the cached
+ * index (`services/leaderboardIndex.ts`), so a request never touches the disk.
+ *
+ * `isYou` comes from the authenticated Telegram user, not from a query param:
+ * the old `?userId=` contract silently produced `isYou: false` for everyone in
+ * dev mode (see ANALYSIS §7.1).
  */
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const DATA_DIR = process.env.DATA_DIR || join(__dirname, '..', '..', 'data');
-
 export async function leaderboardRoutes(app: FastifyInstance) {
-  /**
-   * GET /api/leaderboard/friends
-   * Top-20 real players by ratingScore
-   */
-  app.get('/friends', async (request) => {
-    const userId = request.query && (request.query as any).userId
-      ? String((request.query as any).userId)
-      : null;
+  app.addHook('preHandler', telegramAuthHook);
 
-    const rows: Array<{
-      rank: number;
-      name: string;
-      grade: string;
-      rating: number;
-      day: number;
-      isYou: boolean;
-    }> = [];
+  const handler = (honestOnly: boolean) => async (request: any) => {
+    const user = (request as any).telegramUser;
+    const userId = user ? String(user.id) : null;
+    const { limit, offset } = request.query as { limit?: string; offset?: string };
 
-    try {
-      for (const file of readdirSync(DATA_DIR)) {
-        if (!file.endsWith('.json') || file === 'nft_registry.json') continue;
-        try {
-          const state = JSON.parse(readFileSync(join(DATA_DIR, file), 'utf-8'));
-          if (!state || typeof state.currentDay !== 'number') continue;
-          rows.push({
-            rank: 0,
-            name: state.firstName ?? `Игрок ${state.telegramId ?? ''}`.trim(),
-            grade: state.grade ?? 'unemployed',
-            rating: Math.round(state.ratingScore ?? 0),
-            day: state.currentDay ?? 1,
-            isYou: state.telegramId === userId,
-          });
-        } catch {
-          // skip corrupt files
-        }
-      }
-    } catch {
-      // data dir missing — empty board
-    }
+    const page = await getLeaderboard({
+      limit: limit ? parseInt(limit, 10) : 20,
+      offset: offset ? parseInt(offset, 10) : 0,
+      userId,
+      honestOnly,
+    });
 
-    rows.sort((a, b) => b.rating - a.rating || b.day - a.day);
     return {
-      leaderboard: rows.slice(0, 20).map((r, i) => ({ ...r, rank: i + 1 })),
-      updatedAt: Date.now(),
+      leaderboard: page.rows.map(({ userId: _userId, ...row }) => row),
+      you: page.you ? (({ userId: _u, ...rest }) => rest)(page.you) : null,
+      total: page.total,
+      updatedAt: page.updatedAt,
     };
-  });
+  };
+
+  /**
+   * GET /api/leaderboard/friends?limit=20&offset=0
+   * Global board by ratingScore (top-N + your own rank).
+   */
+  app.get('/friends', handler(false));
 
   /**
    * GET /api/leaderboard/honest
-   * Honest mode leaderboard (no boosters) — same data, separate endpoint for
-   * the future no-booster filter
+   * Same board without booster-item owners.
    */
-  app.get('/honest', async () => {
-    return { leaderboard: [], updatedAt: Date.now() };
-  });
+  app.get('/honest', handler(true));
 }

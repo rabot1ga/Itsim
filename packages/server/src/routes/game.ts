@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify';
 import { telegramAuthHook } from '../middleware/telegramAuth.js';
 import { getContent } from '../services/contentService.js';
 import { loadState, saveState } from '../services/gameStore.js';
+import { findCompletedAction, rememberAction, stripInternal } from '../services/idempotency.js';
 import {
   createNewPlayer,
   calculateMaxEnergy,
@@ -16,7 +17,6 @@ import {
   calculateRating,
   checkAchievements,
   totalSkillLevels,
-  maxSkillLevel,
   clamp,
   GRADE_SALARIES,
   GRADE_ENERGY,
@@ -30,7 +30,6 @@ import {
   gateSurplus,
   promotionChance,
   reviewInterval,
-  mainBranchTotal,
   branchShareXp,
   dailyLivingCost,
   wealthTaxMonthly,
@@ -51,7 +50,6 @@ import {
   miningDailyIncome,
   hashrateOfItems,
   electricitySaveOfItems,
-  itemBonusSum,
   itemXpMult,
   itemEnergyCostChance,
   itemDailyBonuses,
@@ -68,6 +66,13 @@ import {
   isAvatarSlotId,
   avatarChangeCost,
   geneticTraitForSlot,
+  paintAllowed,
+  floorAllowed,
+  isLookSlot,
+  lookColourAllowed,
+  LOOK_SLOT_NAMES,
+  wallPaint,
+  floorStyle,
   type PlayerState,
   type GameEvent,
   type Grade,
@@ -100,9 +105,6 @@ type StoredState = PlayerState & {
     questions: Array<{ id: string; chosen: number | null; correct: boolean | null }>;
   };
 };
-
-// Idempotent action cache: userId -> idempotencyKey -> response
-const completedActions = new Map<string, Map<string, any>>();
 
 // Energy costs for non-study actions (study costs come from balance.json xpSources)
 const EXTRA_ENERGY_COSTS: Record<string, number> = {
@@ -178,7 +180,7 @@ function deriveGenetics(state: StoredState): void {
  * Attach the UI message to the response state (client shows state._lastEvent)
  */
 function respondState(state: StoredState, message?: string) {
-  return { ...state, _lastEvent: message };
+  return { ...stripInternal(state), _lastEvent: message };
 }
 
 /**
@@ -406,11 +408,13 @@ export async function gameRoutes(app: FastifyInstance) {
       return reply.status(404).send({ error: 'Game not started' });
     }
 
-    // Idempotency — return the stored result for a duplicate request
+    // Idempotency — a duplicate request replays nothing and returns the state
+    // as it is now (keys are persisted with the save, so restarts are safe).
     if (idempotencyKey) {
-      const cache = completedActions.get(userId);
-      const existing = cache?.get(idempotencyKey);
-      if (existing) return { state: respondState(state, existing.message), delta: existing.delta, activeEvent: null };
+      const existing = findCompletedAction(state, idempotencyKey);
+      if (existing) {
+        return { state: respondState(state, existing.m), delta: {}, activeEvent: null, duplicate: true };
+      }
     }
 
     const content = getContent();
@@ -477,12 +481,12 @@ export async function gameRoutes(app: FastifyInstance) {
       }
     }
 
-    const response = { state: respondState(state, finalMessage), delta: result.delta ?? {}, activeEvent: triggeredEvent, nft, mining: miningSummary(state, content) };
     if (idempotencyKey) {
-      if (!completedActions.has(userId)) completedActions.set(userId, new Map());
-      completedActions.get(userId)!.set(idempotencyKey, { delta: result.delta, message: result.message });
+      rememberAction(state, idempotencyKey, result.message);
+      saveState(userId, state);
     }
-    return response;
+
+    return { state: respondState(state, finalMessage), delta: result.delta ?? {}, activeEvent: triggeredEvent, nft, mining: miningSummary(state, content) };
   });
 
   /**
@@ -1076,9 +1080,15 @@ function getActionMoneyCost(actionId: string, params: any, state: PlayerState, c
       return HOUSING_COSTS[next] ?? null;
     }
     case 'customize_room': {
-      // Rearranging furniture is free; a fresh coat of paint costs money.
-      if (params?.slot !== 'wallColor') return null;
-      const current = state.room?.wallColor ?? state.genetics?.wallColor;
+      // Rearranging furniture is free; paint and flooring cost money.
+      const slot = params?.slot as string | undefined;
+      if (slot !== 'wallColor' && slot !== 'paint' && slot !== 'floor') return null;
+      const current =
+        slot === 'paint'
+          ? state.room?.paint
+          : slot === 'floor'
+            ? state.room?.floor
+            : (state.room?.wallColor ?? state.genetics?.wallColor);
       if (!params?.entryId || params.entryId === current) return null;
       return REPAINT_COST;
     }
@@ -1086,7 +1096,8 @@ function getActionMoneyCost(actionId: string, params: any, state: PlayerState, c
       // Barbers and hat stands charge; the closet is free.
       const slot = params?.slot as string | undefined;
       const entryId = (params?.entryId as string | null | undefined) ?? null;
-      if (!slot || !isAvatarSlotId(slot) || entryId === null) return null;
+      if (!slot || isLookSlot(slot)) return null; // recolouring is free
+      if (!isAvatarSlotId(slot) || entryId === null) return null;
       const current = (state.avatar as any)?.[slot] ?? geneticTraitForSlot(state.genetics, slot);
       const cost = avatarChangeCost(slot, entryId, current);
       return cost > 0 ? cost : null;
@@ -1522,7 +1533,8 @@ function applyAction(
     case 'customize_room': {
       const slot = params?.slot as string | undefined;
       const entryId = (params?.entryId as string | null | undefined) ?? null;
-      if (!slot || (slot !== 'wallColor' && !isRoomSlotId(slot))) {
+      const isoSlot = slot === 'paint' || slot === 'floor';
+      if (!slot || (!isoSlot && slot !== 'wallColor' && !isRoomSlotId(slot))) {
         return { error: 'Неизвестный слот комнаты' };
       }
       if (!state.room) state.room = { slots: {} };
@@ -1530,9 +1542,32 @@ function applyAction(
       // null = back to automatic
       if (entryId === null) {
         if (slot === 'wallColor') delete state.room.wallColor;
+        else if (slot === 'paint') delete state.room.paint;
+        else if (slot === 'floor') delete state.room.floor;
         else delete state.room.slots[slot];
         delta.room = state.room;
         return { message: '🎨 Вернули как было (авто)', delta };
+      }
+
+      // Isometric finishes: paint and flooring, gated by what the flat can carry.
+      if (slot === 'paint' || slot === 'floor') {
+        const allowed =
+          slot === 'paint'
+            ? paintAllowed(entryId, state.housingLevel ?? 0)
+            : floorAllowed(entryId, state.housingLevel ?? 0);
+        if (!allowed) return { error: 'Такая отделка недоступна для этого жилья' };
+        const name =
+          slot === 'paint' ? wallPaint(entryId)?.name ?? entryId : floorStyle(entryId)?.name ?? entryId;
+        if (slot === 'paint') state.room.paint = entryId;
+        else state.room.floor = entryId;
+        delta.room = state.room;
+        return {
+          message:
+            slot === 'paint'
+              ? `🎨 Стены перекрашены: ${name} (−${REPAINT_COST} ₽ за банку краски)`
+              : `🪵 Новый пол: ${name} (−${REPAINT_COST} ₽ за материал)`,
+          delta,
+        };
       }
 
       if (slot === 'wallColor') {
@@ -1558,7 +1593,7 @@ function applyAction(
     case 'customize_avatar': {
       const slot = params?.slot as string | undefined;
       const entryId = (params?.entryId as string | null | undefined) ?? null;
-      if (!slot || !isAvatarSlotId(slot)) {
+      if (!slot || (!isAvatarSlotId(slot) && !isLookSlot(slot))) {
         return { error: 'Неизвестный слот внешности' };
       }
       if (!state.avatar) state.avatar = {};
@@ -1567,6 +1602,14 @@ function applyAction(
         delete (state.avatar as any)[slot];
         delta.avatar = state.avatar;
         return { message: '🧍 Вернули как было от природы', delta };
+      }
+
+      // Colours: a mirror is free, but only palette colours are accepted.
+      if (isLookSlot(slot)) {
+        if (!lookColourAllowed(slot, entryId)) return { error: 'Такого цвета нет в палитре' };
+        (state.avatar as any)[slot] = entryId.toLowerCase();
+        delta.avatar = state.avatar;
+        return { message: `🎨 ${LOOK_SLOT_NAMES[slot]}: обновлено`, delta };
       }
 
       const manifestSlot = (content.avatarLayers?.slots ?? []).find((s: any) => s.id === slot);

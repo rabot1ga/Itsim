@@ -7,13 +7,19 @@ import {
   HAIRCUT_COST,
   BEARD_COST,
   HAT_COST,
+  PANTS_COST,
   buildAvatarUnlockContext,
   avatarEntryStatus,
   avatarChangeCost,
   geneticTraitForSlot,
+  LOOK_SLOTS,
+  LOOK_SLOT_NAMES,
+  lookPalette,
 } from '@itsim/shared';
 import { useGameStore } from '../../store/gameStore';
 import { haptic } from '../../lib/telegram';
+import { PixelIcon } from '../pixel/PixelIcon';
+import { EmojiToken } from '../ui';
 
 /**
  * Wardrobe (docs/design.md §12.5) — change hair/beard/clothes/accessories.
@@ -25,6 +31,7 @@ const SLOT_META: Record<AvatarSlotId, { icon: string; name: string; price?: stri
   hair: { icon: '💇', name: 'Причёска', price: `стрижка — ${HAIRCUT_COST} ₽` },
   beard: { icon: '🪒', name: 'Борода', price: `барбер — ${BEARD_COST} ₽` },
   top: { icon: '👕', name: 'Одежда' },
+  bottom: { icon: '👖', name: 'Штаны', price: `швейный цех — ${PANTS_COST} ₽` },
   accessory: { icon: '🎧', name: 'Аксессуар', price: `кепка/шапка — ${HAT_COST} ₽` },
 };
 
@@ -36,12 +43,14 @@ const ENTRY_NAMES: Record<string, string> = {
   beard_full: 'Борода', beard_mustache: 'Усы',
   top_hoodie_gray: 'Серое худи', top_hoodie_localhost: 'localhost', top_hoodie_corp: 'Корп. мерч',
   top_tshirt: 'Футболка', top_shirt: 'Рубашка', top_jacket: 'Куртка', top_hoodie_cat: 'Кот-худи',
+  bottom_jeans: 'Джинсы', bottom_sweatpants: 'Спортивки', bottom_chinos: 'Чиносы',
+  bottom_shorts: 'Шорты', bottom_suit: 'Костюмные',
   acc_none: 'Нет', acc_headphones: 'Наушники', acc_glasses: 'Очки',
   acc_vr_headset: 'VR-шлем', acc_cap: 'Кепка', acc_medal: 'Медаль', acc_beanie: 'Шапка',
 };
 
 function entryName(id: string): string {
-  return ENTRY_NAMES[id] ?? id.replace(/^(hair|beard|top|acc)_/, '').replace(/_/g, ' ');
+  return ENTRY_NAMES[id] ?? id.replace(/^(hair|beard|top|bottom|acc)_/, '').replace(/_/g, ' ');
 }
 
 export const Wardrobe: React.FC<{
@@ -60,9 +69,43 @@ export const Wardrobe: React.FC<{
 
   return (
     <div className="space-y-4 animate-fade-in">
-      <p className="text-[11px] text-slate-500 -mb-1">
-        Глаза не меняются — это родословная 🧬 А всё остальное — барбер, шкаф и шляпная лавка.
+      <p className="text-[11px] text-ink-500 -mb-1">
+        Глаза не меняются — это родословная. Всё остальное решают барбер, шкаф и шляпная лавка.
       </p>
+
+      {/* Colours: the figure in the room is recoloured live, and a mirror is free. */}
+      <div className="well space-y-3">
+        <p className="eyebrow">Цвета — бесплатно</p>
+        {LOOK_SLOTS.map((slotId) => {
+          const current = overrides[slotId] ?? null;
+          return (
+            <div key={slotId}>
+              <p className="text-2xs text-ink-400 mb-1.5">{LOOK_SLOT_NAMES[slotId]}</p>
+              <div className="flex gap-1.5 overflow-x-auto pb-0.5">
+                <button
+                  onClick={() => apply(slotId, null)}
+                  className={`shrink-0 h-8 px-2 border text-2xs ${
+                    current ? 'border-ink-700 bg-ink-800 text-ink-400' : 'border-gold-300 bg-gold-300/10 text-gold-200'
+                  }`}
+                >
+                  Авто
+                </button>
+                {lookPalette(slotId).map((colour) => (
+                  <button
+                    key={colour}
+                    onClick={() => apply(slotId, colour)}
+                    aria-label={colour}
+                    className={`shrink-0 h-8 w-8 border-2 transition-transform active:scale-95 ${
+                      current === colour ? 'border-gold-300 scale-105' : 'border-ink-700'
+                    }`}
+                    style={{ background: colour }}
+                  />
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
       {AVATAR_EDITABLE_SLOTS.map((slotId) => {
         const slot = avatarManifest.slots.find((s) => s.id === slotId);
         if (!slot) return null;
@@ -74,10 +117,11 @@ export const Wardrobe: React.FC<{
         return (
           <div key={slotId}>
             <div className="flex items-center justify-between mb-1.5">
-              <h4 className="text-xs font-semibold text-slate-300">
-                {meta.icon} {meta.name}
+              <h4 className="text-xs font-semibold text-ink-300">
+                <EmojiToken className="!w-5 !h-5 !text-[11px]">{meta.icon}</EmojiToken>
+                {meta.name}
               </h4>
-              <span className="text-[10px] text-slate-500">
+              <span className="text-2xs text-ink-500">
                 {override ? entryName(override) : `своё: ${activeEntry ? entryName(activeEntry) : '—'}`}
                 {meta.price ? ` · ${meta.price}` : ''}
               </span>
@@ -86,14 +130,12 @@ export const Wardrobe: React.FC<{
               {/* Back to genetic */}
               <button
                 onClick={() => void apply(slotId, null)}
-                className={`snap-start shrink-0 w-[76px] rounded-xl border p-1.5 text-center transition-all active:scale-95 ${
-                  !override
-                    ? 'border-primary-500/60 bg-primary-600/10'
-                    : 'border-slate-700 bg-slate-800/50'
+                className={`snap-start shrink-0 w-[76px] border p-1.5 text-center transition-colors ${
+                  !override ? 'border-gold-700 bg-gold-900/20' : 'border-ink-700 bg-ink-900'
                 }`}
               >
-                <span className="text-2xl">🧬</span>
-                <p className="text-[10px] text-slate-300 mt-0.5">Своё</p>
+                <PixelIcon name="person" size={16} className="text-ink-300 mx-auto h-11" />
+                <p className="text-2xs text-ink-300 mt-0.5">Своё</p>
               </button>
 
               {slot.entries.map((entry) => {
@@ -111,37 +153,37 @@ export const Wardrobe: React.FC<{
                       void apply(slotId, entry.id);
                     }}
                     title={status.unlocked ? entryName(entry.id) : status.hint}
-                    className={`snap-start shrink-0 w-[76px] rounded-xl border p-1.5 text-center transition-all active:scale-95 ${
+                    className={`snap-start shrink-0 w-[76px] border p-1.5 text-center transition-colors ${
                       active
-                        ? 'border-emerald-500/60 bg-emerald-600/10'
+                        ? 'border-gold-700 bg-gold-900/20'
                         : status.unlocked
-                          ? 'border-slate-700 bg-slate-800/50'
-                          : 'border-slate-800 bg-slate-900/60'
+                          ? 'border-ink-700 bg-ink-900'
+                          : 'border-ink-800 bg-ink-950'
                     }`}
                   >
-                    <span className="relative block h-11 rounded-lg overflow-hidden bg-slate-800">
+                    <span className="relative flex items-center justify-center h-11 overflow-hidden bg-ink-800">
                       {entry.file ? (
                         <img
                           src={`/layers/${entry.file}`}
                           alt=""
                           draggable={false}
-                          className={`w-full h-full object-cover select-none ${status.unlocked ? '' : 'grayscale opacity-40'}`}
+                          className={`w-full h-full object-cover select-none pixelated ${status.unlocked ? '' : 'grayscale opacity-40'}`}
                         />
                       ) : (
-                        <span className="text-xl leading-[44px]">🚫</span>
+                        <PixelIcon name="lock" size={14} className="text-ink-600" />
                       )}
                       {!status.unlocked && (
-                        <span className="absolute inset-0 flex items-center justify-center text-base">🔒</span>
+                        <span className="absolute inset-0 flex items-center justify-center"><PixelIcon name="lock" size={12} className="text-ink-300" /></span>
                       )}
-                      {active && <span className="absolute top-0.5 right-0.5 text-[10px]">✅</span>}
+                      {active && <PixelIcon name="check" size={9} className="absolute top-1 right-1 text-gold-300" />}
                     </span>
-                    <p className={`text-[10px] mt-1 leading-tight truncate ${status.unlocked ? 'text-slate-300' : 'text-slate-500'}`}>
+                    <p className={`text-2xs mt-1 leading-tight truncate ${status.unlocked ? 'text-ink-300' : 'text-ink-500'}`}>
                       {entryName(entry.id)}
                     </p>
                     {!status.unlocked ? (
-                      <p className="text-[8px] text-slate-600 leading-tight mt-0.5 line-clamp-2">{status.hint}</p>
+                      <p className="text-[9px] text-ink-600 leading-tight mt-0.5 line-clamp-2">{status.hint}</p>
                     ) : cost > 0 && !active ? (
-                      <p className="text-[8px] text-amber-400/90 leading-tight mt-0.5">{cost} ₽</p>
+                      <p className="text-[8px] text-gold-400/90 leading-tight mt-0.5">{cost} ₽</p>
                     ) : null}
                   </button>
                 );

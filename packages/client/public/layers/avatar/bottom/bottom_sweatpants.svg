@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 760" width="500" height="760"><g stroke="#1e2430" stroke-width="4" stroke-linejoin="round" stroke-linecap="round">
+  <path d="M172 444 L328 444 L326 656 Q326 672 308 672 L282 672 Q264 672 264 656 L252 508 L236 656 Q236 672 218 672 L192 672 Q174 672 174 656 Z" fill="#5a6474"/>
+  <!-- waistband -->
+  <path d="M172 444 L328 444 L327 482 L173 482 Z" fill="#4d5665"/>
+  <path d="M250 488 L250 548" stroke="#454e5c" stroke-width="5" fill="none" opacity="0.8"/>
+  <path d="M182 500 L188 646" stroke="#8b93a3" stroke-width="5" fill="none" opacity="0.6"/>
+  <path d="M318 500 L312 646" stroke="#8b93a3" stroke-width="5" fill="none" opacity="0.6"/>
+  <path d="M174 650 L240 650 L238 674 Q238 690 220 690 L192 690 Q174 690 174 674 Z" fill="#454e5c"/>
+  <path d="M260 650 L326 650 L326 674 Q326 690 308 690 L280 690 Q260 690 260 674 Z" fill="#454e5c"/>
+  <!-- shoes -->
+  <path d="M170 670 L242 670 L242 700 Q242 722 220 722 L182 722 Q170 722 170 710 Z" fill="#2a3240"/>
+  <path d="M258 670 L330 670 L330 710 Q330 722 318 722 L280 722 Q258 722 258 700 Z" fill="#2a3240"/>
+  <path d="M170 704 L242 704 L242 722 L182 722 Q170 722 170 712 Z" fill="#8b93a3"/>
+  <path d="M258 704 L330 704 L330 712 Q330 722 318 722 L258 722 Z" fill="#8b93a3"/>
+</g></svg>

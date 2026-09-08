@@ -14,7 +14,7 @@
  */
 
 import { createHash } from 'crypto';
-import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import { isAbsolute, join, relative } from 'path';
 import {
   type PixelArtFile,
@@ -33,7 +33,6 @@ import {
   buildManifest,
   comboTags,
   effectivePalettes,
-  resolveExcludes,
   PixelIssue,
 } from '../../../packages/shared/src/engine/pixelArtBundle';
 import { PixelArtFileSchema, PixelArtSourceFileSchema, PixelGeneratorConfigSchema } from '../../../packages/shared/src/schemas/index';
@@ -257,7 +256,7 @@ function defaultConfig(file: PixelArtFile): PixelGeneratorConfig {
 // Commands
 // ---------------------------------------------------------------------------
 
-function cmdCompile(args: Args): number {
+function cmdCompile(_args: Args): number {
   const sourcePath = join(CONTENT, SOURCE_FILE);
   const { file, json } = compileSourceFile(sourcePath);
   const status = writeIfChanged(join(CONTENT, CANON_FILE), json);
@@ -275,7 +274,7 @@ function cmdCompile(args: Args): number {
   return report(validation.issues, 'compile') ? 0 : 1;
 }
 
-function cmdValidate(args: Args): number {
+function cmdValidate(_args: Args): number {
   const { file, config } = loadCanonical({ allowSource: true });
   const sourcePath = join(CONTENT, SOURCE_FILE);
   if (existsSync(sourcePath)) {
