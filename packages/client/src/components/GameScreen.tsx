@@ -27,7 +27,7 @@ const MORE = [
   { view: 'profile', icon: 'person', label: 'Профиль', hint: 'Статистика, цели и гардероб' },
   { view: 'room', icon: 'house', label: 'Дом', hint: 'Предметы, расстановка и внешность' },
   { view: 'shop', icon: 'bag', label: 'Магазин', hint: 'Техника, мебель, жильё' },
-  { view: 'achievements', icon: 'trophy', label: 'Трофеи', hint: 'Ачивки и челленджи' },
+  { view: 'achievements', icon: 'trophy', label: 'Цели', hint: 'Цели, достижения и прогресс' },
   { view: 'leaderboard', icon: 'chart', label: 'Топ', hint: 'Рейтинг игроков' },
   { view: 'office', icon: 'people', label: 'Офис', hint: 'Команда и задачи' },
 ] as const;

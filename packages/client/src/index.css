@@ -2275,3 +2275,36 @@ svg path.map-route-flow {
   padding: 5px 12px;
   flex-shrink: 0;
 }
+
+/* Goals list — reference 1.png «Цели»: a checkbox in front of every target. */
+.goal-check {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  border: 1px solid #4c5a66;
+  background: #101922;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a1c665;
+}
+.goal-check.is-done {
+  border-color: #6f8f45;
+  background: #1e2a1a;
+}
+
+.goal-icon {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #3a4650;
+  background: #16202a;
+  color: #8ea0ae;
+}
+.goal-icon.is-done {
+  border-color: #7d6a33;
+  color: #e0bd63;
+}

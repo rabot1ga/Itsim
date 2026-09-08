@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
-import { Spinner, EmojiToken, SpriteBadge } from '../components/ui';
+import { Spinner, SpriteBadge } from '../components/ui';
 import { PixelIcon } from '../components/pixel/PixelIcon';
 
 /**
@@ -8,24 +8,17 @@ import { PixelIcon } from '../components/pixel/PixelIcon';
  * client-side progress bars (computed from player state + conditions).
  */
 
-const ACHIEVEMENT_EMOJI: Record<string, string> = {
-  first_offer: '🎯',
-  reached_junior: '🌱',
-  reached_middle: '🌗',
-  reached_senior: '🥷',
-  reached_teamlead: '👑',
-  reached_architect: '🏛️',
-  first_million: '🤑',
-  skill_50: '📚',
-  skill_100: '🧙',
-  fullstack_samurai: '⚔️',
-  survivor_100: '🏕️',
-  freelance_star: '🌟',
-  burnout_ending: '🔥',
-  events_50: '🎲',
-  networking_guru: '🤝',
-  mining_100k: '⛏️',
-  mining_1m: '🐳',
+/**
+ * Own pixel icon per goal type. Emoji were unreliable — a device without the
+ * right font showed empty boxes where the goal should be.
+ */
+const GOAL_ICON: Record<string, string> = {
+  grade_reached: 'briefcase',
+  money_made: 'coin',
+  skill_level: 'book',
+  days_survived: 'calendar',
+  events_seen: 'dice',
+  special: 'star',
 };
 
 interface AchievementInfo {
@@ -101,7 +94,7 @@ export const AchievementsView: React.FC = () => {
       <div className="flex items-center justify-between">
         <h2 className="flex items-center gap-2 text-base font-semibold text-white">
           <SpriteBadge sprite="diploma" size={32} />
-          Достижения
+          Цели
         </h2>
         <span className="num text-xs text-ink-500">
           {earnedCount}/{achievements.length || 17}
@@ -117,13 +110,17 @@ export const AchievementsView: React.FC = () => {
           return (
             <div
               key={a.id}
-              className={`panel !p-3 flex items-center gap-3 ${
+              className={`panel !p-3 flex items-center gap-3 goal-row ${
                 isEarned ? 'panel-note panel-note-gold' : ''
               }`}
             >
-              <EmojiToken className={isEarned ? '' : 'grayscale opacity-45'}>
-                {ACHIEVEMENT_EMOJI[a.id] ?? '🏅'}
-              </EmojiToken>
+              {/* Reference 1.png «Цели»: a checkbox reads as a goal, not a medal. */}
+              <span className={`goal-check ${isEarned ? 'is-done' : ''}`} aria-hidden="true">
+                {isEarned ? <PixelIcon name="check" size={11} /> : null}
+              </span>
+              <span className={`goal-icon ${isEarned ? 'is-done' : ''}`}>
+                <PixelIcon name={GOAL_ICON[a.condition.type] ?? 'trophy'} size={14} />
+              </span>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
                   <span
@@ -131,7 +128,7 @@ export const AchievementsView: React.FC = () => {
                   >
                     {a.name}
                   </span>
-                  {isEarned && <PixelIcon name="check" size={10} className="text-gold-300" />}
+                  {isEarned && <span className="text-2xs text-gold-300 shrink-0">выполнено</span>}
                 </div>
                 <p className="text-xs text-ink-500 leading-relaxed">{a.description}</p>
                 {!isEarned && (

@@ -75,7 +75,7 @@ export const ProfileView: React.FC = () => {
         <div className="profile-links">
           <button onClick={() => setView('achievements')}>
             <PixelIcon name="target" size={13} />
-            Достижения и цели
+            Цели и достижения
             <PixelIcon name="arrow" size={10} />
           </button>
           <button onClick={() => setView('career')}>
