@@ -10,7 +10,6 @@ import { bootFreshGame } from './helpers';
  * a route that is not fully walked yet.
  */
 
-
 test('archetype routes: choose → milestones in the list → clear → guarded claim', async ({ page, request }) => {
   // ── boot into the game and open Learning ────────────────────────────────
   await bootFreshGame(page);
@@ -24,7 +23,10 @@ test('archetype routes: choose → milestones in the list → clear → guarded 
   expect(body.archetypes[0].id).toBe('frontend');
   expect(body.archetypes[0].nodes.map((n: any) => n.skillId)).toEqual(['javascript', 'typescript', 'react', 'nextjs']);
 
-  await page.getByRole('navigation', { name: 'Основная навигация' }).getByRole('button', { name: 'Обучение', exact: true }).click();
+  await page
+    .getByRole('navigation', { name: 'Основная навигация' })
+    .getByRole('button', { name: 'Обучение', exact: true })
+    .click();
   await page.getByRole('tab', { name: /Направления/ }).click();
 
   // ── the routes section renders with progress derived from live levels ───

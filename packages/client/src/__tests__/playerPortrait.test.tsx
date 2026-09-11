@@ -21,23 +21,51 @@ vi.mock('../lib/avatarContent', () => ({
 const manifest = {
   resolution: { width: 500, height: 760 },
   slots: [
-    { id: 'body', zOrder: 0, required: true, tintSlot: 'skinTone', entries: [{ id: 'body_base', file: 'avatar/body/base.svg' }] },
-    { id: 'eyes', zOrder: 1, required: true, entries: [
-      { id: 'eye_normal', file: 'avatar/eyes/normal.svg' },
-      { id: 'eye_tired', file: 'avatar/eyes/tired.svg' },
-    ] },
-    { id: 'beard', zOrder: 2, required: false, tintSlot: 'hairColor', entries: [
-      { id: 'beard_none', file: null },
-      { id: 'beard_full', file: 'avatar/beard/full.svg' },
-    ] },
-    { id: 'hair', zOrder: 3, required: true, tintSlot: 'hairColor', entries: [
-      { id: 'hair_short', file: 'avatar/hair/short.svg' },
-      { id: 'hair_manbun', file: 'avatar/hair/manbun.svg' },
-    ] },
-    { id: 'top', zOrder: 4, required: true, entries: [
-      { id: 'top_hoodie_gray', file: 'avatar/top/hoodie_gray.svg' },
-      { id: 'top_jacket', file: 'avatar/top/jacket.svg' },
-    ] },
+    {
+      id: 'body',
+      zOrder: 0,
+      required: true,
+      tintSlot: 'skinTone',
+      entries: [{ id: 'body_base', file: 'avatar/body/base.svg' }],
+    },
+    {
+      id: 'eyes',
+      zOrder: 1,
+      required: true,
+      entries: [
+        { id: 'eye_normal', file: 'avatar/eyes/normal.svg' },
+        { id: 'eye_tired', file: 'avatar/eyes/tired.svg' },
+      ],
+    },
+    {
+      id: 'beard',
+      zOrder: 2,
+      required: false,
+      tintSlot: 'hairColor',
+      entries: [
+        { id: 'beard_none', file: null },
+        { id: 'beard_full', file: 'avatar/beard/full.svg' },
+      ],
+    },
+    {
+      id: 'hair',
+      zOrder: 3,
+      required: true,
+      tintSlot: 'hairColor',
+      entries: [
+        { id: 'hair_short', file: 'avatar/hair/short.svg' },
+        { id: 'hair_manbun', file: 'avatar/hair/manbun.svg' },
+      ],
+    },
+    {
+      id: 'top',
+      zOrder: 4,
+      required: true,
+      entries: [
+        { id: 'top_hoodie_gray', file: 'avatar/top/hoodie_gray.svg' },
+        { id: 'top_jacket', file: 'avatar/top/jacket.svg' },
+      ],
+    },
   ],
 };
 
@@ -103,9 +131,7 @@ describe('unified SVG portrait', () => {
   });
 
   it('recolours tinted layers from wardrobe hex picks (genetics overridden)', async () => {
-    const { container } = render(
-      <PlayerPortrait player={{ genetics, avatar: { hairColor: '#d7a94b' } }} />
-    );
+    const { container } = render(<PlayerPortrait player={{ genetics, avatar: { hairColor: '#d7a94b' } }} />);
     await waitFor(() => expect(container.querySelector('[data-portrait="saved"]')).toBeTruthy());
     const hair = Array.from(container.querySelectorAll('img')).find((img) => img.getAttribute('src')?.includes('hair'));
     // #d7a94b ≈ hue 40° on the grayscale hair layer, overriding the genetic hue.

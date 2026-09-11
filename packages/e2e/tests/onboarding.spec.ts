@@ -22,11 +22,7 @@ test('brand-new player: skip on the first slide lands in the game', async ({ pag
 
 test('brand-new player: «Дальше» walks all four slides, then the game', async ({ page }) => {
   await page.goto('/');
-  for (const body of [
-    /пустое резюме/,
-    /тратят энергию/,
-    /Повышения, офферы, случайные события/,
-  ]) {
+  for (const body of [/пустое резюме/, /тратят энергию/, /Повышения, офферы, случайные события/]) {
     await page.getByRole('button', { name: 'Дальше' }).click();
     await expect(page.getByText(body)).toBeVisible();
   }

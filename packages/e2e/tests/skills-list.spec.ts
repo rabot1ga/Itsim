@@ -13,7 +13,10 @@ for (const width of [320, 390, 480]) {
     await page.setViewportSize({ width, height: 844 });
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await bootFreshGame(page);
-    await page.getByRole('navigation', { name: 'Основная навигация' }).getByRole('button', { name: 'Обучение', exact: true }).click();
+    await page
+      .getByRole('navigation', { name: 'Основная навигация' })
+      .getByRole('button', { name: 'Обучение', exact: true })
+      .click();
     await page.getByRole('tab', { name: /Направления/ }).click();
 
     const list = page.getByRole('region', { name: 'Список навыков' });
@@ -52,7 +55,10 @@ test('learning catalogue retries after HTTP error', async ({ page }) => {
     else await route.continue();
   });
   await bootFreshGame(page);
-  await page.getByRole('navigation', { name: 'Основная навигация' }).getByRole('button', { name: 'Обучение', exact: true }).click();
+  await page
+    .getByRole('navigation', { name: 'Основная навигация' })
+    .getByRole('button', { name: 'Обучение', exact: true })
+    .click();
   await page.getByRole('tab', { name: /Направления/ }).click();
   await expect(page.getByText('Не удалось загрузить обучение.', { exact: true })).toBeVisible();
   fail = false;

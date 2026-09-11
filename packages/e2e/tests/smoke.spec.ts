@@ -11,7 +11,6 @@ import { bootFreshGame } from './helpers';
  * animation, so a green run proves the browser→client→API→storage wiring.
  */
 
-
 const energyMeter = (page: Page) => page.locator('[title^="Энергия:"]').first();
 
 async function resolveStory(page: Page): Promise<void> {

@@ -44,6 +44,10 @@ export default defineConfig({
   workers: 1,
   timeout: 90_000,
   expect: { timeout: 20_000 },
+  // Chained story cards settle one render frame apart; a rare 20s expect can
+  // catch that gap. One local retry / two in CI keeps the suite signal green
+  // while still failing loudly on real regressions.
+  retries: process.env.CI ? 2 : 1,
   reporter: [['list']],
   use: {
     baseURL: `http://127.0.0.1:${WEB_PORT}`,

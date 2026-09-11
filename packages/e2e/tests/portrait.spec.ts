@@ -38,9 +38,7 @@ for (const width of [320, 390, 480]) {
     await page.getByRole('button', { name: 'Комната и гардероб', exact: true }).click();
     await page.getByRole('button', { name: 'Гардероб', exact: true }).click();
     // Real free wardrobe actions, no injected player state or fake responses.
-    const saved = page.waitForResponse(
-      (r) => r.url().endsWith('/api/game/action') && r.request().method() === 'POST'
-    );
+    const saved = page.waitForResponse((r) => r.url().endsWith('/api/game/action') && r.request().method() === 'POST');
     await page.getByRole('button', { name: '#a8443b', exact: true }).click();
     const response = await saved;
     expect(response.ok()).toBe(true);

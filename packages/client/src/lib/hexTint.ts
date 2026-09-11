@@ -27,7 +27,7 @@ export function hexToTint(hex: string): TintPaletteEntry | null {
     else if (max === g) h = ((b - r) / d + 2) / 6;
     else h = ((r - g) / d + 4) / 6;
   }
-  const s = max === min ? 0 : (l > 0.5 ? (max - min) / (2 - max - min) : (max - min) / (max + min));
+  const s = max === min ? 0 : l > 0.5 ? (max - min) / (2 - max - min) : (max - min) / (max + min);
 
   return {
     id: `hex:${hex}`,
@@ -47,10 +47,9 @@ export const COLOR_OVERRIDE_TO_TINT_SLOT: Record<'skin' | 'hairColor', 'skinTone
 };
 
 /** Build per-tint-slot overrides from the saved wardrobe colours (skin/hair). */
-export function tintOverridesFromAvatar(avatar?: { skin?: string | null; hairColor?: string | null } | null): Record<
-  string,
-  TintPaletteEntry
-> | null {
+export function tintOverridesFromAvatar(
+  avatar?: { skin?: string | null; hairColor?: string | null } | null
+): Record<string, TintPaletteEntry> | null {
   if (!avatar) return null;
   const out: Record<string, TintPaletteEntry> = {};
   for (const [field, slot] of Object.entries(COLOR_OVERRIDE_TO_TINT_SLOT) as Array<

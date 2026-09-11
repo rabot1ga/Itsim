@@ -32,7 +32,12 @@ export async function bootFreshGame(page: Page, opts: { preserve?: boolean } = {
 export async function resolveStoryCard(page: Page): Promise<void> {
   const card = page.locator('.story-card');
   for (let chain = 0; chain < 8; chain++) {
-    if (!(await card.first().isVisible().catch(() => false))) {
+    if (
+      !(await card
+        .first()
+        .isVisible()
+        .catch(() => false))
+    ) {
       // A chained card can mount a frame after the previous one unmounts.
       const showedUp = await card
         .first()

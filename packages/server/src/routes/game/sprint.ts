@@ -8,12 +8,7 @@
 import { FastifyInstance } from 'fastify';
 import { getContent } from '../../services/contentService.js';
 import { loadState, saveState } from '../../services/gameStore.js';
-import {
-  activeSprintTheme,
-  rollSprint,
-  sprintAllDone,
-  sprintRewardAmounts,
-} from '@itsim/shared';
+import { activeSprintTheme, rollSprint, sprintAllDone, sprintRewardAmounts } from '@itsim/shared';
 import { clamp } from '@itsim/shared';
 import { calculateRating } from '@itsim/shared';
 import { fmtMoney, respondState, sprintView, StoredState } from './shared.js';

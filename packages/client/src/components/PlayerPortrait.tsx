@@ -95,7 +95,12 @@ export const PlayerPortrait: React.FC<{
           </div>
         </div>
       ) : (
-        <img src="/art/story-v1/portrait.webp" alt="Стандартный портрет — внешность пока недоступна" width={size} height={size} />
+        <img
+          src="/art/story-v1/portrait.webp"
+          alt="Стандартный портрет — внешность пока недоступна"
+          width={size}
+          height={size}
+        />
       )}
     </div>
   );

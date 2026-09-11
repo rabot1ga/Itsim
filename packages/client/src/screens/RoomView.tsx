@@ -158,7 +158,12 @@ export const RoomView: React.FC = () => {
           <div className={`accordion-body ${wardrobeOpen ? 'open' : ''}`}>
             <div className="accordion-inner">
               <div className="pt-3">
-                <Wardrobe avatarManifest={avatarManifest} geneticsConfig={geneticsConfig} traits={traits} player={player} />
+                <Wardrobe
+                  avatarManifest={avatarManifest}
+                  geneticsConfig={geneticsConfig}
+                  traits={traits}
+                  player={player}
+                />
               </div>
             </div>
           </div>

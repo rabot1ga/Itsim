@@ -1,4 +1,12 @@
-import { LayerManifest, LayerEntry, GeneticTraits, GeneticsConfig, TintPaletteEntry, traitTint, tintFilter } from '@itsim/shared';
+import {
+  LayerManifest,
+  LayerEntry,
+  GeneticTraits,
+  GeneticsConfig,
+  TintPaletteEntry,
+  traitTint,
+  tintFilter,
+} from '@itsim/shared';
 
 /**
  * Layer composition helpers — DESIGN.md section 1-3.
@@ -60,7 +68,13 @@ export function buildLayerStack(
         // Required slot with no match → fall back to the first entry with a file
         const fallback = slot.entries.find((e) => e.file);
         if (fallback?.file) {
-          layers.push({ slotId: slot.id, entryId: fallback.id, file: `/layers/${fallback.file}`, zOrder: slot.zOrder, required: true });
+          layers.push({
+            slotId: slot.id,
+            entryId: fallback.id,
+            file: `/layers/${fallback.file}`,
+            zOrder: slot.zOrder,
+            required: true,
+          });
         }
       }
       continue;
