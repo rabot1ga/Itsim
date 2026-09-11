@@ -2,6 +2,7 @@ import React from 'react';
 import {
   LayerManifest,
   GeneticTraits,
+  GeneticsConfig,
   AVATAR_EDITABLE_SLOTS,
   AvatarSlotId,
   HAIRCUT_COST,
@@ -18,7 +19,10 @@ import {
 } from '@itsim/shared';
 import { useGameStore } from '../../store/gameStore';
 import { haptic } from '../../lib/telegram';
+import { tintOverridesFromAvatar } from '../../lib/hexTint';
 import { EmojiToken } from '../ui';
+import { ProceduralAvatar } from './ProceduralAvatar';
+import type { Composition } from './layers';
 
 /**
  * Wardrobe (docs/design.md §12.5) — change hair/beard/clothes/accessories.
@@ -77,9 +81,10 @@ function entryName(id: string): string {
 
 export const Wardrobe: React.FC<{
   avatarManifest: LayerManifest;
+  geneticsConfig: GeneticsConfig;
   traits: GeneticTraits;
   player: any;
-}> = ({ avatarManifest, traits, player }) => {
+}> = ({ avatarManifest, geneticsConfig, traits, player }) => {
   const performAction = useGameStore((s) => s.performAction);
   const ctx = buildAvatarUnlockContext(player);
   const overrides: Record<string, string | null> = player?.avatar ?? {};
@@ -89,11 +94,36 @@ export const Wardrobe: React.FC<{
     if (!ok) haptic('error');
   };
 
+  // Live preview of the exact figure the portrait shows: genetics propose,
+  // the wardrobe disposes — same merge as PlayerPortrait.
+  const previewComposition: Composition = {
+    body: 'body_base',
+    eyes: traits.eyeShape ?? 'eye_normal',
+    hair: overrides.hair ?? traits.hairStyle ?? 'hair_short',
+    beard: overrides.beard ?? traits.beard ?? null,
+    top: overrides.top ?? traits.top ?? 'top_hoodie_gray',
+    bottom: overrides.bottom ?? 'bottom_jeans',
+    accessory: overrides.accessory ?? traits.accessory ?? null,
+  };
+  const previewTints = tintOverridesFromAvatar(overrides);
+
   return (
     <div className="space-y-4 animate-fade-in">
       <p className="text-[11px] text-ink-500 -mb-1">
         Глаза не меняются — это родословная. Всё остальное решают барбер, шкаф и шляпная лавка.
       </p>
+
+      {/* The mirror: whatever the figure looks like here, it looks like everywhere. */}
+      <div className="flex justify-center">
+        <ProceduralAvatar
+          manifest={avatarManifest}
+          traits={traits}
+          geneticsConfig={geneticsConfig}
+          compositionOverrides={previewComposition}
+          tintOverrides={previewTints}
+          className="w-40"
+        />
+      </div>
 
       {/* Colours: the figure in the room is recoloured live, and a mirror is free. */}
       <div className="well space-y-3">

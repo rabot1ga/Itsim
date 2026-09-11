@@ -1,4 +1,4 @@
-import { LayerManifest, LayerEntry, GeneticTraits, GeneticsConfig, traitTint, tintFilter } from '@itsim/shared';
+import { LayerManifest, LayerEntry, GeneticTraits, GeneticsConfig, TintPaletteEntry, traitTint, tintFilter } from '@itsim/shared';
 
 /**
  * Layer composition helpers — DESIGN.md section 1-3.
@@ -40,12 +40,14 @@ export interface StackedLayer {
 /**
  * Build the ordered layer stack for a manifest + composition.
  * Tints slots that declare `tintSlot` using the player's traits.
+ * `tintOverrides` (e.g. wardrobe hex colours via hexToTint) win over genetics.
  */
 export function buildLayerStack(
   manifest: LayerManifest,
   composition: Composition,
   traits: GeneticTraits | null,
-  geneticsConfig: GeneticsConfig | null
+  geneticsConfig: GeneticsConfig | null,
+  tintOverrides?: Record<string, TintPaletteEntry> | null
 ): StackedLayer[] {
   const layers: StackedLayer[] = [];
 
@@ -65,9 +67,14 @@ export function buildLayerStack(
     }
 
     let filter: string | undefined;
-    if (slot.tintSlot && traits && geneticsConfig) {
-      const tint = traitTint(slot.tintSlot, traits, geneticsConfig);
-      if (tint) filter = tintFilter(tint);
+    if (slot.tintSlot) {
+      const override = tintOverrides?.[slot.tintSlot];
+      if (override) {
+        filter = tintFilter(override);
+      } else if (traits && geneticsConfig) {
+        const tint = traitTint(slot.tintSlot, traits, geneticsConfig);
+        if (tint) filter = tintFilter(tint);
+      }
     }
 
     layers.push({

@@ -1,4 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
+import { bootFreshGame, resolveStoryCard } from './helpers';
 
 /**
  * Contracts on the board — the «Работа» screen of reference 1.png.
@@ -16,9 +17,8 @@ const board = (page: Page) => page.getByRole('region', { name: 'Заказы' })
  * one starts a fresh life and hands the next spec a day-1 player back.
  */
 async function openWork(page: Page): Promise<void> {
-  await page.goto('/');
-  expect((await page.request.post('/api/game/reset')).ok()).toBe(true);
-  await page.reload();
+  // bootFreshGame already resets the shared save to a pristine day-1 life.
+  await bootFreshGame(page);
   await page
     .getByRole('navigation', { name: 'Основная навигация' })
     .getByRole('button', { name: 'Работа', exact: true })
@@ -34,14 +34,7 @@ test.afterEach(async ({ request }) => {
 async function endDay(page: Page): Promise<void> {
   // The day-end CTA is docked above the tab bar, so «Работа» can close the day.
   await page.getByRole('button', { name: /^Завершить день / }).click();
-  const card = page.locator('.story-card');
-  if (await card.isVisible()) {
-    await card.locator('.story-choice:not(:disabled)').first().click();
-    const done = page.getByRole('button', { name: 'Продолжить' });
-    await expect(done).toBeVisible({ timeout: 15_000 });
-    await done.click();
-    await expect(page.locator('.story-card')).toHaveCount(0);
-  }
+  await resolveStoryCard(page);
   await expect(board(page)).toBeVisible();
 }
 
@@ -56,6 +49,8 @@ async function winContract(page: Page, title: string): Promise<void> {
     if ((await active.count()) > 0) return;
     const offer = board(page).getByRole('article', { name: title, exact: true });
     await offer.getByRole('button', { name: 'Откликнуться', exact: true }).click();
+    // A bid is a normal day action: a random event can pop over the board.
+    await resolveStoryCard(page);
     await expect(board(page).getByRole('article', { name: 'Отклик отправлен' })).toBeVisible();
     await endDay(page);
   }
@@ -70,6 +65,7 @@ test('bid for a contract, finish its tasks and deliver it for real money', async
 
   // One bid per day, and no second ad while the first client is thinking.
   await landing.getByRole('button', { name: 'Откликнуться', exact: true }).click();
+  await resolveStoryCard(page);
   await expect(board(page).getByRole('article', { name: 'Отклик отправлен' })).toBeVisible();
   await expect(
     board(page)
@@ -92,12 +88,15 @@ test('bid for a contract, finish its tasks and deliver it for real money', async
   for (const task of ['Свёрстать первый экран', 'Подключить форму заявки', 'Выкатить на хостинг']) {
     const row = active.getByRole('listitem').filter({ hasText: task });
     await row.getByRole('button').click();
+    // Task work is a day action too — resolve any event it fired.
+    await resolveStoryCard(page);
     await expect(row).toContainText('готово');
   }
   await expect(active.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '100');
 
   const before = await money();
   await active.getByRole('button', { name: /^Сдать за/ }).click();
+  await resolveStoryCard(page);
   await expect(board(page).getByRole('article', { name: /^Активный проект/ })).toHaveCount(0);
   expect(await money()).toBe(before + 35000);
   await expect(board(page).getByRole('article', { name: 'Сайт-визитка', exact: true })).toContainText('Уже сдавался');

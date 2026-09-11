@@ -44,8 +44,9 @@ const ChoicePreview: React.FC<{ rows: EffectRow[] }> = ({ rows }) => {
   return (
     <span className="story-choice-effects">
       {rows.map((row) => (
-        <span key={row.key} className="res-chip num">
-          {row.text} {row.emoji}
+        <span key={row.key} className="res-chip num" title={row.label}>
+          <span className="chip-label">{row.label}</span>
+          {row.text} <span aria-hidden="true">{row.emoji}</span>
         </span>
       ))}
     </span>

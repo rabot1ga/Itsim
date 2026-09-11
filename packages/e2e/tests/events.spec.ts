@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { bootFreshGame } from './helpers';
 
 for (const width of [320, 390, 480]) {
   test(`story card uses scene, named effects and failure retry at ${width}px`, async ({ page }) => {
@@ -29,7 +30,7 @@ for (const width of [320, 390, 480]) {
       if (chooseCount === 1) await route.fulfill({ status: 503, json: { error: 'Тестовая ошибка связи' } });
       else await route.fulfill({ json: { state: saved } });
     });
-    await page.goto('/');
+    await bootFreshGame(page);
     const card = page.getByRole('region', { name: story.title, exact: true });
     await expect(card).toBeVisible();
     await expect(card.locator('img')).toHaveAttribute('src', '/art/story-v1/pet.webp');
@@ -45,14 +46,18 @@ for (const width of [320, 390, 480]) {
     await card.getByRole('button', { name: 'Пустить в кресло помощника' }).click();
     await expect(card.getByRole('alert')).toContainText('Тестовая ошибка связи');
     await card.getByRole('button', { name: 'Пустить в кресло помощника' }).click();
-    await expect(card).toHaveCount(0);
+    // The outcome card is the receipt; it waits for a deliberate «Продолжить».
+    const outcome = page.getByRole('region', { name: 'Результат: Кот прошёлся по клавиатуре' });
+    await expect(outcome).toBeVisible();
+    await outcome.getByRole('button', { name: 'Продолжить' }).click();
+    await expect(page.locator('.story-card')).toHaveCount(0);
     await expect(page.getByRole('region', { name: 'Твоя комната' })).toBeVisible();
     expect(chooseCount).toBe(2);
   });
 }
 
 test('profile opens from portrait and exposes live stats and goals', async ({ page }) => {
-  await page.goto('/');
+  await bootFreshGame(page);
   await page.getByRole('button', { name: 'Открыть профиль', exact: true }).click();
   const profile = page.getByRole('region', { name: 'Профиль персонажа' });
   await expect(profile).toBeVisible();

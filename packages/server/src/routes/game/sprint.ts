@@ -13,10 +13,8 @@ import {
   rollSprint,
   sprintAllDone,
   sprintRewardAmounts,
-  sprintWeekEndsAtMs,
-  sprintDaysLeft,
 } from '@itsim/shared';
-import { clamp, type PlayerState } from '@itsim/shared';
+import { clamp } from '@itsim/shared';
 import { calculateRating } from '@itsim/shared';
 import { fmtMoney, respondState, sprintView, StoredState } from './shared.js';
 

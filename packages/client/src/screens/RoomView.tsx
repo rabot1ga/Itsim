@@ -8,8 +8,6 @@ import { EmptyState, ScreenTitle, SectionTitle } from '../components/ui';
 import { Wardrobe } from '../components/room/Wardrobe';
 import { ShareCard } from '../components/room/ShareCard';
 import { haptic } from '../lib/telegram';
-import { buildAvatarData, fetchPixelPack, PixelAvatarData } from '../components/room/pixelAvatar';
-import { PixelIdentity } from '../components/room/PixelIdentity';
 
 /**
  * «Дом» — procedural room (DESIGN.md), NFT inventory (mock Solana),
@@ -26,7 +24,6 @@ export const RoomView: React.FC = () => {
   const [avatarManifest, setAvatarManifest] = useState<any>(null);
   const [roomManifest, setRoomManifest] = useState<any>(null);
   const [crossCollections, setCrossCollections] = useState<any[]>([]);
-  const [pixelPack, setPixelPack] = useState<Awaited<ReturnType<typeof fetchPixelPack>>>(null);
   const [walletInput, setWalletInput] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [editorOpen, setEditorOpen] = useState(false);
@@ -37,22 +34,17 @@ export const RoomView: React.FC = () => {
       fetch('/api/content/genetics').then((r) => r.json()),
       fetch('/api/content/layers').then((r) => r.json()),
       fetch('/api/content/cross-collections').then((r) => r.json()),
-      fetchPixelPack(),
     ])
-      .then(([g, l, c, pixel]) => {
+      .then(([g, l, c]) => {
         setGeneticsConfig(g.genetics);
         setAvatarManifest(l.avatar);
         setRoomManifest(l.room);
         setCrossCollections(c.crossCollections?.collections ?? []);
-        setPixelPack(pixel);
       })
       .catch(() => setError('Не удалось загрузить контент'));
   }, []);
 
   if (!player) return null;
-
-  const pixelAvatarData: PixelAvatarData | null =
-    pixelPack && player.genetics ? buildAvatarData(pixelPack, player.genetics, player.avatar) : null;
 
   const traits = player.genetics;
   const ready = geneticsConfig && avatarManifest && roomManifest && traits;
@@ -166,14 +158,12 @@ export const RoomView: React.FC = () => {
           <div className={`accordion-body ${wardrobeOpen ? 'open' : ''}`}>
             <div className="accordion-inner">
               <div className="pt-3">
-                <Wardrobe avatarManifest={avatarManifest} traits={traits} player={player} />
+                <Wardrobe avatarManifest={avatarManifest} geneticsConfig={geneticsConfig} traits={traits} player={player} />
               </div>
             </div>
           </div>
         </div>
       )}
-
-      {pixelAvatarData && pixelPack && <PixelIdentity pack={pixelPack} data={pixelAvatarData} />}
 
       {error && (
         <div role="alert" className="card card-sm">

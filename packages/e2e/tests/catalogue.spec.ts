@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { bootFreshGame } from './helpers';
 
 test('shop recovers after HTTP failure and career has reachable vacancies', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 844 });
@@ -8,7 +9,7 @@ test('shop recovers after HTTP failure and career has reachable vacancies', asyn
     if (fail) await route.fulfill({ status: 503, json: { error: 'Unavailable' } });
     else await route.continue();
   });
-  await page.goto('/');
+  await bootFreshGame(page);
   await page
     .getByRole('navigation', { name: 'Основная навигация' })
     .getByRole('button', { name: 'Магазин', exact: true })

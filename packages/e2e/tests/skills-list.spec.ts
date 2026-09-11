@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { bootFreshGame } from './helpers';
 
 /**
  * Learning — a flat list grouped by school (docs/design-system.md §5).
@@ -11,8 +12,8 @@ for (const width of [320, 390, 480]) {
   test(`skill list: accordions, selection and no horizontal scroll at ${width}px`, async ({ page, request }) => {
     await page.setViewportSize({ width, height: 844 });
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    await page.goto('/');
-    await page.getByRole('button', { name: 'Обучение', exact: true }).click();
+    await bootFreshGame(page);
+    await page.getByRole('navigation', { name: 'Основная навигация' }).getByRole('button', { name: 'Обучение', exact: true }).click();
     await page.getByRole('tab', { name: /Направления/ }).click();
 
     const list = page.getByRole('region', { name: 'Список навыков' });
@@ -50,8 +51,8 @@ test('learning catalogue retries after HTTP error', async ({ page }) => {
     if (fail) await route.fulfill({ status: 503, json: { error: 'Unavailable' } });
     else await route.continue();
   });
-  await page.goto('/');
-  await page.getByRole('button', { name: 'Обучение', exact: true }).click();
+  await bootFreshGame(page);
+  await page.getByRole('navigation', { name: 'Основная навигация' }).getByRole('button', { name: 'Обучение', exact: true }).click();
   await page.getByRole('tab', { name: /Направления/ }).click();
   await expect(page.getByText('Не удалось загрузить обучение.', { exact: true })).toBeVisible();
   fail = false;

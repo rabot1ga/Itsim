@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { PlayerPortrait } from '../components/PlayerPortrait';
 import { ScreenTitle, SectionTitle, StatBar } from '../components/ui';
+import { fetchSkillNames } from '../lib/skillNames';
 import { xpToNext } from '@itsim/shared';
 
 const GRADES: Record<string, string> = {
@@ -30,6 +31,16 @@ const LINKS: Array<{ view: string; emoji: string; label: string }> = [
 export const ProfileView: React.FC = () => {
   const player = useGameStore((s) => s.player);
   const setView = useGameStore((s) => s.setView);
+  const [skillNames, setSkillNames] = useState<Record<string, string>>({});
+  useEffect(() => {
+    let alive = true;
+    fetchSkillNames().then((map) => {
+      if (alive) setSkillNames(map);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
   if (!player) return null;
 
   const mainId = player.mainSkillId ?? 'javascript';
@@ -39,7 +50,7 @@ export const ProfileView: React.FC = () => {
   const eventsSeen = Object.values(player.eventHistory ?? {}).reduce((sum: number, h: any) => sum + (h?.count ?? 0), 0);
 
   const facts: Array<[string, string]> = [
-    ['Уровень', String(skill.level)],
+    ['Основной навык', `${skillNames[mainId] ?? mainId} · ур. ${skill.level}`],
     ['Опыт', skill.level >= 100 ? 'Максимум' : `${skill.xp} / ${need} XP`],
     ['Репутация', `${Math.round(player.reputation ?? 0).toLocaleString('ru-RU')} ⭐`],
     ['Достижения', String((player.achievements ?? []).length)],
@@ -63,10 +74,7 @@ export const ProfileView: React.FC = () => {
         <h3>Айтишник</h3>
         <p>{GRADES[player.grade] ?? player.grade}</p>
         <span className="subtle">{player.job?.position ?? 'Карьера ещё впереди'}</span>
-      </section>
-
-      <section className="card">
-        <dl className="profile-stats">
+        <dl className="profile-stats mt-3">
           {facts.map(([label, value]) => (
             <div key={label}>
               <dt>{label}</dt>
@@ -74,7 +82,7 @@ export const ProfileView: React.FC = () => {
             </div>
           ))}
         </dl>
-        <div className="mt-3">
+        <div className="mt-3" style={{ maxWidth: 260, marginLeft: 'auto', marginRight: 'auto' }}>
           <StatBar resource="xp" label="Опыт навыка" value={skill.xp} max={need} />
         </div>
         <div className="profile-money num">

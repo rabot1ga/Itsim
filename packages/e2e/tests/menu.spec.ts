@@ -1,10 +1,11 @@
 import { test, expect } from '@playwright/test';
+import { bootFreshGame } from './helpers';
 
 for (const width of [320, 390, 480]) {
   test(`reference 1.png opens directly into five-tab game at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 844 });
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    await page.goto('/');
+    await bootFreshGame(page);
     await expect(page.locator('[data-ui-revision="09"]')).toBeVisible();
     await expect(page.getByRole('button', { name: /^(Начать игру|Продолжить)/ })).toHaveCount(0);
     const nav = page.getByRole('navigation', { name: 'Основная навигация' });
@@ -47,7 +48,7 @@ for (const width of [320, 390, 480]) {
 
 test('learning and shop keep reference-sized rows, not giant cards', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('/');
+  await bootFreshGame(page);
   const nav = page.getByRole('navigation', { name: 'Основная навигация' });
   await nav.getByRole('button', { name: 'Обучение', exact: true }).click();
   await page.getByRole('tab', { name: /Направления/ }).click();

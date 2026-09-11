@@ -1,10 +1,11 @@
 import { test, expect } from '@playwright/test';
+import { bootFreshGame } from './helpers';
 
 for (const width of [320, 390, 480]) {
   test(`home HUD, room and shortcuts fit ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 844 });
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    await page.goto('/');
+    await bootFreshGame(page);
 
     for (const name of ['Энергия', 'Здоровье', 'Настроение']) {
       const meter = page.getByRole('progressbar', { name, exact: true });

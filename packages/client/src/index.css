@@ -1165,6 +1165,12 @@ select {
   background: rgba(0, 0, 0, 0.22);
   color: inherit;
   font-size: 11px;
+  white-space: normal;
+}
+/* The effect name stays readable next to the value: «Опыт · JavaScript +3 XP». */
+.story-choice-effects .chip-label {
+  opacity: 0.82;
+  font-weight: 600;
 }
 .story-choice-neutral .story-choice-effects .res-chip {
   background: rgba(255, 255, 255, 0.07);

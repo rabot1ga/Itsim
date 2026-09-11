@@ -7,8 +7,8 @@ import { ProceduralAvatar } from './ProceduralAvatar';
  * Layered procedural room — DESIGN.md sections 1-2.
  *
  * The player is drawn full-body, standing on the floor in the same vector style
- * as the furniture. The 32×32 pixel bust is a portrait and lives in the
- * identity card (PixelIdentity), not in the room.
+ * as the furniture. The same layered figure (cropped to the head) is the HUD
+ * and profile portrait (PlayerPortrait), so the identity matches everywhere.
  * Fixed slots (bg/window/decor/desk/chair/setup/atmosphere/pet) stacked
  * by zOrder. Owned items and cross-collection bonuses override slots.
  */

@@ -1,4 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
+import { bootFreshGame } from './helpers';
 
 /**
  * Smoke run of the whole loop (roadmap P0.5):
@@ -10,9 +11,6 @@ import { test, expect, Page } from '@playwright/test';
  * animation, so a green run proves the browser→client→API→storage wiring.
  */
 
-async function startFreshGame(page: Page): Promise<void> {
-  await page.goto('/');
-}
 
 const energyMeter = (page: Page) => page.locator('[title^="Энергия:"]').first();
 
@@ -30,7 +28,7 @@ async function resolveStory(page: Page): Promise<void> {
 
 test('fresh run: three actions → end of day → buy cosmetics → telemetry', async ({ page, request }) => {
   // ── boot into the game ───────────────────────────────────────────────────
-  await startFreshGame(page);
+  await bootFreshGame(page);
   // state loads with the daily check-in (+300 ₽); HUD shows a full battery
   await expect(energyMeter(page)).toHaveAttribute('title', /^Энергия: 10\/10$/);
 

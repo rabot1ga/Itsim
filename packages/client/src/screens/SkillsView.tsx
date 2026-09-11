@@ -325,9 +325,9 @@ export const SkillsView: React.FC = () => {
                           {doneCount}/{v.steps.length}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2 mt-2">
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-2">
                         {next ? (
-                          <span className="subtle truncate">
+                          <span className="subtle truncate min-w-0">
                             дальше: {next.skillName} → ур. {next.target}
                           </span>
                         ) : (
