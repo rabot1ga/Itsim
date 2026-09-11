@@ -169,10 +169,20 @@ describe('interview', () => {
 
   it('hard skill miss (ratio < 0.5) heavily reduces the chance', () => {
     const good = interviewChance({
-      skills: { js: 10 }, requirements: { js: 10 }, communication: 10, reputation: 0, companyBar: 1, answerScore: 0.8,
+      skills: { js: 10 },
+      requirements: { js: 10 },
+      communication: 10,
+      reputation: 0,
+      companyBar: 1,
+      answerScore: 0.8,
     });
     const bad = interviewChance({
-      skills: { js: 4 }, requirements: { js: 10 }, communication: 10, reputation: 0, companyBar: 1, answerScore: 0.8,
+      skills: { js: 4 },
+      requirements: { js: 10 },
+      communication: 10,
+      reputation: 0,
+      companyBar: 1,
+      answerScore: 0.8,
     });
     expect(bad).toBeLessThan(good);
   });
@@ -233,16 +243,25 @@ describe('events', () => {
     const p: PlayerState = { ...basePlayer, currentDay: 10 };
     const pool = [
       {
-        id: 'chain_only', title: '', description: '', tags: [],
-        weight: 100, cooldownDays: 0, chainOnly: true,
+        id: 'chain_only',
+        title: '',
+        description: '',
+        tags: [],
+        weight: 100,
+        cooldownDays: 0,
+        chainOnly: true,
         choices: [
           { text: 'a', effects: {} },
           { text: 'b', effects: {} },
         ],
       },
       {
-        id: 'normal', title: '', description: '', tags: [],
-        weight: 1, cooldownDays: 0,
+        id: 'normal',
+        title: '',
+        description: '',
+        tags: [],
+        weight: 1,
+        cooldownDays: 0,
         choices: [
           { text: 'a', effects: {} },
           { text: 'b', effects: {} },
@@ -276,7 +295,13 @@ describe('achievements', () => {
     const p = createNewPlayer();
     p.grade = 'junior';
     const defs = [
-      { id: 'a1', name: '', description: '', icon: '', condition: { type: 'grade_reached', target: 'junior' } as const },
+      {
+        id: 'a1',
+        name: '',
+        description: '',
+        icon: '',
+        condition: { type: 'grade_reached', target: 'junior' } as const,
+      },
       { id: 'a2', name: '', description: '', icon: '', condition: { type: 'money_made', target: 999999999 } as const },
     ];
     const earned = checkAchievements(p, defs as any);
@@ -417,7 +442,8 @@ describe('genetics', () => {
 
   it('tintFilter produces a CSS filter string with the hue', () => {
     const filter = tintFilter({ id: 'x', name: 'x', hue: 210, sat: 1.5, light: 1.2 });
-    expect(filter).toContain('hue-rotate(210deg)');
+    // Authored hue is the FINAL hue: the rotate step undoes the sepia baseline (30°).
+    expect(filter).toContain('hue-rotate(180deg)');
     expect(filter).toContain('saturate(1.5)');
     expect(filter).toContain('brightness(1.2)');
   });
@@ -433,12 +459,7 @@ describe('genetics', () => {
 
 // ---- Mining farm ----
 
-import {
-  miningDailyIncome,
-  miningDayNoise,
-  hashrateOfItems,
-  electricitySaveOfItems,
-} from '../../index';
+import { miningDailyIncome, miningDayNoise, hashrateOfItems, electricitySaveOfItems } from '../../index';
 
 describe('mining', () => {
   const cfg = { priceBase: 40, volatility: 0.5, electricityPerHashrate: 0.5 };
@@ -555,19 +576,43 @@ import { maybeTriggerActionEvent } from '../../index';
 
 const ACTION_POOL: any[] = [
   {
-    id: 'bar_hr_meeting', title: '', description: '', tags: ['bar'], weight: 100,
-    cooldownDays: 30, actionTrigger: { action: 'rest_bar', chance: 0.25, cooldownDays: 30 },
-    choices: [{ text: 'a', effects: {} }, { text: 'b', effects: {} }],
+    id: 'bar_hr_meeting',
+    title: '',
+    description: '',
+    tags: ['bar'],
+    weight: 100,
+    cooldownDays: 30,
+    actionTrigger: { action: 'rest_bar', chance: 0.25, cooldownDays: 30 },
+    choices: [
+      { text: 'a', effects: {} },
+      { text: 'b', effects: {} },
+    ],
   },
   {
-    id: 'courier_dog', title: '', description: '', tags: ['sidejob'], weight: 100,
-    cooldownDays: 15, actionTrigger: { action: 'side_job', jobId: 'courier', chance: 0.2 },
-    choices: [{ text: 'a', effects: {} }, { text: 'b', effects: {} }],
+    id: 'courier_dog',
+    title: '',
+    description: '',
+    tags: ['sidejob'],
+    weight: 100,
+    cooldownDays: 15,
+    actionTrigger: { action: 'side_job', jobId: 'courier', chance: 0.2 },
+    choices: [
+      { text: 'a', effects: {} },
+      { text: 'b', effects: {} },
+    ],
   },
   {
-    id: 'barista_tiktok', title: '', description: '', tags: ['sidejob'], weight: 100,
-    cooldownDays: 30, actionTrigger: { action: 'side_job', jobId: 'barista', chance: 0.2 },
-    choices: [{ text: 'a', effects: {} }, { text: 'b', effects: {} }],
+    id: 'barista_tiktok',
+    title: '',
+    description: '',
+    tags: ['sidejob'],
+    weight: 100,
+    cooldownDays: 30,
+    actionTrigger: { action: 'side_job', jobId: 'barista', chance: 0.2 },
+    choices: [
+      { text: 'a', effects: {} },
+      { text: 'b', effects: {} },
+    ],
   },
 ];
 
@@ -617,12 +662,14 @@ describe('action-triggered events', () => {
     const p: PlayerState = { ...createNewPlayer(), currentDay: 1 };
     // bar_hr_meeting has minGameDay 3 via content, but this pool entry has none;
     // test with a gated variant
-    const gated: any[] = [{
-      ...ACTION_POOL[0],
-      id: 'gated_evt',
-      minGameDay: 20,
-      actionTrigger: { action: 'rest_bar', chance: 1 },
-    }];
+    const gated: any[] = [
+      {
+        ...ACTION_POOL[0],
+        id: 'gated_evt',
+        minGameDay: 20,
+        actionTrigger: { action: 'rest_bar', chance: 1 },
+      },
+    ];
     expect(maybeTriggerActionEvent(p, gated, 'rest_bar', undefined, () => 0)).toBeNull();
     p.currentDay = 25;
     expect(maybeTriggerActionEvent(p, gated, 'rest_bar', undefined, () => 0)?.id).toBe('gated_evt');
@@ -680,18 +727,45 @@ describe('item effects', () => {
 
 // ---- Interview quiz (gamified learning) ----
 
-import {
-  pickInterviewQuestions,
-  interviewAnswerScore,
-  interviewXpForQuestion,
-  gradeTier,
-} from '../../index';
+import { pickInterviewQuestions, interviewAnswerScore, interviewXpForQuestion, gradeTier } from '../../index';
 
 const QUESTIONS = [
-  { id: 'js_1', skillId: 'javascript', tier: 'junior', text: 't', options: ['a', 'b'], correctIndex: 0, explanation: 'e' },
-  { id: 'js_2', skillId: 'javascript', tier: 'middle', text: 't', options: ['a', 'b'], correctIndex: 0, explanation: 'e' },
-  { id: 'js_3', skillId: 'javascript', tier: 'senior', text: 't', options: ['a', 'b'], correctIndex: 0, explanation: 'e' },
-  { id: 'gen_1', skillId: 'general', tier: 'junior', text: 't', options: ['a', 'b'], correctIndex: 0, explanation: 'e' },
+  {
+    id: 'js_1',
+    skillId: 'javascript',
+    tier: 'junior',
+    text: 't',
+    options: ['a', 'b'],
+    correctIndex: 0,
+    explanation: 'e',
+  },
+  {
+    id: 'js_2',
+    skillId: 'javascript',
+    tier: 'middle',
+    text: 't',
+    options: ['a', 'b'],
+    correctIndex: 0,
+    explanation: 'e',
+  },
+  {
+    id: 'js_3',
+    skillId: 'javascript',
+    tier: 'senior',
+    text: 't',
+    options: ['a', 'b'],
+    correctIndex: 0,
+    explanation: 'e',
+  },
+  {
+    id: 'gen_1',
+    skillId: 'general',
+    tier: 'junior',
+    text: 't',
+    options: ['a', 'b'],
+    correctIndex: 0,
+    explanation: 'e',
+  },
   { id: 'py_1', skillId: 'python', tier: 'junior', text: 't', options: ['a', 'b'], correctIndex: 0, explanation: 'e' },
   { id: 'py_2', skillId: 'python', tier: 'senior', text: 't', options: ['a', 'b'], correctIndex: 0, explanation: 'e' },
 ];
@@ -706,7 +780,10 @@ describe('interview questions', () => {
   });
 
   it('pickInterviewQuestions puts the main skill first, respects tier', () => {
-    const rng = (() => { let s = 7; return () => ((s = (s * 1103515245 + 12345) & 0x7fffffff), s / 0x7fffffff); })();
+    const rng = (() => {
+      let s = 7;
+      return () => ((s = (s * 1103515245 + 12345) & 0x7fffffff), s / 0x7fffffff);
+    })();
     const picked = pickInterviewQuestions(QUESTIONS as any, {
       mainSkillId: 'javascript',
       grade: 'junior',
@@ -721,7 +798,10 @@ describe('interview questions', () => {
   });
 
   it('pickInterviewQuestions fills from the wider tier pool when the branch is thin', () => {
-    const rng = (() => { let s = 3; return () => ((s = (s * 1103515245 + 12345) & 0x7fffffff), s / 0x7fffffff); })();
+    const rng = (() => {
+      let s = 3;
+      return () => ((s = (s * 1103515245 + 12345) & 0x7fffffff), s / 0x7fffffff);
+    })();
     const picked = pickInterviewQuestions(QUESTIONS as any, {
       mainSkillId: 'python',
       grade: 'junior',

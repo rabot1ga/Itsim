@@ -6,7 +6,10 @@ import {
   TintPaletteEntry,
   traitTint,
   tintFilter,
+  traitIdForTintSlot,
+  canonicalTintHex,
 } from '@itsim/shared';
+import { hexToTint } from '../../lib/hexTint';
 
 /**
  * Layer composition helpers — DESIGN.md section 1-3.
@@ -86,7 +89,11 @@ export function buildLayerStack(
       if (override) {
         filter = tintFilter(override);
       } else if (traits && geneticsConfig) {
-        const tint = traitTint(slot.tintSlot, traits, geneticsConfig);
+        // Canonical hex (same colour the iso room uses) wins over the looser
+        // (hue, sat, light) recipe so portrait and scene agree exactly.
+        const traitId = traitIdForTintSlot(slot.tintSlot, traits);
+        const canon = traitId ? canonicalTintHex(slot.tintSlot, traitId) : null;
+        const tint = (canon ? hexToTint(canon) : null) ?? traitTint(slot.tintSlot, traits, geneticsConfig);
         if (tint) filter = tintFilter(tint);
       }
     }

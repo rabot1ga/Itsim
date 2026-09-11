@@ -21,6 +21,7 @@ export * from './utils';
 export * from './roomDecor';
 export * from './isoFinishes';
 export * from './isoLook';
+export * from './lookResolve';
 export * from './avatarCustom';
 export * from './pixelArt';
 export * from './pixelArtValidate';

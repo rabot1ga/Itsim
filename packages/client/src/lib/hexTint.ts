@@ -33,10 +33,12 @@ export function hexToTint(hex: string): TintPaletteEntry | null {
     id: `hex:${hex}`,
     name: hex,
     hue: Math.round(h * 360),
-    // Default tint recipes land around sat 1.5–2.5; scale by how vivid the pick is.
-    sat: 0.8 + s * 1.8,
-    // Grayscale layers render mid (#969696≈0.59); brightness follows the pick.
-    light: 0.35 + l,
+    // Gentle saturation: the sepia base is already ~40% chroma, so pastels
+    // (pale skin) must stay pastel — else skin reads pumpkin-orange.
+    sat: 0.5 + s * 1.3,
+    // Grayscale layers render mid-dark; brightness follows the pick's
+    // lightness, compressed so nothing over-exposes.
+    light: 0.55 + l * 0.75,
   };
 }
 

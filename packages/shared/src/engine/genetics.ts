@@ -1,10 +1,6 @@
 import { sha256 } from '@noble/hashes/sha256';
 import { bytesToHex } from '@noble/hashes/utils';
-import {
-  GeneticTraits,
-  GeneticsConfig,
-  TintPaletteEntry,
-} from '../types';
+import { GeneticTraits, GeneticsConfig, TintPaletteEntry } from '../types';
 
 /**
  * Deterministic procedural generation — DESIGN.md section 3.1
@@ -55,11 +51,7 @@ export function seededRng(seed: string): () => number {
 /**
  * Deterministic weighted pick with a per-slot salt
  */
-export function seededWeightedPick<T extends { weight: number }>(
-  items: T[],
-  seed: string,
-  salt: string
-): T {
+export function seededWeightedPick<T extends { weight: number }>(items: T[], seed: string, salt: string): T {
   const rng = seededRng(`${seed}:${salt}`);
   const total = items.reduce((sum, item) => sum + Math.max(0, item.weight), 0);
   if (total <= 0) return items[0];
@@ -105,13 +97,21 @@ export function getGeneticTraits(seed: string, config: GeneticsConfig): GeneticT
 }
 
 /**
+ * Hue of a neutral-gray pixel after `sepia(1)` (~ochre). Authored palette
+ * hues are FINAL target hues, so the rotate step must subtract this offset —
+ * otherwise skin_pale (hue 30°) landed at ~60° and read zombie-green
+ * (docs/design-system.md layering note).
+ */
+export const SEPIA_BASE_HUE = 30;
+
+/**
  * CSS filter string to recolor a grayscale layer (the "tinting" trick).
  * Grayscale → sepia tone map → hue rotation → saturation/lightness.
  */
 export function tintFilter(entry: TintPaletteEntry): string {
   const sat = entry.sat ?? 2.2;
   const light = entry.light ?? 1;
-  return `sepia(1) saturate(${sat}) hue-rotate(${entry.hue}deg) brightness(${light})`;
+  return `sepia(1) saturate(${sat}) hue-rotate(${entry.hue - SEPIA_BASE_HUE}deg) brightness(${light})`;
 }
 
 /**
@@ -133,10 +133,7 @@ export function traitTint(slot: string, traits: GeneticTraits, config: GeneticsC
 /**
  * Combine an optional palette tint with explicit overrides (e.g. items).
  */
-export function combineTints(
-  base: TintPaletteEntry | null,
-  override?: Partial<TintPaletteEntry>
-): string {
+export function combineTints(base: TintPaletteEntry | null, override?: Partial<TintPaletteEntry>): string {
   if (!base && !override) return 'none';
   return tintFilter({
     id: base?.id ?? 'override',

@@ -111,13 +111,15 @@ describe('unified SVG portrait', () => {
     expect(layerSrc(container, '/layers/avatar/top/hoodie_gray.svg')).toBeTruthy();
   });
 
-  it('tints skin and hair layers from the genetic palettes', async () => {
+  it('tints skin and hair layers from the canonical hexes (same colour as the room)', async () => {
     const { container } = render(<PlayerPortrait player={{ genetics, avatar: {} }} />);
     await waitFor(() => expect(container.querySelector('[data-portrait="saved"]')).toBeTruthy());
     const body = Array.from(container.querySelectorAll('img')).find((img) => img.getAttribute('src')?.includes('body'));
-    expect(body?.style.filter).toContain('hue-rotate(30deg)');
+    // skin_pale → canonical #f5c6a0 ≈ hue 27°, minus the sepia baseline (30°).
+    expect(body?.style.filter).toContain('hue-rotate(-3deg)');
     const hair = Array.from(container.querySelectorAll('img')).find((img) => img.getAttribute('src')?.includes('hair'));
-    expect(hair?.style.filter).toContain('hue-rotate(55deg)');
+    // hair_blond → canonical #d7a94b ≈ hue 40° (hue-rotate(10deg) after the baseline).
+    expect(hair?.style.filter).toContain('hue-rotate(10deg)');
   });
 
   it('lets the wardrobe override the genetic shape', async () => {
@@ -134,8 +136,8 @@ describe('unified SVG portrait', () => {
     const { container } = render(<PlayerPortrait player={{ genetics, avatar: { hairColor: '#d7a94b' } }} />);
     await waitFor(() => expect(container.querySelector('[data-portrait="saved"]')).toBeTruthy());
     const hair = Array.from(container.querySelectorAll('img')).find((img) => img.getAttribute('src')?.includes('hair'));
-    // #d7a94b ≈ hue 40° on the grayscale hair layer, overriding the genetic hue.
-    expect(hair?.style.filter).toContain('hue-rotate(40deg)');
+    // #d7a94b ≈ hue 40° on the grayscale hair layer, minus the sepia baseline.
+    expect(hair?.style.filter).toContain('hue-rotate(10deg)');
   });
 
   it('shows the honest default when there is no saved genotype', async () => {

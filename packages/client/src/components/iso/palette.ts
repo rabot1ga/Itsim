@@ -4,7 +4,7 @@ import {
   CLOTH_COLOURS,
   TROUSER_COLOURS,
   SHOE_COLOURS,
-  lookColourAllowed,
+  resolveLookHexes,
 } from '@itsim/shared';
 
 export { SKIN_TONES, HAIR_COLOURS, CLOTH_COLOURS, TROUSER_COLOURS, SHOE_COLOURS };
@@ -119,11 +119,19 @@ export interface CharacterLook {
 }
 
 export interface LookInput {
-  genetics?: { seed?: string; hairStyle?: string; hairColor?: string; skinTone?: string; top?: string };
+  genetics?: {
+    seed?: string;
+    hairStyle?: string;
+    hairColor?: string;
+    skinTone?: string;
+    top?: string;
+    beard?: string;
+  };
   avatar?: {
     hair?: string | null;
     top?: string | null;
     bottom?: string | null;
+    beard?: string | null;
     /** explicit colour choices from the wardrobe */
     skin?: string | null;
     hairColor?: string | null;
@@ -137,34 +145,36 @@ export interface LookInput {
 
 /**
  * The player's own figure: the base sprite whose clothes match their wardrobe,
- * recoloured to their genetics.
+ * recoloured to the SAME canonical hexes the SVG portrait and mirror use
+ * (see shared/lookResolve — one identity across renderers).
  */
 export function characterLook(input: LookInput): CharacterLook {
   const seed = input.genetics?.seed ?? input.fallbackSeed ?? 'anon';
-  const pick = rolls(seed);
+  const look = resolveLookHexes(input.genetics, input.avatar);
 
-  const wantHair = HAIR_STYLE[input.avatar?.hair ?? input.genetics?.hairStyle ?? ''] ?? null;
-  const wantTop = TOP_STYLE[input.avatar?.top ?? input.genetics?.top ?? ''] ?? null;
+  const wantHair = HAIR_STYLE[look.hairStyle ?? ''] ?? null;
+  const wantTop = TOP_STYLE[look.top ?? ''] ?? null;
+  const wantBeard = (input.avatar?.beard ?? input.genetics?.beard ?? 'beard_none') !== 'beard_none';
 
   const ids = Object.keys(CHARACTER_BASES);
   const byHair = wantHair ? ids.filter((id) => CHARACTER_BASES[id].hair === wantHair) : ids;
   const byBoth = wantTop ? byHair.filter((id) => CHARACTER_BASES[id].top === wantTop) : byHair;
-  const pool = byBoth.length ? byBoth : byHair.length ? byHair : ids;
+  let pool = byBoth.length ? byBoth : byHair.length ? byHair : ids;
+  // A beard is rare in the sprite library (a17/a18): take it when possible.
+  if (wantBeard) {
+    const bearded = pool.filter((id) => CHARACTER_BASES[id].beard);
+    if (bearded.length) pool = bearded;
+  }
   const base = pool[hashSeed(seed + ':base') % pool.length];
-
-  // The seed proposes, the wardrobe disposes: an explicit choice always wins.
-  const av = input.avatar;
-  const chosen = (slot: string, value: string | null | undefined, fallback: string) =>
-    value && lookColourAllowed(slot, value) ? value : fallback;
 
   return {
     base,
     colours: {
-      skin: chosen('skin', av?.skin, SKIN_TONES[pick(SKIN_TONES.length)]),
-      hair: chosen('hairColor', av?.hairColor, HAIR_COLOURS[pick(HAIR_COLOURS.length)]),
-      top: chosen('topColor', av?.topColor, CLOTH_COLOURS[pick(CLOTH_COLOURS.length)]),
-      bottom: chosen('bottomColor', av?.bottomColor, TROUSER_COLOURS[pick(TROUSER_COLOURS.length)]),
-      shoes: chosen('shoeColor', av?.shoeColor, SHOE_COLOURS[pick(SHOE_COLOURS.length)]),
+      skin: look.skin,
+      hair: look.hair,
+      top: look.topColour,
+      bottom: look.bottomColour,
+      shoes: look.shoes,
     },
   };
 }
