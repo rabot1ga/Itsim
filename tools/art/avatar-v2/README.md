@@ -25,24 +25,23 @@ skin/hair тинтятся CSS-фильтрами, см. `shared/lookResolve.ts`
 4. Якоря слотов зафиксированы в `SLOTS` (avatar-key.mjs): head/eyes/beard/top/
    bottom/acc_* — измерены на собранном теле в /tmp/body_base.webp.
 
-## Готово (в `layers/`) — 34/38
+## Готово (в `layers/`) — 36/38
 
 **body**: body_base
 **eyes**: eye_normal, eye_tired, eye_vr, eye_red, eye_legendary, eye_closed
 **hair**: hair_short, hair_messy, hair_manbun, hair_buzzcut, hair_curly, hair_long, hair_ponytail
 **beard**: beard_goatee, beard_stubble, beard_full, beard_mustache
-**top**: top_tshirt, top_hoodie_gray, top_hoodie_localhost, top_shirt, top_jacket
+**top**: top_tshirt, top_hoodie_gray, top_hoodie_localhost, top_shirt, top_jacket, top_hoodie_corp, top_hoodie_cat
 **bottom**: bottom_jeans, bottom_sweatpants, bottom_chinos, bottom_shorts, bottom_suit
 **acc**: acc_cap, acc_headphones, acc_glasses, acc_beanie, acc_vr_headset, acc_medal
 
 Демо-композиты лежат рядом: `demo-*.png`.
 
-## Очередь генерации (осталось 4)
+## Очередь генерации (осталось 2)
 
 | Слот | id | примечание |
 |---|---|---|
-| hair | undercut, spiky | b6 подвели (розовый dither кожи; аниме-огонь без верха), перегенерить |
-| top | hoodie_corp (amber merch с треуг. лого), hoodie_cat (тёмная с кошачьими ушками) | +2 |
+| hair | undercut, spiky | b7 «solid cap»-промпт дал заливку лица; следующий промпт: рамка вокруг лица как у hair_short (U-curve открывает лицо, волосы только вокруг и сверху) |
 
 Boilerplate (критично! иначе генератор рисует полного манекена поверх предмета):
 «Tiny isolated sprite of JUST a single <предмет> floating alone, retro adventure
