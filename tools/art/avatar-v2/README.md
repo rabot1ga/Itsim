@@ -25,26 +25,38 @@ skin/hair тинтятся CSS-фильтрами, см. `shared/lookResolve.ts`
 4. Якоря слотов зафиксированы в `SLOTS` (avatar-key.mjs): head/eyes/beard/top/
    bottom/acc_* — измерены на собранном теле в /tmp/body_base.webp.
 
-## Готово (в `layers/`)
+## Готово (в `layers/`) — 15/38
 
-body_base, eye_normal, eye_tired, hair_short, beard_goatee, top_tshirt,
-bottom_jeans, acc_cap.
+**body**: body_base
+**eyes**: eye_normal, eye_tired, eye_vr, eye_red, eye_legendary
+**hair**: hair_short, hair_messy, hair_manbun
+**beard**: beard_goatee, beard_stubble, beard_full
+**top**: top_tshirt
+**bottom**: bottom_jeans
+**acc**: acc_cap
 
-## Очередь генерации (осталось 30)
+## Очередь генерации (осталось 23)
 
-| Слот | id | Промпт-ядро (плюс общий boilerplate) |
+| Слот | id | Промпт-ядро |
 |---|---|---|
-| eyes | eye_closed, eye_vr, eye_red, eye_legendary | arcs-закрытые; glazed cyan VR; bloodshot; glowing amber legendary |
-| hair | buzzcut, messy, long, manbun, curly, undercut, spiky, ponytail | ёжик; хаотичный bedhead; прямые до плеч; пучок с выбритыми висками; плотные кудри; гладкий верх+fade; ирокез-полоса; высокий хвост |
-| beard | stubble, full, mustache | точечная щетина; густая «борода джуна» по челюсти; классические усы |
-| top | hoodie_gray, hoodie_localhost, hoodie_corp, hoodie_cat, shirt, jacket | серое худи с карманом; чаркоул-худи «localhost»; янтарь-мерч с треугольным лого; тёмное худи с кошачьими ушками на капюшоне; голубая рубашка с воротником; коричневая айтишная куртка поверх футболки |
+| eyes | eye_closed ⚠ b3 брак (full-body), перегенерить | closed-arc глаза с ресничками |
+| hair | buzzcut ⚠ брак (U-cup+шея), long ⚠ брак (серая подложка шеи); curly, undercut, spiky, ponytail | ёжик; длинные прямые; плотные кудри; гладкий верх+fade; ирокез-полоса; высокий хвост |
+| beard | mustache | классические усы |
+| top | hoodie_gray, hoodie_localhost, hoodie_corp, hoodie_cat, shirt, jacket | серое худи с карманом; чаркоул-худи «localhost»; янтарь-мерч с треугольным лого; тёмное худи с кошачьими ушками; голубая рубашка с воротником; коричневая айтишная куртка |
 | bottom | sweatpants, chinos, shorts, suit | серо-синие джоггеры; бежевые чиносы с подворотом; светло-серые шорты; тёмные брюки костюма |
-| acc | headphones, glasses, vr_headset, medal, beanie | тёмные наушники; квадратные чёрные очки; циановый VR-шлем; золотая медаль «1000»; синяя вязаная шапка-бини |
+| acc | headphones, glasses, vr_headset, medal, beanie | тёмные наушники; квадратные чёрные очки; циановый VR-шлем; золотая медаль «1000»; синяя вязаная шапка |
 
-Boilerplate: «JUST a … layer for a pixel-art avatar builder, same retro
-adventure game style and shading as the mannequin reference, floating piece
-sized exactly for the mannequin's <часть>, NO face/body, clean hard pixel
-edges, flat pure magenta background #FF00FF, centered.»
+Boilerplate (критично! иначе генератор рисует полного манекена поверх предмета):
+«Tiny isolated sprite of JUST a single <предмет> floating alone, retro adventure
+game pixel art style (same style as the existing mannequin reference), warm
+amber shading, clean hard pixel edges. NO face, NO head/skin, NO neck, NO
+shoulders, NO body attached underneath — the object sits on an invisible body.
+Flat pure magenta background #FF00FF, object centered, occupies ~15-25% of the
+canvas.»
+
+Промпты **без** `images`-reference к манекену — image-reference заставляет
+модель копировать всю фигуру. Стиль задавать текстом, размер/пропорции —
+через якорные рамки слотов в avatar-key.mjs.
 
 Волосы: после сборки обязателен контроль-кадр — `clear`-зона гарантирует
 только глаза, но слишком длинные боковые пряди рисует промпт (при неудаче —
