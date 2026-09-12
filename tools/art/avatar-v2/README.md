@@ -25,26 +25,28 @@ skin/hair тинтятся CSS-фильтрами, см. `shared/lookResolve.ts`
 4. Якоря слотов зафиксированы в `SLOTS` (avatar-key.mjs): head/eyes/beard/top/
    bottom/acc_* — измерены на собранном теле в /tmp/body_base.webp.
 
-## Готово (в `layers/`) — 15/38
+## Готово (в `layers/`) — 18/38
 
-**body**: body_base
+**body**: body_base (grayscale, skin-тінт)
 **eyes**: eye_normal, eye_tired, eye_vr, eye_red, eye_legendary
 **hair**: hair_short, hair_messy, hair_manbun
 **beard**: beard_goatee, beard_stubble, beard_full
-**top**: top_tshirt
-**bottom**: bottom_jeans
-**acc**: acc_cap
+**top**: top_tshirt, top_hoodie_gray
+**bottom**: bottom_jeans, bottom_sweatpants
+**acc**: acc_cap, acc_headphones
 
-## Очередь генерации (осталось 23)
+Демо-композиты лежат рядом: `demo-*.png`.
 
-| Слот | id | Промпт-ядро |
+## Очередь генерации (осталось 20)
+
+| Слот | id | примечание |
 |---|---|---|
-| eyes | eye_closed ⚠ b3 брак (full-body), перегенерить | closed-arc глаза с ресничками |
-| hair | buzzcut ⚠ брак (U-cup+шея), long ⚠ брак (серая подложка шеи); curly, undercut, spiky, ponytail | ёжик; длинные прямые; плотные кудри; гладкий верх+fade; ирокез-полоса; высокий хвост |
-| beard | mustache | классические усы |
-| top | hoodie_gray, hoodie_localhost, hoodie_corp, hoodie_cat, shirt, jacket | серое худи с карманом; чаркоул-худи «localhost»; янтарь-мерч с треугольным лого; тёмное худи с кошачьими ушками; голубая рубашка с воротником; коричневая айтишная куртка |
-| bottom | sweatpants, chinos, shorts, suit | серо-синие джоггеры; бежевые чиносы с подворотом; светло-серые шорты; тёмные брюки костюма |
-| acc | headphones, glasses, vr_headset, medal, beanie | тёмные наушники; квадратные чёрные очки; циановый VR-шлем; золотая медаль «1000»; синяя вязаная шапка |
+| eyes | eye_closed ⚠ b4 брак (один большой оранжевый глаз), перегенерить | closed-arc глаза |
+| hair | buzzcut, long (женская стрижка, переделать в мужскую), curly, undercut, spiky, ponytail | в b4 все с розовой кожей в кадре — перегенерить без head/skin |
+| beard | mustache ⚠ в b4 получился handlebar, нужен аккуратный chevron выше губы | |
+| top | hoodie_localhost, hoodie_corp, hoodie_cat, shirt, jacket | +5 |
+| bottom | chinos, shorts, suit | +3 |
+| acc | glasses ⚠ b4 три линзы/артефакт, vr_headset, medal, beanie | +4 |
 
 Boilerplate (критично! иначе генератор рисует полного манекена поверх предмета):
 «Tiny isolated sprite of JUST a single <предмет> floating alone, retro adventure
