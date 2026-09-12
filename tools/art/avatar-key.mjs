@@ -3,9 +3,13 @@
  * Avatar-layer assembly tool (avatar layers v2, story-v1 art style).
  *
  * Pipeline per layer:
- *   key   — chroma-key the flat magenta backdrop out, auto-crop the content
+ *   key   — chroma-key the flat magenta backdrop out, auto-crop the content;
+ *           for `stripBody` slots, additionally key out the gray mannequin base
+ *           so accessories/glasses/caps isolate cleanly
  *   place — scale the cropped content into slot bounding-box and blit onto the
- *           500×760 transparent canvas the manifest declares
+ *           500×760 transparent canvas; `anchor` fractions let us line up a
+ *           specific landmark (brim, lenses, ear cups, coin) onto a canvas-y
+ *           coordinate calibrated from body_base
  *
  * Slot boxes are fractions measured against the assembled BODY layer, so the
  * whole set stays internally consistent; tweak once here, not per image.
@@ -21,18 +25,23 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { dirname, basename } from 'node:path';
 
 const MAGENTA = { r: 255, g: 0, b: 255 };
-const TOL = 42; // chroma tolerance
-const EDGE_DILATE = 1; // expand transparency outward by N px to bleed off AA halos
+const TOL = 72; // chroma tolerance — raised to kill pink/magenta AA halos around skin/edge pixels
+const EDGE_DILATE = 2; // expand transparency outward by N px to peel remaining halo
 
 const CANVAS_W = 500;
 const CANVAS_H = 760;
 
-/** Canvas-absolute placement spec, recalibrated off body_base bbox 72..427×30..729.
+/** Canvas-absolute placement spec, recalibrated off body_base bbox 73..427×30..729.
  *  Body anatomy (canvas px):
- *    crown y≈30   hairline y≈55   eye line y≈101   nose tip y≈130
- *    mouth y≈150  chin y≈170      neck y≈178      shoulders y≈188
- *    chest y≈230  waistband y≈410  crotch y≈470    knees y≈560
- *    ankles/feet bottom y≈729
+ *    crown y≈30   hairline y≈55   brow y≈70     eye line y≈101
+ *    nose y≈130   mouth y≈150     chin y≈170    neck y≈178      shoulders y≈188
+ *    chest y≈230  waistband y≈410 crotch y≈470  knees y≈560     ankles/feet bottom y≈729
+ *
+ *  FIT RULES:
+ *    • clothing (top/bottom): width-fill torso/legs so sleeves/pant legs cover
+ *      the arms and shins (the grayscaled body_base shows skin at wrists/ankles)
+ *    • hair/beard/eyes:       width-fill head region
+ *    • accessories:           width-fill slot, anchored by `anchor.frac`→`anchor.target`
  */
 const SLOTS = {
   // hair: crown-top anchored; long styles flow down; `clear` carves the eye window
@@ -43,27 +52,43 @@ const SLOTS = {
     h: 360,
     fit: 'width',
     alignY: 'top',
-    clear: { x: 185, y: 82, w: 130, h: 40 },
+    clear: { x: 165, y: 78, w: 170, h: 52 },
   },
-  // beard: mouth-to-chin region (upper lip 148 → chin 180)
-  beard: { x: 195, y: 145, w: 110, h: 45, fit: 'width', alignY: 'top' },
-  // eyes: small pair on the eye line y≈101
-  eyes: { x: 180, y: 83, w: 140, h: 40, fit: 'width', alignY: 'center' },
-  // tops: shoulder-to-hem, hem must OVERLAP the pants waistband by ~20 px
-  top: { x: 105, y: 180, w: 290, h: 270, fit: 'box', alignY: 'top' },
-  // bottoms: waistband-to-ankles, anchored at the waist; legs extend down to ~y=705
-  bottom: { x: 115, y: 405, w: 270, h: 305, fit: 'box', alignY: 'top' },
-  // accessory anchors
-  acc_head: { x: 150, y: 14, w: 200, h: 80, fit: 'box', alignY: 'bottom' }, // caps/beanie — brim at brow
-  acc_face: { x: 170, y: 80, w: 160, h: 50, fit: 'box', alignY: 'center' }, // glasses — eye line
-  acc_ears: { x: 140, y: 30, w: 220, h: 150, fit: 'box', alignY: 'top' },   // headphones — arc over crown
-  acc_chest: { x: 208, y: 285, w: 84, h: 96, fit: 'box', alignY: 'center' },
+  // beard: mouth-to-chin
+  beard: { x: 190, y: 152, w: 120, h: 80, fit: 'width', alignY: 'top', stripBody: true },
+  // eyes: small pair centered on the eye line y≈101
+  eyes: { x: 180, y: 96, w: 140, h: 36, fit: 'width', alignY: 'center', stripBody: true },
+  // tops: shoulder-to-hem, width-fill torso so sleeves cover the arms
+  top: { x: 95, y: 180, w: 310, h: 290, fit: 'width', alignY: 'top' },
+  // bottoms: waist-to-ankles, width-fill legs
+  bottom: { x: 105, y: 405, w: 290, h: 330, fit: 'width', alignY: 'top' },
+  // Accessories use anchor-based placement: place so that the fraction `frac`
+  // down from the top of the (resized) item lands exactly at canvas-y `target`.
+  // Fracs measured from auto-cropped item bbox: cap-brim 0.58, beanie-cuff 0.81,
+  // glasses/VR-lens center ≈0.46, headphone cups ≈0.73, medal coin ≈0.73.
+  acc_head: {
+    x: 165, y: 0, w: 170, h: CANVAS_H, fit: 'width', alignY: 'top',
+    anchor: { frac: 0.70, target: 73 }, stripBody: true,
+  },
+  acc_face: {
+    x: 175, y: 0, w: 150, h: CANVAS_H, fit: 'width', alignY: 'top',
+    anchor: { frac: 0.46, target: 100 }, stripBody: true,
+  },
+  acc_ears: {
+    x: 135, y: 0, w: 230, h: CANVAS_H, fit: 'width', alignY: 'top',
+    anchor: { frac: 0.73, target: 108 }, stripBody: true,
+  },
+  acc_chest: {
+    x: 212, y: 0, w: 76, h: CANVAS_H, fit: 'width', alignY: 'top',
+    anchor: { frac: 0.73, target: 310 }, stripBody: true,
+  },
 };
 
 /** Body fits the canvas: full height minus margin, centered horizontally. */
 const BODY = { height: 700, top: 30 };
 
-async function keyImage(input) {
+async function keyImage(input, opts = {}) {
+  const { stripBody = false } = opts;
   const { data, info } = await sharp(input).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
   const px = { w: info.width, h: info.height };
   // Pass 1: chroma-key magenta → alpha
@@ -80,8 +105,30 @@ async function keyImage(input) {
       opaque[p] = 1;
     }
   }
-  // Pass 1b: dilate transparency by EDGE_DILATE pixels outward — eats the
-  // magenta AA halo that survives a strict chroma key without distorting colors.
+  // Pass 1a: stripBody — for accessory (and eye) slots, key out the gray
+  // mannequin base / skin pixels underneath the item while keeping the item
+  // itself. A pixel is "body" if it has LOW channel spread (desaturated gray
+  // or skin-tone) AND its luminance is mid-range; very dark (black frames,
+  // lashes, shadow) and very bright (specular highlights, white logos)
+  // pixels survive even when desaturated.
+  if (stripBody) {
+    const SAT_TOL = 26;
+    const LUM_LO = 55;
+    const LUM_HI = 210;
+    for (let i = 0, p = 0; i < data.length; i += 4, p++) {
+      if (!opaque[p]) continue;
+      const r = data[i], g = data[i + 1], b = data[i + 2];
+      const spread = Math.max(r, g, b) - Math.min(r, g, b);
+      const lum = (r + g + b) / 3;
+      if (spread < SAT_TOL && lum > LUM_LO && lum < LUM_HI) {
+        data[i] = 0; data[i + 1] = 0; data[i + 2] = 0; data[i + 3] = 0;
+        opaque[p] = 0;
+        keyed++;
+      }
+    }
+  }
+  // Pass 1b: dilate transparency by EDGE_DILATE pixels outward — peels the
+  // magenta/skin AA halo that survives the chroma key.
   if (EDGE_DILATE > 0) {
     for (let step = 0; step < EDGE_DILATE; step++) {
       const kill = new Uint8Array(px.w * px.h);
@@ -89,19 +136,27 @@ async function keyImage(input) {
         for (let x = 0; x < px.w; x++) {
           const p = y * px.w + x;
           if (!opaque[p]) continue;
-          for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
-            if (dx === 0 && dy === 0) continue;
-            const nx = x + dx, ny = y + dy;
-            if (nx < 0 || ny < 0 || nx >= px.w || ny >= px.h) { kill[p] = 1; break; }
-            if (!opaque[ny * px.w + nx]) { kill[p] = 1; break; }
+          let edge = false;
+          for (let dy = -1; dy <= 1 && !edge; dy++) {
+            for (let dx = -1; dx <= 1 && !edge; dx++) {
+              if (dx === 0 && dy === 0) continue;
+              const nx = x + dx, ny = y + dy;
+              if (nx < 0 || ny < 0 || nx >= px.w || ny >= px.h) { edge = true; break; }
+              if (!opaque[ny * px.w + nx]) edge = true;
+            }
           }
+          if (edge) kill[p] = 1;
         }
       }
-      for (let p = 0; p < kill.length; p++) if (kill[p]) { opaque[p] = 0; data[p * 4 + 3] = 0; }
+      for (let p = 0; p < kill.length; p++) {
+        if (kill[p]) {
+          opaque[p] = 0;
+          data[p * 4] = 0; data[p * 4 + 1] = 0; data[p * 4 + 2] = 0; data[p * 4 + 3] = 0;
+        }
+      }
     }
   }
-  // Pass 2: drop isolated noise pixels (no opaque neighbour in 3×3) — single-pixel
-  // magenta spill along an edge would otherwise blow the auto-crop to the full frame.
+  // Pass 2: drop isolated noise pixels (no opaque neighbour in 3×3).
   const keep = new Uint8Array(px.w * px.h);
   for (let y = 0; y < px.h; y++) {
     for (let x = 0; x < px.w; x++) {
@@ -120,9 +175,8 @@ async function keyImage(input) {
       else data[p * 4 + 3] = 0;
     }
   }
-  // Pass 3: connected components — keep only the LARGEST component (the object).
-  // Generators sometimes add a tiny watermark/dot in a corner that survives pass 2;
-  // that must not define the crop box.
+  // Pass 3: connected components — keep all sizeable components (pairs of
+  // lenses/cups/eyes split into two blobs must survive); drop specks.
   const comp = new Int32Array(px.w * px.h);
   const sizes = [];
   let cid = 0;
@@ -155,10 +209,6 @@ async function keyImage(input) {
   }
   if (sizes.length === 0) throw new Error('nothing left after chroma-key');
   sizes.sort((a, b) => b.size - a.size);
-  // Keep ALL components that are large relative to the biggest — pairs like two eyes,
-  // two ear cups of headphones, two lenses of glasses split into separate blobs and
-  // must all survive. Tiny specks (noise/watermarks under ~15% of the main piece)
-  // are still dropped.
   const mainSize = sizes[0].size;
   const keepCids = new Set(sizes.filter((s) => s.size >= mainSize * 0.15).map((s) => s.cid));
   let minX = px.w, minY = px.h, maxX = 0, maxY = 0;
@@ -176,9 +226,6 @@ async function keyImage(input) {
     }
   }
   const cropW = maxX - minX + 1, cropH = maxY - minY + 1;
-  // Bake the crop into a real PNG buffer: downstream metadata/resize must see
-  // the CROPPED image (a raw extract pipeline reports source dims and has
-  // dropped alpha for narrow strips — seen on the eyes layer).
   const png = await sharp(data, { raw: { width: px.w, height: px.h, channels: 4 } })
     .extract({ left: minX, top: minY, width: cropW, height: cropH })
     .png()
@@ -216,12 +263,19 @@ async function place(img, slot) {
   const h = Math.max(1, Math.round(meta.height * scale));
   const resized = await img.resize(w, h, { kernel: 'nearest' }).png().toBuffer();
   const left = Math.round(slot.x + (slot.w - w) / 2);
-  const top =
-    slot.alignY === 'bottom'
-      ? Math.round(slot.y + slot.h - h)
-      : slot.alignY === 'top'
-        ? Math.round(slot.y)
-        : Math.round(slot.y + (slot.h - h) / 2);
+  let top;
+  if (slot.anchor) {
+    // Place item so `anchor.frac` of the way down from its top edge lines up
+    // with canvas-y `anchor.target` (e.g. brim of cap lands on brow line).
+    top = Math.round(slot.anchor.target - slot.anchor.frac * h);
+  } else {
+    top =
+      slot.alignY === 'bottom'
+        ? Math.round(slot.y + slot.h - h)
+        : slot.alignY === 'top'
+          ? Math.round(slot.y)
+          : Math.round(slot.y + (slot.h - h) / 2);
+  }
   return sharp({ create: { width: CANVAS_W, height: CANVAS_H, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } })
     .composite([{ input: resized, left, top }]);
 }
@@ -266,7 +320,7 @@ if (cmd === 'key') {
   const [input, slotKey, out] = args;
   const slot = SLOTS[slotKey];
   if (!slot) throw new Error(`unknown slot ${slotKey}: ${Object.keys(SLOTS).join(', ')}`);
-  const { img, crop } = await keyImage(input);
+  const { img, crop } = await keyImage(input, { stripBody: !!slot.stripBody });
   const gray = slotKey === 'hair' || slotKey === 'beard' ? await toGrayscale(img) : img;
   const placed = await place(gray, slot);
   await saveWebp(await applyClear(placed, slot), out);
