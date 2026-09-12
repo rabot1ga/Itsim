@@ -1,6 +1,6 @@
 {
   "collection": "avatar",
-  "version": 1,
+  "version": 2,
   "resolution": {
     "width": 500,
     "height": 760
@@ -14,7 +14,7 @@
       "entries": [
         {
           "id": "body_base",
-          "file": "avatar/body/base.svg",
+          "file": "avatar-v2/body_base.webp",
           "weight": 1
         }
       ]
@@ -26,27 +26,27 @@
       "entries": [
         {
           "id": "bottom_jeans",
-          "file": "avatar/bottom/bottom_jeans.svg",
+          "file": "avatar-v2/bottom_jeans.webp",
           "weight": 4
         },
         {
           "id": "bottom_sweatpants",
-          "file": "avatar/bottom/bottom_sweatpants.svg",
+          "file": "avatar-v2/bottom_sweatpants.webp",
           "weight": 3
         },
         {
           "id": "bottom_chinos",
-          "file": "avatar/bottom/bottom_chinos.svg",
+          "file": "avatar-v2/bottom_chinos.webp",
           "weight": 2
         },
         {
           "id": "bottom_shorts",
-          "file": "avatar/bottom/bottom_shorts.svg",
+          "file": "avatar-v2/bottom_shorts.webp",
           "weight": 2
         },
         {
           "id": "bottom_suit",
-          "file": "avatar/bottom/bottom_suit.svg",
+          "file": "avatar-v2/bottom_suit.webp",
           "weight": 1,
           "rarity": "rare"
         }
@@ -59,29 +59,29 @@
       "entries": [
         {
           "id": "eye_normal",
-          "file": "avatar/eyes/eye_normal.svg"
+          "file": "avatar-v2/eye_normal.webp"
         },
         {
           "id": "eye_tired",
-          "file": "avatar/eyes/eye_tired.svg"
+          "file": "avatar-v2/eye_tired.webp"
         },
         {
           "id": "eye_closed",
-          "file": "avatar/eyes/eye_closed.svg"
+          "file": "avatar-v2/eye_closed.webp"
         },
         {
           "id": "eye_vr",
-          "file": "avatar/eyes/eye_vr.svg",
+          "file": "avatar-v2/eye_vr.webp",
           "rarity": "rare"
         },
         {
           "id": "eye_red",
-          "file": "avatar/eyes/eye_red.svg",
+          "file": "avatar-v2/eye_red.webp",
           "rarity": "rare"
         },
         {
           "id": "eye_legendary",
-          "file": "avatar/eyes/eye_legendary.svg",
+          "file": "avatar-v2/eye_legendary.webp",
           "rarity": "legendary"
         }
       ]
@@ -89,24 +89,24 @@
     {
       "id": "hair",
       "zOrder": 3,
-      "required": true,
+      "required": false,
       "tintSlot": "hairColor",
       "entries": [
         {
           "id": "hair_buzzcut",
-          "file": "avatar/hair/hair_buzzcut.svg"
+          "file": "avatar-v2/hair_buzzcut.webp"
         },
         {
           "id": "hair_short",
-          "file": "avatar/hair/hair_short.svg"
+          "file": "avatar-v2/hair_short.webp"
         },
         {
           "id": "hair_messy",
-          "file": "avatar/hair/hair_messy.svg"
+          "file": "avatar-v2/hair_messy.webp"
         },
         {
           "id": "hair_long",
-          "file": "avatar/hair/hair_long.svg",
+          "file": "avatar-v2/hair_long.webp",
           "excludeWith": [
             "accessory.acc_cap"
           ]
@@ -117,23 +117,23 @@
         },
         {
           "id": "hair_manbun",
-          "file": "avatar/hair/hair_manbun.svg"
+          "file": "avatar-v2/hair_manbun.webp"
         },
         {
           "id": "hair_curly",
-          "file": "avatar/hair/hair_curly.svg"
+          "file": "avatar-v2/hair_curly.webp"
         },
         {
           "id": "hair_undercut",
-          "file": "avatar/hair/hair_undercut.svg"
+          "file": "avatar-v2/hair_undercut.webp"
         },
         {
           "id": "hair_spiky",
-          "file": "avatar/hair/hair_spiky.svg"
+          "file": "avatar-v2/hair_spiky.webp"
         },
         {
           "id": "hair_ponytail",
-          "file": "avatar/hair/hair_ponytail.svg"
+          "file": "avatar-v2/hair_ponytail.webp"
         }
       ]
     },
@@ -149,55 +149,55 @@
         },
         {
           "id": "beard_stubble",
-          "file": "avatar/beard/beard_stubble.svg"
+          "file": "avatar-v2/beard_stubble.webp"
         },
         {
           "id": "beard_goatee",
-          "file": "avatar/beard/beard_goatee.svg"
+          "file": "avatar-v2/beard_goatee.webp"
         },
         {
           "id": "beard_full",
-          "file": "avatar/beard/beard_full.svg"
+          "file": "avatar-v2/beard_full.webp"
         },
         {
           "id": "beard_mustache",
-          "file": "avatar/beard/beard_mustache.svg"
+          "file": "avatar-v2/beard_mustache.webp"
         }
       ]
     },
     {
       "id": "top",
       "zOrder": 2,
-      "required": true,
+      "required": false,
       "entries": [
         {
           "id": "top_hoodie_gray",
-          "file": "avatar/top/top_hoodie_gray.svg"
+          "file": "avatar-v2/top_hoodie_gray.webp"
         },
         {
           "id": "top_hoodie_localhost",
-          "file": "avatar/top/top_hoodie_localhost.svg"
+          "file": "avatar-v2/top_hoodie_localhost.webp"
         },
         {
           "id": "top_hoodie_corp",
-          "file": "avatar/top/top_hoodie_corp.svg",
+          "file": "avatar-v2/top_hoodie_corp.webp",
           "rarity": "rare"
         },
         {
           "id": "top_tshirt",
-          "file": "avatar/top/top_tshirt.svg"
+          "file": "avatar-v2/top_tshirt.webp"
         },
         {
           "id": "top_shirt",
-          "file": "avatar/top/top_shirt.svg"
+          "file": "avatar-v2/top_shirt.webp"
         },
         {
           "id": "top_jacket",
-          "file": "avatar/top/top_jacket.svg"
+          "file": "avatar-v2/top_jacket.webp"
         },
         {
           "id": "top_hoodie_cat",
-          "file": "avatar/top/top_hoodie_cat.svg"
+          "file": "avatar-v2/top_hoodie_cat.webp"
         }
       ]
     },
@@ -212,29 +212,29 @@
         },
         {
           "id": "acc_headphones",
-          "file": "avatar/acc/acc_headphones.svg"
+          "file": "avatar-v2/acc_headphones.webp"
         },
         {
           "id": "acc_glasses",
-          "file": "avatar/acc/acc_glasses.svg"
+          "file": "avatar-v2/acc_glasses.webp"
         },
         {
           "id": "acc_vr_headset",
-          "file": "avatar/acc/acc_vr_headset.svg",
+          "file": "avatar-v2/acc_vr_headset.webp",
           "rarity": "rare"
         },
         {
           "id": "acc_cap",
-          "file": "avatar/acc/acc_cap.svg"
+          "file": "avatar-v2/acc_cap.webp"
         },
         {
           "id": "acc_medal",
-          "file": "avatar/acc/acc_medal.svg",
+          "file": "avatar-v2/acc_medal.webp",
           "rarity": "legendary"
         },
         {
           "id": "acc_beanie",
-          "file": "avatar/acc/acc_beanie.svg"
+          "file": "avatar-v2/acc_beanie.webp"
         }
       ]
     }

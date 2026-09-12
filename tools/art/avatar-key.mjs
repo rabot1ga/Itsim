@@ -139,7 +139,7 @@ async function keyImage(input) {
       while (stack.length) {
         const q = stack.pop();
         size++;
-        const qx = q % px.w, qy = (q - qx) / px.w;
+        const qx = q % px.w;
         const neigh = [q - px.w, q + px.w];
         if (qx > 0) neigh.push(q - 1);
         if (qx < px.w - 1) neigh.push(q + 1);

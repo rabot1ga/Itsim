@@ -25,23 +25,29 @@ skin/hair тинтятся CSS-фильтрами, см. `shared/lookResolve.ts`
 4. Якоря слотов зафиксированы в `SLOTS` (avatar-key.mjs): head/eyes/beard/top/
    bottom/acc_* — измерены на собранном теле в /tmp/body_base.webp.
 
-## Готово (в `layers/`) — 36/38
+## Готово (в `layers/`) — 38/38 ✅
 
 **body**: body_base
 **eyes**: eye_normal, eye_tired, eye_vr, eye_red, eye_legendary, eye_closed
-**hair**: hair_short, hair_messy, hair_manbun, hair_buzzcut, hair_curly, hair_long, hair_ponytail
+**hair**: hair_short, hair_messy, hair_manbun, hair_buzzcut, hair_curly, hair_long, hair_ponytail, hair_undercut, hair_spiky
 **beard**: beard_goatee, beard_stubble, beard_full, beard_mustache
 **top**: top_tshirt, top_hoodie_gray, top_hoodie_localhost, top_shirt, top_jacket, top_hoodie_corp, top_hoodie_cat
 **bottom**: bottom_jeans, bottom_sweatpants, bottom_chinos, bottom_shorts, bottom_suit
 **acc**: acc_cap, acc_headphones, acc_glasses, acc_beanie, acc_vr_headset, acc_medal
 
-Демо-композиты лежат рядом: `demo-*.png`.
+Финальная сетка демо-композитов: `demo-final-grid.png` (8 комбо).
 
-## Очередь генерации (осталось 2)
+## Интеграция (следующий шаг)
 
-| Слот | id | примечание |
-|---|---|---|
-| hair | undercut, spiky | b7 «solid cap»-промпт дал заливку лица; следующий промпт: рамка вокруг лица как у hair_short (U-curve открывает лицо, волосы только вокруг и сверху) |
+1. Обновить `packages/content/layers/avatar_manifest.json`: entry.file →
+   новые webp (`avatar-v2/<file>.webp`), старые SVG оставить в репозитории
+   как provenance (но манифест должен указывать на webp).
+2. Переснять доминанты цветов TOP/BOTTOM из нового арта и обновить таблицы в
+   `packages/shared/src/engine/lookResolve.ts` (изо-фигурка комнаты идёт за
+   теми же hex).
+3. Скопировать layers/*.webp в `packages/client/public/layers/avatar-v2/`.
+4. Visual-pass: HUD-портрет, зеркало гардероба, комнатная изо-сцена.
+5. e2e 28/28 прогон.
 
 Boilerplate (критично! иначе генератор рисует полного манекена поверх предмета):
 «Tiny isolated sprite of JUST a single <предмет> floating alone, retro adventure
