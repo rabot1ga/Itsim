@@ -54,14 +54,22 @@ const SLOTS = {
     alignY: 'top',
     clear: { x: 165, y: 78, w: 170, h: 52 },
   },
-  // beard: mouth-to-chin
-  beard: { x: 190, y: 152, w: 120, h: 80, fit: 'width', alignY: 'top', stripBody: true },
-  // eyes: small pair centered on the eye line y≈101
+  // beard: mouth-to-chin. Full-body masters paint the beard onto the mannequin
+  // face (no stripBody needed — grayscale layer covers only the facial hair area
+  // when anchored correctly because the keyed crop is tight to the beard's
+  // connected component; see the bbox stats in commit notes).
+  beard: { x: 190, y: 148, w: 120, h: 90, fit: 'width', alignY: 'top' },
+  // eyes: small pair centered on the eye line y≈101 (eyes are painted onto the
+  // mannequin face and include eye makeup/highlights; stripBody IS used because
+  // the eye bbox otherwise drags gray skin around the eyes).
   eyes: { x: 180, y: 96, w: 140, h: 36, fit: 'width', alignY: 'center', stripBody: true },
-  // tops: shoulder-to-hem, width-fill torso so sleeves cover the arms
-  top: { x: 95, y: 180, w: 310, h: 290, fit: 'width', alignY: 'top' },
-  // bottoms: waist-to-ankles, width-fill legs
-  bottom: { x: 105, y: 405, w: 290, h: 330, fit: 'width', alignY: 'top' },
+  // tops: shoulder-to-hem. h=360 leaves room for long shirts/jackets whose hem
+  // falls to mid-thigh (e.g. shirt, cat-hoodie); short-sleeve Ts end earlier but
+  // that's fine — body_base hands show correctly as skin past the cuffs.
+  top: { x: 95, y: 180, w: 310, h: 400, fit: 'width', alignY: 'top' },
+  // bottoms: waist-to-ankles, width-fill legs. h=360 gives room for slouchy
+  // pants/sweatpants that bunch at the ankle.
+  bottom: { x: 105, y: 400, w: 290, h: 360, fit: 'width', alignY: 'top' },
   // Accessories use anchor-based placement: place so that the fraction `frac`
   // down from the top of the (resized) item lands exactly at canvas-y `target`.
   // Fracs measured from auto-cropped item bbox: cap-brim 0.58, beanie-cuff 0.81,
