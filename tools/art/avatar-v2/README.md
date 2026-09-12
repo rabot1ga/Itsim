@@ -25,28 +25,26 @@ skin/hair тинтятся CSS-фильтрами, см. `shared/lookResolve.ts`
 4. Якоря слотов зафиксированы в `SLOTS` (avatar-key.mjs): head/eyes/beard/top/
    bottom/acc_* — измерены на собранном теле в /tmp/body_base.webp.
 
-## Готово (в `layers/`) — 18/38
+## Готово (в `layers/`) — 26/38
 
-**body**: body_base (grayscale, skin-тінт)
-**eyes**: eye_normal, eye_tired, eye_vr, eye_red, eye_legendary
-**hair**: hair_short, hair_messy, hair_manbun
-**beard**: beard_goatee, beard_stubble, beard_full
-**top**: top_tshirt, top_hoodie_gray
-**bottom**: bottom_jeans, bottom_sweatpants
-**acc**: acc_cap, acc_headphones
+**body**: body_base (grayscale, skin-тинт)
+**eyes**: eye_normal, eye_tired, eye_vr, eye_red, eye_legendary, eye_closed
+**hair**: hair_short, hair_messy, hair_manbun, hair_buzzcut, hair_curly
+**beard**: beard_goatee, beard_stubble, beard_full, beard_mustache
+**top**: top_tshirt, top_hoodie_gray, top_hoodie_localhost
+**bottom**: bottom_jeans, bottom_sweatpants, bottom_chinos
+**acc**: acc_cap, acc_headphones, acc_glasses, acc_beanie
 
 Демо-композиты лежат рядом: `demo-*.png`.
 
-## Очередь генерации (осталось 20)
+## Очередь генерации (осталось 12)
 
 | Слот | id | примечание |
 |---|---|---|
-| eyes | eye_closed ⚠ b4 брак (один большой оранжевый глаз), перегенерить | closed-arc глаза |
-| hair | buzzcut, long (женская стрижка, переделать в мужскую), curly, undercut, spiky, ponytail | в b4 все с розовой кожей в кадре — перегенерить без head/skin |
-| beard | mustache ⚠ в b4 получился handlebar, нужен аккуратный chevron выше губы | |
-| top | hoodie_localhost, hoodie_corp, hoodie_cat, shirt, jacket | +5 |
-| bottom | chinos, shorts, suit | +3 |
-| acc | glasses ⚠ b4 три линзы/артефакт, vr_headset, medal, beanie | +4 |
+| hair | long, undercut, spiky, ponytail | b5 undercut/spiky с куском скальпа — перегенерить жёстче; long — мужская версия; ponytail |
+| top | hoodie_corp, hoodie_cat, shirt, jacket | +4 |
+| bottom | shorts, suit | +2 |
+| acc | vr_headset, medal | +2 |
 
 Boilerplate (критично! иначе генератор рисует полного манекена поверх предмета):
 «Tiny isolated sprite of JUST a single <предмет> floating alone, retro adventure
