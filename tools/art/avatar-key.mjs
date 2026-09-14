@@ -48,8 +48,8 @@ const OVERRIDES = {
   'eye_closed.png':    {mode:'anchor', scale:0.12, ax:0.5, ay:0.5, rx:250, ry:L.eye},
   'eye_vr.png':        {mode:'pupil', eyeSpan:80, eyeY:L.eye-5},
   // ---- face accessories ----
-  'acc_glasses.png':   {mode:'pupil', eyeSpan:80, eyeY:L.eye},
-  'acc_vr_headset.png':{mode:'pupil', eyeSpan:80, eyeY:L.eye-8},
+  'acc_glasses.png':   {mode:'pupil', eyeSpan:120, eyeY:L.eye+10},
+  'acc_vr_headset.png':{mode:'pupil', eyeSpan:200, eyeY:L.eye+5},
   // ---- hair ----
   // Silhouette bbox covers entire body; we pick (ax,ay) in that bbox so that the
   // rendered hair sprite covers from crown down to hairline/brow. Scale/ay/ry
@@ -66,10 +66,10 @@ const OVERRIDES = {
   'hair_undercut.png': {mode:'anchor', scale:0.13, ax:0.5, ay:0.22, rx:250, ry:L.crown+18},
   'hair_spiky.png':    {mode:'anchor', scale:0.14, ax:0.5, ay:0.16, rx:250, ry:L.crown+8},
   // ---- beards ----
-  'beard_goatee.png':  {mode:'anchor', scale:0.09, ax:0.5, ay:0.22, rx:250, ry:L.mouth-2},
-  'beard_stubble.png': {mode:'anchor', scale:0.07, ax:0.5, ay:0.24, rx:250, ry:L.mouth},
-  'beard_full.png':    {mode:'anchor', scale:0.10, ax:0.5, ay:0.15, rx:250, ry:L.nose+4},
-  'beard_mustache.png':{mode:'anchor', scale:0.06, ax:0.5, ay:0.30, rx:250, ry:L.nose+8},
+  'beard_goatee.png':  {mode:'anchor', targetW:55,targetH:50, ax:0.5,ay:0.22, rx:250, ry:L.mouth+2},
+  'beard_stubble.png': {mode:'anchor', targetW:80,targetH:40, ax:0.5,ay:0.24, rx:250, ry:L.mouth+5},
+  'beard_full.png':    {mode:'anchor', targetW:90,targetH:85, ax:0.5,ay:0.20, rx:250, ry:L.mouth+5},
+  'beard_mustache.png':{mode:'anchor', targetW:70,targetH:18, ax:0.5,ay:0.30, rx:250, ry:L.nose+12},
   // ---- tops ----
   'top_tshirt.png':           {mode:'top', shoulder:215, ry:L.shoulder-2},
   'top_hoodie_gray.png':      {mode:'top', shoulder:245, ry:L.shoulder-4},
@@ -85,10 +85,10 @@ const OVERRIDES = {
   'bottom_shorts.png':     {mode:'bottom', legLen:165, ry:L.waistband-5},
   'bottom_suit.png':       {mode:'bottom', legLen:300, ry:L.waistband-5},
   // ---- accessories ----
-  'acc_cap.png':       {mode:'anchor', scale:0.10, ax:0.5, ay:0.24, rx:250, ry:L.crown+8},
-  'acc_headphones.png':{mode:'anchor', scale:0.14, ax:0.5, ay:0.40, rx:250, ry:L.ear+5},
-  'acc_beanie.png':    {mode:'anchor', scale:0.12, ax:0.5, ay:0.20, rx:250, ry:L.crown+5},
-  'acc_medal.png':     {mode:'item', satTol:24, targetW:35, rx:250, ry:L.chest+50},
+  'acc_cap.png':       {mode:'anchor', targetW:140,targetH:80, ax:0.5, ay:0.70, rx:250, ry:L.crown+25},
+  'acc_headphones.png':{mode:'anchor', targetW:200,targetH:120,ax:0.5, ay:0.60, rx:250, ry:L.ear+5},
+  'acc_beanie.png':    {mode:'anchor', targetW:130,targetH:100,ax:0.5, ay:0.70, rx:250, ry:L.crown+25},
+  'acc_medal.png':     {mode:'item', satTol:24, targetW:40, ay:0.0, rx:250, ry:L.chest+50},
 };
 
 // ---------- low-level pixel ops ----------
@@ -613,11 +613,14 @@ async function buildLayer(inp,slot,out){
     }
     const ibuf=extBuf(useData,fresh.info.width,fresh.info.height,useBox);
     const sc=(ov.targetW||80)/useBox.w;
-    placed=await placeAnchor(ibuf,useBox.w,useBox.h,sc,0.5,0.25,ov.rx||250,ov.ry||L.chest);
+    placed=await placeAnchor(ibuf,useBox.w,useBox.h,sc,ov.ax||0.5,ov.ay??0.25,ov.rx||250,ov.ry||L.chest);
   }
   else{
-    // anchor mode
-    placed=await placeAnchor(buf,s.w,s.h,ov.scale,ov.ax,ov.ay,ov.rx,ov.ry);
+    // anchor mode: support either `scale` (ratio) or `targetW/targetH` (final size on canvas).
+    let sc=ov.scale;
+    if(ov.targetW) sc=ov.targetW/s.w;
+    else if(ov.targetH) sc=ov.targetH/s.h;
+    placed=await placeAnchor(buf,s.w,s.h,sc,ov.ax,ov.ay,ov.rx,ov.ry);
   }
 
   let final=blank().composite([{input:placed.rz,left:placed.left,top:placed.top}]);
