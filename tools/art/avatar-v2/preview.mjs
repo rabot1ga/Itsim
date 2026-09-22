@@ -20,7 +20,10 @@ const opt = (name, dflt) => {
   return hit ? hit.slice(name.length + 3) : dflt;
 };
 const cfg = JSON.parse(await readFile(join(HERE, 'build.config.json'), 'utf-8'));
-const DIR = resolve(HERE, opt('layers', process.env.AVATAR_LAYERS_DIR ?? cfg.layersDir));
+// Каталог сборки (layers/) в git не лежит — в свежем чекауте или после сброса
+// песочницы его нет, а опубликованный набор байт-в-байт тот же вывод сборки.
+const built = existsSync(resolve(HERE, cfg.layersDir, 'body_base.webp'));
+const DIR = resolve(HERE, opt('layers', process.env.AVATAR_LAYERS_DIR ?? (built ? cfg.layersDir : cfg.publishDir)));
 const OUT = opt('out', join(HERE, 'artifacts', 'preview.png'));
 const [CW, CH] = [500, 760];
 const COLS = 3;
