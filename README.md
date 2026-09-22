@@ -587,7 +587,7 @@ CTO за год ≤ 35% (эндгейм обязан оставаться тру
 
 ```bash
 npm run simulate          # отчёт симулятора
-npm test                  # контент + 366 юнит-тестов (движок/сервер/бот/клиент) + simulate --check
+npm test                  # контент + 380 юнит-тестов (движок/сервер/бот/клиент) + simulate --check
 npx tsx packages/sim/src/simulate.ts --why   # что блокирует агента на следующем гейте
 ```
 
@@ -634,7 +634,7 @@ npm run build           # полная сборка (shared → content → serv
 npm run pixelgen:audit  # пиксельный контент: идемпотентность + валидация
 ```
 
-Тесты: **366** (`shared` 196 · `server` 51 · `bot` 22 · `client` 97) + симулятор `--check`.
+Тесты: **380** (`shared` 201 · `server` 51 · `bot` 22 · `client` 106) + симулятор `--check`.
 
 CI — [`ci/github-actions-ci.yml`](ci/github-actions-ci.yml) (скопируйте в `.github/workflows/ci.yml`,
 см. [ci/README.md](ci/README.md)): на каждый push и PR гоняются
@@ -721,7 +721,7 @@ CI — [`ci/github-actions-ci.yml`](ci/github-actions-ci.yml) (скопируй�
 
 **Качество**
 
-- [x] 366 юнит-тестов (движок 196 · сервер 51 · бот 22 · клиент 97), симулятор 40×365 с `--check`-гейтом,
+- [x] 380 юнит-тестов (движок 201 · сервер 51 · бот 22 · клиент 106), симулятор 40×365 с `--check`-гейтом,
       `simulate --why`
 - [x] ESLint 9 + Prettier; `lint` = типы + линтер (раньше был только `tsc`)
 - [x] CI GitHub Actions: типы, линтер, контент, тесты, симулятор, pixelgen-аудит, сборка
