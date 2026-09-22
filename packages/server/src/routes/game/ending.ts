@@ -6,9 +6,9 @@
  * switch in actions.ts handles the "claim" terminal via the `claim_ending`
  * action; here we own the "kick off the election" logic.
  */
-import { calculateRating, ctoElectionChance, gateFor, GRADE_SALARIES, type Grade } from '@itsim/shared';
+import { ctoElectionChance, gateFor, GRADE_SALARIES, type Grade } from '@itsim/shared';
 import { clamp } from '@itsim/shared';
-import { careerGatesOf, fmtMoney, GRADE_POSITIONS, HUMAN_REQ, rng, StoredState } from './shared.js';
+import { careerGatesOf, GRADE_POSITIONS, HUMAN_REQ, rng, StoredState } from './shared.js';
 
 export function runCtoElection(
   state: StoredState,

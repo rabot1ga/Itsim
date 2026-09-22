@@ -9,7 +9,6 @@ import { FastifyInstance } from 'fastify';
 import { getContent } from '../../services/contentService.js';
 import { loadState, saveState } from '../../services/gameStore.js';
 import {
-  activeSprintTheme,
   advanceLastTick,
   applyCheckIn,
   calculateOfflineBankedDays,
