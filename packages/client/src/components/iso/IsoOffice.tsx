@@ -77,7 +77,7 @@ export const IsoOffice: React.FC<{
       ))}
       {calls.map((c, i) => {
         const meta = manifest.sprites[c.sprite];
-        const href = c.colours ? variants[variantKey(meta.file, c.colours)] ?? meta.file : meta.file;
+        const href = c.colours ? (variants[variantKey(meta.file, c.colours)] ?? meta.file) : meta.file;
         return (
           <image
             key={`${c.sprite}-${i}`}

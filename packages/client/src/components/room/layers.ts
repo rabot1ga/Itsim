@@ -4,7 +4,7 @@ import {
   GeneticTraits,
   GeneticsConfig,
   AvatarCustomization,
-  AVATAR_EDITABLE_SLOTS,
+  AvatarSlotId,
   geneticTraitForSlot,
   traitTint,
   tintFilter,
@@ -100,19 +100,36 @@ export function buildLayerStack(
 }
 
 /**
- * Композиция для превью: запись гардероба > генетика, по редактируемым слотам.
- * Одна функция на панель гардероба и «Профиль» — иначе «что показывает панель» и
- * «что рисует комната» разъезжаются молча, а разница видна только игроку.
+ * Полная композиция фигуры: генетика + «не редактируемые» слоты +overrides из
+ * гардероба. Одна функция на все четыре места, где аватар собирается заново —
+ * комната, превью гардероба, «Профиль» и шаринг-карточка. До неё база жила
+ * внутри `ProceduralAvatar`, и карточка, собиравшая композицию сама, теряла
+ * `body` и `eyes`: на шеринге игрок без головы и без глаз.
  */
-export function previewComposition(
+export function avatarComposition(
   avatar: AvatarCustomization | null | undefined,
-  traits: GeneticTraits | null | undefined
-): Record<string, string> {
-  const out: Record<string, string> = {};
-  for (const slot of AVATAR_EDITABLE_SLOTS) {
-    const chosen =
+  traits: GeneticTraits | null | undefined,
+  extra?: Partial<Composition>
+): Composition {
+  const chosen = (slot: AvatarSlotId): string | null => {
+    const picked =
       (avatar as Record<string, string | null> | undefined)?.[slot] ?? geneticTraitForSlot(traits ?? undefined, slot);
-    if (chosen) out[slot] = chosen;
+    return picked ?? null;
+  };
+
+  const composition: Composition = {
+    body: 'body_base',
+    eyes: traits?.eyeShape ?? 'eye_normal',
+    hair: chosen('hair'),
+    beard: chosen('beard'),
+    top: chosen('top'),
+    bottom: chosen('bottom'),
+    accessory: chosen('accessory'),
+  };
+  if (extra) {
+    for (const [slot, value] of Object.entries(extra)) {
+      if (value !== undefined) composition[slot] = value;
+    }
   }
-  return out;
+  return composition;
 }

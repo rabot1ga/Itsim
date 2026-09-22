@@ -3,7 +3,7 @@ import { useGameStore } from '../store/gameStore';
 import { PlayerPortrait } from '../components/PlayerPortrait';
 import { ProceduralAvatar } from '../components/room/ProceduralAvatar';
 import { useAvatarContent } from '../components/room/useAvatarContent';
-import { previewComposition } from '../components/room/layers';
+import { avatarComposition } from '../components/room/layers';
 import { ScreenTitle, SectionTitle, StatBar } from '../components/ui';
 import { xpToNext } from '@itsim/shared';
 
@@ -35,7 +35,7 @@ export const ProfileView: React.FC = () => {
   const setView = useGameStore((s) => s.setView);
   const { avatarManifest, geneticsConfig } = useAvatarContent();
   if (!player) return null;
-  const avatarOverrides = previewComposition(player.avatar, player.genetics);
+  const avatarOverrides = avatarComposition(player.avatar, player.genetics);
 
   const mainId = player.mainSkillId ?? 'javascript';
   const skill = player.skills?.[mainId] ?? { level: 0, xp: 0 };

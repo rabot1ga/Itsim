@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { buildRoomComposition, RoomRenderer } from '../components/room/RoomRenderer';
 import { RoomEditor, entryName } from '../components/room/RoomEditor';
+import { avatarComposition } from '../components/room/layers';
 import { EmptyState, ScreenTitle, SectionTitle } from '../components/ui';
 import { Wardrobe } from '../components/room/Wardrobe';
 import { ShareCard } from '../components/room/ShareCard';
@@ -301,7 +302,17 @@ export const RoomView: React.FC = () => {
       </div>
 
       {/* Share card */}
-      {ready && <ShareCard traits={displayTraits} player={player} />}
+      {ready && composition && (
+        <ShareCard
+          traits={displayTraits}
+          player={player}
+          roomManifest={roomManifest}
+          avatarManifest={avatarManifest}
+          geneticsConfig={geneticsConfig}
+          roomComposition={composition}
+          avatarComposition={avatarComposition(player.avatar, traits)}
+        />
+      )}
     </div>
   );
 };

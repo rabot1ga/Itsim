@@ -1,6 +1,6 @@
 import React from 'react';
 import { LayerManifest, GeneticTraits, GeneticsConfig } from '@itsim/shared';
-import { Composition, buildLayerStack } from './layers';
+import { Composition, avatarComposition, buildLayerStack } from './layers';
 
 /**
  * Layered procedural avatar — DESIGN.md sections 1-2.
@@ -16,16 +16,14 @@ export const ProceduralAvatar: React.FC<{
   className?: string;
   compositionOverrides?: Partial<Composition>;
 }> = ({ manifest, traits, geneticsConfig, className, compositionOverrides }) => {
-  const composition: Composition = {
-    body: 'body_base',
-    bottom: 'bottom_jeans',
-    eyes: traits.eyeShape,
-    hair: traits.hairStyle,
-    beard: traits.beard,
-    top: traits.top,
-    accessory: traits.accessory,
-    ...compositionOverrides,
-  };
+  // База — общая с гардеробом/профилем/карточкой (см. avatarComposition),
+  // сюда только накладываются ручные переопределения; undefined = «слот не
+  // тронут», он не должен зетириться в null.
+  const overrides: Composition = {};
+  for (const [slot, value] of Object.entries(compositionOverrides ?? {})) {
+    if (value !== undefined) overrides[slot] = value;
+  }
+  const composition: Composition = { ...avatarComposition(null, traits), ...overrides };
 
   const layers = buildLayerStack(manifest, composition, traits, geneticsConfig);
   const { width = 500, height = 760 } = manifest.resolution ?? {};

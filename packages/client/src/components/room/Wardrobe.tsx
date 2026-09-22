@@ -20,7 +20,7 @@ import type { GeneticsConfig } from '@itsim/shared';
 import { useGameStore } from '../../store/gameStore';
 import { haptic } from '../../lib/telegram';
 import { EmojiToken } from '../ui';
-import { previewComposition } from './layers';
+import { avatarComposition } from './layers';
 import { ProceduralAvatar } from './ProceduralAvatar';
 
 /**
@@ -101,7 +101,7 @@ export const Wardrobe: React.FC<{
   // выбранные, и ровно тем же стеком, что рисует «Дом». До этого тап по карусели
   // менял только подсветку кнопки: силуэт искался iso-бюстом, у которого нет ни
   // штанов, ни кепки — купленная одежда была невидима.
-  const preview = previewComposition(player?.avatar, traits);
+  const preview = avatarComposition(player?.avatar, traits);
 
   return (
     <div className="space-y-4 animate-fade-in">
