@@ -9,8 +9,10 @@
  * лендмарков из avatar-key.mjs (L), а не «нравится / не нравится».
  *
  *   node tools/art/avatar-v2/check-placement.mjs [--layers=<dir>] [--manifest=<path>]
- *   --layers по умолчанию указывает на собранные слои; чтобы проверить то, что
- *   уже лежит в public, передайте --layers=../../../packages/client/public/layers/avatar-v2
+ *
+ * По умолчанию проверяется ОПУБЛИКОВАННЫЙ набор (packages/client/public/layers/
+ * avatar-v2) — то, что реально видит игрок, и то, что можно проверить в CI без
+ * мастеров. На собранный, но ещё не опубликованный слой — --layers=layers.
  *
  * Выход: 0 — нарушений нет, 1 — есть. В CI пока НЕ подключён: на наборе слоёв
  * из PR #10 он красный по делу (см. docs/ANALYSIS-2026-09-23.md §2.2) и
@@ -32,19 +34,26 @@ const opt = (name, dflt) => {
 };
 
 const cfg = JSON.parse(await readFile(join(HERE, 'build.config.json'), 'utf-8'));
-const LAYERS = resolve(HERE, opt('layers', process.env.AVATAR_LAYERS_DIR ?? cfg.layersDir));
+const PUBLISHED = resolve(HERE, cfg.publishDir);
+const LAYERS = resolve(
+  HERE,
+  opt('layers', process.env.AVATAR_LAYERS_DIR ?? (existsSync(PUBLISHED) ? cfg.publishDir : cfg.layersDir))
+);
+// Манифест хранит пути слоя относительно public/layers клиента (клиент собирает
+// из них URL `/layers/<file>`), а не относительно корня репозитория.
+const PUBLIC_LAYERS = resolve(HERE, opt('publicLayers', '../../../packages/client/public/layers'));
 const MANIFEST = resolve(HERE, opt('manifest', join('../../../packages/content/layers/avatar_manifest.json')));
 
 // ── допуски: один файл, чтобы калибровка была видна как набор чисел ──────────
 const T = {
-  alphaCutoff: 16, // пиксель считается «крытым» выше этой альфы
+  alphaCutoff: 16,
+  faceClearMaxOpaque: 0.2, // доля непрозрачных пикселей в окне глаз у слоёв волос // пиксель считается «крытым» выше этой альфы
   eyeWidthVsFace: 1.15, // глаза не могут быть шире лица (с небольшим допуском)
   eyeBand: 16, // серединa глаз — L.eye ± 16
   eyeMaxHeight: 56, // red/legendary/VR рисуются с подсветкой и визором — они выше «нормальных»
   hairTopVsCrown: 22, // причёска начинается не ниже crown+22
   hairMinWidthVsFace: 0.8, // «хохолок» вместо причёски — это провал
   hairMaxWidthVsFace: 1.7,
-  beardTopVsMouth: 14, // верх бороды — не выше рта минус 14
   beardMaxDrop: 0.45, // бородa вьётся не дальше 45 % высоты головы за подбородок
   faceAccMaxWidthVsFace: 1.55, // очки/VR/кепки — в пределах головы с запасом
   topWidthVsArms: 0.95, // топ обязан перекрывать разлёт рук тела
@@ -112,6 +121,15 @@ const headH = L.chin - L.crown;
 // ниже (y>150) манекен расширяется шеей, и «лицо» стало бы 119…166 px вместо
 // реальных 102 px — все пороги «не шире лица» поехали бы вверх.
 const faceW = widestInBand(body, L.brow, L.nose);
+const FACE_CLEAR_SLOTS = [/^hair/, /^top_/, /^acc_cap$/, /^acc_beanie$/];
+function eyeCover(m) {
+  const x0 = Math.round(CW / 2 - faceW * 0.36);
+  const x1 = Math.round(CW / 2 + faceW * 0.36);
+  let opaque = 0;
+  for (let y = L.eye - 12; y < L.eye + 12; y++) for (let x = x0; x < x1; x++) if (m.mask[y * m.w + x]) opaque++;
+  return opaque / ((x1 - x0) * 24);
+}
+
 const armSpan = widestInBand(body, L.shoulder + 10, L.chest + 40);
 const waistW = widestInBand(body, L.waistband - 10, L.waistband + 25);
 const legSpan = widestInBand(body, L.crotch + 10, L.ankle - 20);
@@ -132,7 +150,7 @@ function check(id, m, slot) {
   const push = (msg, got, want) => problems.push({ msg, got: String(got), want: String(want) });
 
   if (m.w !== CW || m.h !== CH) push('канвас не совпадает с манифестом', `${m.w}×${m.h}`, `${CW}×${CH}`);
-  if (m.count === 0) push('слой пустой — OVERRIDES не нашёл силуэт', '0 px', '>0 px');
+  if (m.count === 0) push('слой пустой — хромакей съел весь мастер', '0 px', '>0 px');
 
   const wpx = m.x1 - m.x0 + 1;
   const hpx = m.y1 - m.y0 + 1;
@@ -142,6 +160,18 @@ function check(id, m, slot) {
   }
   if (!m.count) return problems;
 
+  // «Лицо не закрыто». Полоса глаз по центру лица должна оставаться пустой у
+  // любого слоя, который накладывается на голову снизу вверх: причёска,
+  // головной убор, капюшон. По bbox такой дефект невидим — слой стоит «в своей
+  // полосе», а лицо под ним непрозрачное пятно (причёски в PR #10; кепка и
+  // шапка из b5 — потому что их нарисовали НА голове). Очки/VR исключены: они
+  // глаза и должны закрывать.
+  if (FACE_CLEAR_SLOTS.some((re) => re.test(id))) {
+    const cov = eyeCover(m);
+    if (cov > T.faceClearMaxOpaque)
+      push('слой закрывает глаза', `${Math.round(100 * cov)} % окна`, `≤${Math.round(T.faceClearMaxOpaque * 100)} %`);
+  }
+
   if (slot === 'eyes' || id.startsWith('eye_')) {
     if (wpx > faceW * T.eyeWidthVsFace)
       push('глаза шире лица', `${wpx} px`, `≤${Math.round(faceW * T.eyeWidthVsFace)} px`);
@@ -149,20 +179,33 @@ function check(id, m, slot) {
     const midY = (m.y0 + m.y1) / 2;
     if (Math.abs(midY - L.eye) > T.eyeBand)
       push('середина глаз вне полосы глаз', `y ${Math.round(midY)}`, `${L.eye}±${T.eyeBand}`);
-  } else if (slot === 'hair' || id.startsWith('hair_')) {
+  } else if (slot === 'hair' || slot === 'hair_long' || id.startsWith('hair_')) {
     if (m.y0 > L.crown + T.hairTopVsCrown)
       push('причёска начинается ниже макушки', `top y ${m.y0}`, `≤${L.crown + T.hairTopVsCrown}`);
     if (wpx < faceW * T.hairMinWidthVsFace)
       push('причёска уже лица — это хохолок', `${wpx} px`, `≥${Math.round(faceW * T.hairMinWidthVsFace)} px`);
     if (wpx > faceW * T.hairMaxWidthVsFace)
       push('причёска шире допустимого объёма', `${wpx} px`, `≤${Math.round(faceW * T.hairMaxWidthVsFace)} px`);
-    const bottomLimit = id.includes('long') || id.includes('ponytail') ? L.neck + 40 : L.chin + 12;
-    if (m.y1 > bottomLimit) push('причёска свисает ниже подбородка', `bottom y ${m.y1}`, `≤${bottomLimit}`);
+    const long = slot === 'hair_long' || id.includes('long') || id.includes('ponytail');
+    const bottomLimit = long ? L.neck + 40 : L.chin + 12;
+    if (m.y1 > bottomLimit) push('причёска свисает ниже допустимого', `bottom y ${m.y1}`, `≤${bottomLimit}`);
+    // Инвариант «лицо не закрыто» — общий для всех «головных» слоёв, см.
+    // FACE_CLEAR_SLOTS ниже.
   } else if (slot === 'beard' || id.startsWith('beard_')) {
-    if (m.y0 < L.mouth - T.beardTopVsMouth)
-      push('верх бороды выше рта', `top y ${m.y0}`, `≥${L.mouth - T.beardTopVsMouth}`);
+    // Физика, а не «верх ровно у рта»: у полноценной бороды баки законно
+    // доходят до скул (y~124), а вот лезть на брови/глаза или висеть на груди
+    // они не могут. Прежнее правило «top ≥ mouth−14» ловило как раз то, что
+    // борода не нарисована слишком низко, и одновременно вешало ложное
+    // нарушение на корректные баки.
+    if (m.y0 < L.brow + 20) push('борода залезает на брови/глаза', `top y ${m.y0}`, `≥${L.brow + 20}`);
     const maxBottom = L.chin + Math.round(headH * T.beardMaxDrop);
     if (m.y1 > maxBottom) push('борода висит на воротнике', `bottom y ${m.y1}`, `≤${maxBottom}`);
+    if (id.includes('mustache')) {
+      if (m.y1 < L.mouth - 5) push('усы не достают до рта', `bottom y ${m.y1}`, `≥${L.mouth - 5}`);
+      if (m.y0 > L.mouth + 12) push('усы sotto рта', `top y ${m.y0}`, `≤${L.mouth + 12}`);
+    } else if (m.y1 < L.chin - 25) {
+      push('борода не закрывает подбородок', `bottom y ${m.y1}`, `≥${L.chin - 25}`);
+    }
     if (wpx > faceW * 1.25) push('борода шире лица', `${wpx} px`, `≤${Math.round(faceW * 1.25)} px`);
   } else if (headAcc.includes(id)) {
     if (wpx > faceW * T.faceAccMaxWidthVsFace)
@@ -214,7 +257,19 @@ for (const slot of manifest.slots) {
   }
 }
 
-let bad = 0;
+// Сначала — целостность ссылок: на отсутствующий файл манифеста клиент покажет
+// битую картинку, а validate:content пути слоёв не проверяет (он не знает про
+// packages/client). Поэтому проверка здесь.
+const brokenLinks = [];
+for (const slot of manifest.slots) {
+  for (const entry of slot.entries) {
+    if (!entry.file) continue;
+    if (!existsSync(join(PUBLIC_LAYERS, entry.file))) brokenLinks.push(`${slot.id}/${entry.id} → ${entry.file}`);
+  }
+}
+for (const b of brokenLinks) console.log(`  ✗ манифест ссылается на отсутствующий файл: ${b}`);
+
+let bad = brokenLinks.length;
 let checked = 0;
 const skipped = [];
 for (const id of wanted) {
@@ -239,5 +294,10 @@ if (skipped.length)
 console.log(
   `\n${bad ? '✗' : '✓'} проверено ${checked} слоёв, ${bad} с нарушениями${skipped.length ? `, ${skipped.length} не найдено` : ''}`
 );
-if (bad) console.log('   Правки — в OVERRIDES (tools/art/avatar-key.mjs) и в мастерах, не в клиенте.');
+if (brokenLinks.length) console.log('   Правка: npm run avatar:publish -w tools/art (или почистите манифест).');
+if (bad)
+  console.log(
+    '   Правки — в slotTargets()/fit-профилях (tools/art/avatar-key.mjs), в мастерах и в' +
+      ' build.config.json, не в клиенте.'
+  );
 process.exit(bad ? 1 : 0);

@@ -16,7 +16,7 @@ git add .github/workflows/ci.yml && git commit -m "CI: enable GitHub Actions"
 >
 > Проверено 23.09.2026 на живом push: GitHub отвечает
 > `refusing to allow a GitHub App to create or update workflow
-> '.github/workflows/ci.yml' without 'workflows' permission`, и push всей ветки
+'.github/workflows/ci.yml' without 'workflows' permission`, и push всей ветки
 > отбивается целиком. Поэтому включение CI — единственный шаг, который нужно
 > сделать **вашей** учёткой; дальше `verify` и `content-guard` поедут сами.
 
