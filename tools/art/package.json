@@ -1,0 +1,16 @@
+{
+  "name": "@itsim/art",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Chroma-key pipeline for layered avatar sprites and story-art asset tooling",
+  "scripts": {
+    "avatar:build": "node avatar-v2/build.mjs",
+    "avatar:publish": "node avatar-v2/build.mjs --publish",
+    "avatar:preview": "node avatar-v2/preview.mjs && node avatar-v2/preview-all.mjs",
+    "avatar:check": "node avatar-v2/check-placement.mjs"
+  },
+  "devDependencies": {
+    "sharp": "^0.34.0"
+  }
+}
