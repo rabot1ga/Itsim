@@ -3,7 +3,7 @@ import { buildRoomScene, roomSeed, ScenePlayer } from './scene';
 import { shellPolygons } from './shell';
 import { characterLook, petLook } from './palette';
 import { recolourSprite } from './recolor';
-import { IsoManifest } from './IsoRoom';
+import { IsoManifest } from './manifest';
 
 /**
  * Painting the isometric room onto a 2D canvas.

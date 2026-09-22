@@ -58,7 +58,7 @@ export const RoomRenderer: React.FC<{
   if (accessory) avatarOverrides.accessory = accessory;
 
   return (
-    <div className="relative w-full aspect-square overflow-hidden border-2 border-ink-700 bg-ink-800">
+    <div className="relative w-full aspect-square overflow-hidden border-2 border-ink-700 bg-ink-800" aria-label="Комната">
       {layers.map((layer) => (
         <img
           key={layer.slotId}

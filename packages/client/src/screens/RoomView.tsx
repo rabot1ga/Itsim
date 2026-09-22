@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
-import { buildRoomComposition } from '../components/room/RoomRenderer';
-import { IsoRoom } from '../components/iso/IsoRoom';
-import { IsoRoomEditor } from '../components/iso/IsoRoomEditor';
-import { entryName } from '../components/room/RoomEditor';
+import { buildRoomComposition, RoomRenderer } from '../components/room/RoomRenderer';
+import { RoomEditor, entryName } from '../components/room/RoomEditor';
 import { EmptyState, ScreenTitle, SectionTitle } from '../components/ui';
 import { Wardrobe } from '../components/room/Wardrobe';
 import { ShareCard } from '../components/room/ShareCard';
@@ -97,8 +95,22 @@ export const RoomView: React.FC = () => {
         Дом
       </ScreenTitle>
 
-      {/* Room */}
-      <IsoRoom player={player} />
+      {/* Комната — плоский слоистый рендер (design.md §13.2): те же слои, что и
+          в редакторе, и полнофигурный персонаж из 500×760 webp-набора. Iso-вид
+          остался только там, где он и задуман: HUD-портрет, карточки, офис. */}
+      {ready && composition && (
+        <RoomRenderer
+          roomManifest={roomManifest}
+          avatarManifest={avatarManifest}
+          traits={displayTraits}
+          geneticsConfig={geneticsConfig}
+          housingLevel={player.housingLevel ?? 0}
+          composition={composition}
+          avatarCustom={player.avatar ?? null}
+          petWear={(player.items ?? []).filter((id: string) => id.startsWith('pet_'))}
+          petFed={Boolean(player.petFedToday)}
+        />
+      )}
 
       {/* Pet status */}
       {ready && composition?.pet && composition.pet !== 'pet_none' && (
@@ -116,7 +128,7 @@ export const RoomView: React.FC = () => {
       )}
 
       {/* Room editor */}
-      {ready && (
+      {ready && composition && (
         <div className="card">
           <button
             onClick={() => {
@@ -137,7 +149,14 @@ export const RoomView: React.FC = () => {
           <div className={`accordion-body ${editorOpen ? 'open' : ''}`}>
             <div className="accordion-inner">
               <div className="pt-3">
-                <IsoRoomEditor player={player} />
+                <RoomEditor
+                  roomManifest={roomManifest}
+                  geneticsConfig={geneticsConfig}
+                  traits={displayTraits}
+                  player={player}
+                  heldCollections={heldCollections ?? []}
+                  composition={composition}
+                />
               </div>
             </div>
           </div>
@@ -166,7 +185,12 @@ export const RoomView: React.FC = () => {
           <div className={`accordion-body ${wardrobeOpen ? 'open' : ''}`}>
             <div className="accordion-inner">
               <div className="pt-3">
-                <Wardrobe avatarManifest={avatarManifest} traits={traits} player={player} />
+                <Wardrobe
+                  avatarManifest={avatarManifest}
+                  geneticsConfig={geneticsConfig}
+                  traits={traits}
+                  player={player}
+                />
               </div>
             </div>
           </div>

@@ -16,14 +16,21 @@ import {
   LOOK_SLOT_NAMES,
   lookPalette,
 } from '@itsim/shared';
+import type { GeneticsConfig } from '@itsim/shared';
 import { useGameStore } from '../../store/gameStore';
 import { haptic } from '../../lib/telegram';
 import { EmojiToken } from '../ui';
+import { previewComposition } from './layers';
+import { ProceduralAvatar } from './ProceduralAvatar';
 
 /**
  * Wardrobe (docs/design.md §12.5) — change hair/beard/clothes/accessories.
  * Same UX as the room editor: per-slot carousels, locks with hints, tap to apply.
- * Stored as layered ids; the pixel renderer maps them (beard/medal are layered-only).
+ * Stored as layered ids: the layered renderer (room + the preview below) draws
+ * them 1:1, while the 32×32 pixel renderer can only map a subset — it has no
+ * bottom slot at all. That is why the panel shows the full-body figure itself:
+ * a tap must be visible exactly as the room will draw it, not as the iso bust
+ * approximates it.
  */
 
 const SLOT_META: Record<AvatarSlotId, { icon: string; name: string; price?: string }> = {
@@ -77,9 +84,10 @@ function entryName(id: string): string {
 
 export const Wardrobe: React.FC<{
   avatarManifest: LayerManifest;
+  geneticsConfig: GeneticsConfig;
   traits: GeneticTraits;
   player: any;
-}> = ({ avatarManifest, traits, player }) => {
+}> = ({ avatarManifest, geneticsConfig, traits, player }) => {
   const performAction = useGameStore((s) => s.performAction);
   const ctx = buildAvatarUnlockContext(player);
   const overrides: Record<string, string | null> = player?.avatar ?? {};
@@ -89,11 +97,30 @@ export const Wardrobe: React.FC<{
     if (!ok) haptic('error');
   };
 
+  // Живое превью: ровно те записи манифеста, которые панель подсвечивает как
+  // выбранные, и ровно тем же стеком, что рисует «Дом». До этого тап по карусели
+  // менял только подсветку кнопки: силуэт искался iso-бюстом, у которого нет ни
+  // штанов, ни кепки — купленная одежда была невидима.
+  const preview = previewComposition(player?.avatar, traits);
+
   return (
     <div className="space-y-4 animate-fade-in">
       <p className="text-[11px] text-ink-500 -mb-1">
         Глаза не меняются — это родословная. Всё остальное решают барбер, шкаф и шляпная лавка.
       </p>
+
+      <div className="well flex items-end gap-3">
+        <ProceduralAvatar
+          manifest={avatarManifest}
+          traits={traits}
+          geneticsConfig={geneticsConfig}
+          compositionOverrides={preview}
+          className="w-[92px] shrink-0"
+        />
+        <p className="text-2xs text-ink-400 flex-1">
+          Так ты будешь выглядеть в комнате: тот же стек слоёв, та же краска волос и бороды.
+        </p>
+      </div>
 
       {/* Colours: the figure in the room is recoloured live, and a mirror is free. */}
       <div className="well space-y-3">

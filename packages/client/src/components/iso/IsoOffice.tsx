@@ -5,7 +5,7 @@ import { buildOfficeScene, OfficeInput } from './office';
 import { characterLook } from './palette';
 import { variantKey } from './recolor';
 import { useRenderMode } from './useRenderMode';
-import { useIsoManifest, useSpriteVariants } from './IsoRoom';
+import { useIsoManifest, useSpriteVariants } from './manifest';
 
 /**
  * The office, drawn with the same engine as the flat: code-drawn shell, sprite

@@ -1,4 +1,14 @@
-import { LayerManifest, LayerEntry, GeneticTraits, GeneticsConfig, traitTint, tintFilter } from '@itsim/shared';
+import {
+  LayerManifest,
+  LayerEntry,
+  GeneticTraits,
+  GeneticsConfig,
+  AvatarCustomization,
+  AVATAR_EDITABLE_SLOTS,
+  geneticTraitForSlot,
+  traitTint,
+  tintFilter,
+} from '@itsim/shared';
 
 /**
  * Layer composition helpers — DESIGN.md section 1-3.
@@ -58,7 +68,13 @@ export function buildLayerStack(
         // Required slot with no match → fall back to the first entry with a file
         const fallback = slot.entries.find((e) => e.file);
         if (fallback?.file) {
-          layers.push({ slotId: slot.id, entryId: fallback.id, file: `/layers/${fallback.file}`, zOrder: slot.zOrder, required: true });
+          layers.push({
+            slotId: slot.id,
+            entryId: fallback.id,
+            file: `/layers/${fallback.file}`,
+            zOrder: slot.zOrder,
+            required: true,
+          });
         }
       }
       continue;
@@ -81,4 +97,22 @@ export function buildLayerStack(
   }
 
   return layers.sort((a, b) => a.zOrder - b.zOrder);
+}
+
+/**
+ * Композиция для превью: запись гардероба > генетика, по редактируемым слотам.
+ * Одна функция на панель гардероба и «Профиль» — иначе «что показывает панель» и
+ * «что рисует комната» разъезжаются молча, а разница видна только игроку.
+ */
+export function previewComposition(
+  avatar: AvatarCustomization | null | undefined,
+  traits: GeneticTraits | null | undefined
+): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const slot of AVATAR_EDITABLE_SLOTS) {
+    const chosen =
+      (avatar as Record<string, string | null> | undefined)?.[slot] ?? geneticTraitForSlot(traits ?? undefined, slot);
+    if (chosen) out[slot] = chosen;
+  }
+  return out;
 }
