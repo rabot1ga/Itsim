@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import App from '../App';
+import { tintFilter, tintFromHex } from '@itsim/shared';
 
 /**
  * Слоистый аватар обязан быть примонтирован, а не только существовать.
@@ -46,7 +47,14 @@ const player = {
     top: 'top_tshirt',
     eyeShape: 'eye_normal',
   },
-  avatar: { top: 'top_jacket', bottom: 'bottom_sweatpants', accessory: 'acc_cap' },
+  avatar: {
+    top: 'top_jacket',
+    bottom: 'bottom_sweatpants',
+    accessory: 'acc_cap',
+    hairColor: '#2b2320',
+    skin: '#f5c6a0',
+    topColor: '#3b6ea5',
+  },
   room: { slots: {} },
 };
 
@@ -110,6 +118,25 @@ describe('слоистый аватар в живых экранах', () => {
     expect(roomFigureSrcs()).toContain('/layers/avatar-v2/bottom_sweatpants.webp');
     expect(roomFigureSrcs()).toContain('/layers/avatar-v2/acc_cap.webp');
     expect(roomFigureSrcs()).toContain('/layers/avatar-v2/body_base.webp');
+  });
+
+  it('цвет из гардероба красит фигуру в комнате, а не только iso-портрет', async () => {
+    render(<App />);
+    await openScreen('Дом');
+
+    const figure = '[aria-label="Комната"] [aria-label="Аватар игрока"]';
+    const hair = await waitFor(() => {
+      const el = document.querySelector<HTMLImageElement>(`${figure} img[src*="/hair_"]`);
+      expect(el).toBeTruthy();
+      return el!;
+    });
+    // Ряд «Цвет волос» пишет хекс в player.avatar, а плоский стек раньше умел
+    // только палитрные id из генетики — то есть выбор оставался невидимым.
+    expect(hair.getAttribute('style')).toContain(tintFilter(tintFromHex('#2b2320')!));
+
+    // Одежда в плоском стеке предокрашена — её ряд честно ничего не красит.
+    const top = document.querySelector<HTMLImageElement>(`${figure} img[src*="top_jacket"]`);
+    expect(top?.getAttribute('style')).toContain('none');
   });
 
   it('«Профиль» показывает ту же фигуру, что и комната', async () => {

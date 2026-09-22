@@ -73,6 +73,7 @@ export const ProfileView: React.FC = () => {
             traits={player.genetics}
             geneticsConfig={geneticsConfig}
             compositionOverrides={avatarOverrides}
+            avatarCustom={player.avatar ?? null}
             className="w-[96px]"
           />
         ) : (

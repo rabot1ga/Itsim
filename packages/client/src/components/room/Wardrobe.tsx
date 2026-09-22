@@ -14,6 +14,7 @@ import {
   geneticTraitForSlot,
   LOOK_SLOTS,
   LOOK_SLOT_NAMES,
+  LOOK_SLOT_TINT,
   lookPalette,
 } from '@itsim/shared';
 import type { GeneticsConfig } from '@itsim/shared';
@@ -31,6 +32,12 @@ import { ProceduralAvatar } from './ProceduralAvatar';
  * bottom slot at all. That is why the panel shows the full-body figure itself:
  * a tap must be visible exactly as the room will draw it, not as the iso bust
  * approximates it.
+ *
+ * Ряд «Цвета» — это те же хексы, что видит изо-бюст; для плоской фигуры они
+ * работают там, где у мастера есть tintSlot (тон кожи, волосы, борода). Цвета
+ * верха/низа/обуви в плоском стеке применить нельзя: эти слои отданы в
+ * предокрашенном виде, grayscale-мастеров под них нет — ряд остаётся, но
+ * помечен, чтобы «тап не виден» не выглядел багом рендера.
  */
 
 const SLOT_META: Record<AvatarSlotId, { icon: string; name: string; price?: string }> = {
@@ -115,6 +122,7 @@ export const Wardrobe: React.FC<{
           traits={traits}
           geneticsConfig={geneticsConfig}
           compositionOverrides={preview}
+          avatarCustom={player?.avatar ?? null}
           className="w-[92px] shrink-0"
         />
         <p className="text-2xs text-ink-400 flex-1">
@@ -129,7 +137,10 @@ export const Wardrobe: React.FC<{
           const current = overrides[slotId] ?? null;
           return (
             <div key={slotId}>
-              <p className="text-2xs text-ink-400 mb-1.5">{LOOK_SLOT_NAMES[slotId]}</p>
+              <p className="text-2xs text-ink-400 mb-1.5">
+                {LOOK_SLOT_NAMES[slotId]}
+                {!LOOK_SLOT_TINT[slotId] && <span className="text-ink-500"> · видно в портрете и офисе</span>}
+              </p>
               <div className="flex gap-1.5 overflow-x-auto pb-0.5">
                 <button
                   onClick={() => apply(slotId, null)}

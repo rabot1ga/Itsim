@@ -316,6 +316,8 @@ import {
   getGeneticTraits,
   tintFilter,
   traitTint,
+  tintFromHex,
+  lookTintOverrides,
   type GeneticsConfig,
 } from '../../index';
 
@@ -428,6 +430,61 @@ describe('genetics', () => {
     expect(traitTint('skinTone', t, GENETICS_CONFIG)?.id).toBe(t.skinTone);
     expect(traitTint('wallColor', t, GENETICS_CONFIG)?.id).toBe(t.wallColor);
     expect(traitTint('unknownSlot', t, GENETICS_CONFIG)).toBeNull();
+  });
+});
+
+// ---- Ручные цвета гардероба → тонировка плоских мастеров ----
+
+describe('tintFromHex', () => {
+  it('детерминирована и не зависит от записи хекса', () => {
+    expect(tintFilter(tintFromHex('#f00')!)).toBe(tintFilter(tintFromHex('#FF0000')!));
+    expect(tintFilter(tintFromHex('#ff0000')!)).toBe(tintFilter(tintFromHex('#ff0000')!));
+  });
+
+  it('всё, что не хекс, остаётся на совести генетики', () => {
+    expect(tintFromHex('hair_black')).toBeNull();
+    expect(tintFromHex('#ff00')).toBeNull();
+    expect(tintFromHex('')).toBeNull();
+    expect(tintFromHex(null)).toBeNull();
+    expect(tintFromHex(undefined)).toBeNull();
+  });
+
+  it('монотонна: темнее — меньше brightness, насыщеннее — больше saturate', () => {
+    const dark = tintFromHex('#2b2320')!;
+    const blond = tintFromHex('#d7a94b')!;
+    expect(dark.light!).toBeLessThan(blond.light!);
+    expect(tintFromHex('#808080')!.sat!).toBeLessThan(tintFromHex('#ff2020')!.sat!);
+  });
+
+  it('нейтральный серый почти не добавляет насыщенности', () => {
+    expect(tintFromHex('#808080')!.sat).toBeCloseTo(0.1, 6);
+  });
+
+  it('тон считается как поворот от сепиевой базы, поэтому красный и синий расходятся', () => {
+    const red = tintFromHex('#ff2020')!.hue;
+    const blue = tintFromHex('#2020ff')!.hue;
+    expect(Math.abs(red - blue)).toBeGreaterThan(90);
+  });
+});
+
+describe('lookTintOverrides', () => {
+  it('плоскому стеку отдаются только те ряды, у мастеров которых есть tintSlot', () => {
+    expect(
+      lookTintOverrides({
+        skin: '#e8b088',
+        hairColor: '#2b2320',
+        topColor: '#123456',
+        bottomColor: '#000000',
+        shoeColor: '#ffffff',
+      })
+    ).toEqual({ skinTone: '#e8b088', hairColor: '#2b2320' });
+  });
+
+  it('мусор и «Авто» (null) не пробрасываются', () => {
+    expect(lookTintOverrides({ hairColor: 'blond', skin: null })).toEqual({});
+    expect(lookTintOverrides({})).toEqual({});
+    expect(lookTintOverrides(null)).toEqual({});
+    expect(lookTintOverrides(undefined)).toEqual({});
   });
 });
 

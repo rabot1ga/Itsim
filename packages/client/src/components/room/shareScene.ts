@@ -1,4 +1,5 @@
-import type { GeneticsConfig, GeneticTraits, LayerManifest } from '@itsim/shared';
+import type { AvatarCustomization, GeneticsConfig, GeneticTraits, LayerManifest } from '@itsim/shared';
+import { lookTintOverrides } from '@itsim/shared';
 import { buildLayerStack, Composition } from './layers';
 
 /**
@@ -53,6 +54,12 @@ export interface ShareSceneInput {
   avatarComposition: Composition;
   traits: GeneticTraits | null;
   geneticsConfig: GeneticsConfig | null;
+  /**
+   * Ручные цвета гардероба. Без них карточка показала бы генотип вместо
+   * выбранной краски — тот же класс расхождения, из-за которого она вообще
+   * рисовала не ту комнату.
+   */
+  avatarCustom?: AvatarCustomization | null;
 }
 
 /**
@@ -62,7 +69,13 @@ export interface ShareSceneInput {
  */
 export function shareSceneLayers(input: ShareSceneInput): DrawLayer[] {
   const room = buildLayerStack(input.roomManifest, input.roomComposition, input.traits, input.geneticsConfig);
-  const avatar = buildLayerStack(input.avatarManifest, input.avatarComposition, input.traits, input.geneticsConfig);
+  const avatar = buildLayerStack(
+    input.avatarManifest,
+    input.avatarComposition,
+    input.traits,
+    input.geneticsConfig,
+    lookTintOverrides(input.avatarCustom ?? null)
+  );
   const box = figureBox(
     input.avatarManifest.resolution ?? { width: 500, height: 760 },
     input.roomManifest.resolution ?? { width: 1000, height: 1000 }

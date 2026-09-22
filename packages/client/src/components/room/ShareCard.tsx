@@ -232,6 +232,7 @@ export const ShareCard: React.FC<{
         avatarComposition,
         traits,
         geneticsConfig,
+        avatarCustom: player?.avatar ?? null,
       });
       setDataUrl(canvas.toDataURL('image/png'));
       haptic('success');
@@ -282,7 +283,11 @@ export const ShareCard: React.FC<{
     <div className="card">
       <h3 className="section-title mb-2">Карточка для шеринга</h3>
       <canvas ref={canvasRef} width={W} height={H} style={{ display: 'none' }} />
-      {dataUrl && <img src={dataUrl} alt="Шар-карточка" className=" border-2 border-ink-700 mb-2" />}
+      {/* 1080px-превью без w-full растягивает экран: на 320px появляется
+            горизонтальный скролл, чего игровой шелл себе не позволяет. */}
+      {dataUrl && (
+        <img src={dataUrl} alt="Шар-карточка" className="w-full h-auto max-w-full border-2 border-ink-700 mb-2" />
+      )}
       {error && <p className="text-xs text-clay-300 mb-2">⚠️ {error}</p>}
       <div className="grid grid-cols-4 gap-1.5 mb-2">
         {FRAMES.map((f) => {

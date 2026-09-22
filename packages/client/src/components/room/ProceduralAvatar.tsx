@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayerManifest, GeneticTraits, GeneticsConfig } from '@itsim/shared';
+import { AvatarCustomization, LayerManifest, GeneticTraits, GeneticsConfig, lookTintOverrides } from '@itsim/shared';
 import { Composition, avatarComposition, buildLayerStack } from './layers';
 
 /**
@@ -15,7 +15,9 @@ export const ProceduralAvatar: React.FC<{
   geneticsConfig: GeneticsConfig;
   className?: string;
   compositionOverrides?: Partial<Composition>;
-}> = ({ manifest, traits, geneticsConfig, className, compositionOverrides }) => {
+  /** Ручные цвета гардероба (тон кожи, цвет волос) — поверх генетики. */
+  avatarCustom?: AvatarCustomization | null;
+}> = ({ manifest, traits, geneticsConfig, className, compositionOverrides, avatarCustom }) => {
   // База — общая с гардеробом/профилем/карточкой (см. avatarComposition),
   // сюда только накладываются ручные переопределения; undefined = «слот не
   // тронут», он не должен зетириться в null.
@@ -25,7 +27,13 @@ export const ProceduralAvatar: React.FC<{
   }
   const composition: Composition = { ...avatarComposition(null, traits), ...overrides };
 
-  const layers = buildLayerStack(manifest, composition, traits, geneticsConfig);
+  const layers = buildLayerStack(
+    manifest,
+    composition,
+    traits,
+    geneticsConfig,
+    lookTintOverrides(avatarCustom ?? null)
+  );
   const { width = 500, height = 760 } = manifest.resolution ?? {};
 
   return (

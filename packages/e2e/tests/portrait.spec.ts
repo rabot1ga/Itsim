@@ -1,50 +1,121 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+import { tintFilter, tintFromHex } from '@itsim/shared';
+
+/**
+ * Внешность игрока в настоящем браузере.
+ *
+ * Здесь защищаются два факта, которые нельзя проверить в jsdom:
+ *  1. «Комната» и «Профиль» рисуют один и тот же слоистый стек — наборы файлов
+ *     совпадают посимвольно, а не «похожи».
+ *  2. Ряд «Цвета» в гардеробе доезжает до плоской фигуры: фильтр слоя волос
+ *     становится ровно тем, что отдаёт движок (`tintFilter(tintFromHex(...))`),
+ *     и шаринг-карточка перерисовывается в другой PNG.
+ *
+ * Пункт 2 — это регресс, который в jsdom не поймать: там не считается ни CSS
+ * filter, ни canvas-вызовы, ни загрузка svg/webp. Карточка до переезда на
+ * плоский стек рисовала iso-комнату, и unit-тесты это ловили только по списку
+ * слоёв; здесь ловится по пикселям (dataURL меняется ⇔ краски поменялись).
+ */
+
+const HAIR = 'img[src*="/layers/avatar-v2/hair_"]';
+
+/**
+ * Браузер сериализует inline-style сам (trailing `;` его), поэтому сверяем
+ * префикс `filter: <то, что отдал движок>`, а не строку целиком.
+ */
+const styleWithFilter = (filter: string) => new RegExp(`filter: ${filter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`);
+
+/** Пути слоёв фигуры внутри контейнера с данным aria-label (сортировано). */
+function figureSrcs(page: Page, scope: string) {
+  return page
+    .locator(`[aria-label="${scope}"] img[src*="/layers/avatar-v2/"]`)
+    .evaluateAll((imgs) => imgs.map((i) => i.getAttribute('src') ?? '').sort());
+}
+
+/** Инлайн-фильтр слоя волос (тонировка grayscale-мастера). */
+function hairFilter(page: Page, scope: string) {
+  return page.locator(`[aria-label="${scope}"] ${HAIR}`).first().getAttribute('style');
+}
+
+/** Лист «Меню» — единственный надёжный способ попасть на «Дом» с любого экрана. */
+async function openView(page: Page, label: string) {
+  await page.getByRole('button', { name: 'Меню' }).click();
+  await page.getByRole('dialog', { name: 'Меню' }).getByRole('button', { name: label, exact: true }).click();
+}
+
+async function openRoom(page: Page) {
+  await openView(page, 'Дом');
+  await expect(page.getByLabel('Комната')).toBeVisible();
+}
+
+async function pickColour(page: Page, colour: string) {
+  const saved = page.waitForResponse((r) => r.url().endsWith('/api/game/action') && r.request().method() === 'POST');
+  await page.getByRole('button', { name: colour, exact: true }).first().click();
+  const response = await saved;
+  expect(response.ok()).toBe(true);
+  expect((await response.json()).state.avatar.hairColor).toBe(colour);
+  await expect(page.locator(`[aria-label="Комната"] ${HAIR}`).first()).toHaveAttribute(
+    'style',
+    styleWithFilter(tintFilter(tintFromHex(colour)!))
+  );
+}
+
+async function generateCard(page: Page) {
+  await page.getByRole('button', { name: 'Сгенерировать', exact: true }).click();
+  const preview = page.getByAltText('Шар-карточка');
+  await expect(preview).toBeVisible();
+  return preview.getAttribute('src');
+}
 
 for (const width of [320, 390, 480]) {
-  test(`saved portrait follows wardrobe and survives reload at ${width}px`, async ({ page }) => {
+  test(`flat figure matches across room and profile, wardrobe colour reaches room and card at ${width}px`, async ({
+    page,
+  }) => {
     await page.setViewportSize({ width, height: 844 });
     await page.goto('/');
-    const portrait = page.locator('[data-portrait="saved"] image');
-    await expect(portrait).toHaveCount(1);
-    const homeLook = await portrait.getAttribute('href');
-    await page.getByRole('button', { name: 'Открыть профиль', exact: true }).click();
-    await expect(portrait).toHaveAttribute('href', homeLook!);
-    await page.getByRole('button', { name: 'Комната и гардероб', exact: true }).click();
+    await page.getByRole('button', { name: 'Обустроить комнату', exact: true }).click();
+    await expect(page.getByLabel('Комната')).toBeVisible();
+
+    const roomSrcs = await figureSrcs(page, 'Комната');
+    expect(roomSrcs.length).toBeGreaterThanOrEqual(5);
+    expect(roomSrcs.some((src) => src.includes('bottom_'))).toBe(true);
+    const roomHair = await hairFilter(page, 'Комната');
+
+    await openView(page, 'Профиль');
+    await expect(page.getByLabel('Профиль персонажа')).toBeVisible();
+    expect(await figureSrcs(page, 'Аватар игрока')).toEqual(roomSrcs);
+    expect(await hairFilter(page, 'Аватар игрока')).toBe(roomHair);
+
+    // Реальное действие гардероба, без подставного состояния и моков.
+    await openRoom(page);
     await page.getByRole('button', { name: 'Гардероб', exact: true }).click();
-    // Real free wardrobe actions, no injected player state or fake responses.
-    const looks: string[] = [];
-    for (const colour of ['#2b2320', '#d7a94b']) {
-      const saved = page.waitForResponse(
-        (r) => r.url().endsWith('/api/game/action') && r.request().method() === 'POST'
-      );
-      await page.getByRole('button', { name: colour, exact: true }).click();
-      const response = await saved;
-      expect(response.ok()).toBe(true);
-      expect((await response.json()).state.avatar.hairColor).toBe(colour);
-      await page
-        .getByRole('navigation', { name: 'Основная навигация' })
-        .getByRole('button', { name: 'Главная', exact: true })
-        .click();
-      await expect(portrait).toHaveCount(1);
-      looks.push((await portrait.getAttribute('href'))!);
-      if (colour === '#2b2320') {
-        await page.getByRole('button', { name: 'Открыть профиль', exact: true }).click();
-        await page.getByRole('button', { name: 'Комната и гардероб', exact: true }).click();
-        await page.getByRole('button', { name: 'Гардероб', exact: true }).click();
-      }
-    }
-    await page
-      .getByRole('navigation', { name: 'Основная навигация' })
-      .getByRole('button', { name: 'Главная', exact: true })
-      .click();
-    await expect(portrait).toHaveCount(1);
-    expect(looks[0]).not.toBe(looks[1]);
-    const updated = await portrait.getAttribute('href');
-    expect(updated).toMatch(/^data:image\/png/);
+    await pickColour(page, '#2b2320');
+
+    const tinted = await hairFilter(page, 'Комната');
+    expect(tinted).not.toBe(roomHair);
+    expect(tinted).toContain('hue-rotate');
+
+    // Карточка = та же краска: png пересобрался, и в нём плоские слои.
+    const cardA = await generateCard(page);
+    expect(cardA).toMatch(/^data:image\/png/);
+    expect(cardA!.length).toBeGreaterThan(10_000);
+    expect(
+      await page.getByAltText('Шар-карточка').evaluate((img) => ({ w: img.naturalWidth, h: img.naturalHeight }))
+    ).toEqual({ w: 1080, h: 1080 });
+
+    await page.getByRole('button', { name: 'Гардероб', exact: true }).click();
+    await pickColour(page, '#d7a94b');
+    const cardB = await generateCard(page);
+    expect(cardB).not.toBe(cardA);
+
+    // Сейв: после перезагрузки плоская фигура возвращается с той же краской.
     await page.reload();
-    await expect(portrait).toHaveAttribute('href', updated!);
-    await page.getByRole('button', { name: 'Открыть профиль', exact: true }).click();
-    await expect(portrait).toHaveAttribute('href', updated!);
+    await openRoom(page);
+    await expect(page.locator(`[aria-label="Комната"] ${HAIR}`).first()).toHaveAttribute(
+      'style',
+      styleWithFilter(tintFilter(tintFromHex('#d7a94b')!))
+    );
+
     expect(
       await page.evaluate(() => {
         const area = document.getElementById('game-scroll')!;
@@ -54,10 +125,19 @@ for (const width of [320, 390, 480]) {
   });
 }
 
-test('missing portrait content leaves a usable profile with a labelled fallback', async ({ page }) => {
+test('iso content outage only costs the HUD bust, the room stays drawn', async ({ page }) => {
   await page.route('**/iso/manifest.json', (route) => route.fulfill({ status: 503, body: '' }));
   await page.goto('/');
-  await page.getByRole('button', { name: 'Открыть профиль', exact: true }).click();
   await expect(page.getByAltText('Стандартный портрет — внешность пока недоступна')).toBeVisible();
+  await page.getByRole('button', { name: 'Обустроить комнату', exact: true }).click();
+  expect((await figureSrcs(page, 'Комната')).length).toBeGreaterThanOrEqual(5);
+});
+
+test('layer content outage leaves the profile usable without a half-drawn figure', async ({ page }) => {
+  await page.route('**/api/content/layers', (route) => route.fulfill({ status: 503, body: '' }));
+  await page.goto('/');
+  await openView(page, 'Профиль');
+  await expect(page.getByLabel('Профиль персонажа')).toBeVisible();
+  await expect(page.getByLabel('Аватар игрока')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Комната и гардероб', exact: true })).toBeEnabled();
 });

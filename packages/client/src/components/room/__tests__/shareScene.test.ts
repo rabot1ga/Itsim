@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { lookTintOverrides, tintFilter, tintFromHex, traitTint } from '@itsim/shared';
 import { avatarComposition, buildLayerStack } from '../layers';
 import { figureBox, shareSceneLayers } from '../shareScene';
 
@@ -47,7 +48,7 @@ const roomComposition = {
   pet: 'pet_cat',
 };
 
-const scene = (avatar: Record<string, string>) =>
+const scene = (avatar: Record<string, string>, avatarCustom: Record<string, string> | null = null) =>
   shareSceneLayers({
     roomManifest,
     roomComposition,
@@ -55,6 +56,7 @@ const scene = (avatar: Record<string, string>) =>
     avatarComposition: avatarComposition(avatar as never, traits),
     traits,
     geneticsConfig: genetics,
+    avatarCustom: avatarCustom as never,
   });
 
 const files = (layers: { file: string }[]) => layers.map((l) => l.file.split('/').pop()!.replace('.webp', ''));
@@ -95,6 +97,39 @@ describe('шаринг-карточка = тот же слой, что и ком
     const top = layers.find((l) => l.file.endsWith('top_hoodie_gray.webp') || l.file.endsWith('top_tshirt.webp'));
     expect(hair?.filter).toContain('sepia');
     expect(top?.filter).toBeUndefined();
+  });
+
+  it('выбранный цвет волос и кожи доезжает до карточки, цвет одежды — нет', () => {
+    const custom = { hairColor: '#d7a94b', skin: '#8d5a3c', topColor: '#123456' };
+    const layers = scene({}, custom);
+    const hair = layers.find((l) => /avatar-v2\/hair_/.test(l.file));
+    // Ручной цвет бьёт генетику (в трейтах стоит hair_red) — иначе «Цвета» в
+    // гардеробе оставались бы рядом для изо-бюста.
+    expect(hair?.filter).toBe(tintFilter(tintFromHex('#d7a94b')!));
+    expect(hair?.filter).not.toBe(tintFilter(traitTint('hairColor', traits as never, genetics)!));
+    expect(scene({}).find((l) => /avatar-v2\/hair_/.test(l.file))?.filter).not.toBe(hair?.filter);
+    // борода сидит на том же tintSlot → её красит тот же ряд
+    const beard = layers.find((l) => /avatar-v2\/beard_/.test(l.file));
+    if (beard) expect(beard.filter).toBe(hair?.filter);
+    // тон кожи — отдельный ряд, тоже доходит
+    expect(layers.find((l) => l.file.includes('body_base'))?.filter).toBe(tintFilter(tintFromHex('#8d5a3c')!));
+    // слои одежды предокрашены: grayscale-мастеров под topColor нет, красить нечего
+    expect(layers.find((l) => /avatar-v2\/top_/.test(l.file))?.filter).toBeUndefined();
+  });
+
+  it('карточка и комната красятся побайтово одинаково', () => {
+    const custom = { hairColor: '#2b2320', skin: '#f5c6a0' };
+    const card = scene({ top: 'top_jacket' }, custom)
+      .filter((l) => l.file.includes('avatar-v2'))
+      .map((l) => l.filter);
+    const room = buildLayerStack(
+      avatarManifest,
+      avatarComposition({ top: 'top_jacket' } as never, traits),
+      traits,
+      genetics,
+      lookTintOverrides(custom as never)
+    ).map((l) => l.filter);
+    expect(card).toEqual(room);
   });
 
   it('слой без файла (acc_none, hair_bald) не попадает в кадр', () => {

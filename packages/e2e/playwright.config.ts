@@ -47,6 +47,22 @@ export default defineConfig({
   reporter: [['list']],
   use: {
     baseURL: `http://127.0.0.1:${WEB_PORT}`,
+    /**
+     * Онбординг — одноразовый гейт в localStorage. Без него каждый спек стартует
+     * с приветственных слайдов и падает на первом же асерте (игрового шелла
+     * просто нет в DOM): ровно так вся suites и лежала красной — CI не включён,
+     * смотреть было некому. Ставим флаг через storageState, а не кликами:
+     * кликабельный путь — это отдельный тест (он и есть в menu.spec).
+     */
+    storageState: {
+      cookies: [],
+      origins: [
+        {
+          origin: `http://127.0.0.1:${WEB_PORT}`,
+          localStorage: [{ name: 'itsim_onboarded_v1', value: '1' }],
+        },
+      ],
+    },
     viewport: { width: 390, height: 844 },
     trace: 'retain-on-failure',
     launchOptions: {

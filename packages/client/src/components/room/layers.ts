@@ -8,6 +8,7 @@ import {
   geneticTraitForSlot,
   traitTint,
   tintFilter,
+  tintFromHex,
 } from '@itsim/shared';
 
 /**
@@ -49,13 +50,17 @@ export interface StackedLayer {
 
 /**
  * Build the ordered layer stack for a manifest + composition.
- * Tints slots that declare `tintSlot` using the player's traits.
+ * Tints slots that declare `tintSlot`: a hand-picked wardrobe colour wins over
+ * the genetic palette entry, otherwise the wardrobe's «Цвета» row would recolour
+ * only the iso bust while the room figure kept the genotype — the same class of
+ * bug as the unused clothing layouts.
  */
 export function buildLayerStack(
   manifest: LayerManifest,
   composition: Composition,
   traits: GeneticTraits | null,
-  geneticsConfig: GeneticsConfig | null
+  geneticsConfig: GeneticsConfig | null,
+  tintOverrides: Record<string, string> | null = null
 ): StackedLayer[] {
   const layers: StackedLayer[] = [];
 
@@ -81,8 +86,9 @@ export function buildLayerStack(
     }
 
     let filter: string | undefined;
-    if (slot.tintSlot && traits && geneticsConfig) {
-      const tint = traitTint(slot.tintSlot, traits, geneticsConfig);
+    if (slot.tintSlot) {
+      const manual = tintOverrides ? tintFromHex(tintOverrides[slot.tintSlot]) : null;
+      const tint = manual ?? (traits && geneticsConfig ? traitTint(slot.tintSlot, traits, geneticsConfig) : null);
       if (tint) filter = tintFilter(tint);
     }
 

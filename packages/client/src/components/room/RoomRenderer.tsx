@@ -91,6 +91,7 @@ export const RoomRenderer: React.FC<{
           traits={traits}
           geneticsConfig={geneticsConfig}
           compositionOverrides={avatarOverrides}
+          avatarCustom={avatarCustom}
         />
       </div>
 
