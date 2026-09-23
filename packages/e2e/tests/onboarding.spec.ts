@@ -13,9 +13,7 @@ import { test, expect } from '@playwright/test';
  */
 const ONBOARDED_KEY = 'itsim_onboarded_v1';
 
-test('первый запуск: слайды показываются, «Пропустить» возвращает в игру и не повторяется', async ({
-  page,
-}) => {
+test('первый запуск: слайды показываются, «Пропустить» возвращает в игру и не повторяется', async ({ page }) => {
   await page.goto('/');
   await page.evaluate(() => localStorage.clear());
   await page.reload();

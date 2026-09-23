@@ -31,17 +31,31 @@ test.afterEach(async ({ request }) => {
   expect((await request.post('/api/game/reset')).ok()).toBe(true);
 });
 
+const dayNumber = (page: Page) =>
+  page.request.get('/api/game/state').then(async (r) => (await r.json()).state.currentDay as number);
+
 async function endDay(page: Page): Promise<void> {
   // The day-end CTA is docked above the tab bar, so «Работа» can close the day.
+  const before = await dayNumber(page);
   await page.getByRole('button', { name: /^Завершить день / }).click();
   const card = page.locator('.story-card');
-  if (await card.isVisible()) {
+  // Событие дня прилетает не синхронно с кликом: `isVisible()` без ожидания
+  // промахивался по окну, карточка оставалась нерешённой, день не закрывался,
+  // и следующая итерация winContract билась в правило «один отклик в день».
+  if (
+    await card
+      .waitFor({ state: 'visible', timeout: 4000 })
+      .then(() => true)
+      .catch(() => false)
+  ) {
     await card.locator('.story-choice:not(:disabled)').first().click();
     const done = page.getByRole('button', { name: 'Продолжить' });
     await expect(done).toBeVisible({ timeout: 15_000 });
     await done.click();
     await expect(page.locator('.story-card')).toHaveCount(0);
   }
+  // Сервер — источник правды: пока день не сдвинулся, ход не считать сделанным
+  await expect.poll(() => dayNumber(page), { timeout: 30_000 }).toBe(before + 1);
   await expect(board(page)).toBeVisible();
 }
 
@@ -54,9 +68,15 @@ async function winContract(page: Page, title: string): Promise<void> {
   const active = board(page).getByRole('article', { name: /^Активный проект/ });
   for (let attempt = 0; attempt < 25; attempt++) {
     if ((await active.count()) > 0) return;
-    const offer = board(page).getByRole('article', { name: title, exact: true });
-    await offer.getByRole('button', { name: 'Откликнуться', exact: true }).click();
-    await expect(board(page).getByRole('article', { name: 'Отклик отправлен' })).toBeVisible();
+    const pending = board(page).getByRole('article', { name: 'Отклик отправлен' });
+    // Отклик — один в день. Если висящий отклик уже есть (день закрылся позже,
+    // чем ждал цикл), клик по «Откликнуться» сервер отвергает и карточка
+    // «Отклик отправлен» не появляется — это и был флап спека, а не продукта.
+    if ((await pending.count()) === 0) {
+      const offer = board(page).getByRole('article', { name: title, exact: true });
+      await offer.getByRole('button', { name: 'Откликнуться', exact: true }).click();
+      await expect(pending).toBeVisible();
+    }
     await endDay(page);
   }
   await expect(active).toBeVisible();

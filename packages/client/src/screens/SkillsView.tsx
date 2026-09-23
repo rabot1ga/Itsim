@@ -294,7 +294,11 @@ export const SkillsView: React.FC = () => {
                     : 'Пути пока не опубликованы.'}
               </p>
             ) : (
-              <div className="grid gap-2 mt-3">
+              <div className="grid gap-2 mt-3 grid-cols-[minmax(0,1fr)]">
+                {/* grid-cols-[minmax(0,1fr)] обязателен: у implicit-колонки размер
+                    auto, и одна несжимаемая строка («дальше: …» + кнопка) растягивает
+                    её до min-content — на 320px это +52px горизонтального скролла
+                    всего экрана (сторожит packages/e2e/tests/skills-list.spec.ts). */}
                 {archViews.map((v) => {
                   const chosen = chosenArch?.id === v.id;
                   const doneCount = v.steps.filter((s) => s.done).length;
@@ -325,9 +329,11 @@ export const SkillsView: React.FC = () => {
                           {doneCount}/{v.steps.length}
                         </span>
                       </div>
+                      {/* min-w-0 на span обязателен: у flex-элемента min-width по
+                          умолчанию auto, и без него truncate не работает */}
                       <div className="flex items-center gap-2 mt-2">
                         {next ? (
-                          <span className="subtle truncate">
+                          <span className="subtle truncate min-w-0">
                             дальше: {next.skillName} → ур. {next.target}
                           </span>
                         ) : (

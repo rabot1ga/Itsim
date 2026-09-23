@@ -20,6 +20,27 @@ import { tintFilter, tintFromHex } from '@itsim/shared';
 const HAIR = 'img[src*="/layers/avatar-v2/hair_"]';
 
 /**
+ * Сюжет дня перекрывает экран: если сейв свежий (например, его сбросил соседний
+ * спек через `/api/game/reset`), на загрузке прилетает `.story-card`, клики по
+ * «Обустроить комнату» и по свотчам цвета упираются в оверлей, и тест падает не
+ * на асерте, а на 90-секундном таймауте actionability. Скрипт сверяет
+ * внешний вид, а не сюжет — историю закрываем и идём дальше.
+ */
+async function resolveStory(page: Page): Promise<void> {
+  const card = page.locator('.story-card');
+  const open = await card
+    .waitFor({ state: 'visible', timeout: 3000 })
+    .then(() => true)
+    .catch(() => false);
+  if (!open) return;
+  await card.locator('.story-choice:not(:disabled)').first().click();
+  const done = page.getByRole('button', { name: 'Продолжить' });
+  await expect(done).toBeVisible({ timeout: 15_000 });
+  await done.click();
+  await expect(page.locator('.story-card')).toHaveCount(0);
+}
+
+/**
  * Браузер сериализует inline-style сам (trailing `;` его), поэтому сверяем
  * префикс `filter: <то, что отдал движок>`, а не строку целиком.
  */
@@ -70,9 +91,16 @@ async function generateCard(page: Page) {
 for (const width of [320, 390, 480]) {
   test(`flat figure matches across room and profile, wardrobe colour reaches room and card at ${width}px`, async ({
     page,
+    request,
   }) => {
+    // Каждый прогон начинается с чистого сейва: тесты файла идут по одному
+    // игроку, и без reset второй прогон кликал бы по тому же цвету, который
+    // первый уже поставил. Клиент не шлёт запрос «без изменения» → waitForResponse
+    // висел до таймаута теста, а «цвет изменился» падал как ложный дефект.
+    expect((await request.post('/api/game/reset')).ok()).toBe(true);
     await page.setViewportSize({ width, height: 844 });
     await page.goto('/');
+    await resolveStory(page);
     await page.getByRole('button', { name: 'Обустроить комнату', exact: true }).click();
     await expect(page.getByLabel('Комната')).toBeVisible();
 
@@ -89,6 +117,8 @@ for (const width of [320, 390, 480]) {
     // Реальное действие гардероба, без подставного состояния и моков.
     await openRoom(page);
     await page.getByRole('button', { name: 'Гардероб', exact: true }).click();
+    // событие может прилететь и между экранами — оно так же блокирует клик
+    await resolveStory(page);
     await pickColour(page, '#2b2320');
 
     const tinted = await hairFilter(page, 'Комната');
@@ -100,12 +130,10 @@ for (const width of [320, 390, 480]) {
     expect(cardA).toMatch(/^data:image\/png/);
     expect(cardA!.length).toBeGreaterThan(10_000);
     expect(
-      await page
-        .getByAltText('Шар-карточка')
-        .evaluate((el) => {
-          const img = el as HTMLImageElement;
-          return { w: img.naturalWidth, h: img.naturalHeight };
-        })
+      await page.getByAltText('Шар-карточка').evaluate((el) => {
+        const img = el as HTMLImageElement;
+        return { w: img.naturalWidth, h: img.naturalHeight };
+      })
     ).toEqual({ w: 1080, h: 1080 });
 
     await page.getByRole('button', { name: 'Гардероб', exact: true }).click();
