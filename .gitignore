@@ -22,3 +22,7 @@ packages/e2e/.chromium-path.json
 # в репозиторий попадают только опубликованные webp в packages/client/public
 tools/art/avatar-v2/masters/
 tools/art/avatar-v2/layers/
+
+# Python tooling caches (tools/*.py, tools/isogen)
+__pycache__/
+*.pyc

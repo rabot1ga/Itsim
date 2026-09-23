@@ -620,8 +620,10 @@ npm run avatar:publish -w tools/art    # то же + запись в packages/cl
 # SVG-слои (Python, детерминированные; художник правит результат, код не трогаем)
 python3 tools/generate_layer_assets.py    # комната → packages/client/public/layers/room/
 python3 tools/generate_office_assets.py   # офис → packages/client/public/layers/office/
-# Аватарную половину этого скрипта не запускать: public/layers/avatar/ удалён
-# вместе с SVG-слоем аватара (23.09.2026), набор v2 живёт в avatar-v2/ и
+# По умолчанию этот скрипт ничего не перезаписывает (слои в public/layers правят
+# на месте — прогон с `--force` откатывал бы ручные правки), а его аватарную
+# половину он пишет только по флагу `--avatar-legacy`: public/layers/avatar/
+# удалён вместе с SVG-слоем аватара (23.09.2026), набор v2 живёт в avatar-v2/ и
 # собирается tools/art/avatar-v2. Исходники (мастера ~42 МБ, masters/ + layers/)
 # в git намеренно не лежат — они приходят из поставки арт-набора v2 и кладутся
 # рядом с tools/art/avatar-v2/build.config.json; без них avatar:build не работает,

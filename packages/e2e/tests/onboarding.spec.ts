@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { resolveStory } from './helpers/story';
 
 /**
  * Онбординг (design.md §5: «первый запуск — онбординг 4 слайда»).
@@ -42,4 +43,10 @@ test('первый запуск: слайды показываются, «Про
   await expect(page.locator('.onboard')).toHaveCount(0);
   // сразу игра: «Главная» с живой карточкой комнаты (design.md §5, строка 1)
   await expect(page.getByRole('region', { name: 'Твоя комната' })).toBeVisible();
+
+  // Этот спек заводит нового игрока (localStorage чист), а новый день встречает
+  // его сюжетом. Если его не закрыть, модалка уедет вместе с сейвом в следующий
+  // спек: сервер отвергает действия при открытом событии, и сосед краснеет на
+  // «краска не поменялась» / «отклик не отправлен».
+  await resolveStory(page, { strict: false });
 });

@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { tintFilter, tintFromHex } from '@itsim/shared';
+import { resolveStory } from './helpers/story';
 
 /**
  * Внешность игрока в настоящем браузере.
@@ -19,26 +20,9 @@ import { tintFilter, tintFromHex } from '@itsim/shared';
 
 const HAIR = 'img[src*="/layers/avatar-v2/hair_"]';
 
-/**
- * Сюжет дня перекрывает экран: если сейв свежий (например, его сбросил соседний
- * спек через `/api/game/reset`), на загрузке прилетает `.story-card`, клики по
- * «Обустроить комнату» и по свотчам цвета упираются в оверлей, и тест падает не
- * на асерте, а на 90-секундном таймауте actionability. Скрипт сверяет
- * внешний вид, а не сюжет — историю закрываем и идём дальше.
- */
-async function resolveStory(page: Page): Promise<void> {
-  const card = page.locator('.story-card');
-  const open = await card
-    .waitFor({ state: 'visible', timeout: 3000 })
-    .then(() => true)
-    .catch(() => false);
-  if (!open) return;
-  await card.locator('.story-choice:not(:disabled)').first().click();
-  const done = page.getByRole('button', { name: 'Продолжить' });
-  await expect(done).toBeVisible({ timeout: 15_000 });
-  await done.click();
-  await expect(page.locator('.story-card')).toHaveCount(0);
-}
+// Сейв у этого спека свежий (reset на каждый прогон), а свежий день встречает
+// игрока сюжетом — без `.story-card` клики по «Обустроить комнату» и по свотчам
+// цвета упирались бы в оверлей и падали на таймауте теста, а не на асерте.
 
 /**
  * Браузер сериализует inline-style сам (trailing `;` его), поэтому сверяем

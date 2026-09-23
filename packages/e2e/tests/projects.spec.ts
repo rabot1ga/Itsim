@@ -1,4 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
+import { resolveStory } from './helpers/story';
 
 /**
  * Contracts on the board — the «Работа» screen of reference 1.png.
@@ -38,22 +39,10 @@ async function endDay(page: Page): Promise<void> {
   // The day-end CTA is docked above the tab bar, so «Работа» can close the day.
   const before = await dayNumber(page);
   await page.getByRole('button', { name: /^Завершить день / }).click();
-  const card = page.locator('.story-card');
   // Событие дня прилетает не синхронно с кликом: `isVisible()` без ожидания
   // промахивался по окну, карточка оставалась нерешённой, день не закрывался,
   // и следующая итерация winContract билась в правило «один отклик в день».
-  if (
-    await card
-      .waitFor({ state: 'visible', timeout: 4000 })
-      .then(() => true)
-      .catch(() => false)
-  ) {
-    await card.locator('.story-choice:not(:disabled)').first().click();
-    const done = page.getByRole('button', { name: 'Продолжить' });
-    await expect(done).toBeVisible({ timeout: 15_000 });
-    await done.click();
-    await expect(page.locator('.story-card')).toHaveCount(0);
-  }
+  await resolveStory(page, { waitMs: 4_000 });
   // Сервер — источник правды: пока день не сдвинулся, ход не считать сделанным
   await expect.poll(() => dayNumber(page), { timeout: 30_000 }).toBe(before + 1);
   await expect(board(page)).toBeVisible();

@@ -11,6 +11,13 @@ grayscale base + CSS tinting.
 The artist replaces files **in place** (same names), or adds new variants
 and registers them in `packages/content/layers/*_manifest.json`.
 
+Because of that, `tools/generate_layer_assets.py` skips files that already
+exist: a plain re-run would roll the in-place edits back (three `room/pet/*.svg`
+shadows were already hand-moved). Regenerate deliberately with `--force` and
+review `git diff -- packages/client/public/layers`. The avatar half of that
+script is off by default too — the game ships `avatar-v2/*.webp` from
+`tools/art/avatar-v2`, and `public/layers/avatar/` was deleted as an orphan.
+
 Conventions:
 - avatar canvas: 500×760 webp (avatar-v2), head crown y=30, chin y=168,
   feet baseline y≈740 — посадка выводится из геометрии манекена в сборке

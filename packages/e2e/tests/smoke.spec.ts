@@ -1,4 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
+import { resolveStory } from './helpers/story';
 
 /**
  * Smoke run of the whole loop (roadmap P0.5):
@@ -15,18 +16,6 @@ async function startFreshGame(page: Page): Promise<void> {
 }
 
 const energyMeter = (page: Page) => page.locator('[title^="Энергия:"]').first();
-
-async function resolveStory(page: Page): Promise<void> {
-  const card = page.locator('.story-card');
-  if (await card.isVisible()) {
-    await card.locator('.story-choice:not(:disabled)').first().click();
-    // The choice collapses into a result card that waits for a deliberate tap.
-    const done = page.getByRole('button', { name: 'Продолжить' });
-    await expect(done).toBeVisible({ timeout: 15_000 });
-    await done.click();
-    await expect(page.locator('.story-card')).toHaveCount(0);
-  }
-}
 
 test('fresh run: three actions → end of day → buy cosmetics → telemetry', async ({ page, request }) => {
   // ── boot into the game ───────────────────────────────────────────────────

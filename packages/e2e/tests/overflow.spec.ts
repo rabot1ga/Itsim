@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { resolveStory } from './helpers/story';
 
 /**
  * Горизонтального скролла нет ни на одном экране, ни в каком состоянии.
@@ -33,13 +34,10 @@ const SIDE = [
   'Настройки',
 ] as const;
 
+/** Сюжет после перехода по экранам — не часть проверки, поэтому чистим без
+    жёстких асертов: нам важно не оставить невзятый модалки следующему спеку. */
 async function dismissStory(page: Page): Promise<void> {
-  const card = page.locator('.story-card');
-  if (!(await card.isVisible().catch(() => false))) return;
-  const choice = card.locator('.story-choice:not(:disabled)').first();
-  if (await choice.isVisible().catch(() => false)) await choice.click();
-  const done = page.getByRole('button', { name: 'Продолжить' });
-  if (await done.isVisible().catch(() => false)) await done.click();
+  await resolveStory(page, { waitMs: 1_200, strict: false });
 }
 
 /**

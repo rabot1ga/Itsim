@@ -76,7 +76,7 @@ export const RestView: React.FC = () => {
 
       {/* What resting is actually for */}
       <section className="card">
-        <div className="grid gap-2">
+        <div className="grid gap-2 grid-cols-[minmax(0,1fr)]">
           <StatBar resource="energy" value={player.energy} max={player.maxEnergy || 10} />
           <StatBar resource="mood" value={player.motivation} max={100} />
           <StatBar resource="health" value={player.health} max={100} />
