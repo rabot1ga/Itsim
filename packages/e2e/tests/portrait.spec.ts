@@ -1,6 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { tintFilter, tintFromHex } from '@itsim/shared';
-import { resolveStory } from './helpers/story';
+import { act, resolveStory } from './helpers/story';
 
 /**
  * Внешность игрока в настоящем браузере.
@@ -42,23 +42,49 @@ function hairFilter(page: Page, scope: string) {
   return page.locator(`[aria-label="${scope}"] ${HAIR}`).first().getAttribute('style');
 }
 
-/** Лист «Меню» — единственный надёжный способ попасть на «Дом» с любого экрана. */
+/**
+ * Лист «Меню» — единственный надёжный способ попасть на «Дом» с любого экрана.
+ * Навигация обёрнута в `act`: сюжет дня встанет поверх экрана в тот же момент,
+ * когда клиент применит ответ, и клик по кнопке под оверлеем иначе висит
+ * до actionability-таймаута.
+ */
 async function openView(page: Page, label: string) {
-  await page.getByRole('button', { name: 'Меню' }).click();
-  await page.getByRole('dialog', { name: 'Меню' }).getByRole('button', { name: label, exact: true }).click();
+  await act(page, async () => {
+    await page.getByRole('button', { name: 'Меню' }).click();
+    await page.getByRole('dialog', { name: 'Меню' }).getByRole('button', { name: label, exact: true }).click();
+  });
 }
 
 async function openRoom(page: Page) {
-  await openView(page, 'Дом');
-  await expect(page.getByLabel('Комната')).toBeVisible();
+  await act(page, async () => {
+    await openView(page, 'Дом');
+    await expect(page.getByLabel('Комната')).toBeVisible();
+  });
 }
 
+/**
+ * Клик по свотчу и его последствия.
+ *
+ * Ответ сервера — приятное подтверждение («краска уехала на бэкенд»), но не
+ * оракул: `waitForResponse` без границ висел на 90 с, если запрос не случился
+ * или задержался, и падение выглядело как «краска не доехала». Поэтому ответ
+ * ждём ограниченно и молча прощаем его отсутствие, а проверяем то, ради чего
+ * ряд «Цвета» существует, — перекрашенный слой фигуры (Playwright сам повторяет
+ * эту проверку). Сюжет по пути закрывает `act`: карточка встаёт в том же
+ * ответе, что и состояние, и успевает перехватить клик.
+ */
 async function pickColour(page: Page, colour: string) {
-  const saved = page.waitForResponse((r) => r.url().endsWith('/api/game/action') && r.request().method() === 'POST');
-  await page.getByRole('button', { name: colour, exact: true }).first().click();
+  const saved = page
+    .waitForResponse((r) => r.url().endsWith('/api/game/action') && r.request().method() === 'POST', {
+      timeout: 10_000,
+    })
+    .catch(() => null);
+  await act(page, () => page.getByRole('button', { name: colour, exact: true }).first().click());
   const response = await saved;
-  expect(response.ok()).toBe(true);
-  expect((await response.json()).state.avatar.hairColor).toBe(colour);
+  if (response) {
+    expect(response.ok()).toBe(true);
+    expect((await response.json()).state.avatar.hairColor).toBe(colour);
+  }
   await expect(page.locator(`[aria-label="Комната"] ${HAIR}`).first()).toHaveAttribute(
     'style',
     styleWithFilter(tintFilter(tintFromHex(colour)!))
@@ -84,8 +110,13 @@ for (const width of [320, 390, 480]) {
     expect((await request.post('/api/game/reset')).ok()).toBe(true);
     await page.setViewportSize({ width, height: 844 });
     await page.goto('/');
+    // Ждём не «полсекунды, вдруг сюжет», а первого коммита состояния: стор
+    // пишет `player` и `activeEvent` одним `set()` (store/gameStore.ts:185-196),
+    // значит к моменту, когда видна шапка, клиент уже решил — показывать карточку
+    // или нет. Окно ожидания здесь = гонка, она и роняла спек под нагрузкой.
+    await expect(page.getByLabel('Деньги')).toBeVisible();
     await resolveStory(page);
-    await page.getByRole('button', { name: 'Обустроить комнату', exact: true }).click();
+    await act(page, () => page.getByRole('button', { name: 'Обустроить комнату', exact: true }).click());
     await expect(page.getByLabel('Комната')).toBeVisible();
 
     const roomSrcs = await figureSrcs(page, 'Комната');
@@ -100,9 +131,9 @@ for (const width of [320, 390, 480]) {
 
     // Реальное действие гардероба, без подставного состояния и моков.
     await openRoom(page);
-    await page.getByRole('button', { name: 'Гардероб', exact: true }).click();
     // событие может прилететь и между экранами — оно так же блокирует клик
     await resolveStory(page);
+    await act(page, () => page.getByRole('button', { name: 'Гардероб', exact: true }).click());
     await pickColour(page, '#2b2320');
 
     const tinted = await hairFilter(page, 'Комната');

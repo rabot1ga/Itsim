@@ -8,16 +8,18 @@
  * правдоподобно, пока не сложишь. Тут — измерения против анатомических
  * лендмарков из avatar-key.mjs (L), а не «нравится / не нравится».
  *
- *   node tools/art/avatar-v2/check-placement.mjs [--layers=<dir>] [--manifest=<path>]
+ *   node tools/art/avatar-v2/check-placement.mjs [--layers=<dir>] [--manifest=<path>] [--strict]
  *
  * По умолчанию проверяется ОПУБЛИКОВАННЫЙ набор (packages/client/public/layers/
  * avatar-v2) — то, что реально видит игрок, и то, что можно проверить в CI без
  * мастеров. На собранный, но ещё не опубликованный слой — --layers=layers.
  *
- * Выход: 0 — нарушений нет, 1 — есть. В CI пока НЕ подключён: на наборе слоёв
- * из PR #10 он красный по делу (см. docs/ANALYSIS-2026-09-23.md §2.2) и
- * загорится зелёным только после перекалибровки. Подключать в CI надо тем же
- * коммитом, что и готовый арт.
+ * Выход: 0 — нарушений нет, 1 — есть, 2 — нет слоёв. Отдельно идут
+ * предупреждения: правило работает по маске, а не по bbox, и ловит «слой лезет
+ * на лицо» — ровно то, что bbox-правило пропускало (длинные причёски до челюсти
+ * и козырёк, подрезанный эйзером). На текущем наборе это известные долги арта
+ * (docs/TODO.md §2), поэтому они не валят гейт; --strict поднимает их в ошибку,
+ * и подключать стража в CI надо им — иначе краснота станет новой нормой.
  */
 import sharp from 'sharp';
 import { readFile } from 'node:fs/promises';
@@ -62,6 +64,17 @@ const T = {
   bottomMinReachToAnkle: 70, // длинные низы обязаны доставать до ног
   shortsMaxBelowCrotch: 110,
   centerOffset: 25, // голова/грудь симметричны: |cx − 250| ≤ 25
+  /** Причёске в полосе лица ниже бровей делать нечего — там только обрамление.
+   *  Калибровка по опубликованным слоям (2026-09-24): чистые дают 0…2.8 %
+   *  (curly — объём у висков, это норма), долги — 26.7 % (ponytail) и 70.6 %
+   *  (hair_long, см. docs/assets/avatar-v2-hair-diagnostic.png). Порог 5 % —
+   *  середина разрыва; до redraw'а мастеров правило только предупреждает. */
+  hairFaceWarnOpaque: 0.05,
+  /** Козырёк/отворот обязан что-то закрывать на лбу, но не глаза: если бровная
+   *  полоса заполнена, а окно глаз идеально пусто — кромку убора сформировал
+   *  эйзер (dest-out в сборке), а не художник. */
+  capBrowOpaque: 0.05,
+  capEyeEraseEvident: 0.005,
 };
 
 async function measure(file) {
@@ -130,6 +143,32 @@ function eyeCover(m) {
   return opaque / ((x1 - x0) * 24);
 }
 
+/** Полоса лица ниже бровей: brow+12 … chin, центр ±30 % faceW. Окно глаз
+ *  (eye±12) исключено: его гарантированно вырезает эйзер (opts.faceClearance в
+ *  tools/art/avatar-key.mjs), и по нему о мастере судить нельзя. */
+function faceStripCover(m) {
+  const x0 = Math.round(CW / 2 - faceW * 0.3);
+  const x1 = Math.round(CW / 2 + faceW * 0.3);
+  let opaque = 0,
+    total = 0;
+  for (let y = L.brow + 12; y <= L.chin; y++) {
+    if (y >= L.eye - 12 && y <= L.eye + 12) continue;
+    for (let x = x0; x <= x1; x++) {
+      total++;
+      if (m.mask[y * m.w + x]) opaque++;
+    }
+  }
+  return opaque / total;
+}
+/** Та же ширина, что у окна глаз, но на линии бровей. */
+function browCover(m) {
+  const x0 = Math.round(CW / 2 - faceW * 0.36);
+  const x1 = Math.round(CW / 2 + faceW * 0.36);
+  let opaque = 0;
+  for (let y = L.brow - 6; y <= L.brow + 6; y++) for (let x = x0; x < x1; x++) if (m.mask[y * m.w + x]) opaque++;
+  return opaque / ((x1 - x0) * 13);
+}
+
 const armSpan = widestInBand(body, L.shoulder + 10, L.chest + 40);
 const waistW = widestInBand(body, L.waistband - 10, L.waistband + 25);
 const legSpan = widestInBand(body, L.crotch + 10, L.ankle - 20);
@@ -147,7 +186,9 @@ console.log(
 const headAcc = ['acc_glasses', 'acc_vr_headset', 'acc_cap', 'acc_beanie', 'acc_headphones'];
 function check(id, m, slot) {
   const problems = [];
+  const warnings = [];
   const push = (msg, got, want) => problems.push({ msg, got: String(got), want: String(want) });
+  const warn = (msg, got, want) => warnings.push({ msg, got: String(got), want: String(want) });
 
   if (m.w !== CW || m.h !== CH) push('канвас не совпадает с манифестом', `${m.w}×${m.h}`, `${CW}×${CH}`);
   if (m.count === 0) push('слой пустой — хромакей съел весь мастер', '0 px', '>0 px');
@@ -158,7 +199,7 @@ function check(id, m, slot) {
   if (m.count && !id.startsWith('body_') && Math.abs(cx - CW / 2) > T.centerOffset) {
     push('центр слоя уехал от оси тела', `cx ${Math.round(cx)}`, `${CW / 2}±${T.centerOffset}`);
   }
-  if (!m.count) return problems;
+  if (!m.count) return { problems, warnings };
 
   // «Лицо не закрыто». Полоса глаз по центру лица должна оставаться пустой у
   // любого слоя, который накладывается на голову снизу вверх: причёска,
@@ -202,7 +243,7 @@ function check(id, m, slot) {
     if (m.y1 > maxBottom) push('борода висит на воротнике', `bottom y ${m.y1}`, `≤${maxBottom}`);
     if (id.includes('mustache')) {
       if (m.y1 < L.mouth - 5) push('усы не достают до рта', `bottom y ${m.y1}`, `≥${L.mouth - 5}`);
-      if (m.y0 > L.mouth + 12) push('усы sotto рта', `top y ${m.y0}`, `≤${L.mouth + 12}`);
+      if (m.y0 > L.mouth + 12) push('усы уехали под рот', `top y ${m.y0}`, `≤${L.mouth + 12}`);
     } else if (m.y1 < L.chin - 25) {
       push('борода не закрывает подбородок', `bottom y ${m.y1}`, `≥${L.chin - 25}`);
     }
@@ -240,7 +281,27 @@ function check(id, m, slot) {
     }
     if (wpx > waistW * 1.6) push('низ шире бёдер', `${wpx} px`, `≤${Math.round(waistW * 1.6)} px`);
   }
-  return problems;
+
+  // ── предупреждения: то, что лечится только арт-раундом, а не допуском ──────
+  if (/^hair/.test(id)) {
+    const face = faceStripCover(m);
+    if (face > T.hairFaceWarnOpaque)
+      warn(
+        'причёска закрывает лицо (мерка по маске, окно глаз исключено)',
+        `${Math.round(100 * face)} % полосы`,
+        `≤${Math.round(T.hairFaceWarnOpaque * 100)} %`
+      );
+  }
+  if (/^acc_(cap|beanie)$/.test(id)) {
+    const brow = browCover(m);
+    if (brow > T.capBrowOpaque && eyeCover(m) < T.capEyeEraseEvident)
+      warn(
+        'кромка убора вырезана эйзером, а не нарисована мастером',
+        `брови ${Math.round(100 * brow)} %, глаза ${Math.round(100 * eyeCover(m))} %`,
+        'кромка в мастере, а не в эйзере'
+      );
+  }
+  return { problems, warnings };
 }
 
 const manifest = JSON.parse(await readFile(MANIFEST, 'utf-8'));
@@ -269,9 +330,11 @@ for (const slot of manifest.slots) {
 }
 for (const b of brokenLinks) console.log(`  ✗ манифест ссылается на отсутствующий файл: ${b}`);
 
+const STRICT = args.includes('--strict');
 let bad = brokenLinks.length;
 let checked = 0;
 const skipped = [];
+const warnLines = [];
 for (const id of wanted) {
   const file = layer(id);
   if (!existsSync(file)) {
@@ -279,20 +342,34 @@ for (const id of wanted) {
     continue;
   }
   const m = await measure(file);
-  const problems = check(id, m, slotOf.get(id));
+  const { problems, warnings } = check(id, m, slotOf.get(id));
   checked++;
-  if (!problems.length) continue;
+  // В --strict предупреждения становятся нарушениями: так гейт ловит регресс, когда
+  // арт доведут до обещанного.
+  const errs = STRICT ? problems.concat(warnings) : problems;
+  const warns = STRICT ? [] : warnings;
+  for (const w of warns) warnLines.push(`${id}.webp: ${w.msg}: ${w.got} (хотим ${w.want})`);
+  if (!errs.length) continue;
   bad++;
   console.log(`  ✗ ${id}.webp  [${slotOf.get(id) ?? '?'}]`);
-  for (const p of problems) console.log(`      ${p.msg}: ${p.got} (хотим ${p.want})`);
+  for (const p of errs) console.log(`      ${p.msg}: ${p.got} (хотим ${p.want})`);
 }
 
 if (skipped.length)
   console.log(
     `\n  ⚠ нет ${skipped.length} слоёв в ${LAYERS}: ${skipped.slice(0, 6).join(', ')}${skipped.length > 6 ? ', …' : ''}`
   );
+if (warnLines.length) {
+  console.log('\n⚠ предупреждения — арт-долги, правило «лицо не закрыто» по маске:');
+  for (const w of warnLines) console.log(`   · ${w}`);
+  console.log('   Правка — в мастерах (см. docs/TODO.md §2); --strict считает их нарушениями.');
+}
+const pl = (n, one, few, many) =>
+  `${n} ${n % 10 === 1 && n % 100 !== 11 ? one : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? few : many}`;
 console.log(
-  `\n${bad ? '✗' : '✓'} проверено ${checked} слоёв, ${bad} с нарушениями${skipped.length ? `, ${skipped.length} не найдено` : ''}`
+  `\n${bad ? '✗' : '✓'} проверено ${checked} слоёв, ${pl(bad, 'нарушение', 'нарушения', 'нарушений')}${
+    warnLines.length ? `, ${pl(warnLines.length, 'предупреждение', 'предупреждения', 'предупреждений')}` : ''
+  }${skipped.length ? `, ${skipped.length} не найдено` : ''}`
 );
 if (brokenLinks.length) console.log('   Правка: npm run avatar:publish -w tools/art (или почистите манифест).');
 if (bad)

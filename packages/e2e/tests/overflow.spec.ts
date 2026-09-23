@@ -35,9 +35,9 @@ const SIDE = [
 ] as const;
 
 /** Сюжет после перехода по экранам — не часть проверки, поэтому чистим без
-    жёстких асертов: нам важно не оставить невзятый модалки следующему спеку. */
+    жёстких асертов: нам важно не оставить невзятую модалку следующему спеку. */
 async function dismissStory(page: Page): Promise<void> {
-  await resolveStory(page, { waitMs: 1_200, strict: false });
+  await resolveStory(page, { strict: false });
 }
 
 /**

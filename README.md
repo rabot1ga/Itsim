@@ -614,7 +614,7 @@ npm run pixelgen:prompt -- hair --count=2   # мастер-промпт для �
 # Слоистый аватар (webp-набор v2 — его и рендерит игра)
 npm run avatar:build -w tools/art      # мастера → public/layers/avatar-v2/*.webp (без публикации)
 npm run avatar:preview -w tools/art    # composed-превью позы/посадки, офлайн, без браузера
-npm run avatar:check -w tools/art      # страж посадки: 38 слоёв, 0 нарушений (CI-гейт)
+npm run avatar:check -w tools/art      # страж посадки: 38 слоёв, 0 нарушений, 4 предупреждения (долги арта; --strict считает их нарушениями)
 npm run avatar:publish -w tools/art    # то же + запись в packages/client/public
 
 # SVG-слои (Python, детерминированные; художник правит результат, код не трогаем)

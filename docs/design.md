@@ -396,7 +396,8 @@ HUD/командах — осознанный выбор, а не долг. Ко
 > Заменено и примонтировано: 38 webp-слоев лежат в
 > `packages/client/public/layers/avatar-v2/`, манифест — `version: 2`
 > (`packages/content/layers/avatar_manifest.json`), посадку сторожит
-> `npm run avatar:check -w tools/art` (0 нарушений), разбор —
+> `npm run avatar:check -w tools/art` (0 нарушений, 4 предупреждения —
+> задокументированные долги арта; `--strict` считает их нарушениями), разбор —
 > [ANALYSIS-2026-09-23.md](ANALYSIS-2026-09-23.md) §8. Рисуют его три места:
 > комната в «Доме» (`RoomRenderer` → `ProceduralAvatar`), живое превью в
 > панели гардероба и портрет в «Профиле»; что хоть раз перестанет монтироваться
