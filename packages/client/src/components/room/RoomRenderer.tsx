@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { LayerManifest, GeneticTraits, GeneticsConfig, AvatarCustomization } from '@itsim/shared';
 import { Composition, buildLayerStack } from './layers';
+import { useRenderMode } from '../../lib/useRenderMode';
 import { ProceduralAvatar } from './ProceduralAvatar';
 
 /**
@@ -45,6 +46,8 @@ export const RoomRenderer: React.FC<{
   petWear,
   petFed,
 }) => {
+  const boxRef = useRef<HTMLDivElement>(null);
+  const rendering = useRenderMode(boxRef, roomManifest.resolution?.width ?? 1000);
   const layers = buildLayerStack(roomManifest, composition, traits, geneticsConfig);
 
   // Wardrobe wins; owned headphones still auto-equip when the slot is untouched.
@@ -58,7 +61,11 @@ export const RoomRenderer: React.FC<{
   if (accessory) avatarOverrides.accessory = accessory;
 
   return (
-    <div className="relative w-full aspect-square overflow-hidden border-2 border-ink-700 bg-ink-800" aria-label="Комната">
+    <div
+      ref={boxRef}
+      className="relative w-full aspect-square overflow-hidden border-2 border-ink-700 bg-ink-800"
+      aria-label="Комната"
+    >
       {layers.map((layer) => (
         <img
           key={layer.slotId}
@@ -66,7 +73,7 @@ export const RoomRenderer: React.FC<{
           alt=""
           draggable={false}
           className={`absolute inset-0 w-full h-full select-none ${layer.slotId === 'pet' ? 'animate-pet-bob' : ''}`}
-          style={{ filter: layer.filter ?? 'none' }}
+          style={{ filter: layer.filter ?? 'none', imageRendering: rendering }}
         />
       ))}
 

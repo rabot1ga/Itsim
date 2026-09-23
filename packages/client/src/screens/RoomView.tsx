@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
-import { buildRoomComposition, RoomRenderer } from '../components/room/RoomRenderer';
+import { RoomRenderer } from '../components/room/RoomRenderer';
 import { RoomEditor, entryName } from '../components/room/RoomEditor';
-import { avatarComposition } from '../components/room/layers';
+import { useRoomScene } from '../components/room/useRoomScene';
 import { EmptyState, ScreenTitle, SectionTitle } from '../components/ui';
 import { Wardrobe } from '../components/room/Wardrobe';
 import { ShareCard } from '../components/room/ShareCard';
@@ -21,30 +21,20 @@ export const RoomView: React.FC = () => {
   const inventory = useGameStore((s) => s.inventory);
   const heldCollections = useGameStore((s) => s.heldCollections);
 
-  const [geneticsConfig, setGeneticsConfig] = useState<any>(null);
-  const [avatarManifest, setAvatarManifest] = useState<any>(null);
-  const [roomManifest, setRoomManifest] = useState<any>(null);
-  const [crossCollections, setCrossCollections] = useState<any[]>([]);
   const [pixelPack, setPixelPack] = useState<Awaited<ReturnType<typeof fetchPixelPack>>>(null);
   const [walletInput, setWalletInput] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [editorOpen, setEditorOpen] = useState(false);
   const [wardrobeOpen, setWardrobeOpen] = useState(false);
 
+  // Манифесты, композиция комнаты и фигуры — общим хуком: «Главная» и
+  // шаринг-карточка берут ровно его же, поэтому показать другое они уже не могут.
+  const scene = useRoomScene();
+  const { crossCollections } = scene;
+
   useEffect(() => {
-    Promise.all([
-      fetch('/api/content/genetics').then((r) => r.json()),
-      fetch('/api/content/layers').then((r) => r.json()),
-      fetch('/api/content/cross-collections').then((r) => r.json()),
-      fetchPixelPack(),
-    ])
-      .then(([g, l, c, pixel]) => {
-        setGeneticsConfig(g.genetics);
-        setAvatarManifest(l.avatar);
-        setRoomManifest(l.room);
-        setCrossCollections(c.crossCollections?.collections ?? []);
-        setPixelPack(pixel);
-      })
+    fetchPixelPack()
+      .then(setPixelPack)
       .catch(() => setError('Не удалось загрузить контент'));
   }, []);
 
@@ -54,27 +44,6 @@ export const RoomView: React.FC = () => {
     pixelPack && player.genetics ? buildAvatarData(pixelPack, player.genetics, player.avatar) : null;
 
   const traits = player.genetics;
-  const ready = geneticsConfig && avatarManifest && roomManifest && traits;
-
-  const crossLayers = (crossCollections ?? [])
-    .filter((c: any) => (heldCollections ?? []).includes(c.collectionId))
-    .map((c: any) => ({
-      layerId: c.layerId,
-      slotId: c.nftType === 'decor' ? 'decor' : c.nftType === 'pet' ? 'pet' : 'decor',
-    }));
-
-  const composition = ready
-    ? buildRoomComposition({
-        traits,
-        housingLevel: player.housingLevel ?? 0,
-        items: player.items ?? [],
-        crossLayers,
-        custom: player.room,
-      })
-    : null;
-
-  // A repaint overrides the genetic wall tint everywhere (room + share card)
-  const displayTraits = traits && player?.room?.wallColor ? { ...traits, wallColor: player.room.wallColor } : traits;
 
   const handleBind = async () => {
     const ok = await bindWallet(walletInput.trim());
@@ -99,28 +68,28 @@ export const RoomView: React.FC = () => {
       {/* Комната — плоский слоистый рендер (design.md §13.2): те же слои, что и
           в редакторе, и полнофигурный персонаж из 500×760 webp-набора. Iso-вид
           остался только там, где он и задуман: HUD-портрет, карточки, офис. */}
-      {ready && composition && (
+      {scene.ready && (
         <RoomRenderer
-          roomManifest={roomManifest}
-          avatarManifest={avatarManifest}
-          traits={displayTraits}
-          geneticsConfig={geneticsConfig}
-          housingLevel={player.housingLevel ?? 0}
-          composition={composition}
-          avatarCustom={player.avatar ?? null}
-          petWear={(player.items ?? []).filter((id: string) => id.startsWith('pet_'))}
-          petFed={Boolean(player.petFedToday)}
+          roomManifest={scene.roomManifest}
+          avatarManifest={scene.avatarManifest}
+          traits={scene.traits}
+          geneticsConfig={scene.geneticsConfig}
+          housingLevel={scene.housingLevel}
+          composition={scene.roomComposition}
+          avatarCustom={scene.avatarCustom}
+          petWear={scene.petWear}
+          petFed={scene.petFed}
         />
       )}
 
       {/* Pet status */}
-      {ready && composition?.pet && composition.pet !== 'pet_none' && (
+      {scene.ready && scene.roomComposition.pet && scene.roomComposition.pet !== 'pet_none' && (
         <div className="card card-sm flex items-center gap-2.5">
           <span className="text-lg" aria-hidden="true">
             🐾
           </span>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-ink-100 truncate">{entryName(composition.pet)}</p>
+            <p className="text-sm font-medium text-ink-100 truncate">{entryName(scene.roomComposition.pet)}</p>
             <p className={`text-xs ${player.petFedToday ? 'text-moss-300' : 'text-ochre-300'}`}>
               {player.petFedToday ? 'сыт и счастлив до завтра' : 'голоден — покорми во вкладке «День»'}
             </p>
@@ -129,7 +98,7 @@ export const RoomView: React.FC = () => {
       )}
 
       {/* Room editor */}
-      {ready && composition && (
+      {scene.ready && (
         <div className="card">
           <button
             onClick={() => {
@@ -151,12 +120,12 @@ export const RoomView: React.FC = () => {
             <div className="accordion-inner">
               <div className="pt-3">
                 <RoomEditor
-                  roomManifest={roomManifest}
-                  geneticsConfig={geneticsConfig}
-                  traits={displayTraits}
+                  roomManifest={scene.roomManifest}
+                  geneticsConfig={scene.geneticsConfig}
+                  traits={scene.traits}
                   player={player}
                   heldCollections={heldCollections ?? []}
-                  composition={composition}
+                  composition={scene.roomComposition}
                 />
               </div>
             </div>
@@ -165,7 +134,7 @@ export const RoomView: React.FC = () => {
       )}
 
       {/* Wardrobe */}
-      {ready && (
+      {scene.ready && (
         <div className="card">
           <button
             onClick={() => {
@@ -187,8 +156,8 @@ export const RoomView: React.FC = () => {
             <div className="accordion-inner">
               <div className="pt-3">
                 <Wardrobe
-                  avatarManifest={avatarManifest}
-                  geneticsConfig={geneticsConfig}
+                  avatarManifest={scene.avatarManifest}
+                  geneticsConfig={scene.geneticsConfig}
                   traits={traits}
                   player={player}
                 />
@@ -302,15 +271,15 @@ export const RoomView: React.FC = () => {
       </div>
 
       {/* Share card */}
-      {ready && composition && (
+      {scene.ready && (
         <ShareCard
-          traits={displayTraits}
+          traits={scene.traits}
           player={player}
-          roomManifest={roomManifest}
-          avatarManifest={avatarManifest}
-          geneticsConfig={geneticsConfig}
-          roomComposition={composition}
-          avatarComposition={avatarComposition(player.avatar, traits)}
+          roomManifest={scene.roomManifest}
+          avatarManifest={scene.avatarManifest}
+          geneticsConfig={scene.geneticsConfig}
+          roomComposition={scene.roomComposition}
+          avatarComposition={scene.figureComposition}
         />
       )}
     </div>

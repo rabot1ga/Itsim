@@ -2,21 +2,11 @@ import React from 'react';
 import { useGameStore } from '../store/gameStore';
 import { PlayerPortrait } from '../components/PlayerPortrait';
 import { ProceduralAvatar } from '../components/room/ProceduralAvatar';
-import { useAvatarContent } from '../components/room/useAvatarContent';
+import { useLayerContent } from '../components/room/useLayerContent';
 import { avatarComposition } from '../components/room/layers';
 import { ScreenTitle, SectionTitle, StatBar } from '../components/ui';
 import { xpToNext } from '@itsim/shared';
-
-const GRADES: Record<string, string> = {
-  unemployed: 'В начале пути',
-  intern: 'Стажёр',
-  junior: 'Junior Developer',
-  middle: 'Middle Developer',
-  senior: 'Senior Developer',
-  teamlead: 'Teamlead',
-  architect: 'Архитектор',
-  cto: 'CTO',
-};
+import { gradeLabel, skillName } from '../lib/playerLabels';
 
 const LINKS: Array<{ view: string; emoji: string; label: string }> = [
   { view: 'achievements', emoji: '🎯', label: 'Цели и достижения' },
@@ -33,7 +23,7 @@ const LINKS: Array<{ view: string; emoji: string; label: string }> = [
 export const ProfileView: React.FC = () => {
   const player = useGameStore((s) => s.player);
   const setView = useGameStore((s) => s.setView);
-  const { avatarManifest, geneticsConfig } = useAvatarContent();
+  const { avatarManifest, geneticsConfig } = useLayerContent();
   if (!player) return null;
   const avatarOverrides = avatarComposition(player.avatar, player.genetics);
 
@@ -44,6 +34,9 @@ export const ProfileView: React.FC = () => {
   const eventsSeen = Object.values(player.eventHistory ?? {}).reduce((sum: number, h: any) => sum + (h?.count ?? 0), 0);
 
   const facts: Array<[string, string]> = [
+    // e2e и design.md §10: профиль обязан называть основной навык — до этого
+    // в карточке были уровень и XP, но не то, какой именно навык основной.
+    ['Основной навык', skillName(mainId)],
     ['Уровень', String(skill.level)],
     ['Опыт', skill.level >= 100 ? 'Максимум' : `${skill.xp} / ${need} XP`],
     ['Репутация', `${Math.round(player.reputation ?? 0).toLocaleString('ru-RU')} ⭐`],
@@ -80,7 +73,7 @@ export const ProfileView: React.FC = () => {
           <PlayerPortrait player={player} size={96} />
         )}
         <h3>Айтишник</h3>
-        <p>{GRADES[player.grade] ?? player.grade}</p>
+        <p>{gradeLabel(player.grade)}</p>
         <span className="subtle">{player.job?.position ?? 'Карьера ещё впереди'}</span>
       </section>
 

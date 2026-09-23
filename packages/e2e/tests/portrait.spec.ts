@@ -100,7 +100,12 @@ for (const width of [320, 390, 480]) {
     expect(cardA).toMatch(/^data:image\/png/);
     expect(cardA!.length).toBeGreaterThan(10_000);
     expect(
-      await page.getByAltText('Шар-карточка').evaluate((img) => ({ w: img.naturalWidth, h: img.naturalHeight }))
+      await page
+        .getByAltText('Шар-карточка')
+        .evaluate((el) => {
+          const img = el as HTMLImageElement;
+          return { w: img.naturalWidth, h: img.naturalHeight };
+        })
     ).toEqual({ w: 1080, h: 1080 });
 
     await page.getByRole('button', { name: 'Гардероб', exact: true }).click();

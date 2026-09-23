@@ -611,9 +611,21 @@ npm run pixelgen:demo       # 48 персонажей → artifacts/pixel (PNG, 
 npm run pixelgen:render -- face=face_angular hair=hair_manbun hat=hat_beanie   # ASCII-превью
 npm run pixelgen:prompt -- hair --count=2   # мастер-промпт для генерации новых компонентов
 
+# Слоистый аватар (webp-набор v2 — его и рендерит игра)
+npm run avatar:build -w tools/art      # мастера → public/layers/avatar-v2/*.webp (без публикации)
+npm run avatar:preview -w tools/art    # composed-превью позы/посадки, офлайн, без браузера
+npm run avatar:check -w tools/art      # страж посадки: 38 слоёв, 0 нарушений (CI-гейт)
+npm run avatar:publish -w tools/art    # то же + запись в packages/client/public
+
 # SVG-слои (Python, детерминированные; художник правит результат, код не трогаем)
-python3 tools/generate_layer_assets.py    # комната + аватар → packages/client/public/layers/
+python3 tools/generate_layer_assets.py    # комната → packages/client/public/layers/room/
 python3 tools/generate_office_assets.py   # офис → packages/client/public/layers/office/
+# Аватарную половину этого скрипта не запускать: public/layers/avatar/ удалён
+# вместе с SVG-слоем аватара (23.09.2026), набор v2 живёт в avatar-v2/ и
+# собирается tools/art/avatar-v2. Исходники (мастера ~42 МБ, masters/ + layers/)
+# в git намеренно не лежат — они приходят из поставки арт-набора v2 и кладутся
+# рядом с tools/art/avatar-v2/build.config.json; без них avatar:build не работает,
+# но всё остальное (тесты, гейты, билд) — работает.
 
 # Статистика событий
 npx tsx packages/sim/src/events_stats.ts  # покрытие событий за прохождение

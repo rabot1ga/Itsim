@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import App from '../App';
+import { useGameStore } from '../store/gameStore';
 import { tintFilter, tintFromHex } from '@itsim/shared';
 
 /**
@@ -137,6 +138,32 @@ describe('слоистый аватар в живых экранах', () => {
     // Одежда в плоском стеке предокрашена — её ряд честно ничего не красит.
     const top = document.querySelector<HTMLImageElement>(`${figure} img[src*="top_jacket"]`);
     expect(top?.getAttribute('style')).toContain('none');
+  });
+
+  // Двигатель расхождений этого блока: «Главная» годами показывала эскиз
+  // story-v1, хотя плоская комната была собрана, и чинить её могли отдельно.
+  it('«Главная» рисует ту же комнату, что и «Дом», а не эскиз', async () => {
+    // стор модульный: предыдущие тесты этого файла ушли в «Дом» и остались там
+    useGameStore.setState({ currentView: 'main' });
+    render(<App />);
+    const card = await screen.findByRole('region', { name: 'Твоя комната' });
+
+    // карточка дожидается манифестов и рисует живой стек вместо /art/story-v1/
+    await waitFor(() => expect(card.querySelectorAll('img[src^="/layers/room/"]').length).toBeGreaterThan(0));
+    expect(card.querySelector('img[src*="story-v1"]')).toBeNull();
+    // одежда в карточке та же, что в «Доме»: один avatarComposition, не второй
+    expect([...card.querySelectorAll('img')].map((i) => i.getAttribute('src'))).toContain(
+      '/layers/avatar-v2/top_jacket.webp'
+    );
+    const home = [...card.querySelectorAll('[aria-label="Комната"] img')].map((i) => i.getAttribute('src'));
+
+    await openScreen('Дом');
+    await waitFor(() =>
+      expect(document.querySelectorAll('[aria-label="Комната"] img[src^="/layers/room/"]').length).toBeGreaterThan(0)
+    );
+    const house = [...document.querySelectorAll('[aria-label="Комната"] img')].map((i) => i.getAttribute('src'));
+    expect(home.length).toBeGreaterThan(0);
+    expect(home).toEqual(house);
   });
 
   it('«Профиль» показывает ту же фигуру, что и комната', async () => {

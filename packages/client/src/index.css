@@ -1026,12 +1026,31 @@ select {
   font-weight: 600;
   color: var(--green);
 }
-.room-card img {
+.room-card-art {
   display: block;
   width: 100%;
   height: auto;
+  /* Фолбэк-эскиз — растровая картинка: её держим nearest, как требует ТЗ §6.
+     Живая сцена (`image-rendering: pixelated | auto`) выбирает сама по масштабу,
+     поэтому селектор больше не `.room-card img` — он затирал бы слоим <img>. */
   image-rendering: pixelated;
   border-top: 1px solid var(--line);
+}
+.room-card-scene {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+  text-align: left;
+  cursor: pointer;
+}
+/* В карточке рамка «экрана» лишняя: границы уже даёт сама карточка.
+   Атрибутный селектор — чтобы перебить tailwind-утилиту независимо от порядка. */
+.room-card-scene [aria-label="Комната"] {
+  border: 0;
 }
 .room-card-caption {
   display: block;

@@ -4,7 +4,7 @@ import { shellPolygons, pointsAttr } from './shell';
 import { buildOfficeScene, OfficeInput } from './office';
 import { characterLook } from './palette';
 import { variantKey } from './recolor';
-import { useRenderMode } from './useRenderMode';
+import { useRenderMode } from '../../lib/useRenderMode';
 import { useIsoManifest, useSpriteVariants } from './manifest';
 
 /**

@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { AvatarCustomization, LayerManifest, GeneticTraits, GeneticsConfig, lookTintOverrides } from '@itsim/shared';
 import { Composition, avatarComposition, buildLayerStack } from './layers';
+import { useRenderMode } from '../../lib/useRenderMode';
 
 /**
  * Layered procedural avatar — DESIGN.md sections 1-2.
@@ -36,8 +37,14 @@ export const ProceduralAvatar: React.FC<{
   );
   const { width = 500, height = 760 } = manifest.resolution ?? {};
 
+  const boxRef = useRef<HTMLDivElement>(null);
+  // 500×760 исходник: на телефоне он уменьшается (там сглаживание и нужно),
+  // на широком экране начинается увеличение — и только там включается nearest.
+  const rendering = useRenderMode(boxRef, width);
+
   return (
     <div
+      ref={boxRef}
       className={`relative overflow-hidden ${className ?? ''}`}
       style={{ aspectRatio: `${width} / ${height}` }}
       aria-label="Аватар игрока"
@@ -49,7 +56,7 @@ export const ProceduralAvatar: React.FC<{
           alt=""
           draggable={false}
           className="absolute inset-0 w-full h-full select-none"
-          style={{ filter: layer.filter ?? 'none' }}
+          style={{ filter: layer.filter ?? 'none', imageRendering: rendering }}
         />
       ))}
     </div>
