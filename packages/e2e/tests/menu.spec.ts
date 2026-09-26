@@ -17,10 +17,12 @@ for (const width of [320, 390, 480]) {
     ]);
     await expect(page.getByRole('region', { name: 'Персонаж и состояние' })).toBeVisible();
     const room = page.getByRole('region', { name: 'Твоя комната' });
-    await expect(room.getByRole('img')).toBeVisible();
-    expect(await room.getByRole('img').evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(
-      true
-    );
+    // Слои комнаты/фигуры вместо одного эскиза: alt="" → getByRole('img') их не видит
+    const layers = room.locator('img[src^="/layers/"]');
+    await expect(layers.first()).toBeVisible();
+    expect(
+      await layers.evaluateAll((imgs) => (imgs as HTMLImageElement[]).every((i) => i.complete && i.naturalWidth > 0))
+    ).toBe(true);
     for (const name of ['Работа', 'Обучение', 'Отдых', 'Магазин']) {
       await nav.getByRole('button', { name, exact: true }).click();
       await expect(nav.getByRole('button', { name, exact: true })).toHaveAttribute('aria-current', 'true');

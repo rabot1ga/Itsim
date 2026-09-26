@@ -1,3 +1,5 @@
+import { skillName } from '../lib/playerLabels';
+
 export interface EventEffects {
   money?: number;
   energy?: number;
@@ -34,20 +36,6 @@ export interface EffectRow {
   good: boolean;
 }
 
-const SKILLS: Record<string, string> = {
-  javascript: 'JavaScript',
-  typescript: 'TypeScript',
-  python: 'Python',
-  sql: 'SQL',
-  react: 'React',
-  nodejs: 'Node.js',
-  go: 'Go',
-  java: 'Java',
-  git: 'Git',
-  docker: 'Docker',
-  english: 'Английский',
-  communication: 'Коммуникация',
-};
 const PEOPLE: Record<string, string> = {
   teamlead: 'Алексей Петрович',
   junior_colleague: 'Маша',
@@ -91,7 +79,7 @@ export function effectRows(effects: EventEffects = {}): EffectRow[] {
   for (const [key, label, icon, emoji, suffix, inverse] of RESOURCES)
     add(key, label, icon, emoji, effects[key], suffix, inverse);
   for (const [id, xp] of Object.entries(effects.skill ?? {}))
-    add(`skill:${id}`, `Опыт · ${SKILLS[id] ?? id}`, 'book', '✨', xp, ' XP');
+    add(`skill:${id}`, `Опыт · ${skillName(id)}`, 'book', '✨', xp, ' XP');
   for (const [id, value] of Object.entries(effects.relation ?? {}))
     add(`relation:${id}`, `Отношения · ${PEOPLE[id] ?? id}`, 'people', '👥', value);
   return rows;
@@ -110,7 +98,7 @@ export function unmetRequirements(req: EventRequirements | undefined, player?: E
   if (req.money !== undefined && player.money < req.money)
     missing.push(`Нужно денег: ${req.money.toLocaleString('ru-RU')} ₽`);
   for (const [id, level] of Object.entries(req.skill ?? {}))
-    if ((player.skills?.[id]?.level ?? 0) < level) missing.push(`${SKILLS[id] ?? id}: уровень ${level}`);
+    if ((player.skills?.[id]?.level ?? 0) < level) missing.push(`${skillName(id)}: уровень ${level}`);
   for (const [id, value] of Object.entries(req.minRelation ?? {}))
     if ((player.relationships?.[id] ?? 0) < value) missing.push(`Отношения с ${PEOPLE[id] ?? id}: ${value}`);
   // npcPresent has no supplied presence context. Do not invent a client-side lock.

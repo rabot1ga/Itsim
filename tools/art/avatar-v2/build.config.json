@@ -1,0 +1,242 @@
+{
+  "_comment": "Состав сборки. master — путь относительно mastersDir (в git не хранится). slot — посадочный профиль из slotTargets() в avatar-key.mjs (не slot манифеста). strip=color — в мастере нарисовано лицо, оставляем только цветные пиксели. tintable — отдаём слой шкалой серого, чтобы его красил tintSlot из генетики.",
+  "mastersDir": "masters",
+  "layersDir": "layers",
+  "publishDir": "../../../packages/client/public/layers/avatar-v2",
+  "body": {
+    "out": "body_base.webp",
+    "master": "mannequin-v1.png"
+  },
+  "layers": [
+    {
+      "out": "eye_normal.webp",
+      "master": "t1/eyes_normal.png",
+      "slot": "eyes"
+    },
+    {
+      "out": "eye_tired.webp",
+      "master": "b2/eye_tired.png",
+      "slot": "eyes"
+    },
+    {
+      "out": "eye_vr.webp",
+      "master": "b3/eye_vr.png",
+      "slot": "eyes"
+    },
+    {
+      "out": "eye_red.webp",
+      "master": "b3/eye_red.png",
+      "slot": "eyes"
+    },
+    {
+      "out": "eye_legendary.webp",
+      "master": "b3/eye_legendary.png",
+      "slot": "eyes"
+    },
+    {
+      "out": "eye_closed.webp",
+      "master": "b5/eye_closed.png",
+      "slot": "eyes"
+    },
+    {
+      "out": "hair_short.webp",
+      "master": "t1/hair_short.png",
+      "slot": "hair",
+      "tintable": true,
+      "strip": "color",
+      "faceClearance": true
+    },
+    {
+      "out": "hair_messy.webp",
+      "master": "b3/hair_messy.png",
+      "slot": "hair",
+      "tintable": true,
+      "strip": "color",
+      "faceClearance": true
+    },
+    {
+      "out": "hair_manbun.webp",
+      "master": "b3/hair_manbun.png",
+      "slot": "hair",
+      "tintable": true,
+      "strip": "color",
+      "faceClearance": true
+    },
+    {
+      "out": "hair_buzzcut.webp",
+      "master": "b5/hair_buzzcut.png",
+      "slot": "hair",
+      "tintable": true,
+      "strip": "color",
+      "faceClearance": true
+    },
+    {
+      "out": "hair_curly.webp",
+      "master": "b5/hair_curly.png",
+      "slot": "hair",
+      "tintable": true,
+      "strip": "color",
+      "faceClearance": true
+    },
+    {
+      "out": "hair_long.webp",
+      "master": "b6/hair_long.png",
+      "slot": "hair_long",
+      "tintable": true,
+      "strip": "color",
+      "faceClearance": true
+    },
+    {
+      "out": "hair_ponytail.webp",
+      "master": "b6/hair_ponytail.png",
+      "slot": "hair_long",
+      "tintable": true,
+      "strip": "color",
+      "faceClearance": true
+    },
+    {
+      "out": "hair_undercut.webp",
+      "master": "b8/hair_undercut.png",
+      "slot": "hair",
+      "tintable": true,
+      "strip": "color",
+      "faceClearance": true
+    },
+    {
+      "out": "hair_spiky.webp",
+      "master": "b8/hair_spiky.png",
+      "slot": "hair",
+      "tintable": true,
+      "strip": "color",
+      "faceClearance": true
+    },
+    {
+      "out": "beard_goatee.webp",
+      "master": "t1/beard_goatee.png",
+      "slot": "beard",
+      "tintable": true,
+      "strip": "color"
+    },
+    {
+      "out": "beard_stubble.webp",
+      "master": "b3/beard_stubble.png",
+      "slot": "beard",
+      "tintable": true,
+      "strip": "color"
+    },
+    {
+      "out": "beard_full.webp",
+      "master": "b3/beard_full.png",
+      "slot": "beard",
+      "tintable": true,
+      "strip": "color"
+    },
+    {
+      "out": "beard_mustache.webp",
+      "master": "b5/beard_mustache.png",
+      "slot": "beard_mustache",
+      "tintable": true,
+      "strip": "color"
+    },
+    {
+      "out": "top_tshirt.webp",
+      "master": "t1/top_tshirt.png",
+      "slot": "top"
+    },
+    {
+      "out": "top_hoodie_gray.webp",
+      "master": "b4/top_hoodie_gray.png",
+      "slot": "top"
+    },
+    {
+      "out": "top_hoodie_localhost.webp",
+      "master": "b5/top_hoodie_localhost.png",
+      "slot": "top"
+    },
+    {
+      "out": "top_shirt.webp",
+      "master": "b6/top_shirt.png",
+      "slot": "top"
+    },
+    {
+      "out": "top_jacket.webp",
+      "master": "b6/top_jacket.png",
+      "slot": "top"
+    },
+    {
+      "out": "top_hoodie_corp.webp",
+      "master": "b7/top_hoodie_corp.png",
+      "slot": "top"
+    },
+    {
+      "out": "top_hoodie_cat.webp",
+      "master": "b7/top_hoodie_cat.png",
+      "slot": "top"
+    },
+    {
+      "out": "bottom_jeans.webp",
+      "master": "t1/bottom_jeans.png",
+      "slot": "bottom",
+      "maxStretch": 1.7,
+      "_debt": "мастер нарисован узкими (аспект 0.51…0.52 против 0.83 у слота); stretch-лимит поднят точечно, чинить перерисовкой мастера"
+    },
+    {
+      "out": "bottom_sweatpants.webp",
+      "master": "b4/bottom_sweatpants.png",
+      "slot": "bottom",
+      "maxStretch": 1.7,
+      "_debt": "мастер нарисован узкими (аспект 0.51…0.52 против 0.83 у слота); stretch-лимит поднят точечно, чинить перерисовкой мастера"
+    },
+    {
+      "out": "bottom_chinos.webp",
+      "master": "b9/bottom_chinos.png",
+      "slot": "bottom"
+    },
+    {
+      "out": "bottom_shorts.webp",
+      "master": "b6/bottom_shorts.png",
+      "slot": "bottom_shorts"
+    },
+    {
+      "out": "bottom_suit.webp",
+      "master": "b6/bottom_suit.png",
+      "slot": "bottom",
+      "maxStretch": 1.7,
+      "_debt": "мастер нарисован узкими (аспект 0.51…0.52 против 0.83 у слота); stretch-лимит поднят точечно, чинить перерисовкой мастера"
+    },
+    {
+      "out": "acc_cap.webp",
+      "master": "t1/acc_cap.png",
+      "slot": "acc_head",
+      "faceClearance": "face",
+      "_note": "мастер нарисован на голове: слой содержит саму голову, вычитаем лицо (faceClearance=face)"
+    },
+    {
+      "out": "acc_headphones.webp",
+      "master": "b4/acc_headphones.png",
+      "slot": "acc_ears"
+    },
+    {
+      "out": "acc_glasses.webp",
+      "master": "b5/acc_glasses.png",
+      "slot": "acc_face"
+    },
+    {
+      "out": "acc_beanie.webp",
+      "master": "b5/acc_beanie.png",
+      "slot": "acc_head",
+      "faceClearance": "face",
+      "_note": "мастер нарисован на голове: слой содержит саму голову, вычитаем лицо (faceClearance=face)"
+    },
+    {
+      "out": "acc_vr_headset.webp",
+      "master": "b6/acc_vr_headset.png",
+      "slot": "acc_vr"
+    },
+    {
+      "out": "acc_medal.webp",
+      "master": "b6/acc_medal.png",
+      "slot": "acc_chest"
+    }
+  ]
+}

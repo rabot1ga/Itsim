@@ -21,7 +21,6 @@ import {
   rollInterview,
   seededRng,
   type Offer,
-  type PlayerState,
 } from '@itsim/shared';
 import { fmtMoney, recalcMaxEnergy, respondState, sanitizeInterviewQuestion, softOpts, StoredState } from './shared.js';
 

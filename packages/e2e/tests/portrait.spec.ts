@@ -1,50 +1,184 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+import { tintFilter, tintFromHex } from '@itsim/shared';
+import { act, resolveStory } from './helpers/story';
+
+/**
+ * Внешность игрока в настоящем браузере.
+ *
+ * Здесь защищаются два факта, которые нельзя проверить в jsdom:
+ *  1. «Комната» и «Профиль» рисуют один и тот же слоистый стек — наборы файлов
+ *     совпадают посимвольно, а не «похожи».
+ *  2. Ряд «Цвета» в гардеробе доезжает до плоской фигуры: фильтр слоя волос
+ *     становится ровно тем, что отдаёт движок (`tintFilter(tintFromHex(...))`),
+ *     и шаринг-карточка перерисовывается в другой PNG.
+ *
+ * Пункт 2 — это регресс, который в jsdom не поймать: там не считается ни CSS
+ * filter, ни canvas-вызовы, ни загрузка svg/webp. Карточка до переезда на
+ * плоский стек рисовала iso-комнату, и unit-тесты это ловили только по списку
+ * слоёв; здесь ловится по пикселям (dataURL меняется ⇔ краски поменялись).
+ */
+
+const HAIR = 'img[src*="/layers/avatar-v2/hair_"]';
+
+// Сейв у этого спека свежий (reset на каждый прогон), а свежий день встречает
+// игрока сюжетом — без `.story-card` клики по «Обустроить комнату» и по свотчам
+// цвета упирались бы в оверлей и падали на таймауте теста, а не на асерте.
+
+/**
+ * Браузер сериализует inline-style сам (trailing `;` его), поэтому сверяем
+ * префикс `filter: <то, что отдал движок>`, а не строку целиком.
+ */
+const styleWithFilter = (filter: string) => new RegExp(`filter: ${filter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`);
+
+/** Пути слоёв фигуры внутри контейнера с данным aria-label (сортировано). */
+function figureSrcs(page: Page, scope: string) {
+  return page
+    .locator(`[aria-label="${scope}"] img[src*="/layers/avatar-v2/"]`)
+    .evaluateAll((imgs) => imgs.map((i) => i.getAttribute('src') ?? '').sort());
+}
+
+/** Инлайн-фильтр слоя волос (тонировка grayscale-мастера). */
+function hairFilter(page: Page, scope: string) {
+  return page.locator(`[aria-label="${scope}"] ${HAIR}`).first().getAttribute('style');
+}
+
+/**
+ * Лист «Меню» — единственный надёжный способ попасть на «Дом» с любого экрана.
+ * Навигация обёрнута в `act`: сюжет дня встанет поверх экрана в тот же момент,
+ * когда клиент применит ответ, и клик по кнопке под оверлеем иначе висит
+ * до actionability-таймаута.
+ */
+async function openView(page: Page, label: string) {
+  await act(page, async () => {
+    await page.getByRole('button', { name: 'Меню' }).click();
+    await page.getByRole('dialog', { name: 'Меню' }).getByRole('button', { name: label, exact: true }).click();
+  });
+}
+
+async function openRoom(page: Page) {
+  await act(page, async () => {
+    await openView(page, 'Дом');
+    await expect(page.getByLabel('Комната')).toBeVisible();
+  });
+}
+
+/**
+ * Клик по свотчу и его последствия.
+ *
+ * Ответ сервера — приятное подтверждение («краска уехала на бэкенд»), но не
+ * оракул: `waitForResponse` без границ висел на 90 с, если запрос не случился
+ * или задержался, и падение выглядело как «краска не доехала». Поэтому ответ
+ * ждём ограниченно и молча прощаем его отсутствие, а проверяем то, ради чего
+ * ряд «Цвета» существует, — перекрашенный слой фигуры (Playwright сам повторяет
+ * эту проверку). Сюжет по пути закрывает `act`: карточка встаёт в том же
+ * ответе, что и состояние, и успевает перехватить клик.
+ */
+async function pickColour(page: Page, colour: string) {
+  const saved = page
+    .waitForResponse((r) => r.url().endsWith('/api/game/action') && r.request().method() === 'POST', {
+      timeout: 10_000,
+    })
+    .catch(() => null);
+  await act(page, () => page.getByRole('button', { name: colour, exact: true }).first().click());
+  const response = await saved;
+  if (response) {
+    expect(response.ok()).toBe(true);
+    expect((await response.json()).state.avatar.hairColor).toBe(colour);
+  }
+  await expect(page.locator(`[aria-label="Комната"] ${HAIR}`).first()).toHaveAttribute(
+    'style',
+    styleWithFilter(tintFilter(tintFromHex(colour)!))
+  );
+}
+
+/**
+ * «Гардероб» — переключатель, а не кнопка «открыть»: тап по заголовку сворачивает
+ * раскрытую секцию. Раньше тест жал по нему вслепую, и 1 прогон из 3 кликал по
+ * свотчу внутри свёрнутой секции — бокс у него есть, а перекрыт заголовком, отсюда
+ * `click Timeout … intercepts pointer events`. Теперь состояние читаем по
+ * `aria-expanded` и жмём только если секция закрыта.
+ */
+async function openWardrobe(page: Page) {
+  const toggle = page.getByRole('button', { name: 'Гардероб', exact: true });
+  if ((await toggle.getAttribute('aria-expanded')) !== 'true') {
+    await act(page, () => toggle.click());
+  }
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+}
+
+async function generateCard(page: Page) {
+  await page.getByRole('button', { name: 'Сгенерировать', exact: true }).click();
+  const preview = page.getByAltText('Шар-карточка');
+  await expect(preview).toBeVisible();
+  return preview.getAttribute('src');
+}
 
 for (const width of [320, 390, 480]) {
-  test(`saved portrait follows wardrobe and survives reload at ${width}px`, async ({ page }) => {
+  test(`flat figure matches across room and profile, wardrobe colour reaches room and card at ${width}px`, async ({
+    page,
+    request,
+  }) => {
+    // Каждый прогон начинается с чистого сейва: тесты файла идут по одному
+    // игроку, и без reset второй прогон кликал бы по тому же цвету, который
+    // первый уже поставил. Клиент не шлёт запрос «без изменения» → waitForResponse
+    // висел до таймаута теста, а «цвет изменился» падал как ложный дефект.
+    expect((await request.post('/api/game/reset')).ok()).toBe(true);
     await page.setViewportSize({ width, height: 844 });
     await page.goto('/');
-    const portrait = page.locator('[data-portrait="saved"] image');
-    await expect(portrait).toHaveCount(1);
-    const homeLook = await portrait.getAttribute('href');
-    await page.getByRole('button', { name: 'Открыть профиль', exact: true }).click();
-    await expect(portrait).toHaveAttribute('href', homeLook!);
-    await page.getByRole('button', { name: 'Комната и гардероб', exact: true }).click();
-    await page.getByRole('button', { name: 'Гардероб', exact: true }).click();
-    // Real free wardrobe actions, no injected player state or fake responses.
-    const looks: string[] = [];
-    for (const colour of ['#2b2320', '#d7a94b']) {
-      const saved = page.waitForResponse(
-        (r) => r.url().endsWith('/api/game/action') && r.request().method() === 'POST'
-      );
-      await page.getByRole('button', { name: colour, exact: true }).click();
-      const response = await saved;
-      expect(response.ok()).toBe(true);
-      expect((await response.json()).state.avatar.hairColor).toBe(colour);
-      await page
-        .getByRole('navigation', { name: 'Основная навигация' })
-        .getByRole('button', { name: 'Главная', exact: true })
-        .click();
-      await expect(portrait).toHaveCount(1);
-      looks.push((await portrait.getAttribute('href'))!);
-      if (colour === '#2b2320') {
-        await page.getByRole('button', { name: 'Открыть профиль', exact: true }).click();
-        await page.getByRole('button', { name: 'Комната и гардероб', exact: true }).click();
-        await page.getByRole('button', { name: 'Гардероб', exact: true }).click();
-      }
-    }
-    await page
-      .getByRole('navigation', { name: 'Основная навигация' })
-      .getByRole('button', { name: 'Главная', exact: true })
-      .click();
-    await expect(portrait).toHaveCount(1);
-    expect(looks[0]).not.toBe(looks[1]);
-    const updated = await portrait.getAttribute('href');
-    expect(updated).toMatch(/^data:image\/png/);
+    // Ждём не «полсекунды, вдруг сюжет», а первого коммита состояния: стор
+    // пишет `player` и `activeEvent` одним `set()` (store/gameStore.ts:185-196),
+    // значит к моменту, когда видна шапка, клиент уже решил — показывать карточку
+    // или нет. Окно ожидания здесь = гонка, она и роняла спек под нагрузкой.
+    await expect(page.getByLabel('Деньги')).toBeVisible();
+    await resolveStory(page);
+    await act(page, () => page.getByRole('button', { name: 'Обустроить комнату', exact: true }).click());
+    await expect(page.getByLabel('Комната')).toBeVisible();
+
+    const roomSrcs = await figureSrcs(page, 'Комната');
+    expect(roomSrcs.length).toBeGreaterThanOrEqual(5);
+    expect(roomSrcs.some((src) => src.includes('bottom_'))).toBe(true);
+    const roomHair = await hairFilter(page, 'Комната');
+
+    await openView(page, 'Профиль');
+    await expect(page.getByLabel('Профиль персонажа')).toBeVisible();
+    expect(await figureSrcs(page, 'Аватар игрока')).toEqual(roomSrcs);
+    expect(await hairFilter(page, 'Аватар игрока')).toBe(roomHair);
+
+    // Реальное действие гардероба, без подставного состояния и моков.
+    await openRoom(page);
+    // событие может прилететь и между экранами — оно так же блокирует клик
+    await resolveStory(page);
+    await openWardrobe(page);
+    await pickColour(page, '#2b2320');
+
+    const tinted = await hairFilter(page, 'Комната');
+    expect(tinted).not.toBe(roomHair);
+    expect(tinted).toContain('hue-rotate');
+
+    // Карточка = та же краска: png пересобрался, и в нём плоские слои.
+    const cardA = await generateCard(page);
+    expect(cardA).toMatch(/^data:image\/png/);
+    expect(cardA!.length).toBeGreaterThan(10_000);
+    expect(
+      await page.getByAltText('Шар-карточка').evaluate((el) => {
+        const img = el as HTMLImageElement;
+        return { w: img.naturalWidth, h: img.naturalHeight };
+      })
+    ).toEqual({ w: 1080, h: 1080 });
+
+    await openWardrobe(page);
+    await pickColour(page, '#d7a94b');
+    const cardB = await generateCard(page);
+    expect(cardB).not.toBe(cardA);
+
+    // Сейв: после перезагрузки плоская фигура возвращается с той же краской.
     await page.reload();
-    await expect(portrait).toHaveAttribute('href', updated!);
-    await page.getByRole('button', { name: 'Открыть профиль', exact: true }).click();
-    await expect(portrait).toHaveAttribute('href', updated!);
+    await openRoom(page);
+    await expect(page.locator(`[aria-label="Комната"] ${HAIR}`).first()).toHaveAttribute(
+      'style',
+      styleWithFilter(tintFilter(tintFromHex('#d7a94b')!))
+    );
+
     expect(
       await page.evaluate(() => {
         const area = document.getElementById('game-scroll')!;
@@ -54,10 +188,19 @@ for (const width of [320, 390, 480]) {
   });
 }
 
-test('missing portrait content leaves a usable profile with a labelled fallback', async ({ page }) => {
+test('iso content outage only costs the HUD bust, the room stays drawn', async ({ page }) => {
   await page.route('**/iso/manifest.json', (route) => route.fulfill({ status: 503, body: '' }));
   await page.goto('/');
-  await page.getByRole('button', { name: 'Открыть профиль', exact: true }).click();
   await expect(page.getByAltText('Стандартный портрет — внешность пока недоступна')).toBeVisible();
+  await page.getByRole('button', { name: 'Обустроить комнату', exact: true }).click();
+  expect((await figureSrcs(page, 'Комната')).length).toBeGreaterThanOrEqual(5);
+});
+
+test('layer content outage leaves the profile usable without a half-drawn figure', async ({ page }) => {
+  await page.route('**/api/content/layers', (route) => route.fulfill({ status: 503, body: '' }));
+  await page.goto('/');
+  await openView(page, 'Профиль');
+  await expect(page.getByLabel('Профиль персонажа')).toBeVisible();
+  await expect(page.getByLabel('Аватар игрока')).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Комната и гардероб', exact: true })).toBeEnabled();
 });

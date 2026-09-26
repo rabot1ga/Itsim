@@ -1,12 +1,19 @@
 import React, { useRef, useState } from 'react';
+import type { GeneticsConfig, LayerManifest } from '@itsim/shared';
 import { GeneticTraits } from '@itsim/shared';
 import { haptic } from '../../lib/telegram';
-import { drawIsoRoom } from '../iso/canvas';
+import { Composition } from './layers';
+import { DrawLayer, ShareSceneInput, shareSceneLayers } from './shareScene';
 
 /**
  * Share card — DESIGN.md section 5.
  * Renders the player's unique room + avatar + stats into an offscreen
  * canvas, exports a PNG and shares it via the Telegram WebApp API.
+ *
+ * Room and figure come from `shareScene`: the SAME layered stacks the app
+ * composes in `RoomRenderer`. An earlier version painted the isometric room
+ * here, so the card quietly showed a different room than the player had — the
+ * whole point of the card is that it is a screenshot of the player's life.
  */
 
 const W = 1080;
@@ -73,11 +80,71 @@ function drawFrame(ctx: CanvasRenderingContext2D, frame: ShareFrame, player: any
   }
 }
 
+/** Картинки слоя грузятся один раз на сессию — карточку перерисовывают рамки. */
+const imageCache = new Map<string, Promise<HTMLImageElement>>();
+
+function loadImage(src: string): Promise<HTMLImageElement> {
+  const hit = imageCache.get(src);
+  if (hit) return hit;
+  const job = new Promise<HTMLImageElement>((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error(`слой не загрузился: ${src}`));
+    img.src = src;
+  }).catch((err) => {
+    imageCache.delete(src);
+    throw err;
+  });
+  imageCache.set(src, job);
+  return job;
+}
+
+/** `ctx.filter` есть не везде (Canvas 2D filter — Safari 18+); без него слой
+ *  рисуется неокрашенным: одежда от этого не меняется, она предокрашена. */
+function supportsFilter(ctx: CanvasRenderingContext2D): boolean {
+  return typeof (ctx as { filter?: string }).filter === 'string';
+}
+
+async function paintScene(
+  ctx: CanvasRenderingContext2D,
+  layers: DrawLayer[],
+  box: { x: number; y: number; w: number; h: number }
+): Promise<void> {
+  // Кадр под сцену в карточке НЕ квадратный (1000×1000 слои в 1000×670), а
+  // доли слоёв задуманы в квадратной рамке RoomRenderer. Рамку вписываем по
+  // меньшей стороне и центрируем: иначе комната растянется, а фигура уедет.
+  const side = Math.floor(Math.min(box.w, box.h));
+  const frame = { x: Math.round(box.x + (box.w - side) / 2), y: Math.round(box.y + (box.h - side) / 2), size: side };
+  const canFilter = supportsFilter(ctx);
+  for (const layer of layers) {
+    let img: HTMLImageElement;
+    try {
+      img = await loadImage(layer.file);
+    } catch {
+      // Слой не доехал (например, манифест указывает в никуда) — рисуем остальные:
+      // пустое место в кадре честнее упавшей карточки.
+      continue;
+    }
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+    if (layer.filter && canFilter) ctx.filter = layer.filter;
+    ctx.drawImage(
+      img,
+      frame.x + Math.round(layer.box.x * frame.size),
+      frame.y + Math.round(layer.box.y * frame.size),
+      Math.round(layer.box.w * frame.size),
+      Math.round(layer.box.h * frame.size)
+    );
+    ctx.restore();
+  }
+}
+
 async function renderCanvas(
   canvas: HTMLCanvasElement,
   traits: GeneticTraits,
   player: any,
-  frame: ShareFrame
+  frame: ShareFrame,
+  scene: ShareSceneInput
 ): Promise<void> {
   canvas.width = W;
   canvas.height = H;
@@ -88,8 +155,8 @@ async function renderCanvas(
   ctx.fillStyle = '#11151c';
   ctx.fillRect(0, 0, W, H);
 
-  // 2. The player's actual room, drawn by the same engine as the app
-  await drawIsoRoom(ctx, player, { x: 40, y: 40, w: W - 80, h: Math.round(H * 0.62) });
+  // 2. The player's actual room — same layered stacks as the in-app scene
+  await paintScene(ctx, shareSceneLayers(scene), { x: 40, y: 40, w: W - 80, h: Math.round(H * 0.62) });
 
   // 3. Stats card
   ctx.fillStyle = 'rgba(10, 14, 24, 0.88)';
@@ -139,7 +206,13 @@ function formatMoney(amount: number): string {
 export const ShareCard: React.FC<{
   traits: GeneticTraits;
   player: any;
-}> = ({ traits, player }) => {
+  /** плоская сцена «Дома»: манифесты + композиции, из которых карточка рисует ровно то же, что экран */
+  roomManifest: LayerManifest;
+  avatarManifest: LayerManifest;
+  geneticsConfig: GeneticsConfig;
+  roomComposition: Composition;
+  avatarComposition: Composition;
+}> = ({ traits, player, roomManifest, avatarManifest, geneticsConfig, roomComposition, avatarComposition }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [dataUrl, setDataUrl] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -152,7 +225,15 @@ export const ShareCard: React.FC<{
     haptic('tap');
     try {
       const canvas = canvasRef.current!;
-      await renderCanvas(canvas, traits, player, useFrame);
+      await renderCanvas(canvas, traits, player, useFrame, {
+        roomManifest,
+        roomComposition,
+        avatarManifest,
+        avatarComposition,
+        traits,
+        geneticsConfig,
+        avatarCustom: player?.avatar ?? null,
+      });
       setDataUrl(canvas.toDataURL('image/png'));
       haptic('success');
     } catch (err: any) {
@@ -202,7 +283,11 @@ export const ShareCard: React.FC<{
     <div className="card">
       <h3 className="section-title mb-2">Карточка для шеринга</h3>
       <canvas ref={canvasRef} width={W} height={H} style={{ display: 'none' }} />
-      {dataUrl && <img src={dataUrl} alt="Шар-карточка" className=" border-2 border-ink-700 mb-2" />}
+      {/* 1080px-превью без w-full растягивает экран: на 320px появляется
+            горизонтальный скролл, чего игровой шелл себе не позволяет. */}
+      {dataUrl && (
+        <img src={dataUrl} alt="Шар-карточка" className="w-full h-auto max-w-full border-2 border-ink-700 mb-2" />
+      )}
       {error && <p className="text-xs text-clay-300 mb-2">⚠️ {error}</p>}
       <div className="grid grid-cols-4 gap-1.5 mb-2">
         {FRAMES.map((f) => {

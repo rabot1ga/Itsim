@@ -32,7 +32,6 @@ import {
   totalSkillLevels,
   weeklySalary,
   type CareerGate,
-  type GameEvent,
   type Grade,
   type PlayerState,
 } from '@itsim/shared';

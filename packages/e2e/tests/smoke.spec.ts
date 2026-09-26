@@ -1,4 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
+import { resolveStory } from './helpers/story';
 
 /**
  * Smoke run of the whole loop (roadmap P0.5):
@@ -15,18 +16,6 @@ async function startFreshGame(page: Page): Promise<void> {
 }
 
 const energyMeter = (page: Page) => page.locator('[title^="Энергия:"]').first();
-
-async function resolveStory(page: Page): Promise<void> {
-  const card = page.locator('.story-card');
-  if (await card.isVisible()) {
-    await card.locator('.story-choice:not(:disabled)').first().click();
-    // The choice collapses into a result card that waits for a deliberate tap.
-    const done = page.getByRole('button', { name: 'Продолжить' });
-    await expect(done).toBeVisible({ timeout: 15_000 });
-    await done.click();
-    await expect(page.locator('.story-card')).toHaveCount(0);
-  }
-}
 
 test('fresh run: three actions → end of day → buy cosmetics → telemetry', async ({ page, request }) => {
   // ── boot into the game ───────────────────────────────────────────────────
@@ -54,8 +43,13 @@ test('fresh run: three actions → end of day → buy cosmetics → telemetry', 
   // ── end of day: the CTA is docked above the nav, so it works from any
   //    working tab without scrolling to the bottom of «Главная» ────────────
   await expect(page.getByRole('button', { name: /^Завершить день / })).toBeVisible();
+  const beforeEndTitle = await energyMeter(page).getAttribute('title');
+  const beforeEnd = Number(beforeEndTitle?.match(/Энергия: (\d+)/)?.[1]);
   await page.getByRole('button', { name: /^Завершить день / }).click();
-  await expect(energyMeter(page)).toHaveAttribute('title', /^Энергия: 10\/10$/);
+  // Конец дня возвращает половину МАКСИМУМА и упирается в потолок
+  // (packages/server/src/game/day.ts:293), а не делает полный refill. Жёсткое
+  // «10/10» проходило только при тратах ровно 5 ⚡ за день и флапало иначе.
+  await expect(energyMeter(page)).toHaveAttribute('title', new RegExp(`^Энергия: ${Math.min(10, beforeEnd + 5)}/10$`));
   await resolveStory(page);
   await expect(page.getByRole('button', { name: /^Завершить день 2/ })).toBeVisible();
 

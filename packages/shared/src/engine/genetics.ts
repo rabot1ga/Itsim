@@ -1,10 +1,6 @@
 import { sha256 } from '@noble/hashes/sha256';
 import { bytesToHex } from '@noble/hashes/utils';
-import {
-  GeneticTraits,
-  GeneticsConfig,
-  TintPaletteEntry,
-} from '../types';
+import { GeneticTraits, GeneticsConfig, TintPaletteEntry } from '../types';
 
 /**
  * Deterministic procedural generation — DESIGN.md section 3.1
@@ -55,11 +51,7 @@ export function seededRng(seed: string): () => number {
 /**
  * Deterministic weighted pick with a per-slot salt
  */
-export function seededWeightedPick<T extends { weight: number }>(
-  items: T[],
-  seed: string,
-  salt: string
-): T {
+export function seededWeightedPick<T extends { weight: number }>(items: T[], seed: string, salt: string): T {
   const rng = seededRng(`${seed}:${salt}`);
   const total = items.reduce((sum, item) => sum + Math.max(0, item.weight), 0);
   if (total <= 0) return items[0];
@@ -115,6 +107,57 @@ export function tintFilter(entry: TintPaletteEntry): string {
 }
 
 /**
+ * Hue of the sepia ramp the grayscale masters were tuned against. `tintFilter`
+ * rotates *from* it, so a hand-picked colour has to be expressed as a rotation
+ * of the same base or the two paths disagree about what «чёрный» looks like.
+ */
+const SEPIA_BASE_HUE = 40;
+
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+
+/**
+ * Ручной цвет из гардероба → параметры тонировки grayscale-мастера.
+ *
+ * Палитра генетики — это квантованные отступы от сепиевой базы, а игрок выбирает
+ * хекс, который палитре не соответствует. Точного реверса у `sepia → saturate →
+ * hue-rotate → brightness` нет, поэтому перевод в HSL и три множителя:
+ * приближение сознательное, но детерминированное (снапшот карточки обязан
+ * воспроизводиться), и в пределах одной выбранной гаммы оно монотонно: темнее
+ * хекс — меньше brightness, насыщеннее — больше saturate.
+ */
+export function tintFromHex(hex: string | null | undefined): TintPaletteEntry | null {
+  const raw = (hex ?? '').trim();
+  const short = /^#?([0-9a-f])([0-9a-f])([0-9a-f])$/i.exec(raw);
+  const full = /^#?([0-9a-f]{6})$/i.exec(raw);
+  if (short) return tintFromHex(`#${short[1]}${short[1]}${short[2]}${short[2]}${short[3]}${short[3]}`);
+  if (!full) return null;
+  const value = parseInt(full[1], 16);
+  const r = ((value >> 16) & 255) / 255;
+  const g = ((value >> 8) & 255) / 255;
+  const b = (value & 255) / 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const delta = max - min;
+  const light = (max + min) / 2;
+  const sat = delta === 0 ? 0 : delta / (1 - Math.abs(2 * light - 1));
+  let hue = 0;
+  if (delta !== 0) {
+    if (max === r) hue = ((g - b) / delta) % 6;
+    else if (max === g) hue = (b - r) / delta + 2;
+    else hue = (r - g) / delta + 4;
+    hue = Math.round(hue * 60);
+    if (hue < 0) hue += 360;
+  }
+  return {
+    id: `custom_${full[1].toLowerCase()}`,
+    name: raw,
+    hue: hue - SEPIA_BASE_HUE,
+    sat: Number(clamp(sat / 0.5, 0.1, 3).toFixed(2)),
+    light: Number(clamp(light / 0.5, 0.35, 1.6).toFixed(2)),
+  };
+}
+
+/**
  * Resolve a palette entry for a trait slot
  */
 export function traitTint(slot: string, traits: GeneticTraits, config: GeneticsConfig): TintPaletteEntry | null {
@@ -133,10 +176,7 @@ export function traitTint(slot: string, traits: GeneticTraits, config: GeneticsC
 /**
  * Combine an optional palette tint with explicit overrides (e.g. items).
  */
-export function combineTints(
-  base: TintPaletteEntry | null,
-  override?: Partial<TintPaletteEntry>
-): string {
+export function combineTints(base: TintPaletteEntry | null, override?: Partial<TintPaletteEntry>): string {
   if (!base && !override) return 'none';
   return tintFilter({
     id: base?.id ?? 'override',

@@ -483,11 +483,18 @@ id навыков в вопросах, монотонность карьерно
 
 ### Leaderboard (`/api/leaderboard`)
 
-`GET /friends|honest?limit=&offset=` — рейтинг из персистентных состояний через
+`GET /friends|honest?limit=&offset=&metric=` — рейтинг из персистентных состояний через
 **кэшируемый индекс** (полный скан не чаще раза в `LEADERBOARD_TTL_MS`, запись в индекс
 на каждом сохранении). Ранжирование идёт по авторизованному пользователю: `isYou` больше
 не врёт, а своя строка приходит отдельным полем `you`, даже если ты вне топ-20.
 `honest` — доска без владельцев booster-предметов.
+
+`metric` выбирает, по чему считать место: `rating` (итог, 0…1000) или одна из компонент
+движка — `career` `skills` `money` `reputation` `achievements` `housing` (0…100).
+Значение — ровно `ratingParts()` из `@itsim/shared` (engine/rating.ts): у доски нет и не
+может быть своей формулы, поэтому вкладка «Деньги» обязана давать тот же порядок, что и
+монотонная нормировка денег. Каждая строка несёт `score`, ответ — эхо `metric`;
+неизвестная метрика — `400` со списком допустимых, а не тихий откат на `rating`.
 
 ### Payments (`/api/payments`) — Telegram Stars
 
@@ -587,7 +594,7 @@ CTO за год ≤ 35% (эндгейм обязан оставаться тру
 
 ```bash
 npm run simulate          # отчёт симулятора
-npm test                  # контент + 366 юнит-тестов (движок/сервер/бот/клиент) + simulate --check
+npm test                  # контент + 380 юнит-тестов (движок/сервер/бот/клиент) + simulate --check
 npx tsx packages/sim/src/simulate.ts --why   # что блокирует агента на следующем гейте
 ```
 
@@ -611,9 +618,23 @@ npm run pixelgen:demo       # 48 персонажей → artifacts/pixel (PNG, 
 npm run pixelgen:render -- face=face_angular hair=hair_manbun hat=hat_beanie   # ASCII-превью
 npm run pixelgen:prompt -- hair --count=2   # мастер-промпт для генерации новых компонентов
 
+# Слоистый аватар (webp-набор v2 — его и рендерит игра)
+npm run avatar:build -w tools/art      # мастера → public/layers/avatar-v2/*.webp (без публикации)
+npm run avatar:preview -w tools/art    # composed-превью позы/посадки, офлайн, без браузера
+npm run avatar:check -w tools/art      # страж посадки: 38 слоёв, 0 нарушений, 4 предупреждения (долги арта; --strict считает их нарушениями)
+npm run avatar:publish -w tools/art    # то же + запись в packages/client/public
+
 # SVG-слои (Python, детерминированные; художник правит результат, код не трогаем)
-python3 tools/generate_layer_assets.py    # комната + аватар → packages/client/public/layers/
+python3 tools/generate_layer_assets.py    # комната → packages/client/public/layers/room/
 python3 tools/generate_office_assets.py   # офис → packages/client/public/layers/office/
+# По умолчанию этот скрипт ничего не перезаписывает (слои в public/layers правят
+# на месте — прогон с `--force` откатывал бы ручные правки), а его аватарную
+# половину он пишет только по флагу `--avatar-legacy`: public/layers/avatar/
+# удалён вместе с SVG-слоем аватара (23.09.2026), набор v2 живёт в avatar-v2/ и
+# собирается tools/art/avatar-v2. Исходники (мастера ~42 МБ, masters/ + layers/)
+# в git намеренно не лежат — они приходят из поставки арт-набора v2 и кладутся
+# рядом с tools/art/avatar-v2/build.config.json; без них avatar:build не работает,
+# но всё остальное (тесты, гейты, билд) — работает.
 
 # Статистика событий
 npx tsx packages/sim/src/events_stats.ts  # покрытие событий за прохождение
@@ -634,7 +655,7 @@ npm run build           # полная сборка (shared → content → serv
 npm run pixelgen:audit  # пиксельный контент: идемпотентность + валидация
 ```
 
-Тесты: **366** (`shared` 196 · `server` 51 · `bot` 22 · `client` 97) + симулятор `--check`.
+Тесты: **380** (`shared` 201 · `server` 51 · `bot` 22 · `client` 106) + симулятор `--check`.
 
 CI — [`ci/github-actions-ci.yml`](ci/github-actions-ci.yml) (скопируйте в `.github/workflows/ci.yml`,
 см. [ci/README.md](ci/README.md)): на каждый push и PR гоняются
@@ -721,18 +742,19 @@ CI — [`ci/github-actions-ci.yml`](ci/github-actions-ci.yml) (скопируй�
 
 **Качество**
 
-- [x] 366 юнит-тестов (движок 196 · сервер 51 · бот 22 · клиент 97), симулятор 40×365 с `--check`-гейтом,
+- [x] 380 юнит-тестов (движок 201 · сервер 51 · бот 22 · клиент 106), симулятор 40×365 с `--check`-гейтом,
       `simulate --why`
 - [x] ESLint 9 + Prettier; `lint` = типы + линтер (раньше был только `tsc`)
 - [x] CI GitHub Actions: типы, линтер, контент, тесты, симулятор, pixelgen-аудит, сборка
   - отдельный `content-guard` на PR, трогающих контент
 - [x] `.env.example` и [docs/deploy.md](docs/deploy.md) (вебхуки, бэкапы, GDPR, чек-лист)
 - [x] `lint`/`test`/`build`/`pixelgen:audit` — зелёные; API, бот и клиент проверены вживую
+- [x] **Вкладки рейтинга по метрикам** (Карьера / Навыки / Деньги / Rep из ТЗ) —
+      серверный `?metric=` + `packages/e2e/tests/leaderboard.spec.ts`; формула одна
+      (`engine/rating.ts`), доска и клиент только читают её
 
 ### 🔄 В процессе
 
-- [ ] **Вкладки рейтинга по метрикам** (Карьера / Навыки / Деньги / Rep): нужен
-      серверный эндпоинт сортировки — сейчас доски «Все» и «Без бустеров»
 - [ ] **Иллюстрации финалов** (6 сцен) — экран готов, ждёт арт `/art/endings/*.webp`
 - [ ] Автопостинг вех («Стал Senior за 78 дней!»), скины и позиции питомца в комнате
 

@@ -1,5 +1,25 @@
+import type { FloorStyle } from '@itsim/shared';
 import { Point, RoomSize, TILE, TileSize, Viewport, tilePolygon, toScreen, unit, wallPolygons } from './geometry';
-import { RoomPalette } from './scene';
+
+/**
+ * Wall + floor colours of one isometric room. Жили когда-то комнате: их
+ * собирал `buildRoomScene` по уровню жилья. С 23.09.2026 комната плоская и
+ * слоистая (`room/RoomRenderer`), а генератор изо-комнаты удалён — тип остался,
+ * потому что скорлупу рисует именно он, а палитру отдаёт офис.
+ */
+export interface RoomPalette {
+  wallLeft: string;
+  wallRight: string;
+  wallTrim: string;
+  skirting: string;
+  floorA: string;
+  floorB: string;
+  floorLine: string;
+  floorPattern: FloorStyle['pattern'];
+  /** ids of the chosen finishes, so the editor can show what is applied */
+  paintId: string;
+  floorId: string;
+}
 
 /**
  * The room shell — floor and the two walls — as flat polygons.
