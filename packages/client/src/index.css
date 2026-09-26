@@ -1049,7 +1049,7 @@ select {
 }
 /* В карточке рамка «экрана» лишняя: границы уже даёт сама карточка.
    Атрибутный селектор — чтобы перебить tailwind-утилиту независимо от порядка. */
-.room-card-scene [aria-label="Комната"] {
+.room-card-scene [aria-label='Комната'] {
   border: 0;
 }
 .room-card-caption {
@@ -2107,9 +2107,24 @@ select {
 .accordion-body.open {
   grid-template-rows: 1fr;
 }
+/* Свёрнутая секция обязана быть недоступна не только глазу, но и указателю
+   с клавиатурой. `0fr` даёт нулевую высоту строки грида, но дети внутри
+   `overflow:hidden` сохраняют собственный бокс: кнопка свотча, ссылка или
+   инпут «под» заголовком остаются в дереве доступности, получают Tab и
+   ловят клик — на мобильном это ещё и ложные срабатывания у края карточки.
+   e2e это поймал как «click Timeout … <div class=card> intercepts pointer
+   events»: элемент «видим», а попасть по нему нельзя.
+   `visibility` скрывает поддерево целиком (и из a11y-дерева, и от хит-тестов);
+   задержка = длительность анимации, поэтому сворачивание не «выпадает». */
 .accordion-inner {
   overflow: hidden;
   min-height: 0;
+  visibility: hidden;
+  transition: visibility 0s linear 0.22s;
+}
+.accordion-body.open .accordion-inner {
+  visibility: visible;
+  transition-delay: 0s;
 }
 .accordion-chevron {
   transition: transform 0.22s ease;

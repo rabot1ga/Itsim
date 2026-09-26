@@ -91,6 +91,21 @@ async function pickColour(page: Page, colour: string) {
   );
 }
 
+/**
+ * «Гардероб» — переключатель, а не кнопка «открыть»: тап по заголовку сворачивает
+ * раскрытую секцию. Раньше тест жал по нему вслепую, и 1 прогон из 3 кликал по
+ * свотчу внутри свёрнутой секции — бокс у него есть, а перекрыт заголовком, отсюда
+ * `click Timeout … intercepts pointer events`. Теперь состояние читаем по
+ * `aria-expanded` и жмём только если секция закрыта.
+ */
+async function openWardrobe(page: Page) {
+  const toggle = page.getByRole('button', { name: 'Гардероб', exact: true });
+  if ((await toggle.getAttribute('aria-expanded')) !== 'true') {
+    await act(page, () => toggle.click());
+  }
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+}
+
 async function generateCard(page: Page) {
   await page.getByRole('button', { name: 'Сгенерировать', exact: true }).click();
   const preview = page.getByAltText('Шар-карточка');
@@ -133,7 +148,7 @@ for (const width of [320, 390, 480]) {
     await openRoom(page);
     // событие может прилететь и между экранами — оно так же блокирует клик
     await resolveStory(page);
-    await act(page, () => page.getByRole('button', { name: 'Гардероб', exact: true }).click());
+    await openWardrobe(page);
     await pickColour(page, '#2b2320');
 
     const tinted = await hairFilter(page, 'Комната');
@@ -151,7 +166,7 @@ for (const width of [320, 390, 480]) {
       })
     ).toEqual({ w: 1080, h: 1080 });
 
-    await page.getByRole('button', { name: 'Гардероб', exact: true }).click();
+    await openWardrobe(page);
     await pickColour(page, '#d7a94b');
     const cardB = await generateCard(page);
     expect(cardB).not.toBe(cardA);
