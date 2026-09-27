@@ -115,6 +115,11 @@ export function eventArtwork(tags: string[], title = '', eventId = ''): string {
     courier_rain: 'bicycle',
     random_bug: 'bug',
     prod_bug_escape: 'bug',
+    // Поздние события (27.09.2026): тег `career` уводит их на «вакансию», а это
+    // не про борд, не про легаси-монолит и не про сокращения.
+    arch_board_defense: 'night',
+    legacy_monolith_split: 'server',
+    layoff_eleven_names: 'contract',
     server_hacked: 'server',
     tech_api_deprecated: 'server',
     guard_reading: 'server',

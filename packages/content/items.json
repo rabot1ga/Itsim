@@ -393,5 +393,39 @@
     "description": "Признай очевидное: дома главный — он. Косметика.",
     "effects": {},
     "icon": "pet_crown.png"
+  },
+  {
+    "id": "exec_coaching",
+    "name": "🎩 Личный коуч уровня C",
+    "type": "course",
+    "price": 1200000,
+    "description": "Час стоит как неделя твоей стажировки. Учат не коду — учат молчать так, чтобы дослушали.",
+    "effects": { "xpBonus": 0.12, "motivationBonus": 4 },
+    "icon": "exec_coaching.png",
+    "nft": false,
+    "rarity": "rare"
+  },
+  {
+    "id": "board_chair",
+    "name": "🪑 Кресло из переговорной борда",
+    "type": "chair",
+    "price": 3500000,
+    "description": "Его выносят из кабинета последним. Сидеть в нём — отдельный вид мотивации.",
+    "effects": { "motivationBonus": 12, "healthBonus": 3 },
+    "icon": "board_chair.png",
+    "nft": false,
+    "rarity": "legendary",
+    "layerId": "chair_herman_miller"
+  },
+  {
+    "id": "aviator_watch",
+    "name": "⌚ Часы, которые видно на созвонах",
+    "type": "other",
+    "price": 8000000,
+    "description": "Стрелки показывают то же, что телефон. Уверенность в голосе — нет, но её продают в комплекте.",
+    "effects": { "motivationBonus": 8, "xpBonus": 0.05 },
+    "icon": "aviator_watch.png",
+    "nft": false,
+    "rarity": "legendary"
   }
 ]
