@@ -1,4 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
+import { act, resolveStory } from './helpers/story';
 
 /**
  * Contracts on the board — the «Работа» screen of reference 1.png.
@@ -31,17 +32,32 @@ test.afterEach(async ({ request }) => {
   expect((await request.post('/api/game/reset')).ok()).toBe(true);
 });
 
+/**
+ * Пилюля «День N» в шапке — тот же источник, что видит игрок. Читать день
+ * через `GET /api/game/state` нельзя: это не чистое чтение, он поднимает
+ * due-запись из `pendingEvents` в `state.activeEventId`
+ * (packages/server/src/routes/game/state.ts:102-111). После такого «просто
+ * смотреть число» ответ о закрытии дня приходит с `activeEvent: null` — клиент
+ * карточку не рисует, а событие уже открыто, и весь спек ждёт сюжет, которого
+ * «нет». Это и был корень «флапов», а не медленный сервер.
+ */
+const dayPill = (page: Page) => page.getByText(/^День \d+$/, { exact: true }).first();
+const dayNumber = (page: Page) =>
+  dayPill(page)
+    .textContent()
+    .then((text) => Number(text!.match(/\d+/)![0]));
+
 async function endDay(page: Page): Promise<void> {
   // The day-end CTA is docked above the tab bar, so «Работа» can close the day.
+  const before = await dayNumber(page);
   await page.getByRole('button', { name: /^Завершить день / }).click();
-  const card = page.locator('.story-card');
-  if (await card.isVisible()) {
-    await card.locator('.story-choice:not(:disabled)').first().click();
-    const done = page.getByRole('button', { name: 'Продолжить' });
-    await expect(done).toBeVisible({ timeout: 15_000 });
-    await done.click();
-    await expect(page.locator('.story-card')).toHaveCount(0);
-  }
+  await expect(dayPill(page)).toHaveText(`День ${before + 1}`, { timeout: 30_000 });
+  // Порядок важен: событие дня приезжает в том же ответе, что и новый день,
+  // поэтому карточка к этому моменту уже в DOM. Обратно (сначала сюжет, потом
+  // день) — гонка: карточка, вставшая позже проверки, уезжала по сьюту
+  // дальше, и следующая итерация winContract кликала по экрану, который
+  // `.story-card` к тому времени уже заменил.
+  await resolveStory(page);
   await expect(board(page)).toBeVisible();
 }
 
@@ -54,9 +70,20 @@ async function winContract(page: Page, title: string): Promise<void> {
   const active = board(page).getByRole('article', { name: /^Активный проект/ });
   for (let attempt = 0; attempt < 25; attempt++) {
     if ((await active.count()) > 0) return;
-    const offer = board(page).getByRole('article', { name: title, exact: true });
-    await offer.getByRole('button', { name: 'Откликнуться', exact: true }).click();
-    await expect(board(page).getByRole('article', { name: 'Отклик отправлен' })).toBeVisible();
+    // Сюжет мог встать между экранами (его присылает ответ о закрытии дня, а
+    // DOM догоняет в следующем рендере) — убираем до клика, иначе клик
+    // упирается в карточку и спек падает через минуту таймаутов.
+    await resolveStory(page);
+    const pending = board(page).getByRole('article', { name: 'Отклик отправлен' });
+    // Отклик — один в день. Если висящий отклик уже есть (день закрылся позже,
+    // чем ждал цикл), повторный клик сервер отвергает, и «Отклик отправлен»
+    // не появляется — шаг идемпотентен именно поэтому.
+    await act(page, async () => {
+      if ((await pending.count()) > 0) return;
+      const offer = board(page).getByRole('article', { name: title, exact: true });
+      await offer.getByRole('button', { name: 'Откликнуться', exact: true }).click();
+      await expect(pending).toBeVisible();
+    });
     await endDay(page);
   }
   await expect(active).toBeVisible();

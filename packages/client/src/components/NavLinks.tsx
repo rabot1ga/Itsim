@@ -21,7 +21,7 @@ export const NavLinks: React.FC<{ title?: string; links: NavLink[] }> = ({ title
   return (
     <section aria-label={title}>
       <SectionTitle className="mb-2">{title}</SectionTitle>
-      <div className="grid gap-2">
+      <div className="grid gap-2 grid-cols-[minmax(0,1fr)]">
         {links.map((link) => (
           <button
             key={link.view}

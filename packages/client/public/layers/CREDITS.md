@@ -11,11 +11,21 @@ grayscale base + CSS tinting.
 The artist replaces files **in place** (same names), or adds new variants
 and registers them in `packages/content/layers/*_manifest.json`.
 
+Because of that, `tools/generate_layer_assets.py` skips files that already
+exist: a plain re-run would roll the in-place edits back (three `room/pet/*.svg`
+shadows were already hand-moved). Regenerate deliberately with `--force` and
+review `git diff -- packages/client/public/layers`. The avatar half of that
+script is off by default too — the game ships `avatar-v2/*.webp` from
+`tools/art/avatar-v2`, and `public/layers/avatar/` was deleted as an orphan.
+
 Conventions:
-- avatar canvas: 500×500, anchor head center (250,160), feet baseline y≈470
+- avatar canvas: 500×760 webp (avatar-v2), head crown y=30, chin y=168,
+  feet baseline y≈740 — посадка выводится из геометрии манекена в сборке
+  (`tools/art/avatar-v2`), файлы в этом каталоге руками не двигать
 - room canvas: 1000×1000, wall y 0..700, floor y 700..1000, desk y≈640
-- grayscale layers (tintable): avatar body/hair/beard, room bg
-- keep PNG with transparency (or grayscale SVG), 1000×1000 / 500×500
+- grayscale layers (tintable): avatar body/hair/beard, room bg — hair/beard
+  обязаны быть шкалой серого, иначе CSS-фильтр из `tintSlot` их не красит
+- keep PNG with transparency (or grayscale SVG), 1000×1000; avatar-v2 — webp 500×760
 - 84 layers: avatar (eyes/hair/beard/tops/accessories) + room
   (bg/windows/decor/desks/chairs/setups/atmosphere/pets)
 

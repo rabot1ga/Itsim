@@ -1026,12 +1026,31 @@ select {
   font-weight: 600;
   color: var(--green);
 }
-.room-card img {
+.room-card-art {
   display: block;
   width: 100%;
   height: auto;
+  /* Фолбэк-эскиз — растровая картинка: её держим nearest, как требует ТЗ §6.
+     Живая сцена (`image-rendering: pixelated | auto`) выбирает сама по масштабу,
+     поэтому селектор больше не `.room-card img` — он затирал бы слоим <img>. */
   image-rendering: pixelated;
   border-top: 1px solid var(--line);
+}
+.room-card-scene {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+  text-align: left;
+  cursor: pointer;
+}
+/* В карточке рамка «экрана» лишняя: границы уже даёт сама карточка.
+   Атрибутный селектор — чтобы перебить tailwind-утилиту независимо от порядка. */
+.room-card-scene [aria-label='Комната'] {
+  border: 0;
 }
 .room-card-caption {
   display: block;
@@ -2088,9 +2107,24 @@ select {
 .accordion-body.open {
   grid-template-rows: 1fr;
 }
+/* Свёрнутая секция обязана быть недоступна не только глазу, но и указателю
+   с клавиатурой. `0fr` даёт нулевую высоту строки грида, но дети внутри
+   `overflow:hidden` сохраняют собственный бокс: кнопка свотча, ссылка или
+   инпут «под» заголовком остаются в дереве доступности, получают Tab и
+   ловят клик — на мобильном это ещё и ложные срабатывания у края карточки.
+   e2e это поймал как «click Timeout … <div class=card> intercepts pointer
+   events»: элемент «видим», а попасть по нему нельзя.
+   `visibility` скрывает поддерево целиком (и из a11y-дерева, и от хит-тестов);
+   задержка = длительность анимации, поэтому сворачивание не «выпадает». */
 .accordion-inner {
   overflow: hidden;
   min-height: 0;
+  visibility: hidden;
+  transition: visibility 0s linear 0.22s;
+}
+.accordion-body.open .accordion-inner {
+  visibility: visible;
+  transition-delay: 0s;
 }
 .accordion-chevron {
   transition: transform 0.22s ease;

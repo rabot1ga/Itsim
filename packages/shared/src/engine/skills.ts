@@ -15,11 +15,7 @@ export function xpToNext(level: number): number {
 /**
  * Apply XP to a skill with motivation multiplier
  */
-export function applyXp(
-  skill: SkillLevel,
-  rawXp: number,
-  motivation: number
-): SkillLevel {
+export function applyXp(skill: SkillLevel, rawXp: number, motivation: number): SkillLevel {
   const mult = 0.7 + 0.006 * motivation; // 0.7 .. 1.3
   let xp = skill.xp + Math.round(rawXp * mult);
   let level = skill.level;
@@ -112,8 +108,14 @@ export function canUnlockPerk(
           .reduce((sum, [, v]) => sum + v.level, 0);
       }
       if (total < requiredLevel) return false;
-    } else if (key === 'communication' || key === 'leadership' || key === 'english' ||
-               key === 'stress_resistance' || key === 'time_management' || key === 'public_speaking') {
+    } else if (
+      key === 'communication' ||
+      key === 'leadership' ||
+      key === 'english' ||
+      key === 'stress_resistance' ||
+      key === 'time_management' ||
+      key === 'public_speaking'
+    ) {
       const softLevel = p.softSkills[key]?.level ?? 0;
       if (softLevel < requiredLevel) return false;
     } else {
@@ -126,10 +128,14 @@ export function canUnlockPerk(
 }
 
 /**
- * Calculate total skill levels across all skills
+ * Total skill levels. The parameter type is exactly what is read: `ratingParts`
+ * needs it from a partial state (raw save files on the board may be missing half
+ * the fields), and duplicating the formula for that would mean two sources of
+ * truth. Levels are coerced, because a save written by an older build can hold
+ * `null` in a skill slot.
  */
-export function totalSkillLevels(p: PlayerState): number {
-  return Object.values(p.skills).reduce((sum, s) => sum + s.level, 0);
+export function totalSkillLevels(p: Pick<PlayerState, 'skills'>): number {
+  return Object.values(p.skills).reduce((sum, s) => sum + (Number(s?.level) || 0), 0);
 }
 
 /**

@@ -18,6 +18,10 @@ import {
   rollInterview,
   preScreenMatch,
   calculateRating,
+  ratingParts,
+  ratingMetricOf,
+  RATING_COMPONENTS,
+  RATING_METRICS,
   checkConditions,
   pickEvent,
   applyEventEffects,
@@ -169,10 +173,20 @@ describe('interview', () => {
 
   it('hard skill miss (ratio < 0.5) heavily reduces the chance', () => {
     const good = interviewChance({
-      skills: { js: 10 }, requirements: { js: 10 }, communication: 10, reputation: 0, companyBar: 1, answerScore: 0.8,
+      skills: { js: 10 },
+      requirements: { js: 10 },
+      communication: 10,
+      reputation: 0,
+      companyBar: 1,
+      answerScore: 0.8,
     });
     const bad = interviewChance({
-      skills: { js: 4 }, requirements: { js: 10 }, communication: 10, reputation: 0, companyBar: 1, answerScore: 0.8,
+      skills: { js: 4 },
+      requirements: { js: 10 },
+      communication: 10,
+      reputation: 0,
+      companyBar: 1,
+      answerScore: 0.8,
     });
     expect(bad).toBeLessThan(good);
   });
@@ -198,6 +212,44 @@ describe('rating', () => {
     p.reputation = 100;
     p.housingLevel = 4;
     expect(calculateRating(p)).toBeLessThanOrEqual(1000);
+  });
+
+  it('итог = взвешенная сумма ровно тех компонент, по которым доска сортирует', () => {
+    const p = createNewPlayer();
+    p.grade = 'senior';
+    p.money = 250_000;
+    p.reputation = 63;
+    p.housingLevel = 2;
+    p.achievements = p.achievements.slice(0, 3);
+
+    const parts = ratingParts(p);
+    const sum = RATING_COMPONENTS.reduce((acc, c) => acc + parts[c.id] * c.weight, 0);
+    expect(calculateRating(p)).toBe(Math.round(sum * 10));
+    expect(ratingMetricOf(p, 'rating')).toBe(calculateRating(p));
+
+    for (const c of RATING_COMPONENTS) {
+      expect(parts[c.id]).toBeGreaterThanOrEqual(0);
+      expect(parts[c.id]).toBeLessThanOrEqual(100);
+    }
+    // Веса обязаны давать 1: иначе «0…100 за компоненту» и «0…1000 за итог»
+    // расходятся масштабом, и вкладка начинает врать про «вклад в рейтинг».
+    expect(RATING_COMPONENTS.reduce((acc, c) => acc + c.weight, 0)).toBeCloseTo(1, 6);
+  });
+
+  it('нормировка монотонна: вкладка «Деньги» даёт порядок сырых денег', () => {
+    const base = createNewPlayer();
+    const poor = { ...base, money: 1_000 } as PlayerState;
+    const mid = { ...base, money: 50_000 } as PlayerState;
+    const rich = { ...base, money: 5_000_000 } as PlayerState;
+    expect(ratingMetricOf(mid, 'money')).toBeGreaterThan(ratingMetricOf(poor, 'money'));
+    expect(ratingMetricOf(rich, 'money')).toBeGreaterThan(ratingMetricOf(mid, 'money'));
+    // потолок 100 — «10 млн = 100» из комментария к формуле; дальше порядок
+    // держится днём и id, а не бесконечной гонкой денег.
+    expect(ratingMetricOf({ ...base, money: 10 ** 12 } as PlayerState, 'money')).toBeLessThanOrEqual(100);
+  });
+
+  it('список метрик серверной доски = список компонент движка', () => {
+    expect(RATING_METRICS).toEqual(['rating', ...RATING_COMPONENTS.map((c) => c.id)]);
   });
 
   it('grade order matches career ladder', () => {
@@ -233,16 +285,25 @@ describe('events', () => {
     const p: PlayerState = { ...basePlayer, currentDay: 10 };
     const pool = [
       {
-        id: 'chain_only', title: '', description: '', tags: [],
-        weight: 100, cooldownDays: 0, chainOnly: true,
+        id: 'chain_only',
+        title: '',
+        description: '',
+        tags: [],
+        weight: 100,
+        cooldownDays: 0,
+        chainOnly: true,
         choices: [
           { text: 'a', effects: {} },
           { text: 'b', effects: {} },
         ],
       },
       {
-        id: 'normal', title: '', description: '', tags: [],
-        weight: 1, cooldownDays: 0,
+        id: 'normal',
+        title: '',
+        description: '',
+        tags: [],
+        weight: 1,
+        cooldownDays: 0,
         choices: [
           { text: 'a', effects: {} },
           { text: 'b', effects: {} },
@@ -276,7 +337,13 @@ describe('achievements', () => {
     const p = createNewPlayer();
     p.grade = 'junior';
     const defs = [
-      { id: 'a1', name: '', description: '', icon: '', condition: { type: 'grade_reached', target: 'junior' } as const },
+      {
+        id: 'a1',
+        name: '',
+        description: '',
+        icon: '',
+        condition: { type: 'grade_reached', target: 'junior' } as const,
+      },
       { id: 'a2', name: '', description: '', icon: '', condition: { type: 'money_made', target: 999999999 } as const },
     ];
     const earned = checkAchievements(p, defs as any);
@@ -316,6 +383,8 @@ import {
   getGeneticTraits,
   tintFilter,
   traitTint,
+  tintFromHex,
+  lookTintOverrides,
   type GeneticsConfig,
 } from '../../index';
 
@@ -431,14 +500,64 @@ describe('genetics', () => {
   });
 });
 
+// ---- Ручные цвета гардероба → тонировка плоских мастеров ----
+
+describe('tintFromHex', () => {
+  it('детерминирована и не зависит от записи хекса', () => {
+    expect(tintFilter(tintFromHex('#f00')!)).toBe(tintFilter(tintFromHex('#FF0000')!));
+    expect(tintFilter(tintFromHex('#ff0000')!)).toBe(tintFilter(tintFromHex('#ff0000')!));
+  });
+
+  it('всё, что не хекс, остаётся на совести генетики', () => {
+    expect(tintFromHex('hair_black')).toBeNull();
+    expect(tintFromHex('#ff00')).toBeNull();
+    expect(tintFromHex('')).toBeNull();
+    expect(tintFromHex(null)).toBeNull();
+    expect(tintFromHex(undefined)).toBeNull();
+  });
+
+  it('монотонна: темнее — меньше brightness, насыщеннее — больше saturate', () => {
+    const dark = tintFromHex('#2b2320')!;
+    const blond = tintFromHex('#d7a94b')!;
+    expect(dark.light!).toBeLessThan(blond.light!);
+    expect(tintFromHex('#808080')!.sat!).toBeLessThan(tintFromHex('#ff2020')!.sat!);
+  });
+
+  it('нейтральный серый почти не добавляет насыщенности', () => {
+    expect(tintFromHex('#808080')!.sat).toBeCloseTo(0.1, 6);
+  });
+
+  it('тон считается как поворот от сепиевой базы, поэтому красный и синий расходятся', () => {
+    const red = tintFromHex('#ff2020')!.hue;
+    const blue = tintFromHex('#2020ff')!.hue;
+    expect(Math.abs(red - blue)).toBeGreaterThan(90);
+  });
+});
+
+describe('lookTintOverrides', () => {
+  it('плоскому стеку отдаются только те ряды, у мастеров которых есть tintSlot', () => {
+    expect(
+      lookTintOverrides({
+        skin: '#e8b088',
+        hairColor: '#2b2320',
+        topColor: '#123456',
+        bottomColor: '#000000',
+        shoeColor: '#ffffff',
+      })
+    ).toEqual({ skinTone: '#e8b088', hairColor: '#2b2320' });
+  });
+
+  it('мусор и «Авто» (null) не пробрасываются', () => {
+    expect(lookTintOverrides({ hairColor: 'blond', skin: null })).toEqual({});
+    expect(lookTintOverrides({})).toEqual({});
+    expect(lookTintOverrides(null)).toEqual({});
+    expect(lookTintOverrides(undefined)).toEqual({});
+  });
+});
+
 // ---- Mining farm ----
 
-import {
-  miningDailyIncome,
-  miningDayNoise,
-  hashrateOfItems,
-  electricitySaveOfItems,
-} from '../../index';
+import { miningDailyIncome, miningDayNoise, hashrateOfItems, electricitySaveOfItems } from '../../index';
 
 describe('mining', () => {
   const cfg = { priceBase: 40, volatility: 0.5, electricityPerHashrate: 0.5 };
@@ -555,19 +674,43 @@ import { maybeTriggerActionEvent } from '../../index';
 
 const ACTION_POOL: any[] = [
   {
-    id: 'bar_hr_meeting', title: '', description: '', tags: ['bar'], weight: 100,
-    cooldownDays: 30, actionTrigger: { action: 'rest_bar', chance: 0.25, cooldownDays: 30 },
-    choices: [{ text: 'a', effects: {} }, { text: 'b', effects: {} }],
+    id: 'bar_hr_meeting',
+    title: '',
+    description: '',
+    tags: ['bar'],
+    weight: 100,
+    cooldownDays: 30,
+    actionTrigger: { action: 'rest_bar', chance: 0.25, cooldownDays: 30 },
+    choices: [
+      { text: 'a', effects: {} },
+      { text: 'b', effects: {} },
+    ],
   },
   {
-    id: 'courier_dog', title: '', description: '', tags: ['sidejob'], weight: 100,
-    cooldownDays: 15, actionTrigger: { action: 'side_job', jobId: 'courier', chance: 0.2 },
-    choices: [{ text: 'a', effects: {} }, { text: 'b', effects: {} }],
+    id: 'courier_dog',
+    title: '',
+    description: '',
+    tags: ['sidejob'],
+    weight: 100,
+    cooldownDays: 15,
+    actionTrigger: { action: 'side_job', jobId: 'courier', chance: 0.2 },
+    choices: [
+      { text: 'a', effects: {} },
+      { text: 'b', effects: {} },
+    ],
   },
   {
-    id: 'barista_tiktok', title: '', description: '', tags: ['sidejob'], weight: 100,
-    cooldownDays: 30, actionTrigger: { action: 'side_job', jobId: 'barista', chance: 0.2 },
-    choices: [{ text: 'a', effects: {} }, { text: 'b', effects: {} }],
+    id: 'barista_tiktok',
+    title: '',
+    description: '',
+    tags: ['sidejob'],
+    weight: 100,
+    cooldownDays: 30,
+    actionTrigger: { action: 'side_job', jobId: 'barista', chance: 0.2 },
+    choices: [
+      { text: 'a', effects: {} },
+      { text: 'b', effects: {} },
+    ],
   },
 ];
 
@@ -617,12 +760,14 @@ describe('action-triggered events', () => {
     const p: PlayerState = { ...createNewPlayer(), currentDay: 1 };
     // bar_hr_meeting has minGameDay 3 via content, but this pool entry has none;
     // test with a gated variant
-    const gated: any[] = [{
-      ...ACTION_POOL[0],
-      id: 'gated_evt',
-      minGameDay: 20,
-      actionTrigger: { action: 'rest_bar', chance: 1 },
-    }];
+    const gated: any[] = [
+      {
+        ...ACTION_POOL[0],
+        id: 'gated_evt',
+        minGameDay: 20,
+        actionTrigger: { action: 'rest_bar', chance: 1 },
+      },
+    ];
     expect(maybeTriggerActionEvent(p, gated, 'rest_bar', undefined, () => 0)).toBeNull();
     p.currentDay = 25;
     expect(maybeTriggerActionEvent(p, gated, 'rest_bar', undefined, () => 0)?.id).toBe('gated_evt');
@@ -680,18 +825,45 @@ describe('item effects', () => {
 
 // ---- Interview quiz (gamified learning) ----
 
-import {
-  pickInterviewQuestions,
-  interviewAnswerScore,
-  interviewXpForQuestion,
-  gradeTier,
-} from '../../index';
+import { pickInterviewQuestions, interviewAnswerScore, interviewXpForQuestion, gradeTier } from '../../index';
 
 const QUESTIONS = [
-  { id: 'js_1', skillId: 'javascript', tier: 'junior', text: 't', options: ['a', 'b'], correctIndex: 0, explanation: 'e' },
-  { id: 'js_2', skillId: 'javascript', tier: 'middle', text: 't', options: ['a', 'b'], correctIndex: 0, explanation: 'e' },
-  { id: 'js_3', skillId: 'javascript', tier: 'senior', text: 't', options: ['a', 'b'], correctIndex: 0, explanation: 'e' },
-  { id: 'gen_1', skillId: 'general', tier: 'junior', text: 't', options: ['a', 'b'], correctIndex: 0, explanation: 'e' },
+  {
+    id: 'js_1',
+    skillId: 'javascript',
+    tier: 'junior',
+    text: 't',
+    options: ['a', 'b'],
+    correctIndex: 0,
+    explanation: 'e',
+  },
+  {
+    id: 'js_2',
+    skillId: 'javascript',
+    tier: 'middle',
+    text: 't',
+    options: ['a', 'b'],
+    correctIndex: 0,
+    explanation: 'e',
+  },
+  {
+    id: 'js_3',
+    skillId: 'javascript',
+    tier: 'senior',
+    text: 't',
+    options: ['a', 'b'],
+    correctIndex: 0,
+    explanation: 'e',
+  },
+  {
+    id: 'gen_1',
+    skillId: 'general',
+    tier: 'junior',
+    text: 't',
+    options: ['a', 'b'],
+    correctIndex: 0,
+    explanation: 'e',
+  },
   { id: 'py_1', skillId: 'python', tier: 'junior', text: 't', options: ['a', 'b'], correctIndex: 0, explanation: 'e' },
   { id: 'py_2', skillId: 'python', tier: 'senior', text: 't', options: ['a', 'b'], correctIndex: 0, explanation: 'e' },
 ];
@@ -706,7 +878,10 @@ describe('interview questions', () => {
   });
 
   it('pickInterviewQuestions puts the main skill first, respects tier', () => {
-    const rng = (() => { let s = 7; return () => ((s = (s * 1103515245 + 12345) & 0x7fffffff), s / 0x7fffffff); })();
+    const rng = (() => {
+      let s = 7;
+      return () => ((s = (s * 1103515245 + 12345) & 0x7fffffff), s / 0x7fffffff);
+    })();
     const picked = pickInterviewQuestions(QUESTIONS as any, {
       mainSkillId: 'javascript',
       grade: 'junior',
@@ -721,7 +896,10 @@ describe('interview questions', () => {
   });
 
   it('pickInterviewQuestions fills from the wider tier pool when the branch is thin', () => {
-    const rng = (() => { let s = 3; return () => ((s = (s * 1103515245 + 12345) & 0x7fffffff), s / 0x7fffffff); })();
+    const rng = (() => {
+      let s = 3;
+      return () => ((s = (s * 1103515245 + 12345) & 0x7fffffff), s / 0x7fffffff);
+    })();
     const picked = pickInterviewQuestions(QUESTIONS as any, {
       mainSkillId: 'python',
       grade: 'junior',

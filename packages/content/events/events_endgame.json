@@ -1,0 +1,250 @@
+[
+  {
+    "id": "arch_board_defense",
+    "title": "📐 Борд слушает твою схему",
+    "description": "Тебя просят объяснить архитектуру людям, которые платят за неё больше, чем понимают. На слайде — та же схема, что ты рисовал в ночь перед дедлайном; в зале — финансовый директор, который уже нашёл в ней «лишнюю» коробку.",
+    "tags": ["work", "career", "crisis"],
+    "weight": 6,
+    "cooldownDays": 75,
+    "minGameDay": 180,
+    "conditions": { "minGrade": "architect" },
+    "choices": [
+      {
+        "text": "Отстоять план без правок 🛡",
+        "effects": { "reputation": 6, "motivation": -6, "health": -2, "skill": { "communication": 14, "leadership": 10 } },
+        "followup": "Коробку оставили. Два часа вопросов вы стоили дороже, чем сама коробка."
+      },
+      {
+        "text": "Согласиться на половину решения 🤝",
+        "effects": { "reputation": 2, "motivation": 3, "skill": { "leadership": 12 } },
+        "followup": "Половина схемы — это не половина работы: переделывать придётся всю."
+      },
+      {
+        "text": "Уйти дописывать схему в ночь 🌙",
+        "effects": { "health": -5, "motivation": -4, "energy": -2, "skill": { "python": 24, "leadership": 6 } },
+        "followup": "Ночная версия лучше утренней на порядок. И хуже утренней по здоровью."
+      }
+    ]
+  },
+  {
+    "id": "legacy_monolith_split",
+    "title": "🧱 Монолит решили делить",
+    "description": "Три года все знали, что монолит надо резать. Теперь у этого есть бюджет, срок и люди, которые будут ругаться. Ты либо ведёшь раскат сам, либо отдаёшь тому, кто моложе и ещё не знает, что это невозможно.",
+    "tags": ["work", "tech", "career"],
+    "weight": 7,
+    "cooldownDays": 90,
+    "minGameDay": 160,
+    "conditions": { "minGrade": "architect", "hasJob": true },
+    "choices": [
+      {
+        "text": "Вести раскат самому 🎛",
+        "effects": { "reputation": 5, "health": -4, "motivation": 4, "skill": { "docker": 16, "linux": 14 } },
+        "followup": "Первый же сервис лёг на проде в 03:40. Ты поднял его раньше, чем заказчик заметил.",
+        "chain": { "eventId": "legacy_rollout_incident", "afterDays": 12, "chance": 0.65 }
+      },
+      {
+        "text": "Отдать раскат тимлиду, остаться на схеме 📐",
+        "effects": { "reputation": -2, "motivation": -3, "relation": { "teamlead": 5 }, "skill": { "leadership": 14 } },
+        "followup": "Схема твоя, шрам — его. Так устроено делегирование, ты об этом читал."
+      },
+      {
+        "text": "Завернуть инициативу на полке 🔒",
+        "effects": { "reputation": -5, "motivation": -6, "karma": 2 },
+        "followup": "Полка выдержала ещё год. Монолит — нет, но это станет видно не тебе."
+      }
+    ]
+  },
+  {
+    "id": "legacy_rollout_incident",
+    "title": "🔥 Раскат пошёл не туда",
+    "description": "Тот самый сервис, который ты считал скучным, лёг в час пика и утащил за собой два соседних. В чате 400 сообщений, в календаре — созвон с заказчиком через сорок минут.",
+    "tags": ["crisis", "work"],
+    "weight": 6,
+    "cooldownDays": 60,
+    "maxOccurrences": 2,
+    "minGameDay": 170,
+    "chainOnly": true,
+    "choices": [
+      {
+        "text": "Откатить и признать ошибку вслух 📢",
+        "effects": { "reputation": 3, "motivation": -6, "skill": { "communication": 16 } },
+        "followup": "«Мы просчитались» — три слова, после которых борд разговаривает с тобой как со взрослым."
+      },
+      {
+        "text": "Чинить на коленях до утра 🌙",
+        "effects": { "health": -8, "energy": -2, "motivation": -3, "burnoutDays": 1, "skill": { "linux": 18, "docker": 12 } },
+        "followup": "К утру работало, к обеду снова нет. К вечеру работало уже то, что ты хотел."
+      },
+      {
+        "text": "Свалить на нагрузку и погоду 🌦",
+        "effects": { "reputation": -6, "karma": -5, "motivation": 2 },
+        "followup": "Приняли. Но один человек в комнате видел графики и понял, что дело не в нагрузке."
+      }
+    ]
+  },
+  {
+    "id": "headhunter_three_zeros",
+    "title": "🕵️ Звонок с тремя нулями",
+    "description": "Хедхантер знает имя твоего тимлида и то, что ты делал в 2019-м. Вилка на три нуля выше текущей, а в конце разговора — «подумай до пятницы», которое длится ровно до пятницы.",
+    "tags": ["money", "career", "work"],
+    "weight": 5,
+    "cooldownDays": 120,
+    "minGameDay": 200,
+    "conditions": { "minGrade": "architect", "hasJob": true },
+    "choices": [
+      {
+        "text": "Выторговать контр-офис 📈",
+        "effects": { "money": 120000, "motivation": -3, "reputation": -1, "relation": { "teamlead": -4 } },
+        "followup": "Деньги пришли, вопрос остался: ты куплен, и это все знают — включая тебя."
+      },
+      {
+        "text": "Сходить на встречи хотя бы из интереса 🚪",
+        "effects": { "motivation": 5, "reputation": 2, "energy": -2, "skill": { "communication": 10 } },
+        "followup": "Три офиса, четыре питча, ноль решений. Но ты впервые за год вспомнил, чего стоишь."
+      },
+      {
+        "text": "Сказать «нет» и выспаться 😴",
+        "effects": { "motivation": 6, "health": 3, "reputation": 1 },
+        "followup": "Он перезвонит через полгода, с той же фразой. Ты снова скажешь «нет», и снова это будет твой выбор."
+      }
+    ]
+  },
+  {
+    "id": "startup_cto_offer",
+    "title": "🚀 Стартап зовёт техническим директором",
+    "description": "Двадцать человек, продукт на колене и вера, что ты придёшь и всё починишь. Деньги — опцион и «после раунда». В графе «зарплата» стоит прочерк, который они называют гибкостью.",
+    "tags": ["career", "money", "crisis"],
+    "weight": 5,
+    "cooldownDays": 150,
+    "maxOccurrences": 1,
+    "minGameDay": 240,
+    "conditions": { "minGrade": "architect" },
+    "choices": [
+      {
+        "text": "Взять опцион вместо денег 📈",
+        "effects": { "reputation": 5, "motivation": 8, "health": -3, "money": -40000 },
+        "followup": "Опцион — бумага. Вера в неё — нет. Первые полгода ты будешь спать по шесть часов."
+      },
+      {
+        "text": "Попросить деньги вперёд 💵",
+        "effects": { "money": 300000, "reputation": -2, "motivation": -2 },
+        "followup": "Нашли. Подняли под твой гонорар. Первый разговор о деньгах с инвестором теперь про тебя."
+      },
+      {
+        "text": "Отказать: у меня тут команда 👥",
+        "effects": { "reputation": 3, "karma": 5, "motivation": 4, "relation": { "teamlead": 6, "junior_colleague": 5 } },
+        "followup": "Они возьмут человека хуже и назовут это храбростью. Ты вернёшься к своей схеме и к своему дежурству."
+      }
+    ]
+  },
+  {
+    "id": "keynote_two_thousands",
+    "title": "🎤 Ключевой доклад: зал на две тысячи",
+    "description": "Организаторы дали слот, который обычно отдают вице-президенту, и попросили «без презентаций про продажи». В третьем ряду сидят джуны из твоей команды с телефонами.",
+    "tags": ["social", "career", "work"],
+    "weight": 6,
+    "cooldownDays": 100,
+    "minGameDay": 220,
+    "conditions": { "minGrade": "architect" },
+    "choices": [
+      {
+        "text": "Говорить без слайдов 🎯",
+        "effects": { "reputation": 6, "motivation": 5, "health": -2, "skill": { "public_speaking": 20 } },
+        "followup": "Сорок минут, один слайд с текстом «извините» и стоячие овации, которых ты не заслужил, но они были."
+      },
+      {
+        "text": "Читать по бумажке 📄",
+        "effects": { "reputation": -3, "motivation": -5, "energy": -2, "skill": { "english": 10 } },
+        "followup": "Зал вежливо слушал три минуты, потом начал смотреть в телефон. Ты узнал этот звук."
+      },
+      {
+        "text": "Отдать сцену джуну 🎓",
+        "effects": { "reputation": 4, "karma": 5, "motivation": 6, "relation": { "junior_colleague": 12 }, "skill": { "leadership": 16 } },
+        "followup": "Он собрал зал лучше тебя. Вопросы после доклада были его, а не твои — и это тоже было твоим решением."
+      }
+    ]
+  },
+  {
+    "id": "data_regulator_audit",
+    "title": "📋 Регулятор пришёл с проверкой данных",
+    "description": "Письмо без обратного адреса, визит через день. Спрашивают про основание хранения, про экспорт, про то, почему в логах лежат паспорта. Твой главный инженер отвечает за шесть секунд слишком быстро.",
+    "tags": ["crisis", "work", "tech"],
+    "weight": 5,
+    "cooldownDays": 130,
+    "minGameDay": 200,
+    "conditions": { "minGrade": "architect" },
+    "choices": [
+      {
+        "text": "Показать всё как есть 🔍",
+        "effects": { "reputation": 4, "motivation": -5, "money": -60000, "skill": { "cryptography": 16 } },
+        "followup": "Штраф оказался дешевле, чем ты боялся, а вот расчистка логов — дороже."
+      },
+      {
+        "text": "Спрятать грязное хранилище под ковёр 🗄",
+        "effects": { "reputation": -6, "karma": -6, "jobWarnings": 1, "motivation": -2 },
+        "followup": "Никто не спросил про вторую базу. Пока."
+      },
+      {
+        "text": "Поднять вопрос легаси-хранилища на борде 🛠",
+        "effects": { "reputation": 2, "money": -140000, "motivation": -3, "skill": { "network_security": 18, "cryptography": 10 } },
+        "followup": "Борд дал деньги и два месяца. Ты только что купил себе работу, зато с покрытием."
+      }
+    ]
+  },
+  {
+    "id": "layoff_eleven_names",
+    "title": "✂️ Список из одиннадцати имён",
+    "description": "Финансовый прислал таблицу и просит сократить 12 % подразделения. Он не знает, кто из них ведёт дежурства. Ты знаешь, и это ровно та причина, по которой список пришёл к тебе.",
+    "tags": ["crisis", "work", "career"],
+    "weight": 4,
+    "cooldownDays": 200,
+    "maxOccurrences": 1,
+    "minGameDay": 240,
+    "conditions": { "minGrade": "architect", "hasJob": true },
+    "choices": [
+      {
+        "text": "Сократить по цифрам 📊",
+        "effects": { "reputation": -3, "karma": -6, "motivation": -8, "skill": { "leadership": 10 } },
+        "followup": "Таблица не ошиблась ни в одном имени. Это не утешает."
+      },
+      {
+        "text": "Отстоять всех, вырезав себя из бонуса ✂️",
+        "effects": { "money": -250000, "reputation": 8, "health": -4, "motivation": 6, "karma": 4, "relation": { "junior_colleague": 10 } },
+        "followup": "Фонд закрыли твоим годовым бонусом. Одиннадцать человек об этом не узнают, и это правильно."
+      },
+      {
+        "text": "Не подписывать и уйти 🔑",
+        "effects": { "reputation": 5, "karma": 6, "motivation": 4, "jobWarnings": 2 },
+        "followup": "Список подписали без тебя. Твоё имя внесли в него следующим пунктом — отдельным цветом."
+      }
+    ]
+  },
+  {
+    "id": "successor_ready",
+    "title": "🎗 Тот, кто уже делает твою работу",
+    "description": "На планёрке человек, которого ты нанимал джуном, объясняет борду границу сервисов так, как ты объяснял бы год назад. Разница в том, что у него ещё остались силы на вечер.",
+    "tags": ["career", "social", "work"],
+    "weight": 5,
+    "cooldownDays": 180,
+    "maxOccurrences": 1,
+    "minGameDay": 260,
+    "conditions": { "minGrade": "architect" },
+    "choices": [
+      {
+        "text": "Отдать архитектуру и уйти в людей 🧑‍🏫",
+        "effects": { "reputation": 6, "motivation": 6, "skill": { "leadership": 22, "communication": 14 } },
+        "followup": "Через квартал твоё подразделение стало единственным, где не уходят. Это был твой новый ремесленный навык."
+      },
+      {
+        "text": "Оставить архитектуру себе 🏛",
+        "effects": { "reputation": 1, "motivation": -6, "relation": { "teamlead": -4 }, "skill": { "linux": 12 } },
+        "followup": "Ты снова самый компетентный в комнате. Комната при этом растёт медленнее, чем могла бы."
+      },
+      {
+        "text": "Поставить его перед бордом 🎤",
+        "effects": { "reputation": 4, "motivation": 3, "relation": { "junior_colleague": 8, "toxic_senior": 3 }, "skill": { "public_speaking": 10, "leadership": 12 } },
+        "followup": "Он защищал схему так, что у финансового не осталось вопросов. У тебя их было два, и ты их задал вслух."
+      }
+    ]
+  }
+]

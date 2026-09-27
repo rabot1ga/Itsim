@@ -1,6 +1,7 @@
 # Reference UI artwork
 
-Temporary artwork extracted from the user-supplied `1.png` (1254×1254).
+Temporary artwork extracted from the user-supplied `1.png` (1254×1254; now kept
+at `docs/design-references/reference-1.png`).
 Coordinates left/top/width/height: room 21/671/280/205; portrait 29/421/66/66;
 laptop 962/529/72/64; chair 964/768/58/67; keyboard 958/615/74/39. WebP quality 92, via sharp.
 

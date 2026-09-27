@@ -4,7 +4,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-libra
 import { PlayerPortrait } from '../components/PlayerPortrait';
 
 const mocks = vi.hoisted(() => ({ manifest: null as any, recolour: vi.fn() }));
-vi.mock('../components/iso/IsoRoom', () => ({ useIsoManifest: () => mocks.manifest }));
+vi.mock('../components/iso/manifest', () => ({ useIsoManifest: () => mocks.manifest }));
 vi.mock('../components/iso/recolor', async (original) => ({
   ...await original<typeof import('../components/iso/recolor')>(),
   recolourSprite: mocks.recolour,

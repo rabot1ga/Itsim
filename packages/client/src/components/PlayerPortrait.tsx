@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useIsoManifest } from './iso/IsoRoom';
+import { useIsoManifest } from './iso/manifest';
 import { characterLook, LookInput } from './iso/palette';
 import { recolourSprite, variantKey } from './iso/recolor';
 

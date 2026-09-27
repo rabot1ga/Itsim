@@ -1,7 +1,8 @@
 # Event artwork
 
-Cropped illustration panels from the user-provided root `2.png`, encoded as WebP
-(280×160). No card UI is baked into the images. Decorative category art only;
+Cropped illustration panels from the user-provided `2.png` (now kept at
+`docs/design-references/reference-2.png`), encoded as WebP (280×160). No card
+UI is baked into the images. Decorative category art only;
 actual story, choices and rewards remain live text from game content.
 
 Coordinates (left, top, width, height): night (18,46,280,160),

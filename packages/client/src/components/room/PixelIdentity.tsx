@@ -31,13 +31,18 @@ export const PixelIdentity: React.FC<{ pack: PixelPack; data: PixelAvatarData; n
         <span className="text-[10px] font-mono text-ink-500">32×32 · {rows.length} слоёв</span>
       </div>
 
-      <div className="grid grid-cols-[96px_1fr] gap-3">
+      {/* minmax(0,1fr): без нулевого min-track длинный id слоя (`top_hoodie_gray`)
+          раздувает колонку до min-content, и вся карточка вылезает за 390px —
+          на «Доме» появлялся горизонтальный скролл (ловится e2e-ассертом). */}
+      <div className="grid grid-cols-[96px_minmax(0,1fr)] gap-3">
         <PixelAvatar data={data} scale={6} className=" border-2 border-ink-700" background="#12141a" />
         <dl className="space-y-1 text-xs">
           {rows.map(({ cat, label, id }) => (
             <div key={cat} className="flex items-center justify-between gap-2">
               <dt className="text-ink-500">{cat}</dt>
-              <dd className="flex items-center gap-2">
+              {/* min-w-0 + flex-wrap: id слоя не должен выталкивать строку за
+                  320px — на узких телефонах это и был горизонтальный скролл «Дома». */}
+              <dd className="flex min-w-0 flex-wrap items-center gap-2">
                 <span className="text-ink-200">{label}</span>
                 <span
                   className={`text-[9px] px-1 ${
@@ -47,7 +52,7 @@ export const PixelIdentity: React.FC<{ pack: PixelPack; data: PixelAvatarData; n
                 >
                   {data.source[cat] === 'trait' ? 'генотип' : 'seed'}
                 </span>
-                <code className="text-[9px] text-ink-600">{id}</code>
+                <code className="text-[9px] text-ink-600 break-all">{id}</code>
               </dd>
             </div>
           ))}

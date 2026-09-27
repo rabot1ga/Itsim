@@ -1,4 +1,15 @@
-import { LayerManifest, LayerEntry, GeneticTraits, GeneticsConfig, traitTint, tintFilter } from '@itsim/shared';
+import {
+  LayerManifest,
+  LayerEntry,
+  GeneticTraits,
+  GeneticsConfig,
+  AvatarCustomization,
+  AvatarSlotId,
+  geneticTraitForSlot,
+  traitTint,
+  tintFilter,
+  tintFromHex,
+} from '@itsim/shared';
 
 /**
  * Layer composition helpers — DESIGN.md section 1-3.
@@ -39,13 +50,17 @@ export interface StackedLayer {
 
 /**
  * Build the ordered layer stack for a manifest + composition.
- * Tints slots that declare `tintSlot` using the player's traits.
+ * Tints slots that declare `tintSlot`: a hand-picked wardrobe colour wins over
+ * the genetic palette entry, otherwise the wardrobe's «Цвета» row would recolour
+ * only the iso bust while the room figure kept the genotype — the same class of
+ * bug as the unused clothing layouts.
  */
 export function buildLayerStack(
   manifest: LayerManifest,
   composition: Composition,
   traits: GeneticTraits | null,
-  geneticsConfig: GeneticsConfig | null
+  geneticsConfig: GeneticsConfig | null,
+  tintOverrides: Record<string, string> | null = null
 ): StackedLayer[] {
   const layers: StackedLayer[] = [];
 
@@ -58,15 +73,22 @@ export function buildLayerStack(
         // Required slot with no match → fall back to the first entry with a file
         const fallback = slot.entries.find((e) => e.file);
         if (fallback?.file) {
-          layers.push({ slotId: slot.id, entryId: fallback.id, file: `/layers/${fallback.file}`, zOrder: slot.zOrder, required: true });
+          layers.push({
+            slotId: slot.id,
+            entryId: fallback.id,
+            file: `/layers/${fallback.file}`,
+            zOrder: slot.zOrder,
+            required: true,
+          });
         }
       }
       continue;
     }
 
     let filter: string | undefined;
-    if (slot.tintSlot && traits && geneticsConfig) {
-      const tint = traitTint(slot.tintSlot, traits, geneticsConfig);
+    if (slot.tintSlot) {
+      const manual = tintOverrides ? tintFromHex(tintOverrides[slot.tintSlot]) : null;
+      const tint = manual ?? (traits && geneticsConfig ? traitTint(slot.tintSlot, traits, geneticsConfig) : null);
       if (tint) filter = tintFilter(tint);
     }
 
@@ -81,4 +103,39 @@ export function buildLayerStack(
   }
 
   return layers.sort((a, b) => a.zOrder - b.zOrder);
+}
+
+/**
+ * Полная композиция фигуры: генетика + «не редактируемые» слоты +overrides из
+ * гардероба. Одна функция на все четыре места, где аватар собирается заново —
+ * комната, превью гардероба, «Профиль» и шаринг-карточка. До неё база жила
+ * внутри `ProceduralAvatar`, и карточка, собиравшая композицию сама, теряла
+ * `body` и `eyes`: на шеринге игрок без головы и без глаз.
+ */
+export function avatarComposition(
+  avatar: AvatarCustomization | null | undefined,
+  traits: GeneticTraits | null | undefined,
+  extra?: Partial<Composition>
+): Composition {
+  const chosen = (slot: AvatarSlotId): string | null => {
+    const picked =
+      (avatar as Record<string, string | null> | undefined)?.[slot] ?? geneticTraitForSlot(traits ?? undefined, slot);
+    return picked ?? null;
+  };
+
+  const composition: Composition = {
+    body: 'body_base',
+    eyes: traits?.eyeShape ?? 'eye_normal',
+    hair: chosen('hair'),
+    beard: chosen('beard'),
+    top: chosen('top'),
+    bottom: chosen('bottom'),
+    accessory: chosen('accessory'),
+  };
+  if (extra) {
+    for (const [slot, value] of Object.entries(extra)) {
+      if (value !== undefined) composition[slot] = value;
+    }
+  }
+  return composition;
 }

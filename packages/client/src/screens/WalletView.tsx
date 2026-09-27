@@ -90,6 +90,9 @@ export const WalletView: React.FC = () => {
             </span>
           )}
         </div>
+        {/* min-w-0 на инпуте обязателен: у <input> intrinsic-ширина в 20
+            символов, и без min-width:0 поле не сжимается, а выталкивает кнопку
+            «Привязать» за край кадра на 320px */}
         <div className="flex gap-1.5">
           <input
             type="text"
@@ -97,7 +100,7 @@ export const WalletView: React.FC = () => {
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             placeholder="Адрес Solana (base58)"
-            className="input flex-1 text-xs"
+            className="input flex-1 min-w-0 text-xs"
             aria-label="Адрес кошелька"
           />
           <button disabled={busy !== null || !draft.trim()} onClick={submitBind} className="btn btn-sm btn-primary">
