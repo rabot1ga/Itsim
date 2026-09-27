@@ -107,18 +107,19 @@ describe('контент поздней игры', () => {
     }
   });
 
-  it('в поздних покупках нет эффектов, которые движок не применяет', () => {
-    // `speedBonus` и `reputationBonus` есть в схеме и в подписи магазина, но не
-    // читаются ни одним модулем движка (открытый пункт в docs/TODO.md §4).
-    // Пока решение не принято, новые предметы не имеют права на них ссылаться.
+  it('в контенте нет эффектов, которые движок не применяет', () => {
+    // 27.09.2026 `speedBonus` и `reputationBonus` убраны из схемы, `items.json`,
+    // `balance.json` и подписей магазина: не читались ни одним модулем, но UI
+    // уже успел их пообещать. zod молча режет неизвестные ключи, поэтому
+    // страховка живёт здесь — на уровне контента, а не валидатора.
     const UNAPPLIED = ['speedBonus', 'reputationBonus'];
-    for (const id of ['exec_coaching', 'board_chair', 'aviator_watch']) {
-      const item = bundle.items.find((i: any) => i.id === id);
-      expect(item, `предмет «${id}» должен быть в контенте`).toBeTruthy();
-      expect(item.price, `«${id}» — покупка эндгейма, а не средней игры`).toBeGreaterThanOrEqual(1_000_000);
+    for (const item of bundle.items) {
       for (const key of UNAPPLIED) {
-        expect(item.effects ?? {}, `«${id}» обещает ${key}, который движок не применяет`).not.toHaveProperty(key);
+        expect(item.effects ?? {}, `«${item.id}» ссылается на мёртвый ключ ${key}`).not.toHaveProperty(key);
       }
+    }
+    for (const h of bundle.balance.housing) {
+      expect(h, `жильё ${h.level} обещает репутацию, которую никто не начисляет`).not.toHaveProperty('reputationBonus');
     }
   });
 });

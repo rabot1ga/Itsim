@@ -14,10 +14,7 @@
     "type": "pc",
     "price": 30000,
     "description": "Ноутбук за 30к. Excel открывает, но IDE — уже на пределе.",
-    "effects": {
-      "speedBonus": 0.1,
-      "xpBonus": 0.0
-    },
+    "effects": {},
     "icon": "cheap_pc.png",
     "layerId": "setup_laptop"
   },
@@ -28,7 +25,6 @@
     "price": 80000,
     "description": "RTX 4060. Для работы, конечно.",
     "effects": {
-      "speedBonus": 0.2,
       "xpBonus": 0.05
     },
     "icon": "gaming_pc.png",
@@ -43,7 +39,6 @@
     "price": 200000,
     "description": "Статусный символ айтишника. В кофейнях узнают.",
     "effects": {
-      "speedBonus": 0.3,
       "xpBonus": 0.1
     },
     "icon": "macbook.png",

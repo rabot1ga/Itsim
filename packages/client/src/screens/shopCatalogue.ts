@@ -78,7 +78,6 @@ function itemCategoryLocal(item: ShopItem): string {
 }
 
 const EFFECT_LABELS: Record<string, [string, boolean]> = {
-  speedBonus: ['скорость', true],
   xpBonus: ['опыт', true],
   energyBonus: ['энергия', false],
   motivationBonus: ['настроение', false],

@@ -664,10 +664,8 @@ export interface ItemEffects {
   energyBonus?: number;
   healthBonus?: number;
   motivationBonus?: number;
-  reputationBonus?: number;
   xpBonus?: number; // percent
   energyCostChance?: number; // chance to reduce energy cost by 1
-  speedBonus?: number;
   /** Mining hashrate (MH/s) — passive crypto income */
   hashrate?: number;
   /** Fraction of electricity cost saved (0..1, summed up to 0.9) */
