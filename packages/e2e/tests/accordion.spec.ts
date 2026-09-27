@@ -14,7 +14,13 @@ import { resolveStory, act } from './helpers/story';
  * и ровно так же оно выглядит для живого человека на мобильном.
  */
 
-const HAIR_SWATCH = '#2b2320';
+/**
+ * Проба — живое превью внутри гардероба, а не свотч цвета: ряды «Цвета» из UI
+ * убраны 27.09.2026, и спек, привязанный к ним, умер бы вместе с ними. Превью
+ * монтируется всегда, и оно обязано быть скрыто ровно тогда, когда секция
+ * свёрнута.
+ */
+const PREVIEW = 'Превью гардероба';
 
 /** «Дом» — экран в шторке «Меню», «Обучение» — таб внизу: входы у них разные. */
 async function openRoom(page: Page) {
@@ -49,25 +55,33 @@ test.beforeEach(async ({ page, request }) => {
 test('свёрнутый «Гардероб» не виден, не принимает клик и не даёт Tab', async ({ page }) => {
   await openRoom(page);
   const toggle = page.getByRole('button', { name: 'Гардероб', exact: true });
-  const swatch = page.getByRole('button', { name: HAIR_SWATCH, exact: true }).first();
+  const preview = page.getByLabel(PREVIEW);
 
   await expect(toggle).toHaveAttribute('aria-expanded', 'false');
-  await expect(swatch).toBeHidden();
+  await expect(preview).toBeHidden();
 
   await act(page, () => toggle.click());
   await expect(toggle).toHaveAttribute('aria-expanded', 'true');
-  await expect(swatch).toBeVisible();
+  await expect(preview).toBeVisible();
 
   await act(page, () => toggle.click());
   await expect(toggle).toHaveAttribute('aria-expanded', 'false');
-  // Регресс живёт здесь: бокс у свотча остаётся, так что «скрыт» — это про
-  // видимость для пользователя, а не про существование элемента в DOM.
-  await expect(swatch).toBeHidden();
+  // Регресс живёт здесь: бокс у содержимого остаётся (грид-строка свёрнута в 0fr,
+  // дети не схлопываются), так что «скрыт» — это про видимость для пользователя,
+  // а не про существование элемента в DOM.
+  await expect(preview).toBeHidden();
   await expect(toggle).toBeVisible();
 
+  //focus не должен теряться внутри свёрнутой секции — ни одной из них.
   await toggle.focus();
   await page.keyboard.press('Tab');
-  expect(await page.evaluate(() => document.activeElement?.getAttribute('aria-label'))).not.toBe(HAIR_SWATCH);
+  expect(
+    await page.evaluate(() =>
+      Array.from(document.querySelectorAll('.accordion-body:not(.open)')).some((body) =>
+        body.contains(document.activeElement)
+      )
+    )
+  ).toBe(false);
 });
 
 test('аккордеон школ в «Обучении» сворачивается так же', async ({ page }) => {

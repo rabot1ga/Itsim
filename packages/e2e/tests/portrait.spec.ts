@@ -8,9 +8,13 @@ import { act, resolveStory } from './helpers/story';
  * Здесь защищаются два факта, которые нельзя проверить в jsdom:
  *  1. «Комната» и «Профиль» рисуют один и тот же слоистый стек — наборы файлов
  *     совпадают посимвольно, а не «похожи».
- *  2. Ряд «Цвета» в гардеробе доезжает до плоской фигуры: фильтр слоя волос
- *     становится ровно тем, что отдаёт движок (`tintFilter(tintFromHex(...))`),
- *     и шаринг-карточка перерисовывается в другой PNG.
+ *  2. Ручная краска (`player.avatar.*Color`) доезжает до плоской фигуры: фильтр
+ *     слоя волос становится ровно тем, что отдаёт движок
+ *     (`tintFilter(tintFromHex(...))`), и шаринг-карточка перерисовывается в
+ *     другой PNG. Рядов «Цвета» в гардеробе больше нет (27.09.2026 — в шкафу
+ *     выбирают вещи, а не краску), поэтому состояние меняется настоящим
+ *     `customize_avatar` и перезагрузкой: заодно это проверка, что хекс
+ *     переживает reload.
  *
  * Пункт 2 — это регресс, который в jsdom не поймать: там не считается ни CSS
  * filter, ни canvas-вызовы, ни загрузка svg/webp. Карточка до переезда на
@@ -21,8 +25,8 @@ import { act, resolveStory } from './helpers/story';
 const HAIR = 'img[src*="/layers/avatar-v2/hair_"]';
 
 // Сейв у этого спека свежий (reset на каждый прогон), а свежий день встречает
-// игрока сюжетом — без `.story-card` клики по «Обустроить комнату» и по свотчам
-// цвета упирались бы в оверлей и падали на таймауте теста, а не на асерте.
+// игрока сюжетом — без `.story-card` клики по «Обустроить комнату» и по заголовку
+// «Гардероб» упирались бы в оверлей и падали на таймауте теста, а не на асерте.
 
 /**
  * Браузер сериализует inline-style сам (trailing `;` его), поэтому сверяем
@@ -63,28 +67,29 @@ async function openRoom(page: Page) {
 }
 
 /**
- * Клик по свотчу и его последствия.
+ * Краска пишется только через состояние — кликать по рядам цвета больше нечем.
  *
- * Ответ сервера — приятное подтверждение («краска уехала на бэкенд»), но не
- * оракул: `waitForResponse` без границ висел на 90 с, если запрос не случился
- * или задержался, и падение выглядело как «краска не доехала». Поэтому ответ
- * ждём ограниченно и молча прощаем его отсутствие, а проверяем то, ради чего
- * ряд «Цвета» существует, — перекрашенный слой фигуры (Playwright сам повторяет
- * эту проверку). Сюжет по пути закрывает `act`: карточка встаёт в том же
- * ответе, что и состояние, и успевает перехватить клик.
+ * POST идёт настоящим `customize_avatar` (тот же путь, что был у свотча: та же
+ * валидация хекса по палитре в `isoLook.ts`), а стор обновляется перезагрузкой:
+ * так проверка заодно доказывает, что хекс лежит в сейве, а не в памяти вкладки.
+ * Сюжет по пути закрывает `act`/`resolveStory` — карточка встаёт в том же
+ * ответе, что и состояние, и перехватила бы клик.
  */
-async function pickColour(page: Page, colour: string) {
-  const saved = page
-    .waitForResponse((r) => r.url().endsWith('/api/game/action') && r.request().method() === 'POST', {
-      timeout: 10_000,
-    })
-    .catch(() => null);
-  await act(page, () => page.getByRole('button', { name: colour, exact: true }).first().click());
-  const response = await saved;
-  if (response) {
-    expect(response.ok()).toBe(true);
-    expect((await response.json()).state.avatar.hairColor).toBe(colour);
-  }
+async function tintViaApi(request: Page['request'], page: Page, colour: string) {
+  const res = await request.post('/api/game/action', {
+    data: {
+      actionId: 'customize_avatar',
+      params: { slot: 'hairColor', entryId: colour },
+      idempotencyKey: `e2e-tint-${colour}-${Date.now()}`,
+    },
+  });
+  expect(res.ok()).toBe(true);
+  expect((await res.json()).state.avatar.hairColor).toBe(colour);
+
+  await page.reload();
+  await expect(page.getByLabel('Деньги')).toBeVisible();
+  await resolveStory(page, { strict: false });
+  await openRoom(page);
   await expect(page.locator(`[aria-label="Комната"] ${HAIR}`).first()).toHaveAttribute(
     'style',
     styleWithFilter(tintFilter(tintFromHex(colour)!))
@@ -93,10 +98,11 @@ async function pickColour(page: Page, colour: string) {
 
 /**
  * «Гардероб» — переключатель, а не кнопка «открыть»: тап по заголовку сворачивает
- * раскрытую секцию. Раньше тест жал по нему вслепую, и 1 прогон из 3 кликал по
- * свотчу внутри свёрнутой секции — бокс у него есть, а перекрыт заголовком, отсюда
- * `click Timeout … intercepts pointer events`. Теперь состояние читаем по
- * `aria-expanded` и жмём только если секция закрыта.
+ * раскрытую секцию. Раньше тест жал по нему вслепую и попадал внутрь свёрнутой
+ * секции — бокс у её содержимого есть, а перекрыт заголовком, отсюда
+ * `click Timeout … intercepts pointer events` (починено в примитиве, см.
+ * `accordion.spec.ts`). Теперь состояние читаем по `aria-expanded` и жмём только
+ * если секция закрыта.
  */
 async function openWardrobe(page: Page) {
   const toggle = page.getByRole('button', { name: 'Гардероб', exact: true });
@@ -114,14 +120,14 @@ async function generateCard(page: Page) {
 }
 
 for (const width of [320, 390, 480]) {
-  test(`flat figure matches across room and profile, wardrobe colour reaches room and card at ${width}px`, async ({
+  test(`flat figure matches across room, profile and wardrobe; persisted tint reaches room and card at ${width}px`, async ({
     page,
     request,
   }) => {
     // Каждый прогон начинается с чистого сейва: тесты файла идут по одному
-    // игроку, и без reset второй прогон кликал бы по тому же цвету, который
-    // первый уже поставил. Клиент не шлёт запрос «без изменения» → waitForResponse
-    // висел до таймаута теста, а «цвет изменился» падал как ложный дефект.
+    // игроку, и без reset второй прогон получил бы цвет, поставленный первым, —
+    // тогда «фигура перекрасилась» падало как ложный дефект, а «не перекрасилась»
+    // вообще выглядело бы как работающий код.
     expect((await request.post('/api/game/reset')).ok()).toBe(true);
     await page.setViewportSize({ width, height: 844 });
     await page.goto('/');
@@ -144,13 +150,17 @@ for (const width of [320, 390, 480]) {
     expect(await figureSrcs(page, 'Аватар игрока')).toEqual(roomSrcs);
     expect(await hairFilter(page, 'Аватар игрока')).toBe(roomHair);
 
-    // Реальное действие гардероба, без подставного состояния и моков.
+    // Живое превью гардероба = ровно тот стек, что рисует комната. Рядов цвета
+    // здесь больше нет, превью осталось — оно и обязано совпадать.
     await openRoom(page);
     // событие может прилететь и между экранами — оно так же блокирует клик
     await resolveStory(page);
     await openWardrobe(page);
-    await pickColour(page, '#2b2320');
+    expect(await figureSrcs(page, 'Превью гардероба')).toEqual(roomSrcs);
+    expect(await hairFilter(page, 'Превью гардероба')).toBe(roomHair);
 
+    // Реальное действие, без подставного состояния и моков.
+    await tintViaApi(request, page, '#2b2320');
     const tinted = await hairFilter(page, 'Комната');
     expect(tinted).not.toBe(roomHair);
     expect(tinted).toContain('hue-rotate');
@@ -166,18 +176,11 @@ for (const width of [320, 390, 480]) {
       })
     ).toEqual({ w: 1080, h: 1080 });
 
-    await openWardrobe(page);
-    await pickColour(page, '#d7a94b');
+    // Вторая краска: карточка пересобралась, а фигура осталась перекрашенной —
+    // `tintViaApi` сам делает reload, так что это ещё и проверка персистентности.
+    await tintViaApi(request, page, '#d7a94b');
     const cardB = await generateCard(page);
     expect(cardB).not.toBe(cardA);
-
-    // Сейв: после перезагрузки плоская фигура возвращается с той же краской.
-    await page.reload();
-    await openRoom(page);
-    await expect(page.locator(`[aria-label="Комната"] ${HAIR}`).first()).toHaveAttribute(
-      'style',
-      styleWithFilter(tintFilter(tintFromHex('#d7a94b')!))
-    );
 
     expect(
       await page.evaluate(() => {

@@ -18,7 +18,21 @@ export const ProceduralAvatar: React.FC<{
   compositionOverrides?: Partial<Composition>;
   /** Ручные цвета гардероба (тон кожи, цвет волос) — поверх генетики. */
   avatarCustom?: AvatarCustomization | null;
-}> = ({ manifest, traits, geneticsConfig, className, compositionOverrides, avatarCustom }) => {
+  /**
+   * Имя для скринридера. По умолчанию — «Аватар игрока», но на экране «Дом»
+   * фигура не одна (превью гардероба, карточка), и три одинаковых имени ряд
+   * подряд читаются как три одних и тех же объекта.
+   */
+  ariaLabel?: string;
+}> = ({
+  manifest,
+  traits,
+  geneticsConfig,
+  className,
+  compositionOverrides,
+  avatarCustom,
+  ariaLabel = 'Аватар игрока',
+}) => {
   // База — общая с гардеробом/профилем/карточкой (см. avatarComposition),
   // сюда только накладываются ручные переопределения; undefined = «слот не
   // тронут», он не должен зетириться в null.
@@ -47,7 +61,7 @@ export const ProceduralAvatar: React.FC<{
       ref={boxRef}
       className={`relative overflow-hidden ${className ?? ''}`}
       style={{ aspectRatio: `${width} / ${height}` }}
-      aria-label="Аватар игрока"
+      aria-label={ariaLabel}
     >
       {layers.map((layer) => (
         <img
