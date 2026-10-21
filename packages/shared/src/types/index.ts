@@ -251,6 +251,13 @@ export interface PlayerState {
   lastPromotionDay?: number;
   /** board election cooldown (CTO), in game days */
   ctoCooldownUntilDay?: number;
+  /**
+   * Game day the board elected the player CTO — the start of the current,
+   * unbroken stint in the seat. `undefined` while the player has never been
+   * elected or has since lost the job (the seat, not the grade, is what the
+   * `cto` ending measures: see `endings.cto.minDaysAsCto`).
+   */
+  ctoSinceDay?: number;
   /** terminal career outcome, if reached */
   careerEnding?: CareerEnding;
   /** last charged daily living cost (for UI: «твой день стоит … ₽») */
@@ -259,9 +266,18 @@ export interface PlayerState {
   brokeDays?: number;
   /** last freelance payout — landlord income estimate for players without a job */
   freelanceLastPayment?: number;
-  /** soft skill: leadership (board votes, mentorship) */
+  /**
+   * Лидерство. Игра растит `softSkills.leadership.level`, а это поле не пишет
+   * никто — движок (`leadershipLevel` в engine/endings.ts) читает softSkills
+   * первым, а сюда падает только как фолбэк для сейвов, где его заполнили.
+   */
   leadership?: number;
-  /** number of juniors the player has mentored through office events */
+  /**
+   * Сколько джунов выросло под менторством игрока (финал `teacher` требует 50).
+   * ОТКРЫТЫЙ ДЕФЕКТ (найден 22.10.2026): поле читает только `checkEndings`,
+   * а не записывает ни один модуль — финал «Учитель» недостижим. Разбор и
+   * варианты — docs/TODO.md §2.
+   */
   mentoredJuniors?: number;
 
   // Procedural generation (DESIGN.md) — optional for backward compatibility

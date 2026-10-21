@@ -20,7 +20,7 @@ import { clamp } from './utils';
  *     and reported, so an accidental server downgrade cannot corrupt it.
  */
 
-export const CURRENT_STATE_VERSION = 3;
+export const CURRENT_STATE_VERSION = 4;
 
 export interface MigrationResult<T = PlayerState> {
   state: T;
@@ -89,6 +89,41 @@ const MIGRATIONS: Migration[] = [
       if (state.freelanceBid === undefined) state.freelanceBid = null;
     },
   },
+  {
+    to: 4,
+    name: 'v4_cto_tenure',
+    /**
+     * v3 → v4: победа на выборах борда больше не фиксирует финал в тот же день
+     * (В2, docs/PROPOSALS-2026-09-27-endgame.md). CTO — должность, а финал
+     * `corporate_god` открывается после `endings.cto.minDaysAsCto` дней в кресле,
+     * поэтому сейву нужен день избрания (`ctoSinceDay`).
+     *
+     * Старые сейвы делятся на два случая, и путать их нельзя:
+     *
+     *  1. Игрок всё ещё сидит в кресле (`grade === 'cto'` и есть работа) — его
+     *     `careerEnding = 'corporate_god'` поставили выборы, а не он сам: до v4
+     *     другого пути зафиксировать этот финал не существовало. Такое «окончание
+     *     жизни» снимается, день избрания восстанавливается из
+     *     `lastPromotionDay` (выборы всегда писали его тем же днём), и игрок
+     *     продолжает партию: обычно срок уже выбран, и финал можно забрать сразу.
+     *  2. Кресла нет (работу потеряли, либо сейв дошёл до «Новой жизни») —
+     *     финал остаётся зафиксированным. Снимать его здесь означало бы
+     *     запереть игрока: `canStartNewLife` опирается на `careerEnding`, а
+     *     условия CTO-финала без работы недостижимы.
+     */
+    up(state: any) {
+      const sitting = state.grade === 'cto' && Boolean(state.job);
+      if (sitting && typeof state.ctoSinceDay !== 'number') {
+        const promoted = state.lastPromotionDay;
+        const day = typeof state.currentDay === 'number' ? state.currentDay : 1;
+        state.ctoSinceDay =
+          typeof promoted === 'number' && Number.isFinite(promoted) && promoted >= 0 && promoted <= day
+            ? Math.floor(promoted)
+            : day;
+      }
+      if (sitting && state.careerEnding === 'corporate_god') delete state.careerEnding;
+    },
+  },
 ];
 
 const SOFT_SKILL_DEFAULTS: Record<string, { level: number; xp: number }> = {
@@ -139,6 +174,15 @@ export function normalizeState(state: any): void {
   state.totalActions = Math.max(0, Math.floor(num(state.totalActions, 0)));
   state.daysSinceRegistration = Math.max(1, Math.floor(num(state.daysSinceRegistration, 1)));
   state.jobWarnings = Math.max(0, Math.floor(num(state.jobWarnings, 0)));
+
+  // День избрания CTO: только валидное число, не позже текущего дня. Мусор
+  // (строка, NaN, «избран завтра») превращается в отсутствие срока — иначе
+  // `ctoTenureDays` вернул бы отрицательное число, а UI напечатал «−12 дней».
+  if (state.ctoSinceDay !== undefined) {
+    const since = state.ctoSinceDay;
+    if (typeof since !== 'number' || !Number.isFinite(since) || since > state.currentDay) delete state.ctoSinceDay;
+    else state.ctoSinceDay = Math.max(0, Math.floor(since));
+  }
 
   // A bid without a project id is noise the day cycle would trip over.
   const bid = state.freelanceBid;

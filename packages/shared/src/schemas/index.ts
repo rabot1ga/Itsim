@@ -404,6 +404,12 @@ export const BalanceSchema = z.object({
         .object({
           minReputation: z.number().int().min(0).default(68),
           minLeadership: z.number().int().min(0).default(32),
+          /**
+           * Сколько игровых дней надо продержаться в кресле CTO, чтобы финал
+           * открылся (В2 из docs/PROPOSALS-2026-09-27-endgame.md: выборы больше
+           * не фиксируют финал в день победы).
+           */
+          minDaysAsCto: z.number().int().min(0).default(60),
           title: z.string().default('🏢 Корпоративный бог · CTO'),
           description: z.string().default('Борд избрал тебя CTO. Корпорация — это ты.'),
         })

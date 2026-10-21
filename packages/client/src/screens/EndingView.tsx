@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
-import { checkEndings } from '@itsim/shared';
+import { checkEndings, ctoTenureDays } from '@itsim/shared';
 import { ScreenTitle } from '../components/ui';
 
 const ENDING_EMOJI: Record<string, string> = {
@@ -39,6 +39,14 @@ export const EndingView: React.FC = () => {
     if (!player || !balance) return [];
     return checkEndings(player, balance);
   }, [player, balance]);
+
+  // В2 (22.10.2026): выборы борда больше не фиксируют финал в день победы —
+  // CTO надо удержать. Показываем срок тем же движком, что считает доступность
+  // (`ctoTenureDays` из shared), чтобы цифра на экране не могла разъехаться с
+  // правилом на сервере. Порог — из контента, а не константа экрана.
+  const ctoHoldDays = Math.max(0, Math.floor(balance?.endings?.cto?.minDaysAsCto ?? 60));
+  const ctoTenure = player ? ctoTenureDays(player) : 0;
+  const sittingCto = player?.grade === 'cto' && Boolean(player?.job);
 
   if (!player) return null;
   const meta = player.meta;
@@ -99,6 +107,24 @@ export const EndingView: React.FC = () => {
                 {seen && <span className="chip chip-gold shrink-0">пройдено</span>}
               </div>
               <p className="text-sm text-ink-300 leading-relaxed mb-2">{e.description}</p>
+              {e.id === 'cto' && sittingCto && !seen && (
+                <div className="mb-2">
+                  <div className="flex justify-between text-2xs text-ink-400 mb-1">
+                    <span>Срок в кресле CTO</span>
+                    <span className="num">
+                      {ctoTenure} / {ctoHoldDays} дн.
+                    </span>
+                  </div>
+                  <div className="meter">
+                    <span
+                      style={{
+                        width: `${Math.max(2, Math.min(100, Math.round((ctoTenure / Math.max(1, ctoHoldDays)) * 100)))}%`,
+                        background: e.available ? 'var(--green)' : 'var(--gold)',
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
               {e.missing && !seen && <p className="text-2xs text-ochre-300 mb-2">{e.missing}</p>}
               <button
                 disabled={(!e.available && !seen) || !!busy}

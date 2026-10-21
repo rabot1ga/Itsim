@@ -246,5 +246,120 @@
         "followup": "Он защищал схему так, что у финансового не осталось вопросов. У тебя их было два, и ты их задал вслух."
       }
     ]
+  },
+  {
+    "id": "cto_first_board_report",
+    "title": "📊 Первый квартальный отчёт перед бордом",
+    "description": "Три месяца в кресле, и борд хочет услышать, куда ушли деньги. В папке — тот же техдолг, что ты обещал разобрать «после релиза», и два сорванных срока, которые теперь называются «пересмотренным планом».",
+    "tags": ["work", "career", "crisis"],
+    "weight": 6,
+    "cooldownDays": 90,
+    "minGameDay": 300,
+    "conditions": { "minGrade": "cto", "hasJob": true },
+    "choices": [
+      {
+        "text": "Показать правду: квартал провален 🩻",
+        "effects": { "reputation": -5, "motivation": 7, "skill": { "leadership": 16, "communication": 10 } },
+        "chain": { "eventId": "cto_confidence_vote", "afterDays": 18, "chance": 0.7 },
+        "followup": "Зал молчал сорок секунд. Потом финансовый директор сказал: «Спасибо, что не стали врать». Через 18 дней борд соберётся снова — уже про тебя."
+      },
+      {
+        "text": "Продать квартал как «трансформацию» 📈",
+        "effects": { "reputation": 6, "motivation": -6, "skill": { "communication": 18, "leadership": 6 } },
+        "chain": { "eventId": "cto_confidence_vote", "afterDays": 18, "chance": 0.35 },
+        "followup": "Слайд с восходящей стрелкой купили. Ты купил себе квартал — и обязанность теперь соответствовать стрелке."
+      },
+      {
+        "text": "Отдать отчёт финдиректору и уехать в отпуск 🏝",
+        "effects": { "health": 7, "motivation": 5, "reputation": -9, "jobWarnings": 1 },
+        "followup": "Сон вернулся, цифры — нет. Борд запомнил не провал, а то, что докладывал не ты. Это первое предупреждение."
+      }
+    ]
+  },
+  {
+    "id": "cto_confidence_vote",
+    "title": "🗳 Борд голосует о доверии",
+    "description": "В повестке один пункт и ни одного слайда: «достаточно ли мы доверяем текущему CTO». Голосов семь, и троих из них ты сам привёл в компанию.",
+    "tags": ["career", "crisis", "work"],
+    "weight": 5,
+    "cooldownDays": 120,
+    "chainOnly": true,
+    "minGameDay": 300,
+    "conditions": { "minGrade": "cto", "hasJob": true },
+    "choices": [
+      {
+        "text": "Защищать стратегию лично, без презентации 🛡",
+        "effects": { "reputation": 5, "motivation": -8, "health": -3, "skill": { "leadership": 20, "communication": 12 } },
+        "followup": "Четыре «за», трое воздержались. Воздержавшихся ты запомнил поимённо — и это, кажется, и есть работа CTO."
+      },
+      {
+        "text": "Предложить преемника и остаться на переходный год 🎗",
+        "effects": { "reputation": 3, "motivation": 4, "relation": { "teamlead": 6 }, "skill": { "leadership": 14 } },
+        "followup": "Голосование сняли с повестки: «пусть сначала докажет». Ты получил год и человека, которого теперь учишь своему креслу."
+      },
+      {
+        "text": "Написать заявление до голосования ✍️",
+        "effects": { "jobWarnings": 3, "reputation": -6, "motivation": -10, "money": -500000 },
+        "followup": "Борд принял отставку в тот же день, без обсуждения. Кресло освободилось — вместе с твоим сроком в нём: грейд снова архитектор, выборы можно пройти заново."
+      }
+    ]
+  },
+  {
+    "id": "cto_midnight_incident",
+    "title": "🚨 Прод лежит, и теперь это твоя фамилия",
+    "description": "02:40, в чате инцидента четырнадцать человек, и все ждут, что скажешь ты. Раньше ты бы уже чинил; теперь от тебя ждут решения — кого поднять, что отключить, кому звонить первым.",
+    "tags": ["crisis", "work", "tech"],
+    "weight": 5,
+    "cooldownDays": 100,
+    "minGameDay": 300,
+    "conditions": { "minGrade": "cto", "hasJob": true },
+    "choices": [
+      {
+        "text": "Сидеть в инциденте до утра вместе с дежурными 🌙",
+        "effects": { "health": -7, "motivation": 5, "reputation": 7, "relation": { "junior_colleague": 10 }, "skill": { "leadership": 12 } },
+        "chain": { "eventId": "cto_postmortem_board", "afterDays": 10, "chance": 0.8 },
+        "followup": "Подняли в 06:10. Дежурный джун написал потом: «впервые видел, чтобы CTO сидел в звонке до конца». Через 10 дней будет постмортем."
+      },
+      {
+        "text": "Делегировать и спросить результат утром ☕",
+        "effects": { "health": 3, "motivation": -6, "reputation": -4, "relation": { "toxic_senior": 4 }, "skill": { "leadership": 8 } },
+        "chain": { "eventId": "cto_postmortem_board", "afterDays": 10, "chance": 0.55 },
+        "followup": "Утром всё работало, и чужие люди были уверены, что ты просто не пришёл. Постмортем через 10 дней будет про это."
+      },
+      {
+        "text": "Отключить проблемный сервис и объявить это решением 🧯",
+        "effects": { "reputation": -8, "motivation": 3, "money": -300000, "skill": { "leadership": 8 } },
+        "chain": { "eventId": "cto_postmortem_board", "afterDays": 10, "chance": 0.9 },
+        "followup": "Инцидент закрыт за двадцать минут и за триста тысяч штрафов. Борд это заметит — на постмортеме через 10 дней."
+      }
+    ]
+  },
+  {
+    "id": "cto_postmortem_board",
+    "title": "🧾 Постмортем, на который пришёл борд",
+    "description": "Обычно на постмортем приходят те, кто чинил. Сегодня в звонке семь человек, которые не открывали редактор годами, и у каждого вопрос «кто виноват».",
+    "tags": ["work", "career", "crisis"],
+    "weight": 5,
+    "cooldownDays": 120,
+    "chainOnly": true,
+    "minGameDay": 300,
+    "conditions": { "minGrade": "cto", "hasJob": true },
+    "choices": [
+      {
+        "text": "Назвать причину: не люди, а архитектура и бюджет 🧱",
+        "effects": { "reputation": 6, "motivation": -4, "skill": { "leadership": 16, "communication": 12 } },
+        "followup": "«Сервис падал трижды за год, и каждый раз мы решали не чинить». Борд впервые увидел счёт за свои же решения — и выделил квартал на план."
+      },
+      {
+        "text": "Уволить дежурного, чтобы закрыть вопрос 🪓",
+        "effects": { "reputation": -10, "motivation": -6, "relation": { "junior_colleague": -12 }, "jobWarnings": 1 },
+        "followup": "Вопрос закрыли за один день. Команда запомнила это навсегда, а борд получил первое предупреждение о твоём стиле."
+      },
+      {
+        "text": "Взять ответственность и попросить квартал на план 🗓",
+        "effects": { "reputation": 3, "motivation": 6, "health": -3, "skill": { "leadership": 18 } },
+        "followup": "«Ответственный — я. Срок — квартал». Это единственная формулировка, после которой борд перестаёт искать виноватых."
+      }
+    ]
   }
 ]

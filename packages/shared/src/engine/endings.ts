@@ -5,7 +5,8 @@ import type { BalanceConfig } from '../schemas';
  * Career endings — проверка того, что игрок достиг одного из финалов.
  *
  * Шесть финалов описаны в ТЗ и в `balance.json` (`endings.*`):
- *   - `cto`        : special-board election (`/api/game/action: cto_elect`)
+ *   - `cto`        : special-board election (`/api/game/action: cto_elect`) +
+ *                    удержание поста `endings.cto.minDaysAsCto` дней
  *   - `exit`       : стартап ≥ 100 млн (money + reputation + senior+)
  *   - `free_artist`: фриланс (senior+ при деньгах < 1 млн)
  *   - `teacher`    : 50+ джунов на менторстве
@@ -52,6 +53,7 @@ const DEFAULTS = {
   cto: {
     minReputation: 68,
     minLeadership: 32,
+    minDaysAsCto: 60,
     title: '🏢 Корпоративный бог · CTO',
     description: 'Борд избрал тебя CTO. Корпорация — это ты.',
   },
@@ -81,16 +83,57 @@ const DEFAULTS = {
   },
   left_it: {
     title: '💀 Ушёл из IT',
-    description: 'Денег нет, перспектив тоже. Ты закрыл редактор и пошёл учиться на повара. Следующая жизнь — с чистого листа.',
+    description:
+      'Денег нет, перспектив тоже. Ты закрыл редактор и пошёл учиться на повара. Следующая жизнь — с чистого листа.',
   },
 };
+
+/**
+ * Лидерство так, как его действительно растит игра.
+ *
+ * Ловушка, найденная 22.10.2026 при реализации В2: `checkEndings` читал
+ * `player.leadership` — поле, которое не записывает НИ ОДИН модуль (проверено
+ * grep'ом по server/ и shared/). Игра растит `softSkills.leadership.level`
+> (работа middle+, `applySoftXp` в actions.ts), и именно его меряет гейт CTO
+ * (`gateProgress` → `gate.leadership`). Пока выборы сами ставили `careerEnding`,
+ * расхождение было не видно: ветка `cto` в `checkEndings` просто никогда не
+ * открывалась. Теперь, когда финал забирается через `claim_ending`, она обязана
+ * открываться — поэтому источник один, и это softSkills.
+ *
+ * `player.leadership` остаётся прочитанным как фолбэк: поле объявлено в
+ * `PlayerState`, и сейв, где его однажды заполнили, не должен терять финал.
+ */
+export function leadershipLevel(player: PlayerState): number {
+  const soft = player.softSkills?.['leadership']?.level;
+  if (typeof soft === 'number' && Number.isFinite(soft)) return soft;
+  return player.leadership ?? 0;
+}
+
+/**
+ * Сколько игровых дней игрок непрерывно сидит в кресле CTO.
+ *
+ * Ноль, если он никогда не избран или уже потерял работу: отсчёт ведётся от
+ * `ctoSinceDay`, а его сбрасывает сервер, когда кресло потеряно (увольнение /
+ * сокращение). Отрицательным быть не может — сейв «из будущего» или ручная
+ * правка дают ноль, а не «−12 дней на посту».
+ */
+export function ctoTenureDays(player: PlayerState): number {
+  const since = player.ctoSinceDay;
+  if (typeof since !== 'number' || !Number.isFinite(since)) return 0;
+  if (!player.job) return 0;
+  return Math.max(0, Math.floor(player.currentDay ?? 0) - Math.floor(since));
+}
 
 /**
  * Check all six endings against current player state.
  *
  * - `burnout` / `left_it` are always "available" once the trigger fires
  *   (`burnoutDays` / `brokeDaysToQuit`) — they are terminal, not chosen.
- * - `cto` is a "claim" because it comes from a real board election action.
+ * - `cto` is a "claim" and it is NOT granted by the election itself: winning the
+ *   board vote makes the player a sitting CTO, the ending opens after the post
+ *   has been held `endings.cto.minDaysAsCto` days (В2, 22.10.2026). До этого
+ *   победа на выборах фиксировала финал в тот же день, и «жизни после CTO» в
+ *   сейве не существовало вовсе.
  * - `exit` / `free_artist` / `teacher` are "claim" once thresholds are met.
  */
 export function checkEndings(player: PlayerState, balance: BalanceConfig | undefined): EndingRequirement[] {
@@ -100,25 +143,29 @@ export function checkEndings(player: PlayerState, balance: BalanceConfig | undef
   const rep = Math.round(player.reputation ?? 0);
   const money = Math.round(player.money ?? 0);
   const grade = (player.grade ?? 'unemployed') as Grade;
-  const leadership = Math.round(player.leadership ?? 0);
+  const leadership = Math.round(leadershipLevel(player));
   const mentored = Math.round(player.mentoredJuniors ?? 0);
   const burnoutDays = Math.round(player.burnoutDays ?? 0);
   const brokeDays = Math.round(player.brokeDays ?? 0);
 
   const out: EndingRequirement[] = [];
 
-  // ── Positive: CTO (board election)
+  // ── Positive: CTO (board election + удержание поста)
   const cto = { ...DEFAULTS.cto, ...endings.cto };
-  const ctoMet = rep >= cto.minReputation && leadership >= cto.minLeadership;
+  const ctoStatsMet = rep >= cto.minReputation && leadership >= cto.minLeadership;
+  const tenure = ctoTenureDays(player);
+  const ctoMet = ctoStatsMet && tenure >= cto.minDaysAsCto;
   out.push({
     id: 'cto',
     action: 'claim',
     available: ctoMet && grade === 'cto',
-    missing: !ctoMet
+    missing: !ctoStatsMet
       ? `Нужно: репутация ${cto.minReputation}+, лидерство ${cto.minLeadership}+ (сейчас ${rep}/${leadership})`
       : grade !== 'cto'
         ? 'Сначала стань CTO'
-        : undefined,
+        : tenure < cto.minDaysAsCto
+          ? `Продержись в кресле ${cto.minDaysAsCto} дн. (сейчас ${tenure}) — финал открывается отчётом перед бордом, а не в день выборов`
+          : undefined,
     title: cto.title,
     description: cto.description,
   });

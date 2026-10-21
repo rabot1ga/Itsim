@@ -53,10 +53,16 @@ import {
   rng,
   StoredState,
 } from './shared.js';
-import { calculateRating } from '@itsim/shared';
+import { calculateRating, type Grade } from '@itsim/shared';
+import { ctoHoldDays } from './ending.js';
 import { dailyLivingCost, wealthTaxMonthly, weeklySalary } from '@itsim/shared';
 
-function advanceDay(state: StoredState, content: any, messages: string[]) {
+/**
+ * Полный цикл дня. Экспортирован ради тестов: правила дня (потеря кресла CTO,
+ * терминалы, ревью) — чистая функция от `state` + `content`, и проверять их
+ * через HTTP означало бы поднимать сервер ради одного ассерта.
+ */
+export function advanceDay(state: StoredState, content: any, messages: string[]) {
   const company = state.job ? (content.companies as any[]).find((c: any) => c.id === state.job!.companyId) : null;
   const culture = company?.culture ?? null;
 
@@ -97,9 +103,11 @@ function advanceDay(state: StoredState, content: any, messages: string[]) {
     if (state.jobWarnings >= 3) {
       messages.push(`💀 Три предупреждения — тебя уволили из ${company?.name ?? 'компании'}. Свобода!`);
       state.job = null;
+      loseCtoSeat(state, content, messages, 'Борд не стал ждать третьего предупреждения');
     } else if (company && rng() < (company.culture?.layoffRisk ?? 0)) {
       messages.push(`📉 Сокращение в «${company.name}». Ты в списке. Рынок, держись!`);
       state.job = null;
+      loseCtoSeat(state, content, messages, 'Сокращение дошло до верхнего этажа');
     } else {
       // Review cadence is per-gate (minDaysInGrade) and lives inside tryPromote
       tryPromote(state, company, content, messages);
@@ -292,6 +300,33 @@ function advanceDay(state: StoredState, content: any, messages: string[]) {
   state.maxEnergy = recalcMaxEnergy(state, content);
   state.energy = Math.min(state.maxEnergy, state.energy + Math.floor(state.maxEnergy * 0.5));
   state.ratingScore = calculateRating(state);
+}
+
+/**
+ * Потеря кресла CTO (В2, 22.10.2026).
+ *
+ * Вызывается только после того, как `state.job` обнулён. Два следствия, без
+ * которых новая модель финала ломается:
+ *
+ *  1. Срок в кресле обнуляется. Иначе уволенный на 3-й день «CTO» ждал бы 60
+ *     дней без работы и забирал финал «Корпоративный бог», ни дня не руководя.
+ *  2. Грейд возвращается на `architect`. `runCtoElection` пускает на выборы
+ *     только архитекторов, поэтому оставшийся без работы «cto» не мог бы ни
+ *     переизбраться, ни вырасти — тупик, которого в сейвах быть не должно
+ *     (симулятор считает тупики нарушением коридора).
+ *
+ * Вызывается молча для всех остальных грейдов: у них нет ни срока, ни выборов.
+ */
+function loseCtoSeat(state: StoredState, content: any, messages: string[], reason: string) {
+  if (state.grade !== 'cto') return;
+  const held = typeof state.ctoSinceDay === 'number' ? Math.max(0, state.currentDay - state.ctoSinceDay) : 0;
+  state.grade = 'architect' as Grade;
+  delete state.ctoSinceDay;
+  messages.push(
+    `🪑 ${reason}: кресло CTO занял кто-то другой. Ты снова архитектор (в кресле было ${held} дн. из ${ctoHoldDays(
+      content
+    )}) — выборы можно пройти заново`
+  );
 }
 
 /**

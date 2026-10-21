@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { checkEndings, firstAvailableEnding } from '../endings';
+import { checkEndings, ctoTenureDays, firstAvailableEnding, leadershipLevel } from '../endings';
 import type { PlayerState } from '../../types';
 import type { BalanceConfig } from '../../schemas';
 
@@ -119,8 +119,110 @@ describe('endings', () => {
   it('cto requires cto grade + reputation + leadership', () => {
     const justRep = checkEndings(player({ reputation: 80, leadership: 40, grade: 'senior' }), BALANCE);
     expect(justRep.find((e) => e.id === 'cto')!.available).toBe(false);
-    const full = checkEndings(player({ reputation: 80, leadership: 40, grade: 'cto' }), BALANCE);
+    // В2 (22.10.2026): победа на выборах сама по себе финал больше не открывает —
+    // нужно удержать кресло `endings.cto.minDaysAsCto` дней (в BALANCE дефолт 60).
+    const full = checkEndings(
+      player({
+        reputation: 80,
+        leadership: 40,
+        grade: 'cto',
+        currentDay: 400,
+        ctoSinceDay: 340,
+        job: { companyId: 'search_everything', grade: 'cto', salary: 900000 } as any,
+      }),
+      BALANCE
+    );
     expect(full.find((e) => e.id === 'cto')!.available).toBe(true);
+  });
+
+  it('cto stays locked until the post is held long enough', () => {
+    const elected = (currentDay: number, ctoSinceDay: number) =>
+      checkEndings(
+        player({
+          reputation: 80,
+          leadership: 40,
+          grade: 'cto',
+          currentDay,
+          ctoSinceDay,
+          job: { companyId: 'search_everything', grade: 'cto', salary: 900000 } as any,
+        }),
+        BALANCE
+      ).find((e) => e.id === 'cto')!;
+
+    // день выборов: 0 из 60
+    const day0 = elected(300, 300);
+    expect(day0.available).toBe(false);
+    expect(day0.missing).toMatch(/Продержись в кресле 60 дн\. \(сейчас 0\)/);
+
+    // 59 дней — всё ещё нет, 60 — да
+    expect(elected(359, 300).available).toBe(false);
+    expect(elected(360, 300).available).toBe(true);
+    expect(elected(360, 300).missing).toBeUndefined();
+  });
+
+  it('a CTO who lost the job is not holding the post', () => {
+    // `ctoTenureDays` обнуляется без работы: иначе уволенный на 3-й день «CTO»
+    // досиживал бы 60 дней безработным и забирал финал, ни дня не руководя.
+    const fired = player({
+      reputation: 80,
+      leadership: 40,
+      grade: 'cto',
+      currentDay: 400,
+      ctoSinceDay: 300,
+      job: null,
+    });
+    expect(ctoTenureDays(fired)).toBe(0);
+    expect(checkEndings(fired, BALANCE).find((e) => e.id === 'cto')!.available).toBe(false);
+  });
+
+  it('ctoTenureDays never goes negative and ignores garbage', () => {
+    const base = {
+      reputation: 80,
+      leadership: 40,
+      grade: 'cto',
+      job: { companyId: 'x', grade: 'cto', salary: 1 } as any,
+    };
+    expect(ctoTenureDays(player({ ...base, currentDay: 100, ctoSinceDay: 250 }))).toBe(0);
+    expect(ctoTenureDays(player({ ...base, currentDay: 100, ctoSinceDay: 'вчера' as any }))).toBe(0);
+    expect(ctoTenureDays(player({ ...base, currentDay: 100 }))).toBe(0);
+    expect(ctoTenureDays(player({ ...base, currentDay: 100, ctoSinceDay: 40 }))).toBe(60);
+  });
+
+  it('лидерство берётся из softSkills — поля, которое игра действительно пишет', () => {
+    // `player.leadership` не записывает ни один модуль (22.10.2026): игра растит
+    // `softSkills.leadership.level`, его же меряет гейт CTO. Пока выборы сами
+    // ставили careerEnding, ветка `cto` в checkEndings не открывалась никогда, и
+    // расхождение было не видно. Теперь финал забирается через claim — значит
+    // источник обязан быть настоящим.
+    expect(leadershipLevel(player({ leadership: 40 }))).toBe(40);
+    expect(leadershipLevel(player({ softSkills: { leadership: { level: 44, xp: 0 } } } as Partial<PlayerState>))).toBe(
+      44
+    );
+    // softSkills важнее легаси-поля, а мусор не превращается в NaN
+    expect(
+      leadershipLevel(
+        player({ leadership: 40, softSkills: { leadership: { level: 7, xp: 0 } } } as Partial<PlayerState>)
+      )
+    ).toBe(7);
+    expect(leadershipLevel(player())).toBe(0);
+
+    // и это не теория: CTO-финал открывается от softSkills, а не от легаси-поля
+    const sitting = {
+      reputation: 80,
+      grade: 'cto' as const,
+      currentDay: 400,
+      ctoSinceDay: 300,
+      job: { companyId: 'search_everything', grade: 'cto', salary: 900000 } as any,
+      softSkills: { leadership: { level: 40, xp: 0 } },
+    };
+    expect(checkEndings(player(sitting), BALANCE).find((e) => e.id === 'cto')!.available).toBe(true);
+    expect(
+      checkEndings(player({ ...sitting, softSkills: {}, leadership: 40 }), BALANCE).find((e) => e.id === 'cto')!
+        .available
+    ).toBe(true);
+    expect(checkEndings(player({ ...sitting, softSkills: {} }), BALANCE).find((e) => e.id === 'cto')!.available).toBe(
+      false
+    );
   });
 
   it('burnout fires when burnoutDays hits the threshold', () => {
