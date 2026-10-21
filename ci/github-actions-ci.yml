@@ -44,6 +44,14 @@ jobs:
       - name: Validate content (schemas + cross-references)
         run: npm run validate:content
 
+      # Тесты сервера/бота импортируют @itsim/content и @itsim/shared из dist
+      # (main/exports в package.json), поэтому сборка обязательна до unit-прогонов.
+      # Без неё свежий чекаут падает с «Failed to resolve entry for package
+      # "@itsim/content"» — ровно так же, как локальный `npm test` до правки
+      # корневого скрипта.
+      - name: Build engine + content (tests resolve @itsim/* from dist)
+        run: npm run build -w packages/shared && npm run build -w packages/content
+
       - name: Unit tests — engine
         run: npm run test -w packages/shared
 
