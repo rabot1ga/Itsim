@@ -14,10 +14,7 @@
     "type": "pc",
     "price": 30000,
     "description": "Ноутбук за 30к. Excel открывает, но IDE — уже на пределе.",
-    "effects": {
-      "speedBonus": 0.1,
-      "xpBonus": 0.0
-    },
+    "effects": {},
     "icon": "cheap_pc.png",
     "layerId": "setup_laptop"
   },
@@ -28,7 +25,6 @@
     "price": 80000,
     "description": "RTX 4060. Для работы, конечно.",
     "effects": {
-      "speedBonus": 0.2,
       "xpBonus": 0.05
     },
     "icon": "gaming_pc.png",
@@ -43,7 +39,6 @@
     "price": 200000,
     "description": "Статусный символ айтишника. В кофейнях узнают.",
     "effects": {
-      "speedBonus": 0.3,
       "xpBonus": 0.1
     },
     "icon": "macbook.png",
@@ -393,5 +388,39 @@
     "description": "Признай очевидное: дома главный — он. Косметика.",
     "effects": {},
     "icon": "pet_crown.png"
+  },
+  {
+    "id": "exec_coaching",
+    "name": "🎩 Личный коуч уровня C",
+    "type": "course",
+    "price": 1200000,
+    "description": "Час стоит как неделя твоей стажировки. Учат не коду — учат молчать так, чтобы дослушали.",
+    "effects": { "xpBonus": 0.12, "motivationBonus": 4 },
+    "icon": "exec_coaching.png",
+    "nft": false,
+    "rarity": "rare"
+  },
+  {
+    "id": "board_chair",
+    "name": "🪑 Кресло из переговорной борда",
+    "type": "chair",
+    "price": 3500000,
+    "description": "Его выносят из кабинета последним. Сидеть в нём — отдельный вид мотивации.",
+    "effects": { "motivationBonus": 12, "healthBonus": 3 },
+    "icon": "board_chair.png",
+    "nft": false,
+    "rarity": "legendary",
+    "layerId": "chair_herman_miller"
+  },
+  {
+    "id": "aviator_watch",
+    "name": "⌚ Часы, которые видно на созвонах",
+    "type": "other",
+    "price": 8000000,
+    "description": "Стрелки показывают то же, что телефон. Уверенность в голосе — нет, но её продают в комплекте.",
+    "effects": { "motivationBonus": 8, "xpBonus": 0.05 },
+    "icon": "aviator_watch.png",
+    "nft": false,
+    "rarity": "legendary"
   }
 ]

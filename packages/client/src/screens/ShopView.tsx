@@ -21,7 +21,6 @@ type HousingDef = {
   cost: number;
   energyBonus: number;
   motivationBonus: number;
-  reputationBonus: number;
   incomeGateMult: number;
   saveMult: number;
   saveStreakDays: number;
@@ -32,7 +31,6 @@ function housingBonus(h: HousingDef): string {
   const parts: string[] = [];
   if (h.energyBonus) parts.push(`+${h.energyBonus} энергия`);
   if (h.motivationBonus) parts.push(`+${h.motivationBonus} настроение`);
-  if (h.reputationBonus) parts.push(`+${h.reputationBonus} репутация`);
   return parts.length ? parts.join(', ') : 'базовое';
 }
 
@@ -45,7 +43,6 @@ const FALLBACK_HOUSING: HousingDef[] = [
     cost: 5000,
     energyBonus: 0,
     motivationBonus: 0,
-    reputationBonus: 0,
     incomeGateMult: 0,
     saveMult: 1,
     saveStreakDays: 0,
@@ -56,7 +53,6 @@ const FALLBACK_HOUSING: HousingDef[] = [
     cost: 25000,
     energyBonus: 1,
     motivationBonus: 0,
-    reputationBonus: 0,
     incomeGateMult: 0,
     saveMult: 3,
     saveStreakDays: 25,
@@ -67,7 +63,6 @@ const FALLBACK_HOUSING: HousingDef[] = [
     cost: 50000,
     energyBonus: 2,
     motivationBonus: 5,
-    reputationBonus: 0,
     incomeGateMult: 0,
     saveMult: 6,
     saveStreakDays: 40,
@@ -78,7 +73,6 @@ const FALLBACK_HOUSING: HousingDef[] = [
     cost: 40000,
     energyBonus: 2,
     motivationBonus: 10,
-    reputationBonus: 0,
     incomeGateMult: 18000,
     saveMult: 8,
     saveStreakDays: 55,
@@ -89,7 +83,6 @@ const FALLBACK_HOUSING: HousingDef[] = [
     cost: 150000,
     energyBonus: 3,
     motivationBonus: 15,
-    reputationBonus: 10,
     incomeGateMult: 0,
     saveMult: 10,
     saveStreakDays: 70,

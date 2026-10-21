@@ -90,6 +90,7 @@
       "id": "hair",
       "zOrder": 3,
       "required": true,
+      "tintSlot": "hairColor",
       "entries": [
         {
           "id": "hair_buzzcut",
@@ -140,6 +141,7 @@
       "id": "beard",
       "zOrder": 2,
       "required": false,
+      "tintSlot": "hairColor",
       "entries": [
         {
           "id": "beard_none",

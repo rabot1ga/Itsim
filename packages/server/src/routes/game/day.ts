@@ -16,7 +16,6 @@ import {
   resolveBid,
   checkAchievements,
   findProject,
-  gateFor,
   gateProgress,
   gateSurplus,
   GRADE_SALARIES,
@@ -53,11 +52,7 @@ import {
   resetDailyChallenge,
   rng,
   StoredState,
-  softOpts,
-  targetGrade,
 } from './shared.js';
-import { runCtoElection } from './ending.js';
-import { bumpChallenge } from './_day.js';
 import { calculateRating } from '@itsim/shared';
 import { dailyLivingCost, wealthTaxMonthly, weeklySalary } from '@itsim/shared';
 

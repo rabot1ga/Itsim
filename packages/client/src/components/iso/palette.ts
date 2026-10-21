@@ -36,7 +36,6 @@ export const COAT_COLOURS: Record<string, readonly string[]> = {
   pet_fish: ['#a9c6e0', '#5b6f9c', '#7fae7a', '#d99a4e'],
 };
 
-const DEFAULT_COAT = ['#b98d60', '#8a6238', '#5b4630', '#2f2b28', '#cfd4dc'] as const;
 
 /** What each character base is wearing, so the wardrobe can pick a match. */
 export interface BaseLook {
@@ -170,9 +169,3 @@ export function characterLook(input: LookInput): CharacterLook {
 }
 
 /** A pet's coat, stable per player and per animal. */
-export function petLook(seed: string, petId: string): Record<string, string> {
-  const species = petId.replace(/_(sleep|eat|play)$/, '');
-  const pick = rolls(`${seed}:${species}`);
-  const pool = COAT_COLOURS[species] ?? DEFAULT_COAT;
-  return { coat: pool[pick(pool.length)] };
-}

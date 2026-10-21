@@ -1,7 +1,8 @@
 # Story art v1 — 2026-09-08
 
 12 newly AI-generated assets: ten event scenes, a front-facing room and a default
-portrait. User references 1.png / 2.png guided palette, composition and subject;
+portrait. User references 1.png / 2.png (now kept under `docs/design-references/`)
+guided palette, composition and subject;
 these files are NOT crops of those references. No game UI or rewards are baked in.
 
 The scenes share a brown-haired, square-glasses, navy-hoodie developer. Categories:

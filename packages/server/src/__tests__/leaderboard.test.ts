@@ -2,13 +2,18 @@ import { describe, it, expect, beforeEach, afterAll, vi } from 'vitest';
 import { mkdtempSync, rmSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
+import Fastify from 'fastify';
+import { ratingMetricOf } from '@itsim/shared';
 
 /**
- * Leaderboard index: ranking, `isYou`, pagination and the honest board.
+ * Leaderboard index: ranking, `isYou`, pagination, the honest board and the
+ * metric boards (`?metric=`) that back the «Карьера / Навыки / Деньги / Rep»
+ * tabs of the ТЗ.
  *
  * The old route read every save file synchronously per request and derived
  * `isYou` from a query parameter, which was always wrong in dev (ANALYSIS §7.1,
- * §7.4). These tests pin the new behaviour.
+ * §7.4). These tests pin the new behaviour — and pin that the board sorts by
+ * the *engine's* components, so a tab can not quietly become a second formula.
  */
 
 const DATA_DIR = mkdtempSync(join(tmpdir(), 'itsim-leaderboard-'));
@@ -98,6 +103,91 @@ describe('leaderboard index', () => {
 
     const honest = await index.getLeaderboard({ honestOnly: true });
     expect(honest.rows.map((r) => r.userId)).toEqual(['clean']);
+  });
+
+  it('сортирует по метрике: «Деньги» меняют порядок там, где итог ничья', async () => {
+    const { store, index } = await freshModules();
+    save(store, 'rich', { ratingScore: 200, money: 9_000_000 });
+    save(store, 'poor', { ratingScore: 200, money: 1_000 });
+    save(store, 'mid', { ratingScore: 500, money: 100_000 });
+
+    const byRating = await index.getLeaderboard();
+    expect(byRating.metric).toBe('rating');
+    // 500 > 200, а ничья 200 (rich/poor) разрешается днём (одинаковый) и потом
+    // id — то есть порядок на равенстве метрики детерминирован.
+    expect(byRating.rows.map((r) => r.userId)).toEqual(['mid', 'poor', 'rich']);
+    expect(byRating.rows[0].score).toBe(500);
+
+    const byMoney = await index.getLeaderboard({ metric: 'money' });
+    expect(byMoney.metric).toBe('money');
+    expect(byMoney.rows.map((r) => r.userId)).toEqual(['rich', 'mid', 'poor']);
+    // Место по вкладке = нормированная компонента движка, а не ещё один счёт.
+    expect(byMoney.rows[0].score).toBe(
+      ratingMetricOf(
+        { grade: 'junior', skills: {}, money: 9_000_000, reputation: 0, achievements: [], housingLevel: 0 } as any,
+        'money'
+      )
+    );
+  });
+
+  it('ничья по метрике не зависит от порядка обхода: день, потом id', async () => {
+    const { store, index } = await freshModules();
+    save(store, 'b', { ratingScore: 100, money: 5_000, currentDay: 4 });
+    save(store, 'a', { ratingScore: 100, money: 5_000, currentDay: 9 });
+    save(store, 'c', { ratingScore: 100, money: 5_000, currentDay: 9 });
+
+    const first = await index.getLeaderboard({ metric: 'money' });
+    const again = await index.getLeaderboard({ metric: 'money' });
+    expect(first.rows.map((r) => r.userId)).toEqual(['a', 'c', 'b']);
+    expect(again.rows.map((r) => r.rank)).toEqual([1, 2, 3]);
+  });
+
+  it('сырой сейв без полей не превращает метрику в NaN', async () => {
+    const { store, index } = await freshModules();
+    // scanStates читает JSON без migrateState — поле может отсутствовать или
+    // быть строкой; NaN в компараторе = произвольный (и неустойчивый) порядок.
+    store.saveState('odd', {
+      version: 2,
+      telegramId: 'odd',
+      firstName: 'Странный',
+      currentDay: 3,
+      skills: null,
+      money: '100500',
+      housingLevel: 9,
+    });
+
+    const page = await index.getLeaderboard({ metric: 'skills' });
+    expect(page.total).toBe(1);
+    expect(Number.isFinite(page.rows[0].score)).toBe(true);
+    expect(page.rows[0].score).toBe(0);
+    // housingLevel зажат в шкалу 0..4 → 100, а не «жильё 225 %».
+    expect(page.rows[0].parts.housing).toBe(100);
+    expect(page.rows[0].parts.money).toBeGreaterThan(0);
+  });
+
+  it('метрика из URL валидируется на роуте, а не молча откатывается', async () => {
+    const { store } = await freshModules();
+    save(store, '1', { ratingScore: 10 });
+
+    const { leaderboardRoutes } = await import('../routes/leaderboard.js');
+    const app = Fastify();
+    await app.register(leaderboardRoutes, { prefix: '/api/leaderboard' });
+    await app.ready();
+
+    const bad = await app.inject({ method: 'GET', url: '/api/leaderboard/friends?metric=popugai' });
+    expect(bad.statusCode).toBe(400);
+    expect(bad.json().error).toContain('career');
+
+    const ok = await app.inject({ method: 'GET', url: '/api/leaderboard/honest?metric=money' });
+    expect(ok.statusCode).toBe(200);
+    const body = ok.json();
+    expect(body.metric).toBe('money');
+    // внутренности индекса наружу не течёт: parts и userId — серверные поля
+    expect(body.leaderboard[0]).not.toHaveProperty('parts');
+    expect(body.leaderboard[0]).not.toHaveProperty('userId');
+    expect(body.leaderboard[0].score).toBeGreaterThanOrEqual(0);
+
+    await app.close();
   });
 
   it('picks up a newly saved player without re-scanning the disk', async () => {

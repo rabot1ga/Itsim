@@ -10,6 +10,7 @@
     "packages/bot",
     "packages/sim",
     "tools/isogen",
+    "tools/art",
     "tools/uigen",
     "packages/e2e"
   ],

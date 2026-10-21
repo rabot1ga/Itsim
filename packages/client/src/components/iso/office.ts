@@ -1,6 +1,6 @@
 import { PlacedItem, RoomSize, SpriteMeta, TILE, TileSize, WallSide } from './geometry';
 import { Allocator, allocator, free, occupy, place as placeItem, standingSpot } from './allocator';
-import { RoomPalette } from './scene';
+import { RoomPalette } from './shell';
 import { characterLook, rolls } from './palette';
 import { CHARACTER_BASES } from './palette';
 

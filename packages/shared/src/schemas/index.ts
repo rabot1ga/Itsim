@@ -160,14 +160,21 @@ export const NPCSchema = z.object({
 export const NPCsFileSchema = z.array(NPCSchema);
 
 // Item schema
+/**
+ * Только те эффекты, которые движок действительно применяет: `engine/items.ts`
+ * (xpBonus, energyCostChance, motivationBonus, healthBonus, energyBonus) и
+ * `engine/mining.ts` (hashrate, electricitySave).
+ *
+ * `speedBonus` и `reputationBonus` убраны 27.09.2026: не читались ничем, но уже
+ * попали в подписи магазина («+30 % скорость», «+10 репутация»). Нужен эффект —
+ * сначала модуль движка и коридоры `simulate --check`, потом ключ.
+ */
 export const ItemEffectsSchema = z.object({
   energyBonus: z.number().int().optional(),
   healthBonus: z.number().int().optional(),
   motivationBonus: z.number().int().optional(),
-  reputationBonus: z.number().int().optional(),
   xpBonus: z.number().optional(),
   energyCostChance: z.number().min(0).max(1).optional(),
-  speedBonus: z.number().optional(),
   hashrate: z.number().positive().optional(),
   electricitySave: z.number().min(0).max(1).optional(),
 });
@@ -278,7 +285,6 @@ export const BalanceSchema = z.object({
       cost: z.number(),
       energyBonus: z.number(),
       motivationBonus: z.number(),
-      reputationBonus: z.number(),
       /** monthly income required to move in (lifestyle has an entry fee) */
       incomeGateMult: z.number().min(0).default(0),
       /** how many monthly payments must be sitting in the account to move */

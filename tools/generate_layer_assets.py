@@ -2,10 +2,23 @@
 """
 Placeholder layer asset generator (DESIGN.md section 2/4) — v2.
 
-Generates flat-cartoon SVG layers for the avatar and the room into
+Generates flat-cartoon SVG layers for the room into
 packages/client/public/layers/. The pipeline mirrors a generative NFT
 collection: one file per layer, fixed canvas, stacking z-order,
 grayscale bases + CSS tinting.
+
+The avatar half is OFF by default since 23.09.2026: the game draws the layered
+webp set v2 (`public/layers/avatar-v2/*.webp`, built by
+`tools/art/avatar-v2/build.mjs`), and the SVG layer this script used to emit
+(`public/layers/avatar/`, 41 files) was deleted as an orphan — regenerating it
+would ship art nothing mounts again, which is the exact defect class this
+branch spent a week removing. Pass `--avatar-legacy` to write it anyway
+(useful only to diff the old masters; note the script emits 36 of those 41 —
+the rest came from earlier revisions).
+
+Safety rule for the shipped set: the generator never overwrites a file that
+already exists (see write()) — the files under public/layers are hand-revised,
+and a plain re-run used to roll those edits back. `--force` opts in.
 
 v2 style upgrades:
 - consistent dark outline (cartoon look) around all shapes
@@ -16,9 +29,11 @@ v2 style upgrades:
 
 The artist replaces files in place (same names/convention,
 see public/layers/CREDITS.md). Usage: python3 tools/generate_layer_assets.py
+[--avatar-legacy]
 """
 import math
 import os
+import sys
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
 OUT = os.path.join(ROOT, 'packages', 'client', 'public', 'layers')
@@ -60,11 +75,26 @@ def svg(w, h, body, shadows='', texts=''):
     ).format(w=w, h=h, defs=DEFS, shadows=shadows, body=body, texts=texts, o=OUTLINE)
 
 
+# Генератор по умолчанию дополняет, но не перезаписывает. Файлы в
+# public/layers — результат ручных правок художника (так и велено в
+# CREDITS.md: менять на месте), и «безобидный» прогон скрипта молча откатывал
+# их к исходному выводу: три спрайта питомцев уже лежат правлеными (тень
+# смещена на 2px и на 6px шире). `--force` — если вы правда хотите регенерацию,
+# сравните результат с `git diff -- packages/client/public/layers`.
+FORCE = False
+_WRITTEN = []
+_SKIPPED = []
+
+
 def write(rel, content):
     path = os.path.join(OUT, rel)
+    if os.path.exists(path) and not FORCE:
+        _SKIPPED.append(rel)
+        return
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, 'w') as f:
         f.write(content)
+    _WRITTEN.append(rel)
 
 
 def shadow(cx, cy, rx, ry, opacity=0.14):
@@ -824,8 +854,8 @@ def room_pet(variant):
     return svg(R, R, p, shadows=shadows)
 
 
-def main():
-    # Avatar layers
+def write_avatar_layers():
+    """Legacy SVG avatar layers — nothing in the app mounts these anymore."""
     write('avatar/body/base.svg', avatar_body())
     for v in ['eye_normal', 'eye_tired', 'eye_closed', 'eye_vr', 'eye_red', 'eye_legendary']:
         write(f'avatar/eyes/{v}.svg', avatar_eyes(v))
@@ -841,7 +871,8 @@ def main():
               'acc_medal', 'acc_beanie']:
         write(f'avatar/acc/{v}.svg', avatar_acc(v))
 
-    # Room layers
+
+def write_room_layers():
     for lvl in range(5):
         write(f'room/bg/bg_{lvl}.svg', room_bg(lvl))
     for v in ['window_square', 'window_panoramic', 'window_round', 'window_arched', 'window_blinds']:
@@ -862,7 +893,26 @@ def main():
               'pet_parrot', 'pet_hamster', 'pet_fish']:
         write(f'room/pet/{v}.svg', room_pet(v))
 
-    print(f'✓ generated layer assets into {OUT}')
+
+
+def main(argv=None):
+    global FORCE
+    argv = sys.argv[1:] if argv is None else list(argv)
+    FORCE = '--force' in argv
+    legacy = '--avatar-legacy' in argv
+    if legacy:
+        write_avatar_layers()
+    write_room_layers()
+    print(f'✓ {len(_WRITTEN)} слоёв записано в {OUT}')
+    if _SKIPPED:
+        print(f'  {len(_SKIPPED)} файлов пропущено: они уже лежат и правились руками'
+              ' (перезапись — --force, потом git diff по public/layers)')
+    if not legacy:
+        print(
+            '  (аватарные SVG-слои пропущены: игра рисует public/layers/avatar-v2/*.webp,\n'
+            '   их собирает tools/art/avatar-v2/build.mjs; public/layers/avatar/ удалён как\n'
+            '   осиротевший. Нужны старые мастера — перезапустите с --avatar-legacy.)'
+        )
 
 
 if __name__ == '__main__':

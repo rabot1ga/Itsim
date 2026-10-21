@@ -9,9 +9,9 @@
 import { FastifyInstance } from 'fastify';
 import { getContent } from '../../services/contentService.js';
 import { loadState, saveState } from '../../services/gameStore.js';
-import { clamp, newlyClaimableArchetypes, validateArchetypeClaim } from '@itsim/shared';
+import { clamp, validateArchetypeClaim } from '@itsim/shared';
 import { calculateRating } from '@itsim/shared';
-import { fmtMoney, respondState, skillLevelMap, StoredState } from './shared.js';
+import { fmtMoney, respondState, StoredState } from './shared.js';
 
 export async function archetypeRoutes(app: FastifyInstance) {
   /**
