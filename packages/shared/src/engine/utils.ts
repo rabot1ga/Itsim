@@ -67,6 +67,22 @@ export function seededRng(seed: string): () => number {
 }
 
 /**
+ * Секретная соль серверного RNG (P2.4, docs/PROPOSALS-2026-10-23-rng.md).
+ * Генерится при создании сейва и миграции v6; клиенту не отдаётся
+ * (`stripInternal` на сервере). Hex 16 байт.
+ */
+export function makeRngSalt(): string {
+  const bytes = new Uint8Array(16);
+  const cryptoObj = (globalThis as { crypto?: { getRandomValues?: (a: Uint8Array) => Uint8Array } }).crypto;
+  if (cryptoObj?.getRandomValues) {
+    cryptoObj.getRandomValues(bytes);
+  } else {
+    for (let i = 0; i < bytes.length; i++) bytes[i] = Math.floor(Math.random() * 256);
+  }
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+/**
  * Deterministic weighted pick with a per-slot salt
  */
 export function seededWeightedPick<T extends { weight: number }>(items: T[], seed: string, salt: string): T {

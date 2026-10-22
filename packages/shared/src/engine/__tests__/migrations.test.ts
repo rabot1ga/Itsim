@@ -290,12 +290,15 @@ describe('v5_identity_removal (снятие пиксельной идентич�
     delete save.crossBonuses;
     delete save.room;
     const { state, applied } = migrateState(save);
-    expect(applied).toEqual(['v5_identity_removal']);
+    expect(applied).toEqual(['v5_identity_removal', 'v6_rng_salt']);
     // нормализация достаивает дефолты, поэтому сверяем суть: поля идентичности
     // не появились, остальной сейв доехал нетронутым
     for (const key of ['genetics', 'avatar', 'walletAddress', 'crossBonuses', 'room']) {
       expect((state as any)[key]).toBeUndefined();
     }
+    // P2.4: миграция v6 добавляет серверную соль RNG
+    expect(state.rngSalt).toMatch(/^[0-9a-f]{32}$/);
+    expect(state.rngSeq).toBe(0);
     expect(state.money).toBe(1000);
     expect(state.currentDay).toBe(40);
   });

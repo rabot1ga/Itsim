@@ -12,7 +12,7 @@
  */
 import { ctoElectionChance, gateFor, GRADE_SALARIES, type Grade } from '@itsim/shared';
 import { clamp } from '@itsim/shared';
-import { careerGatesOf, GRADE_POSITIONS, HUMAN_REQ, rng, StoredState } from './shared.js';
+import { balanceRng, careerGatesOf, GRADE_POSITIONS, HUMAN_REQ, StoredState } from './shared.js';
 
 /** Fallback matches `DEFAULTS.cto.minDaysAsCto` in shared/engine/endings.ts. */
 const DEFAULT_CTO_HOLD_DAYS = 60;
@@ -47,7 +47,7 @@ export function runCtoElection(
 
   // NB: energy cost and totalActions are handled by the /action route
   // (EXTRA_ENERGY_COSTS.cto_elect) — do not deduct them here.
-  const won = rng() < chance;
+  const won = balanceRng(state)() < chance;
   if (won) {
     const salaryMult = (content.companies as any[]).find((c: any) => c.id === state.job!.companyId)?.salaryMult ?? 1;
     const salary = Math.round((GRADE_SALARIES.cto * salaryMult) / 1000) * 1000;

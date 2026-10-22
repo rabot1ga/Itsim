@@ -80,9 +80,12 @@ function architect(overrides: Record<string, any> = {}): any {
   };
 }
 
-async function modules() {
+async function modules(roll?: number) {
   vi.resetModules();
   process.env.DATA_DIR = DATA_DIR;
+  const shared = await import('../routes/game/shared');
+  // Сейм серверного RNG (P2.4): фиксируем бросок явно, без моков Math.random.
+  if (roll !== undefined) shared.__setRngFactoryForTests(() => () => roll);
   return {
     ending: await import('../routes/game/ending'),
     day: await import('../routes/game/day'),
@@ -93,8 +96,8 @@ const ctoEnding = (state: any) => checkEndings(state, BALANCE).find((e) => e.id 
 
 describe('CTO: выборы дают должность, а не финал', () => {
   it('победа ставит грейд, кресло и день избрания — но не careerEnding', async () => {
-    const { ending } = await modules();
-    vi.spyOn(Math, 'random').mockReturnValue(0); // шанс ≥ 0.15 — всегда победа
+    const { ending } = await modules(0);
+    // фиксированный бросок серверного RNG // шанс ≥ 0.15 — всегда победа
     const state = architect();
 
     const res = ending.runCtoElection(state, bundle);
@@ -111,8 +114,8 @@ describe('CTO: выборы дают должность, а не финал', ()
   });
 
   it('в день победы финал ещё не доступен, а через 60 дней — доступен', async () => {
-    const { ending } = await modules();
-    vi.spyOn(Math, 'random').mockReturnValue(0);
+    const { ending } = await modules(0);
+    // фиксированный бросок серверного RNG
     const state = architect();
     ending.runCtoElection(state, bundle);
 
@@ -128,8 +131,8 @@ describe('CTO: выборы дают должность, а не финал', ()
   });
 
   it('проигрыш ставит кулдаун борда и не трогает срок', async () => {
-    const { ending } = await modules();
-    vi.spyOn(Math, 'random').mockReturnValue(0.999); // всегда провал
+    const { ending } = await modules(0.999);
+    // фиксированный бросок серверного RNG // всегда провал
     const state = architect({ motivation: 60, reputation: 75 });
 
     const res = ending.runCtoElection(state, bundle);
@@ -159,8 +162,8 @@ describe('CTO: выборы дают должность, а не финал', ()
 
 describe('CTO: потеря кресла', () => {
   it('увольнение возвращает архитектора и обнуляет срок — финал не «досиживается»', async () => {
-    const { ending, day } = await modules();
-    vi.spyOn(Math, 'random').mockReturnValue(0);
+    const { ending, day } = await modules(0);
+    // фиксированный бросок серверного RNG
     const state = architect();
     ending.runCtoElection(state, bundle);
     expect(state.grade).toBe('cto');
@@ -182,8 +185,8 @@ describe('CTO: потеря кресла', () => {
   });
 
   it('архитектора увольнение не разжалует и срок ему не придумает', async () => {
-    const { day } = await modules();
-    vi.spyOn(Math, 'random').mockReturnValue(0);
+    const { day } = await modules(0);
+    // фиксированный бросок серверного RNG
     const state = architect({ jobWarnings: 3 });
     const messages: string[] = [];
     day.advanceDay(state, bundle, messages);
@@ -210,8 +213,8 @@ describe('CTO: порог удержания — контент, а не кон�
   });
 
   it('движок и сервер согласны: 59 дней — нет, 60 — да', async () => {
-    const { ending } = await modules();
-    vi.spyOn(Math, 'random').mockReturnValue(0);
+    const { ending } = await modules(0);
+    // фиксированный бросок серверного RNG
     const state = architect();
     ending.runCtoElection(state, bundle);
     const hold = ending.ctoHoldDays(bundle);

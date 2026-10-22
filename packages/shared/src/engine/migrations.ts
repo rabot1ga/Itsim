@@ -1,5 +1,5 @@
 import { PlayerState } from '../types';
-import { clamp } from './utils';
+import { clamp, makeRngSalt } from './utils';
 
 /**
  * Save-state migrations.
@@ -20,7 +20,7 @@ import { clamp } from './utils';
  *     and reported, so an accidental server downgrade cannot corrupt it.
  */
 
-export const CURRENT_STATE_VERSION = 5;
+export const CURRENT_STATE_VERSION = 6;
 
 export interface MigrationResult<T = PlayerState> {
   state: T;
@@ -143,6 +143,21 @@ const MIGRATIONS: Migration[] = [
       delete state.room;
     },
   },
+  {
+    to: 6,
+    name: 'v6_rng_salt',
+    /**
+     * v5 → v6: серверный RNG (P2.4, docs/PROPOSALS-2026-10-23-rng.md).
+     * `rngSalt` — секретная соль бросков баланса (клиенту не отдаётся),
+     * `rngSeq` — монотонный счётчик бросков (повтор запроса не даёт
+     * «перебросить»). Поля добавляются к любому сейву; формулы и шансы
+     * не меняются.
+     */
+    up(state: any) {
+      if (typeof state.rngSalt !== 'string' || !state.rngSalt) state.rngSalt = makeRngSalt();
+      if (typeof state.rngSeq !== 'number' || !Number.isFinite(state.rngSeq)) state.rngSeq = 0;
+    },
+  },
 ];
 
 const SOFT_SKILL_DEFAULTS: Record<string, { level: number; xp: number }> = {
@@ -156,6 +171,8 @@ const SOFT_SKILL_DEFAULTS: Record<string, { level: number; xp: number }> = {
  * required collections, resource clamps, no NaN. Idempotent by construction.
  */
 export function normalizeState(state: any): void {
+  if (typeof state.rngSalt !== 'string' || !state.rngSalt) state.rngSalt = makeRngSalt();
+  if (typeof state.rngSeq !== 'number' || !Number.isFinite(state.rngSeq)) state.rngSeq = 0;
   for (const key of ['skills', 'softSkills', 'eventHistory', 'relationships'] as const) {
     if (!state[key] || typeof state[key] !== 'object' || Array.isArray(state[key])) state[key] = {};
   }

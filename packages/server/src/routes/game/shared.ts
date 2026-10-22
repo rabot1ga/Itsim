@@ -31,6 +31,8 @@ import {
   type CareerGate,
   type Grade,
   type PlayerState,
+  seededRng,
+  makeRngSalt,
 } from '@itsim/shared';
 
 /** The on-disk shape of the player's state (extends PlayerState with server-only fields) */
@@ -96,9 +98,33 @@ export const EXTRA_ENERGY_COSTS: Record<string, number> = {
   claim_ending: 0,
 };
 
-/** Deterministic random — wraps Math.random so tests can swap it out. */
-export function rng(): number {
-  return Math.random();
+/**
+ * Серверный RNG баланса (P2.4, docs/PROPOSALS-2026-10-23-rng.md).
+ *
+ * Каждый бросок — `seededRng(telegramId:rngSalt:rngSeq++)`: клиент не влияет,
+ * путь воспроизводим по сейву (соль секретна — `stripInternal` её режет),
+ * повтор запроса не даёт «перебросить» — счётчик монотонен.
+ */
+export function rngStream(state: StoredState): () => number {
+  if (typeof state.rngSalt !== 'string' || !state.rngSalt) state.rngSalt = makeRngSalt();
+  if (typeof state.rngSeq !== 'number' || !Number.isFinite(state.rngSeq)) state.rngSeq = 0;
+  return () => {
+    const seq = state.rngSeq!++;
+    return seededRng(`${state.telegramId}:${state.rngSalt}:${seq}`)();
+  };
+}
+
+type RngFactory = (state: StoredState) => () => number;
+let testRngFactory: RngFactory | null = null;
+
+/** Тестовый сейм: задать поток бросков явно (вместо моков Math.random). */
+export function __setRngFactoryForTests(factory: RngFactory | null): void {
+  testRngFactory = factory;
+}
+
+// Фабрика с тестовым сеймом: прод всегда берёт rngStream.
+export function balanceRng(state: StoredState): () => number {
+  return (testRngFactory ?? rngStream)(state);
 }
 
 /** Format rubles for human-readable output (1 230 ₽ / 12 тыс ₽ / 1.4 млн ₽) */

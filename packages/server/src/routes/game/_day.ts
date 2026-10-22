@@ -12,7 +12,8 @@ import { StoredState } from './shared.js';
 export function resetDailyChallenge(state: StoredState, content: any): void {
   const list = content.challenges as any[];
   if (!list || list.length === 0) return;
-  const rng = seededRng(`${state.telegramId}:challenge:${state.currentDay}`);
+  // Соль серверного RNG (P2.4): челлендж дня не пересчитать офлайн.
+  const rng = seededRng(`${state.telegramId}:${state.rngSalt}:challenge:${state.currentDay}`);
   const def = list[Math.floor(rng() * list.length)];
   state.dailyChallenge = { day: state.currentDay, id: def.id, progress: 0, count: def.count, done: false };
 }

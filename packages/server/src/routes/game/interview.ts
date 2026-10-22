@@ -22,7 +22,7 @@ import {
   seededRng,
   type Offer,
 } from '@itsim/shared';
-import { fmtMoney, recalcMaxEnergy, respondState, sanitizeInterviewQuestion, softOpts, StoredState } from './shared.js';
+import { balanceRng, fmtMoney, recalcMaxEnergy, respondState, sanitizeInterviewQuestion, softOpts, StoredState } from './shared.js';
 
 export async function interviewRoutes(app: FastifyInstance) {
   /**
@@ -63,7 +63,8 @@ export async function interviewRoutes(app: FastifyInstance) {
       };
     }
 
-    const rng = seededRng(`${userId}:interview:${app.companyId}:${app.interviewDay}`);
+    // Соль серверного RNG (P2.4): вопросы не пересчитать офлайн.
+    const rng = seededRng(`${userId}:${state.rngSalt}:interview:${app.companyId}:${app.interviewDay}`);
     const questions = pickInterviewQuestions(content.interviewQuestions, {
       mainSkillId: state.mainSkillId,
       grade: app.grade,
@@ -197,7 +198,7 @@ export async function interviewRoutes(app: FastifyInstance) {
       companyBar: company?.interviewBar ?? 1,
       answerScore,
     });
-    const passed = rollInterview(chance, Math.random);
+    const passed = rollInterview(chance, balanceRng(state));
 
     let resultMessage: string;
     if (passed) {

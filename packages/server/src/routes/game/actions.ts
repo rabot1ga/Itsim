@@ -47,7 +47,7 @@ import {
   perkEffectSum,
   recalcMaxEnergy,
   respondState,
-  rng,
+  balanceRng,
   skillLevelMap,
   softOpts,
   sprintView,
@@ -116,6 +116,7 @@ function getActionMoneyCost(actionId: string, params: any, state: PlayerState, c
 }
 
 function applyAction(state: StoredState, actionId: string, params: any, content: any): ActionResult {
+  const rng = balanceRng(state);
   const delta: Record<string, any> = {};
 
   // ---- Study actions (hard skills from balance.xpSources) ----
@@ -665,6 +666,7 @@ export async function actionRoutes(app: FastifyInstance) {
 
     const content = getContent();
 
+    const rng = balanceRng(state);
     // Validate costs BEFORE any mutation (idempotency-safe)
     let energyCost = getActionEnergyCost(actionId, params, content);
     const costChance = itemEnergyCostChance(state.items, content.items);

@@ -53,8 +53,13 @@ export function rememberAction(state: WithIdempotency, key: string, message?: st
   state._idem = list.length > MAX_KEYS ? list.slice(list.length - MAX_KEYS) : list;
 }
 
-/** Internal bookkeeping must never reach the client. */
-export function stripInternal<T extends Record<string, any>>(state: T): Omit<T, '_idem'> {
-  const { _idem, ...rest } = state as any;
+/**
+ * Internal bookkeeping must never reach the client: идемпотентность `_idem`
+ * и секретная соль серверного RNG `rngSalt`/`rngSeq` (P2.4).
+ */
+export function stripInternal<T extends Record<string, any>>(
+  state: T
+): Omit<T, '_idem' | 'rngSalt' | 'rngSeq'> {
+  const { _idem, rngSalt, rngSeq, ...rest } = state as any;
   return rest;
 }

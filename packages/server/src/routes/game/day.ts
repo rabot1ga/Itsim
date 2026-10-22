@@ -50,7 +50,7 @@ import {
   recalcMaxEnergy,
   respondState,
   resetDailyChallenge,
-  rng,
+  balanceRng,
   StoredState,
 } from './shared.js';
 import { calculateRating, type Grade } from '@itsim/shared';
@@ -63,6 +63,7 @@ import { dailyLivingCost, wealthTaxMonthly, weeklySalary } from '@itsim/shared';
  * через HTTP означало бы поднимать сервер ради одного ассерта.
  */
 export function advanceDay(state: StoredState, content: any, messages: string[]) {
+  const rng = balanceRng(state);
   const company = state.job ? (content.companies as any[]).find((c: any) => c.id === state.job!.companyId) : null;
   const culture = company?.culture ?? null;
 
@@ -337,6 +338,7 @@ function loseCtoSeat(state: StoredState, content: any, messages: string[], reaso
  *     is real and over-qualifying is what actually speeds you up
  */
 function tryPromote(state: StoredState, company: any, content: any, messages: string[]) {
+  const rng = balanceRng(state);
   const gates = careerGatesOf(content);
   const gate = nextGateOf(gates, state.job!.grade);
   if (!gate) return; // CTO is not a promotion — it is an election
@@ -371,6 +373,7 @@ function tryPromote(state: StoredState, company: any, content: any, messages: st
 }
 
 function resolveInterview(state: StoredState, app: Application, content: any, messages: string[]) {
+  const rng = balanceRng(state);
   const company = (content.companies as any[]).find((c: any) => c.id === app.companyId);
   if (!company) {
     state.currentApplication = null;
@@ -420,6 +423,7 @@ function resolveInterview(state: StoredState, app: Application, content: any, me
 }
 
 function maybeTriggerEvent(state: StoredState, content: any): GameEvent | null {
+  const rng = balanceRng(state);
   // An unresolved event (action-triggered or chain) stays until resolved
   if (state.activeEventId) return null;
 
@@ -498,6 +502,7 @@ export async function dayRoutes(app: FastifyInstance) {
     const { eventId, choiceIndex } = request.body as { eventId?: string; choiceIndex?: number };
 
     const state = (await loadState(userId)) as StoredState | null;
+    const rng = state ? balanceRng(state) : Math.random;
     if (!state) return reply.status(404).send({ error: 'Game not started' });
 
     if (!eventId || choiceIndex === undefined) {

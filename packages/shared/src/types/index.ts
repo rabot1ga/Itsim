@@ -69,6 +69,10 @@ export type CareerEnding = 'corporate_god' | 'exit' | 'free_artist' | 'teacher' 
 // ---- Player State ----
 
 export interface PlayerState {
+  /** Секретная соль серверного RNG (P2.4); клиенту не отдаётся. */
+  rngSalt?: string;
+  /** Счётчик бросков серверного RNG (P2.4); клиенту не отдаётся. */
+  rngSeq?: number;
   version: number;
 
   // Core progress
