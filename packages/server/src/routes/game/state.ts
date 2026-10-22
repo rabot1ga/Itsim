@@ -35,7 +35,7 @@ export async function stateRoutes(app: FastifyInstance) {
     const user = (request as any).telegramUser;
     const userId = String(user.id);
 
-    let state = loadState(userId) as StoredState | null;
+    let state = await loadState(userId) as StoredState | null;
     const isNew = !state;
     if (!state) {
       state = {
@@ -104,7 +104,7 @@ export async function stateRoutes(app: FastifyInstance) {
       }
     }
 
-    saveState(userId, state);
+    await saveState(userId, state);
 
     return {
       state: respondState(state, isNew ? 'Добро пожаловать в IT Life Simulator! 💻' : undefined),

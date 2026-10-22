@@ -3,6 +3,7 @@ import cors from '@fastify/cors';
 import rateLimit from '@fastify/rate-limit';
 
 import { config, assertProductionConfig } from './config.js';
+import { initStorage } from './services/gameStore.js';
 import { authRoutes } from './routes/auth.js';
 import { gameRoutes } from './routes/game.js';
 import { leaderboardRoutes } from './routes/leaderboard.js';
@@ -60,6 +61,15 @@ async function start() {
     loadContent();
   } catch (err) {
     console.error('✗ Content validation failed:', (err as Error).message);
+    process.exit(1);
+  }
+
+  // Storage backend (P2.6): JSON-файлы по умолчанию; STORAGE=postgres + DATABASE_URL
+  // поднимает PostgreSQL через Prisma и прогоняет SQL-миграции.
+  try {
+    await initStorage();
+  } catch (err) {
+    console.error('✗ Storage init failed:', (err as Error).message);
     process.exit(1);
   }
 

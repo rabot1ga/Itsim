@@ -1,83 +1,34 @@
-import { mkdirSync, readFileSync, writeFileSync, renameSync, existsSync, unlinkSync } from 'fs';
-import { join } from 'path';
-import { config } from '../config.js';
-import { loadState, saveState } from './gameStore.js';
-
 /**
- * Telegram Stars entitlements.
+ * Telegram Stars entitlements — фасад P2.6 поверх PurchaseBackend.
  *
- * Purchases are recorded in `data/entitlements.json` keyed by
- * `telegram_payment_charge_id`, which makes granting idempotent: Telegram
- * retries webhooks, and a retry must not hand out a second reward.
+ * Покупки записываются с идемпотентным `chargeId`: Telegram ретраит вебхуки,
+ * повтор не должен выдавать вторую награду. Реестр — JSON-файл
+ * `data/entitlements.json` (дефолт) или таблица `purchases` (STORAGE=postgres).
+ * При GDPR-удалении игрока реестр сохраняется (retention платёжных документов).
  *
- * The grant itself is applied to the player's save (cosmetic unlocks, badges,
- * banked days). The registry stays the audit log / refund source of truth.
+ * Гранты применяются к сейву игрока (косметика, бейджи, дни в банке).
  */
+import { loadState, saveState, __purchaseBackend } from './gameStore.js';
+import type { PurchaseRecord } from './storeTypes.js';
 
-export interface PurchaseRecord {
-  chargeId: string;
-  userId: string;
-  productId: string;
-  stars: number;
-  at: number;
-  /** dev/mock purchase (ALLOW_MOCK_PAYMENTS) */
-  mock?: boolean;
-  refundedAt?: number;
+export type { PurchaseRecord } from './storeTypes.js';
+
+export async function getPurchase(chargeId: string): Promise<PurchaseRecord | null> {
+  return __purchaseBackend().get(chargeId);
 }
 
-interface Registry {
-  version: number;
-  charges: Record<string, PurchaseRecord>;
+export async function purchasesOf(userId: string): Promise<PurchaseRecord[]> {
+  const all = await __purchaseBackend().byUser(userId);
+  return all.filter((p) => !p.refundedAt);
 }
 
-const FILE = () => join(config.dataDir, 'entitlements.json');
-
-let registry: Registry | null = null;
-
-function load(): Registry {
-  if (registry) return registry;
-  mkdirSync(config.dataDir, { recursive: true });
-  const file = FILE();
-  if (existsSync(file)) {
-    try {
-      registry = JSON.parse(readFileSync(file, 'utf-8')) as Registry;
-      if (!registry.charges) registry.charges = {};
-      return registry;
-    } catch (err) {
-      console.error('entitlements.json is corrupt — starting a fresh registry', err);
-    }
-  }
-  registry = { version: 1, charges: {} };
-  return registry;
-}
-
-function persist(): void {
-  const file = FILE();
-  const tmp = `${file}.tmp`;
-  try {
-    writeFileSync(tmp, JSON.stringify(load(), null, 2));
-    renameSync(tmp, file);
-  } catch (err) {
-    console.error('Failed to persist entitlements:', err);
-    try { unlinkSync(tmp); } catch { /* ignore */ }
-  }
-}
-
-export function getPurchase(chargeId: string): PurchaseRecord | null {
-  return load().charges[chargeId] ?? null;
-}
-
-export function purchasesOf(userId: string): PurchaseRecord[] {
-  return Object.values(load().charges).filter((p) => p.userId === userId && !p.refundedAt);
-}
-
-export function purchasesToday(userId: string, productId: string): number {
+export async function purchasesToday(userId: string, productId: string): Promise<number> {
   const dayAgo = Date.now() - 24 * 60 * 60 * 1000;
-  return purchasesOf(userId).filter((p) => p.productId === productId && p.at > dayAgo).length;
+  return (await purchasesOf(userId)).filter((p) => p.productId === productId && p.at > dayAgo).length;
 }
 
-export function hasProduct(userId: string, productId: string): boolean {
-  return purchasesOf(userId).some((p) => p.productId === productId);
+export async function hasProduct(userId: string, productId: string): Promise<boolean> {
+  return (await purchasesOf(userId)).some((p) => p.productId === productId);
 }
 
 export interface GrantResult {
@@ -91,16 +42,15 @@ export interface GrantResult {
  * Record a payment and apply its grants to the player's save.
  * Idempotent by `chargeId`.
  */
-export function grantPurchase(params: {
+export async function grantPurchase(params: {
   chargeId: string;
   userId: string;
   product: { id: string; stars: number; grants: any };
   mock?: boolean;
-}): GrantResult {
+}): Promise<GrantResult> {
   const { chargeId, userId, product } = params;
-  const reg = load();
 
-  const existing = reg.charges[chargeId];
+  const existing = await __purchaseBackend().get(chargeId);
   if (existing) {
     return { granted: false, duplicate: true, applied: [], record: existing };
   }
@@ -113,10 +63,9 @@ export function grantPurchase(params: {
     at: Date.now(),
     ...(params.mock ? { mock: true } : {}),
   };
-  reg.charges[chargeId] = record;
-  persist();
+  await __purchaseBackend().put(record);
 
-  const applied = applyGrantsToState(userId, product.grants ?? {});
+  const applied = await applyGrantsToState(userId, product.grants ?? {});
   return { granted: true, duplicate: false, applied, record };
 }
 
@@ -124,8 +73,8 @@ export function grantPurchase(params: {
  * Apply grants to the persisted player state. Returns human-readable lines
  * describing what changed (used in the client toast / bot message).
  */
-export function applyGrantsToState(userId: string, grants: any): string[] {
-  const state = loadState(userId);
+export async function applyGrantsToState(userId: string, grants: any): Promise<string[]> {
+  const state = await loadState(userId);
   if (!state) return [];
 
   const applied: string[] = [];
@@ -153,20 +102,21 @@ export function applyGrantsToState(userId: string, grants: any): string[] {
     state.badges = [...badges];
   }
 
-  saveState(userId, state);
+  await saveState(userId, state);
   return applied;
 }
 
-export function markRefunded(chargeId: string): PurchaseRecord | null {
-  const reg = load();
-  const record = reg.charges[chargeId];
-  if (!record) return null;
-  record.refundedAt = Date.now();
-  persist();
-  return record;
+/** Тестовый хелпер: сброс реестра покупок (JSON-бэкенд — ин-мемори). */
+export async function resetEntitlements(): Promise<void> {
+  const backend = __purchaseBackend() as { reset?: () => void };
+  backend.reset?.();
 }
 
-/** Test helper. */
-export function resetEntitlements(): void {
-  registry = null;
+export async function markRefunded(chargeId: string): Promise<PurchaseRecord | null> {
+  const backend = __purchaseBackend();
+  const record = await backend.get(chargeId);
+  if (!record) return null;
+  const updated: PurchaseRecord = { ...record, refundedAt: Date.now() };
+  await backend.put(updated);
+  return updated;
 }

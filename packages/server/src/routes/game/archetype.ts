@@ -22,7 +22,7 @@ export async function archetypeRoutes(app: FastifyInstance) {
   app.post('/archetype/choose', async (request, reply) => {
     const user = (request as any).telegramUser;
     const userId = String(user.id);
-    const state = loadState(userId) as StoredState | null;
+    const state = await loadState(userId) as StoredState | null;
     if (!state) {
       return reply.status(404).send({ error: 'Game not started' });
     }
@@ -30,7 +30,7 @@ export async function archetypeRoutes(app: FastifyInstance) {
     const { archetypeId } = (request.body ?? {}) as { archetypeId?: string | null };
     if (!archetypeId) {
       state.archetypeChosen = undefined;
-      saveState(userId, state);
+      await saveState(userId, state);
       return { state: respondState(state, 'Подсветка пути снята') };
     }
 
@@ -39,7 +39,7 @@ export async function archetypeRoutes(app: FastifyInstance) {
       return reply.status(400).send({ error: 'Такого пути нет' });
     }
     state.archetypeChosen = archetypeId;
-    saveState(userId, state);
+    await saveState(userId, state);
     return { state: respondState(state, `🧭 Путь «${def.title}» выбран — следуй вехам на карте`) };
   });
 
@@ -54,7 +54,7 @@ export async function archetypeRoutes(app: FastifyInstance) {
   app.post('/archetype/claim', async (request, reply) => {
     const user = (request as any).telegramUser;
     const userId = String(user.id);
-    const state = loadState(userId) as StoredState | null;
+    const state = await loadState(userId) as StoredState | null;
     if (!state) {
       return reply.status(404).send({ error: 'Game not started' });
     }
@@ -73,7 +73,7 @@ export async function archetypeRoutes(app: FastifyInstance) {
     if (reputation > 0) state.reputation = clamp(state.reputation + reputation, 0, 100);
     state.archetypeBonuses = [...(state.archetypeBonuses ?? []), def.id];
     state.ratingScore = calculateRating(state);
-    saveState(userId, state);
+    await saveState(userId, state);
 
     const parts: string[] = [];
     if (money > 0) parts.push(`+${fmtMoney(money)}`);

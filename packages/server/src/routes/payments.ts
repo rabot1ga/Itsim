@@ -59,9 +59,9 @@ function findProduct(id: string): any | null {
 }
 
 /** Why this user cannot buy this product right now (null = they can). */
-export function purchaseBlocker(userId: string, product: any): string | null {
-  if (!product.repeatable && hasProduct(userId, product.id)) return 'Уже куплено';
-  if (product.dailyLimit && purchasesToday(userId, product.id) >= product.dailyLimit) {
+export async function purchaseBlocker(userId: string, product: any): Promise<string | null> {
+  if (!product.repeatable && await hasProduct(userId, product.id)) return 'Уже куплено';
+  if (product.dailyLimit && await purchasesToday(userId, product.id) >= product.dailyLimit) {
     return `Лимит на сегодня: ${product.dailyLimit}`;
   }
   return null;
@@ -79,12 +79,14 @@ export async function paymentRoutes(app: FastifyInstance) {
       currency: monetization.currency ?? 'XTR',
       policy: monetization.policy ?? null,
       mock: !isBotConfigured(),
-      products: products().map((product) => ({
-        ...product,
-        owned: hasProduct(userId, product.id),
-        blocked: purchaseBlocker(userId, product),
-      })),
-      purchases: purchasesOf(userId),
+      products: await Promise.all(
+        products().map(async (product) => ({
+          ...product,
+          owned: await hasProduct(userId, product.id),
+          blocked: await purchaseBlocker(userId, product),
+        }))
+      ),
+      purchases: await purchasesOf(userId),
     };
   });
 
@@ -98,7 +100,7 @@ export async function paymentRoutes(app: FastifyInstance) {
     const product = productId ? findProduct(productId) : null;
     if (!product) return reply.status(400).send({ error: 'Unknown productId' });
 
-    const blocker = purchaseBlocker(userId, product);
+    const blocker = await purchaseBlocker(userId, product);
     if (blocker) return reply.status(409).send({ error: blocker });
 
     const payload = buildPayload(userId, product.id);
@@ -156,7 +158,7 @@ export async function paymentRoutes(app: FastifyInstance) {
       let error: string | null = null;
       if (!parsed || !product) error = 'Товар недоступен';
       else if (parsed.userId !== buyerId) error = 'Счёт выписан другому игроку';
-      else error = purchaseBlocker(buyerId, product);
+      else error = await purchaseBlocker(buyerId, product);
 
       await answerPreCheckoutQuery(query.id, !error, error ?? undefined);
       return { ok: true, approved: !error };
@@ -174,7 +176,7 @@ export async function paymentRoutes(app: FastifyInstance) {
         return { ok: true, granted: false };
       }
 
-      const result = grantPurchase({
+      const result = await grantPurchase({
         chargeId: payment.telegram_payment_charge_id,
         userId: buyerId,
         product,
@@ -210,10 +212,10 @@ export async function paymentRoutes(app: FastifyInstance) {
     const product = productId ? findProduct(productId) : null;
     if (!product) return reply.status(400).send({ error: 'Unknown productId' });
 
-    const blocker = purchaseBlocker(userId, product);
+    const blocker = await purchaseBlocker(userId, product);
     if (blocker) return reply.status(409).send({ error: blocker });
 
-    const result = grantPurchase({
+    const result = await grantPurchase({
       chargeId: `mock_${randomUUID()}`,
       userId,
       product,

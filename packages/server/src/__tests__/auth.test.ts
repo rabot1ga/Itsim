@@ -131,7 +131,7 @@ describe('admin API (used by the bot)', () => {
 
   it('returns a player summary', async () => {
     const { app, store } = await buildAdminApp();
-    store.saveState('777', {
+    await store.saveState('777', {
       version: 2,
       telegramId: '777',
       firstName: 'Женя',
@@ -172,7 +172,7 @@ describe('admin API (used by the bot)', () => {
 
   it('deletes a player on request (GDPR)', async () => {
     const { app, store } = await buildAdminApp();
-    store.saveState('999', { version: 2, telegramId: '999', currentDay: 1 });
+    await store.saveState('999', { version: 2, telegramId: '999', currentDay: 1 });
 
     const res = await app.inject({
       method: 'DELETE',
@@ -180,13 +180,13 @@ describe('admin API (used by the bot)', () => {
       headers: { 'x-admin-token': ADMIN_TOKEN },
     });
     expect(res.json()).toEqual({ ok: true, deleted: true });
-    expect(store.loadState('999')).toBeNull();
+    expect(await store.loadState('999')).toBeNull();
   });
 
   it('claims nudge candidates once and marks them as notified', async () => {
     const { app, store } = await buildAdminApp();
-    store.saveState('n1', { version: 2, telegramId: 'n1', firstName: 'Полный банк', currentDay: 5, bankedDays: 7 });
-    store.saveState('n2', { version: 2, telegramId: 'n2', firstName: 'Активный', currentDay: 5, bankedDays: 1 });
+    await store.saveState('n1', { version: 2, telegramId: 'n1', firstName: 'Полный банк', currentDay: 5, bankedDays: 7 });
+    await store.saveState('n2', { version: 2, telegramId: 'n2', firstName: 'Активный', currentDay: 5, bankedDays: 1 });
 
     const call = () =>
       app.inject({
@@ -206,7 +206,7 @@ describe('admin API (used by the bot)', () => {
 
   it('never nudges a player who already finished their run', async () => {
     const { app, store } = await buildAdminApp();
-    store.saveState('done', {
+    await store.saveState('done', {
       version: 2,
       telegramId: 'done',
       currentDay: 300,

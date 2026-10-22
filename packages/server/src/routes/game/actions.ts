@@ -650,7 +650,7 @@ export async function actionRoutes(app: FastifyInstance) {
       return reply.status(400).send({ error: 'actionId required' });
     }
 
-    const state = loadState(userId) as StoredState | null;
+    const state = await loadState(userId) as StoredState | null;
     if (!state) {
       return reply.status(404).send({ error: 'Game not started' });
     }
@@ -719,7 +719,7 @@ export async function actionRoutes(app: FastifyInstance) {
     state.totalActions += 1;
     state.maxEnergy = recalcMaxEnergy(state, content);
     state.ratingScore = calculateRating(state);
-    saveState(userId, state);
+    await saveState(userId, state);
 
     // Action-triggered follow-up events (bar -> HR, freelance -> ghost client, ...)
     let triggeredEvent = null as ReturnType<typeof maybeTriggerActionEvent>;
@@ -727,13 +727,13 @@ export async function actionRoutes(app: FastifyInstance) {
       triggeredEvent = maybeTriggerActionEvent(state, content.events, actionId, params?.jobId, rng);
       if (triggeredEvent) {
         state.activeEventId = triggeredEvent.id;
-        saveState(userId, state);
+        await saveState(userId, state);
       }
     }
 
     if (idempotencyKey) {
       rememberAction(state, idempotencyKey, result.message);
-      saveState(userId, state);
+      await saveState(userId, state);
     }
 
     return {

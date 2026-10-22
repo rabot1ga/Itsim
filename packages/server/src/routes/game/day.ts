@@ -455,7 +455,7 @@ export async function dayRoutes(app: FastifyInstance) {
     const user = (request as any).telegramUser;
     const userId = String(user.id);
 
-    const state = loadState(userId) as StoredState | null;
+    const state = await loadState(userId) as StoredState | null;
     if (!state) {
       return { error: 'Game not started' };
     }
@@ -477,7 +477,7 @@ export async function dayRoutes(app: FastifyInstance) {
       messages.push(`🏆 Достижение: ${a.icon} ${a.name} — ${a.description}`);
     }
 
-    saveState(userId, state);
+    await saveState(userId, state);
 
     return {
       state: respondState(state, messages.length > 0 ? messages.join('\n') : undefined),
@@ -497,7 +497,7 @@ export async function dayRoutes(app: FastifyInstance) {
     const userId = String(user.id);
     const { eventId, choiceIndex } = request.body as { eventId?: string; choiceIndex?: number };
 
-    const state = loadState(userId) as StoredState | null;
+    const state = await loadState(userId) as StoredState | null;
     if (!state) return reply.status(404).send({ error: 'Game not started' });
 
     if (!eventId || choiceIndex === undefined) {
@@ -564,7 +564,7 @@ export async function dayRoutes(app: FastifyInstance) {
 
     state.maxEnergy = recalcMaxEnergy(state, content);
     state.ratingScore = calculateRating(state);
-    saveState(userId, state);
+    await saveState(userId, state);
 
     return {
       state: respondState(state, message),

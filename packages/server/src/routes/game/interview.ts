@@ -34,7 +34,7 @@ export async function interviewRoutes(app: FastifyInstance) {
     const user = (request as any).telegramUser;
     const userId = String(user.id);
 
-    const state = loadState(userId) as StoredState | null;
+    const state = await loadState(userId) as StoredState | null;
     if (!state) return reply.status(404).send({ error: 'Game not started' });
 
     const app = state.currentApplication;
@@ -78,7 +78,7 @@ export async function interviewRoutes(app: FastifyInstance) {
       companyId: app.companyId,
       questions: questions.map((q) => ({ id: q.id, chosen: null, correct: null })),
     };
-    saveState(userId, state);
+    await saveState(userId, state);
 
     return {
       questions: questions.map(sanitizeInterviewQuestion),
@@ -101,7 +101,7 @@ export async function interviewRoutes(app: FastifyInstance) {
     const userId = String(user.id);
     const { questionId, choiceIndex } = request.body as { questionId?: string; choiceIndex?: number };
 
-    const state = loadState(userId) as StoredState | null;
+    const state = await loadState(userId) as StoredState | null;
     if (!state) return reply.status(404).send({ error: 'Game not started' });
 
     const session = state.interviewSession;
@@ -128,7 +128,7 @@ export async function interviewRoutes(app: FastifyInstance) {
     const correct = choiceIndex === def.correctIndex;
     slot.chosen = choiceIndex;
     slot.correct = correct;
-    saveState(userId, state);
+    await saveState(userId, state);
 
     return {
       correct,
@@ -147,7 +147,7 @@ export async function interviewRoutes(app: FastifyInstance) {
     const user = (request as any).telegramUser;
     const userId = String(user.id);
 
-    const state = loadState(userId) as StoredState | null;
+    const state = await loadState(userId) as StoredState | null;
     if (!state) return reply.status(404).send({ error: 'Game not started' });
 
     const session = state.interviewSession;
@@ -161,7 +161,7 @@ export async function interviewRoutes(app: FastifyInstance) {
     const app = state.currentApplication;
     if (!app || app.companyId !== session.companyId) {
       state.interviewSession = undefined;
-      saveState(userId, state);
+      await saveState(userId, state);
       return reply.status(400).send({ error: 'Заявка не найдена или устарела' });
     }
 
@@ -225,7 +225,7 @@ export async function interviewRoutes(app: FastifyInstance) {
     state.interviewSession = undefined;
     state.maxEnergy = recalcMaxEnergy(state, content);
     state.ratingScore = calculateRating(state);
-    saveState(userId, state);
+    await saveState(userId, state);
 
     return {
       result: passed ? 'offer' : 'rejected',

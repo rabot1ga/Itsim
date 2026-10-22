@@ -568,10 +568,16 @@
 
 Тексты в коде, не вынесены; нужна инфраструктура словарей.
 
-### P2.6 PostgreSQL + Prisma
+### P2.6 PostgreSQL + Prisma — **сделано (23.10.2026)**
 
-JSON-персистентность работает, но миграции сейвов и интерфейс хранилища
-уже узкие — переезд не сломает вызовы.
+Хранилище переведено на бэкенды: JSON по умолчанию, `STORAGE=postgres` +
+`DATABASE_URL` — PostgreSQL через Prisma (generated `src/generated/prisma`,
+engine-less `prisma-client`). Структура — SQL-миграции `src/db/migrations/*.sql`
++ раннер `runMigrations()` (штатный `prisma migrate` офлайн недоступен — тянет
+бинарники). Перенос существующих данных: `npm run storage:import`. Вызовы
+`loadState/saveState/...` стали async (роуты уже были async). Тесты: pg-mem
+через единый адаптер `src/db/adapter.ts` (6 интеграционных). Дизайн и аудит
+расхождений — `docs/PROPOSALS-2026-10-23-storage-postgres.md`.
 
 ### P2.7 `npm run format` по всей базе
 
@@ -602,4 +608,5 @@ PR не имел проверок — на `main` перед слиянием б
 разбивки PR #9 + 17 из PR #10) и падающий `npm test`. Открытое: финал
 «Учитель» недостижим (`mentoredJuniors` никто не пишет), e2e не гонялся,
 `avatar:build` из клона не воспроизводим (нет `b9/bottom_chinos.png`),
-SPEC обещает PostgreSQL + Prisma, а в коде JSON-персистентность (P2.6).
+P2.6 закрыт: PostgreSQL + Prisma реализованы (JSON остаётся дефолтом для
+разработки).

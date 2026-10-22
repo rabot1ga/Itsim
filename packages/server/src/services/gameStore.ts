@@ -1,34 +1,26 @@
-import { mkdirSync, readFileSync, writeFileSync, renameSync, existsSync, unlinkSync } from 'fs';
-import { readdir, readFile, stat } from 'fs/promises';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-import { migrateState, CURRENT_STATE_VERSION } from '@itsim/shared';
-
 /**
- * Persistent game state storage.
+ * Persistent game state storage — фасад P2.6.
  *
- * MVP implementation: JSON file per user with atomic writes (tmp + rename),
- * so game state survives server restarts. The storage interface is narrow
- * enough to swap for PostgreSQL/Prisma later (see SPEC section 12).
+ * Два бэкенда за одним узким интерфейсом:
+ *   - JSON-файлы в DATA_DIR (дефолт: dev, обратная совместимость);
+ *   - PostgreSQL + Prisma (`STORAGE=postgres` + `DATABASE_URL`, SPEC §12).
  *
- * Two things happen on the read path besides reading:
- *   1. saves are migrated to `CURRENT_STATE_VERSION` (see engine/migrations.ts)
- *      and persisted back when they changed;
- *   2. subscribers (leaderboard index) are notified on every write, so nothing
- *      has to re-scan the data directory on a hot path.
+ * Фасад держит то, что общее для обоих:
+ *   1. кэш состояний (один запрос = load+save несколько раз, без похода в I/O);
+ *   2. миграции сейва при чтении (`engine/migrations.ts`) + отложенная запись;
+ *   3. подписки (`onStateSaved`) — leaderboard-индекс не сканирует данные на
+ *      горячем пути.
+ *
+ * Интерфейс асинхронный с P2.6 (Prisma-клиент асинхронный): вызовы — в async-
+ * хендлерах Fastify.
  */
+import { migrateState, CURRENT_STATE_VERSION } from '@itsim/shared';
+import { config } from '../config.js';
+import type { PlayerBackend, PurchaseBackend } from './storeTypes.js';
+import { createJsonPlayerBackend, createJsonPurchaseBackend, isStateFile } from './jsonStore.js';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-
-// packages/server/data — same path in src/ and dist/ (services/ is one level deep)
-const DATA_DIR = process.env.DATA_DIR || join(__dirname, '..', '..', 'data');
-
-mkdirSync(DATA_DIR, { recursive: true });
-
-const cache = new Map<string, any>();
-
-/** files in DATA_DIR that are not player saves */
-const NON_STATE_FILES = new Set(['nft_registry.json', 'entitlements.json']);
+export type { PurchaseRecord } from './storeTypes.js';
+export { isStateFile };
 
 export type SaveListener = (userId: string, state: any) => void;
 const listeners: SaveListener[] = [];
@@ -37,59 +29,127 @@ export function onStateSaved(listener: SaveListener): void {
   listeners.push(listener);
 }
 
-export function getDataDir(): string {
-  return DATA_DIR;
+const cache = new Map<string, any>();
+
+let players: PlayerBackend = createJsonPlayerBackend(config.dataDir);
+let purchases: PurchaseBackend = createJsonPurchaseBackend(config.dataDir);
+
+/**
+ * Инициализация хранилища при старте процесса. Для PostgreSQL — создать пул,
+ * прогнать SQL-миграции; для JSON — ничего. Вызывается из index.ts до listen.
+ */
+export async function initStorage(log: (msg: string) => void = console.log): Promise<void> {
+  if (process.env.STORAGE !== 'postgres') return;
+  const url = process.env.DATABASE_URL;
+  if (!url) throw new Error('STORAGE=postgres requires DATABASE_URL');
+
+  const pg = await import('pg');
+  const { createPgBackend } = await import('./pgStore.js');
+  const pool = new pg.default.Pool({ connectionString: url });
+  const executor = {
+    query: async (sql: string, args: unknown[]) => {
+      const res = await pool.query(sql, args as unknown[]);
+      return {
+        rows: res.rows as Array<Record<string, unknown>>,
+        fields: res.fields?.map((f) => ({ name: f.name, dataTypeID: f.dataTypeID })),
+        rowCount: res.rowCount,
+      };
+    },
+    connect: async () => {
+      const client = await pool.connect();
+      return {
+        query: async (sql: string, args: unknown[]) => {
+          const res = await client.query(sql, args as unknown[]);
+          return {
+            rows: res.rows as Array<Record<string, unknown>>,
+            fields: res.fields?.map((f) => ({ name: f.name, dataTypeID: f.dataTypeID })),
+            rowCount: res.rowCount,
+          };
+        },
+        release: () => client.release(),
+      };
+    },
+  };
+  const backend = createPgBackend(executor, log);
+  await backend.migrate();
+  players = backend.players;
+  purchases = backend.purchases;
+  pgBackends.push(backend);
+  log('storage: PostgreSQL (Prisma)');
 }
 
-function stateFile(userId: string): string {
-  return join(DATA_DIR, `${userId}.json`);
+type Closable = { close: () => Promise<void> };
+const pgBackends: Closable[] = [];
+
+/** Остановка процесса: закрыть пул (тесты). */
+export async function shutdownStorage(): Promise<void> {
+  for (const b of pgBackends) await b.close();
+  pgBackends.length = 0;
 }
 
-export function isStateFile(name: string): boolean {
-  return name.endsWith('.json') && !name.endsWith('.tmp') && !NON_STATE_FILES.has(name);
+/** Тестовый хелпер: подменить бэкенд (pg-mem-интеграция) и сбросить кэш. */
+export function __setBackendsForTests(playerBackend: PlayerBackend, purchaseBackend: PurchaseBackend): void {
+  players = playerBackend;
+  purchases = purchaseBackend;
+  cache.clear();
+}
+
+/** Тестовый хелпер: доступ к бэкенду покупок (entitlements тоже его держит). */
+export function __purchaseBackend(): PurchaseBackend {
+  return purchases;
 }
 
 /**
- * Load saved state for a user (from cache or disk). Returns null if absent.
- * Applies save migrations and rewrites the file when they changed something.
+ * Load saved state for a user (cache → backend). Returns null if absent.
+ * Applies save migrations and persists back when they changed something.
  */
-export function loadState(userId: string): any | null {
+export async function loadState(userId: string): Promise<any | null> {
   const cached = cache.get(userId);
   if (cached) return cached;
 
-  const file = stateFile(userId);
-  if (!existsSync(file)) return null;
-
+  let raw: Record<string, unknown> | null;
   try {
-    const raw = JSON.parse(readFileSync(file, 'utf-8'));
-    const { state, applied, changed, fromFuture } = migrateState<any>(raw);
-
-    if (fromFuture) {
-      console.warn(
-        `⚠ state for ${userId} has version ${raw.version} > ${CURRENT_STATE_VERSION} (written by a newer build) — loaded as-is`
-      );
-      cache.set(userId, state);
-      return state;
-    }
-
-    cache.set(userId, state);
-    if (changed) {
-      if (applied.length) console.log(`↻ migrated state ${userId}: ${applied.join(', ')}`);
-      persist(userId, state);
-    }
-    return state;
+    raw = await players.get(userId);
   } catch (err) {
     console.error(`Failed to load state for user ${userId}:`, err);
     return null;
   }
+  if (!raw) return null;
+
+  const { state, applied, changed, fromFuture } = migrateState<any>(raw);
+
+  if (fromFuture) {
+    console.warn(
+      `⚠ state for ${userId} has version ${(raw as any).version} > ${CURRENT_STATE_VERSION} (written by a newer build) — loaded as-is`
+    );
+    cache.set(userId, state);
+    return state;
+  }
+
+  cache.set(userId, state);
+  if (changed) {
+    if (applied.length) console.log(`↻ migrated state ${userId}: ${applied.join(', ')}`);
+    // запись миграции не должна ронять чтение: сейв валиден и в памяти
+    try {
+      await players.put(userId, state);
+    } catch (err) {
+      console.error(`Failed to persist migrated state for ${userId}:`, err);
+    }
+  }
+  return state;
 }
 
 /**
- * Persist user state (atomic write, cache update).
+ * Persist user state (cache update + backend write) and notify subscribers.
  */
-export function saveState(userId: string, state: any): void {
+export async function saveState(userId: string, state: any): Promise<void> {
   cache.set(userId, state);
-  persist(userId, state);
+  try {
+    await players.put(userId, state);
+  } catch (err) {
+    console.error(`Failed to save state for user ${userId}:`, err);
+    throw err;
+  }
   for (const listener of listeners) {
     try {
       listener(userId, state);
@@ -99,71 +159,37 @@ export function saveState(userId: string, state: any): void {
   }
 }
 
-function persist(userId: string, state: any): void {
-  const file = stateFile(userId);
-  const tmp = `${file}.tmp`;
-  try {
-    writeFileSync(tmp, JSON.stringify(state));
-    renameSync(tmp, file);
-  } catch (err) {
-    console.error(`Failed to save state for user ${userId}:`, err);
-    try { unlinkSync(tmp); } catch { /* ignore */ }
-  }
-}
-
-/**
- * Remove user state (GDPR / reset).
- */
-export function deleteState(userId: string): void {
+/** Remove user state (GDPR / reset). Платёжный журнал purchases не трогаем. */
+export async function deleteState(userId: string): Promise<void> {
   cache.delete(userId);
   try {
-    const file = stateFile(userId);
-    if (existsSync(file)) unlinkSync(file);
+    await players.delete(userId);
   } catch (err) {
     console.error(`Failed to delete state for user ${userId}:`, err);
   }
 }
 
-export function hasState(userId: string): boolean {
-  return cache.has(userId) || existsSync(stateFile(userId));
+export async function hasState(userId: string): Promise<boolean> {
+  if (cache.has(userId)) return true;
+  return (await players.get(userId)) !== null;
 }
 
 /**
  * Async scan of every persisted save. Used by the leaderboard index (once per
- * TTL, never per request) — reads are non-blocking and corrupt files are skipped.
+ * TTL, never per request) — reads are non-blocking and corrupt rows are skipped.
  */
 export async function scanStates(): Promise<Array<{ userId: string; state: any; mtimeMs: number }>> {
-  let files: string[];
   try {
-    files = await readdir(DATA_DIR);
-  } catch {
+    const out = await players.scan();
+    for (const row of out) {
+      const cached = cache.get(row.userId);
+      if (cached) row.state = cached;
+    }
+    return out;
+  } catch (err) {
+    console.error('scanStates failed:', err);
     return [];
   }
-
-  const out: Array<{ userId: string; state: any; mtimeMs: number }> = [];
-  const batchSize = 32;
-  const candidates = files.filter(isStateFile);
-
-  for (let i = 0; i < candidates.length; i += batchSize) {
-    const batch = candidates.slice(i, i + batchSize);
-    const results = await Promise.all(
-      batch.map(async (file) => {
-        const userId = file.replace(/\.json$/, '');
-        try {
-          const cached = cache.get(userId);
-          const info = await stat(join(DATA_DIR, file));
-          if (cached) return { userId, state: cached, mtimeMs: info.mtimeMs };
-          const state = JSON.parse(await readFile(join(DATA_DIR, file), 'utf-8'));
-          return { userId, state, mtimeMs: info.mtimeMs };
-        } catch {
-          return null;
-        }
-      })
-    );
-    for (const row of results) if (row && row.state) out.push(row);
-  }
-
-  return out;
 }
 
 /** Test helper — drops the in-memory cache. */

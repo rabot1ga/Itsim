@@ -62,7 +62,7 @@ export async function miscRoutes(app: FastifyInstance) {
     const userId = String(user.id);
     const { perkId } = request.body as { perkId?: string };
 
-    const state = loadState(userId) as StoredState | null;
+    const state = await loadState(userId) as StoredState | null;
     if (!state) return reply.status(404).send({ error: 'Game not started' });
 
     const content = getContent();
@@ -87,7 +87,7 @@ export async function miscRoutes(app: FastifyInstance) {
     state.perks = [...state.perks, perk.id];
     state.maxEnergy = recalcMaxEnergy(state, content);
     state.ratingScore = calculateRating(state);
-    saveState(userId, state);
+    await saveState(userId, state);
 
     return { state: respondState(state, `✨ Перк открыт: ${perk.name} — ${perk.flavor}`) };
   });
@@ -101,7 +101,7 @@ export async function miscRoutes(app: FastifyInstance) {
     const userId = String(user.id);
     const { skillId } = request.body as { skillId?: string };
 
-    const state = loadState(userId) as StoredState | null;
+    const state = await loadState(userId) as StoredState | null;
     if (!state) return reply.status(404).send({ error: 'Game not started' });
 
     const content = getContent();
@@ -115,7 +115,7 @@ export async function miscRoutes(app: FastifyInstance) {
     }
 
     state.mainSkillId = skill.id;
-    saveState(userId, state);
+    await saveState(userId, state);
     return { state: respondState(state, `🎯 Основной навык: ${skill.name}`) };
   });
 
@@ -130,7 +130,7 @@ export async function miscRoutes(app: FastifyInstance) {
   app.post('/new-life', async (request, reply) => {
     const user = (request as any).telegramUser;
     const userId = String(user.id);
-    const state = loadState(userId) as StoredState | null;
+    const state = await loadState(userId) as StoredState | null;
     if (!state) {
       return reply.status(404).send({ error: 'Game not started' });
     }
@@ -157,7 +157,7 @@ export async function miscRoutes(app: FastifyInstance) {
     } as StoredState;
     resetDailyChallenge(next, getContent());
     next.maxEnergy = recalcMaxEnergy(next, getContent());
-    saveState(userId, next);
+    await saveState(userId, next);
 
     const lives = next.meta?.lives ?? 1;
     const pct = Math.round((metaXpMult(next.meta) - 1) * 100);
@@ -194,7 +194,7 @@ export async function miscRoutes(app: FastifyInstance) {
       mainSkillId: 'javascript',
     } as StoredState;
     resetDailyChallenge(state, getContent());
-    saveState(userId, state);
+    await saveState(userId, state);
     return { state: respondState(state, 'Новая жизнь началась! 💻'), activeEvent: null };
   });
 }

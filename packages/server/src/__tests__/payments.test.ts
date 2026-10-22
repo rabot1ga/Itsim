@@ -51,7 +51,7 @@ async function buildApp() {
   const entitlements = await import('../services/entitlements');
 
   store.clearCache();
-  entitlements.resetEntitlements();
+  await entitlements.resetEntitlements();
 
   contentService.setContent({
     monetization: { currency: 'XTR', policy: 'no pay-to-win', products: PRODUCTS },
@@ -62,7 +62,7 @@ async function buildApp() {
   await app.ready();
 
   // A save must exist for grants to land somewhere.
-  store.saveState('1', {
+  await store.saveState('1', {
     version: 2,
     telegramId: '1',
     firstName: 'Dev',
@@ -190,7 +190,7 @@ describe('payments: granting', () => {
       payload: successfulPayment('charge_a', 'itsim:v1:1:wardrobe_premium:abcd'),
     });
 
-    const state = store.loadState('1');
+    const state = await store.loadState('1');
     expect(state.entitlements).toContain('acc_vr_headset');
     expect(state.badges).toContain('fashionista');
   });
@@ -211,7 +211,7 @@ describe('payments: granting', () => {
     expect(first.json().granted).toBe(true);
     expect(second.json().granted).toBe(false);
     expect(second.json().duplicate).toBe(true);
-    expect(store.loadState('1').bankedDays).toBe(1);
+    expect((await store.loadState('1')).bankedDays).toBe(1);
   });
 
   it('ignores a payment whose payload does not parse', async () => {

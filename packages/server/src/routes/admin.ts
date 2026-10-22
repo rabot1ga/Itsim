@@ -75,10 +75,10 @@ export async function adminRoutes(app: FastifyInstance) {
 
     if (!dryRun) {
       for (const { userId } of candidates) {
-        const state = loadState(userId);
+        const state = await loadState(userId);
         if (!state) continue;
         state.lastNudgeAt = now;
-        saveState(userId, state);
+        await saveState(userId, state);
       }
     }
 
@@ -90,7 +90,7 @@ export async function adminRoutes(app: FastifyInstance) {
    */
   app.get('/users/:id/summary', async (request, reply) => {
     const { id } = request.params as { id: string };
-    const state = loadState(id);
+    const state = await loadState(id);
     if (!state) return reply.status(404).send({ error: 'No save for this user' });
 
     return {
@@ -106,7 +106,7 @@ export async function adminRoutes(app: FastifyInstance) {
       motivation: state.motivation ?? 0,
       achievements: (state.achievements ?? []).length,
       careerEnding: state.careerEnding ?? null,
-      purchases: purchasesOf(id).length,
+      purchases: (await purchasesOf(id)).length,
     };
   });
 
@@ -115,8 +115,8 @@ export async function adminRoutes(app: FastifyInstance) {
    */
   app.delete('/users/:id', async (request) => {
     const { id } = request.params as { id: string };
-    const existed = Boolean(loadState(id));
-    deleteState(id);
+    const existed = Boolean(await loadState(id));
+    await deleteState(id);
     return { ok: true, deleted: existed };
   });
 }

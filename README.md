@@ -416,8 +416,11 @@ React 18 + TypeScript + Tailwind + Zustand. Состояние — `store/gameSt
 Fastify 4, сервер-авторитет. Контент валидируется Zod-схемами **при старте**
 (15 групп файлов + cross-reference: эффекты `skill.X`/`relation.X`, id веток, id слоёв,
 id навыков в вопросах, монотонность карьерной лестницы, каталог Stars). Состояние —
-`packages/server/data/<telegramId>.json` (атомарная запись tmp+rename + in-memory кэш;
-интерфейс под замену на PostgreSQL), при загрузке прогоняется через миграции.
+`packages/server/data/<telegramId>.json` (атомарная запись tmp+rename + in-memory кэш),
+при загрузке прогоняется через миграции. Хранилище — бэкенд за узким интерфейсом:
+JSON по умолчанию, `STORAGE=postgres` + `DATABASE_URL` — PostgreSQL через Prisma
+(структуру держат SQL-миграции `src/db/migrations/*.sql`, перенос данных —
+`npm run storage:import`).
 
 ### Auth
 
@@ -720,7 +723,8 @@ CI — [`ci/github-actions-ci.yml`](ci/github-actions-ci.yml) (скопируй�
 
 **Инфраструктура**
 
-- [ ] PostgreSQL + Prisma вместо JSON-файлов (интерфейс хранилища уже узкий, миграции сейвов есть)
+- [x] PostgreSQL + Prisma вместо JSON-файлов (23.10.2026: `STORAGE=postgres` + `DATABASE_URL`,
+      SQL-миграции + `storage:import`, JSON остаётся дефолтом; см. PROPOSALS-2026-10-23-storage-postgres)
 - [ ] Прогнать `npm run format` по всей кодовой базе (сейчас prettier в CI — `continue-on-error`,
       чтобы не смешивать переформатирование с содержательными правками)
 - [ ] Реальный Solana-провайдер (Helius RPC) вместо `MockNftProvider`
