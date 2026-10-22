@@ -85,21 +85,6 @@ export async function contentRoutes(app: FastifyInstance) {
   });
 
   /**
-   * GET /api/content/genetics — trait options + palettes (DESIGN.md 3.1)
-   */
-  app.get('/genetics', async () => {
-    return { genetics: getContent().genetics };
-  });
-
-  /**
-   * GET /api/content/layers — avatar/room/office layer manifests (DESIGN.md 2)
-   */
-  app.get('/layers', async () => {
-    const { avatarLayers, roomLayers, officeLayers } = getContent();
-    return { avatar: avatarLayers, room: roomLayers, office: officeLayers };
-  });
-
-  /**
    * GET /api/content/npcs — colleagues for the office screen (docs/design.md §11)
    * Returns the avatar filename too so the client can render individual portraits
    * instead of a shared generic icon.
@@ -119,13 +104,6 @@ export async function contentRoutes(app: FastifyInstance) {
   });
 
   /**
-   * GET /api/content/cross-collections — third-party NFT synergies (DESIGN.md 3.3)
-   */
-  app.get('/cross-collections', async () => {
-    return { crossCollections: getContent().crossCollections };
-  });
-
-  /**
    * GET /api/content/skills — the full talent tree (branches, parents, unlocks)
    */
   app.get('/skills', async () => {
@@ -142,25 +120,6 @@ export async function contentRoutes(app: FastifyInstance) {
       gates: balance.careerGates ?? [],
       livingCosts: balance.livingCosts ?? null,
       endings: balance.endings ?? null,
-    };
-  });
-
-  /**
-   * GET /api/content/pixel — pixel-art avatar pack (docs/pixel-art.md).
-   * The client renders from this payload with the shared engine; there are no
-   * pre-rendered sprites at runtime, so PNGs stay a build/QA artifact.
-   */
-  app.get('/pixel', async () => {
-    const { pixelArt, pixelGeneratorConfig } = getContent();
-    if (!pixelArt) return { available: false, canvas: null, components: {}, palettes: {}, generatorConfig: null };
-    return {
-      available: true,
-      canvas: pixelArt.canvas,
-      layout: pixelArt.layout,
-      layerOrder: pixelArt.layer_order,
-      palettes: pixelArt.palettes,
-      components: pixelArt.components,
-      generatorConfig: pixelGeneratorConfig,
     };
   });
 

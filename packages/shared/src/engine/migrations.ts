@@ -20,7 +20,7 @@ import { clamp } from './utils';
  *     and reported, so an accidental server downgrade cannot corrupt it.
  */
 
-export const CURRENT_STATE_VERSION = 4;
+export const CURRENT_STATE_VERSION = 5;
 
 export interface MigrationResult<T = PlayerState> {
   state: T;
@@ -122,6 +122,25 @@ const MIGRATIONS: Migration[] = [
             : day;
       }
       if (sitting && state.careerEnding === 'corporate_god') delete state.careerEnding;
+    },
+  },
+  {
+    to: 5,
+    name: 'v5_identity_removal',
+    /**
+     * v4 → v5: пиксельная идентичность снята целиком (решение 22.10.2026,
+     * docs/PROPOSALS-2026-10-22-room-redesign.md). Генетика, гардероб, кошелёк
+     * и кросс-коллекционные бонусы больше не влияют ни на один экран: внешний
+     * вид протагониста фиксирован артом, покупки не монтируются в NFT.
+     * Поля удаляются из сейва, а не обнуляются — восстановить их всё равно
+     * нечем: манифесты, генетика и NFT-мок удалены из контента и сервера.
+     */
+    up(state: any) {
+      delete state.genetics;
+      delete state.avatar;
+      delete state.walletAddress;
+      delete state.crossBonuses;
+      delete state.room;
     },
   },
 ];

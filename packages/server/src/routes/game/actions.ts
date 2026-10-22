@@ -12,44 +12,27 @@ import { findCompletedAction, rememberAction } from '../../services/idempotency.
 import {
   applySoftXp,
   applyXp,
-  avatarChangeCost,
-  avatarEntryStatus,
-  buildAvatarUnlockContext,
-  buildRoomUnlockContext,
   calculateRating,
   canLearnSkill,
   checkEndings,
   findProject,
-  floorAllowed,
-  floorStyle,
   bidChance,
-  geneticTraitForSlot,
-  isAvatarSlotId,
-  isLookSlot,
-  isRoomSlotId,
   itemEnergyCostChance,
-  lookColourAllowed,
-  LOOK_SLOT_NAMES,
   maybeTriggerActionEvent,
   newlyClaimableArchetypes,
-  paintAllowed,
   preScreenMatch,
   preScreenResult,
   projectBlockedReason,
   projectComplete,
   projectFailurePenalty,
   projectPayout,
-  REPAINT_COST,
   remainingTasks,
-  roomEntryStatus,
-  wallPaint,
   weeklySalary,
   bumpSprintProgress,
   clamp,
   type Application,
   type PlayerState,
 } from '@itsim/shared';
-import { getNftProvider } from '../../services/nftProvider.js';
 import {
   branchOfMap,
   branchShareXp,
@@ -127,29 +110,6 @@ function getActionMoneyCost(actionId: string, params: any, state: PlayerState, c
       if (next > 4) return null;
       return HOUSING_COSTS[next] ?? null;
     }
-    case 'customize_room': {
-      // Rearranging furniture is free; paint and flooring cost money.
-      const slot = params?.slot as string | undefined;
-      if (slot !== 'wallColor' && slot !== 'paint' && slot !== 'floor') return null;
-      const current =
-        slot === 'paint'
-          ? state.room?.paint
-          : slot === 'floor'
-            ? state.room?.floor
-            : (state.room?.wallColor ?? state.genetics?.wallColor);
-      if (!params?.entryId || params.entryId === current) return null;
-      return REPAINT_COST;
-    }
-    case 'customize_avatar': {
-      // Barbers and hat stands charge; the closet is free.
-      const slot = params?.slot as string | undefined;
-      const entryId = (params?.entryId as string | null | undefined) ?? null;
-      if (!slot || isLookSlot(slot)) return null; // recolouring is free
-      if (!isAvatarSlotId(slot) || entryId === null) return null;
-      const current = (state.avatar as any)?.[slot] ?? geneticTraitForSlot(state.genetics, slot);
-      const cost = avatarChangeCost(slot, entryId, current);
-      return cost > 0 ? cost : null;
-    }
     default:
       return null;
   }
@@ -159,8 +119,7 @@ function applyAction(
   state: StoredState,
   actionId: string,
   params: any,
-  content: any,
-  heldCollections: string[] = []
+  content: any
 ): ActionResult {
   const delta: Record<string, any> = {};
 
@@ -630,17 +589,6 @@ function applyAction(
       state.items = [...state.items, item.id];
       state.maxEnergy = recalcMaxEnergy(state, content);
       delta.items = [...state.items];
-      if (item.nft) {
-        // NFT items are minted on purchase (DESIGN.md 3.2) — mock provider
-        delta.mintedItem = {
-          id: item.id,
-          name: item.name,
-          description: item.description,
-          rarity: item.rarity,
-          layerId: item.layerId,
-        };
-        return { message: `🛒 Куплено: ${item.name}. NFT смонтирован (мок) 🔗`, delta };
-      }
       return { message: `🛒 Куплено: ${item.name}` };
     }
 
@@ -678,100 +626,6 @@ function applyAction(
       state.maxEnergy = recalcMaxEnergy(state, content);
       delta.housingLevel = next;
       return { message: `🏠 Переезд: новый уровень жилья ${next}. Запах картонных коробок — запах свободы` };
-    }
-
-    case 'customize_room': {
-      const slot = params?.slot as string | undefined;
-      const entryId = (params?.entryId as string | null | undefined) ?? null;
-      const isoSlot = slot === 'paint' || slot === 'floor';
-      if (!slot || (!isoSlot && slot !== 'wallColor' && !isRoomSlotId(slot))) {
-        return { error: 'Неизвестный слот комнаты' };
-      }
-      if (!state.room) state.room = { slots: {} };
-
-      // null = back to automatic
-      if (entryId === null) {
-        if (slot === 'wallColor') delete state.room.wallColor;
-        else if (slot === 'paint') delete state.room.paint;
-        else if (slot === 'floor') delete state.room.floor;
-        else delete state.room.slots[slot];
-        delta.room = state.room;
-        return { message: '🎨 Вернули как было (авто)', delta };
-      }
-
-      // Isometric finishes: paint and flooring, gated by what the flat can carry.
-      if (slot === 'paint' || slot === 'floor') {
-        const allowed =
-          slot === 'paint'
-            ? paintAllowed(entryId, state.housingLevel ?? 0)
-            : floorAllowed(entryId, state.housingLevel ?? 0);
-        if (!allowed) return { error: 'Такая отделка недоступна для этого жилья' };
-        const name = slot === 'paint' ? (wallPaint(entryId)?.name ?? entryId) : (floorStyle(entryId)?.name ?? entryId);
-        if (slot === 'paint') state.room.paint = entryId;
-        else state.room.floor = entryId;
-        delta.room = state.room;
-        return {
-          message:
-            slot === 'paint'
-              ? `🎨 Стены перекрашены: ${name} (−${REPAINT_COST} ₽ за банку краски)`
-              : `🪵 Новый пол: ${name} (−${REPAINT_COST} ₽ за материал)`,
-          delta,
-        };
-      }
-
-      if (slot === 'wallColor') {
-        const palette = (content.genetics?.wallPalette ?? []) as any[];
-        if (!palette.some((p) => p.id === entryId)) return { error: 'Такого цвета нет в палитре' };
-        state.room.wallColor = entryId;
-        delta.room = state.room;
-        const name = palette.find((p) => p.id === entryId)?.name ?? entryId;
-        return { message: `🎨 Стены перекрашены: ${name} (−${REPAINT_COST} ₽ за банку краски)`, delta };
-      }
-
-      const manifestSlot = (content.roomLayers?.slots ?? []).find((s: any) => s.id === slot);
-      if (!manifestSlot?.entries?.some((e: any) => e.id === entryId)) {
-        return { error: 'Такого предмета нет в этом слоте' };
-      }
-      const status = roomEntryStatus(buildRoomUnlockContext(state, heldCollections), slot, entryId);
-      if (!status.unlocked) return { error: `🔒 ${status.hint}` };
-      state.room.slots[slot] = entryId;
-      delta.room = state.room;
-      return { message: '🎨 Комната обновлена', delta };
-    }
-
-    case 'customize_avatar': {
-      const slot = params?.slot as string | undefined;
-      const entryId = (params?.entryId as string | null | undefined) ?? null;
-      if (!slot || (!isAvatarSlotId(slot) && !isLookSlot(slot))) {
-        return { error: 'Неизвестный слот внешности' };
-      }
-      if (!state.avatar) state.avatar = {};
-
-      if (entryId === null) {
-        delete (state.avatar as any)[slot];
-        delta.avatar = state.avatar;
-        return { message: '🧍 Вернули как было от природы', delta };
-      }
-
-      // Colours: a mirror is free, but only palette colours are accepted.
-      if (isLookSlot(slot)) {
-        if (!lookColourAllowed(slot, entryId)) return { error: 'Такого цвета нет в палитре' };
-        (state.avatar as any)[slot] = entryId.toLowerCase();
-        delta.avatar = state.avatar;
-        return { message: `🎨 ${LOOK_SLOT_NAMES[slot]}: обновлено`, delta };
-      }
-
-      const manifestSlot = (content.avatarLayers?.slots ?? []).find((s: any) => s.id === slot);
-      if (!manifestSlot?.entries?.some((e: any) => e.id === entryId)) {
-        return { error: 'Такого варианта нет в этом слоте' };
-      }
-      const status = avatarEntryStatus(buildAvatarUnlockContext(state), slot, entryId);
-      if (!status.unlocked) return { error: `🔒 ${status.hint}` };
-      (state.avatar as any)[slot] = entryId;
-      delta.avatar = state.avatar;
-      const flavor =
-        slot === 'hair' ? '💇 Новая стрижка' : slot === 'beard' ? '🪒 Борода обновлена' : '🧍 Образ обновлён';
-      return { message: flavor, delta };
     }
 
     default:
@@ -833,18 +687,7 @@ export async function actionRoutes(app: FastifyInstance) {
       return reply.status(400).send({ error: 'Не хватает денег', state: respondState(state) });
     }
 
-    // Room editor: cross-collection layers need the on-chain (mock) holdings
-    let heldCollections: string[] = [];
-    if (actionId === 'customize_room') {
-      try {
-        const wallet = state.walletAddress ?? `local:${userId}`;
-        heldCollections = await getNftProvider().getHeldCollections(wallet);
-      } catch {
-        heldCollections = [];
-      }
-    }
-
-    const result = applyAction(state, actionId, params, content, heldCollections);
+    const result = applyAction(state, actionId, params, content);
     if (result.error) {
       return reply.status(400).send({ error: result.error, state: respondState(state) });
     }
@@ -878,15 +721,6 @@ export async function actionRoutes(app: FastifyInstance) {
     state.ratingScore = calculateRating(state);
     saveState(userId, state);
 
-    // Mint NFT if the purchased item is on-chain (mock provider, DESIGN.md 3.2)
-    let nft = null;
-    const mintedItem = result.delta?.mintedItem;
-    if (mintedItem) {
-      const wallet = state.walletAddress ?? `local:${userId}`;
-      const itemType = (content.items as any[]).find((i: any) => i.id === mintedItem.id)?.type ?? 'item';
-      nft = await getNftProvider().mint(wallet, mintedItem, String(itemType).toUpperCase().slice(0, 10));
-    }
-
     // Action-triggered follow-up events (bar -> HR, freelance -> ghost client, ...)
     let triggeredEvent = null as ReturnType<typeof maybeTriggerActionEvent>;
     if (!state.activeEventId) {
@@ -906,7 +740,6 @@ export async function actionRoutes(app: FastifyInstance) {
       state: respondState(state, finalMessage),
       delta: result.delta ?? {},
       activeEvent: triggeredEvent,
-      nft,
       mining: miningSummary(state, content),
       sprint: sprintView(state, content, Date.now()),
     };

@@ -240,3 +240,61 @@ describe('normalizeState', () => {
     expect(JSON.stringify(state)).toBe(once);
   });
 });
+
+describe('v5_identity_removal (снятие пиксельной идентичности)', () => {
+  /** Сейв v4 с полным набором полей идентичности. */
+  function identitySave(): any {
+    return {
+      version: 4,
+      telegramId: 7,
+      currentDay: 40,
+      money: 1000,
+      energy: 10,
+      maxEnergy: 16,
+      motivation: 60,
+      skills: {},
+      walletAddress: '4X1...',
+      genetics: { seed: 'x', skinTone: 'skin_2', hairStyle: 'hair_short' },
+      avatar: { top: 'top_jacket', hairColor: '#2b2320' },
+      crossBonuses: [{ type: 'energy', value: 1 }],
+      room: { slots: {}, wallColor: 'wall_3' },
+    };
+  }
+
+  it('дропает поля идентичности и помечает сейв изменённым', () => {
+    const { state, applied, changed } = migrateState(identitySave());
+    expect(applied).toContain('v5_identity_removal');
+    expect(changed).toBe(true);
+    expect(state.version).toBe(CURRENT_STATE_VERSION);
+    expect(state.genetics).toBeUndefined();
+    expect(state.avatar).toBeUndefined();
+    expect(state.walletAddress).toBeUndefined();
+    expect(state.crossBonuses).toBeUndefined();
+    expect(state.room).toBeUndefined();
+  });
+
+  it('идемпотентна: второй прогон ничего не меняет', () => {
+    const once = migrateState(identitySave());
+    const twice = migrateState(once.state);
+    expect(twice.changed).toBe(false);
+    expect(twice.applied).toEqual([]);
+  });
+
+  it('сейв без полей идентичности миграция не трогает', () => {
+    const save = identitySave();
+    delete save.genetics;
+    delete save.avatar;
+    delete save.walletAddress;
+    delete save.crossBonuses;
+    delete save.room;
+    const { state, applied } = migrateState(save);
+    expect(applied).toEqual(['v5_identity_removal']);
+    // нормализация достаивает дефолты, поэтому сверяем суть: поля идентичности
+    // не появились, остальной сейв доехал нетронутым
+    for (const key of ['genetics', 'avatar', 'walletAddress', 'crossBonuses', 'room']) {
+      expect((state as any)[key]).toBeUndefined();
+    }
+    expect(state.money).toBe(1000);
+    expect(state.currentDay).toBe(40);
+  });
+});

@@ -8,7 +8,6 @@ import { gameRoutes } from './routes/game.js';
 import { leaderboardRoutes } from './routes/leaderboard.js';
 import { paymentRoutes } from './routes/payments.js';
 import { contentRoutes } from './routes/content.js';
-import { nftRoutes } from './routes/nft.js';
 import { telemetryRoutes } from './routes/telemetry.js';
 import { adminRoutes } from './routes/admin.js';
 import { loadContent } from './services/contentService.js';
@@ -41,7 +40,6 @@ export async function buildServer() {
   await app.register(leaderboardRoutes, { prefix: '/api/leaderboard' });
   await app.register(paymentRoutes, { prefix: '/api/payments' });
   await app.register(contentRoutes, { prefix: '/api/content' });
-  await app.register(nftRoutes, { prefix: '/api/nft' });
   await app.register(telemetryRoutes, { prefix: '/api/telemetry' });
   await app.register(adminRoutes, { prefix: '/api/admin' });
 

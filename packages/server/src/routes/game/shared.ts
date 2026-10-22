@@ -6,7 +6,6 @@
  * (state / action / day / ending / archetype / interview / sprint / misc)
  * can compose them without circular imports.
  */
-import { getContent } from '../../services/contentService.js';
 import { stripInternal } from '../../services/idempotency.js';
 import {
   applySoftXp,
@@ -17,8 +16,6 @@ import {
   electricitySaveOfItems,
   gateFor,
   gateProgress,
-  generatePlayerSeed,
-  getGeneticTraits,
   GRADE_ORDER,
   GRADE_REQUIREMENTS,
   hashrateOfItems,
@@ -133,13 +130,6 @@ export function eventPhaseChance(balance: any, day: number): number {
   if (day <= 30) return balance.eventChanceEarly ?? 0.35;
   if (day <= 150) return balance.eventChanceMid ?? 0.28;
   return balance.eventChanceLate ?? 0.2;
-}
-
-/** Derive the deterministic "genotype" (DESIGN.md 3.1). */
-export function deriveGenetics(state: StoredState): void {
-  const source = state.walletAddress ?? `tg:${state.telegramId}`;
-  const seed = generatePlayerSeed(source);
-  state.genetics = getGeneticTraits(seed, getContent().genetics);
 }
 
 /** Attach the UI message to the response state. */

@@ -255,11 +255,8 @@ export function advanceDay(state: StoredState, content: any, messages: string[])
         state.activeProject = startProject(def, state.currentDay);
         messages.push(`📁 Заказчик выбрал тебя: «${def.title}». Дедлайн — день ${state.activeProject.deadlineDay}`);
       } else if (outcome === 'consolation') {
-        const crossMult = (state.crossBonuses ?? [])
-          .filter((b) => b.type === 'freelance_mult')
-          .reduce((sum, b) => sum + b.value, 0);
         const perkMult = Math.max(0, perkEffectSum(state, content, 'freelancePaymentMult') - 1);
-        const pay = Math.round(consolationPayment(def) * (1 + crossMult + perkMult));
+        const pay = Math.round(consolationPayment(def) * (1 + perkMult));
         state.money += pay;
         state.freelanceLastPayment = pay;
         messages.push(`🛠 «${def.title}» ушёл другому, но тестовое задание оплатили: +${fmtMoney(pay)}`);

@@ -18,11 +18,9 @@ import {
   rollSprint,
   type GameEvent,
 } from '@itsim/shared';
-import { getNftProvider } from '../../services/nftProvider.js';
 import {
   careerOutlook,
   costOfDay,
-  deriveGenetics,
   miningSummary,
   recalcMaxEnergy,
   resetDailyChallenge,
@@ -54,14 +52,7 @@ export async function stateRoutes(app: FastifyInstance) {
         firstName: user.first_name || 'Игрок',
         mainSkillId: 'javascript',
       } as StoredState;
-      deriveGenetics(state);
       resetDailyChallenge(state, getContent());
-    }
-
-    // Refresh cross-collection bonuses (DESIGN.md 3.3)
-    state.crossBonuses = [];
-    for (const col of await getNftProvider().getActiveBonuses(state.walletAddress ?? `local:${userId}`)) {
-      state.crossBonuses.push(...col.bonuses);
     }
 
     // Offline energy banking (1 game day / 3.5 real hours, max 7 in bank)

@@ -17,7 +17,7 @@ import {
   createNewPlayer,
   metaXpMult,
 } from '@itsim/shared';
-import { deriveGenetics, recalcMaxEnergy, respondState, resetDailyChallenge, StoredState } from './shared.js';
+import { recalcMaxEnergy, respondState, resetDailyChallenge, StoredState } from './shared.js';
 
 function describePerkRequires(requires: Record<string, number>, content: any): string {
   const skillName = (id: string) => (content.skills as any[]).find((s) => s.id === id)?.name ?? id;
@@ -155,7 +155,6 @@ export async function miscRoutes(app: FastifyInstance) {
       firstName: state.firstName,
       mainSkillId: 'javascript',
     } as StoredState;
-    deriveGenetics(next);
     resetDailyChallenge(next, getContent());
     next.maxEnergy = recalcMaxEnergy(next, getContent());
     saveState(userId, next);
@@ -194,7 +193,6 @@ export async function miscRoutes(app: FastifyInstance) {
       firstName: user.first_name || 'Игрок',
       mainSkillId: 'javascript',
     } as StoredState;
-    deriveGenetics(state);
     resetDailyChallenge(state, getContent());
     saveState(userId, state);
     return { state: respondState(state, 'Новая жизнь началась! 💻'), activeEvent: null };
