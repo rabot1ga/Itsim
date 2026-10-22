@@ -40,7 +40,9 @@ const api = new GameApiClient(API_URL, ADMIN_TOKEN);
 console.log('🤖 IT Life Simulator Bot');
 console.log(`   mode:        ${MODE}`);
 console.log(`   mini app:    ${MINI_APP_URL}`);
-console.log(`   game api:    ${API_URL} ${api.available ? '(admin API enabled)' : '(no ADMIN_TOKEN — /stats and /delete_my_data disabled)'}`);
+console.log(
+  `   game api:    ${API_URL} ${api.available ? '(admin API enabled)' : '(no ADMIN_TOKEN — /stats and /delete_my_data disabled)'}`
+);
 if (!BOT_TOKEN) console.warn('⚠ BOT_TOKEN not set — running in mock mode, no messages are sent to Telegram');
 
 // ---------------------------------------------------------------------------
@@ -241,7 +243,9 @@ async function main() {
   }
 
   if (NUDGE_ENABLED && tg.configured && api.available) {
-    console.log(`✓ Nudge job every ${Math.round(NUDGE_INTERVAL_MS / 60000)} min (bank ≥ ${NUDGE_MIN_BANKED_DAYS} days)`);
+    console.log(
+      `✓ Nudge job every ${Math.round(NUDGE_INTERVAL_MS / 60000)} min (bank ≥ ${NUDGE_MIN_BANKED_DAYS} days)`
+    );
     setInterval(() => {
       runNudgeJob().catch((err) => console.error('nudge job failed:', err));
     }, NUDGE_INTERVAL_MS);

@@ -28,10 +28,7 @@ export function officeArtwork(tier: OfficeTier): string {
   return `/art/office/${tier}.webp`;
 }
 
-export const OFFICE_TIER_META: Record<
-  OfficeTier,
-  { title: string; tagline: string; description: string }
-> = {
+export const OFFICE_TIER_META: Record<OfficeTier, { title: string; tagline: string; description: string }> = {
   openspace: {
     title: 'Опенспейс',
     tagline: 'Ряды столов, дешёвый свет и чужие мониторы',

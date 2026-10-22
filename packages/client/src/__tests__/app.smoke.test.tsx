@@ -73,7 +73,7 @@ describe('App', () => {
       'Топ',
       'Офис',
       'Майнинг',
-            'Финалы',
+      'Финалы',
       'Настройки',
     ];
     for (const label of destinations) {

@@ -321,9 +321,7 @@ export const ShopView: React.FC = () => {
       </div>
 
       <NavLinks
-        links={[
-          { view: 'mining', emoji: '⛏', label: 'Майнинг-ферма', hint: 'оборудование, доход и прогноз' },
-        ]}
+        links={[{ view: 'mining', emoji: '⛏', label: 'Майнинг-ферма', hint: 'оборудование, доход и прогноз' }]}
       />
     </div>
   );

@@ -113,7 +113,7 @@
       `/help`, `/stats`, `/delete_my_data`, уведомления «банк переполнен».
 - [x] **`/api/admin/*`**: сводка, nudges, GDPR-удаление.
 
-### 1.5 NFT/Solana (mock) *(раздел устарел: функционал удалён редизайном 23.10.2026)*
+### 1.5 NFT/Solana (mock) _(раздел устарел: функционал удалён редизайном 23.10.2026)_
 
 - [x] Минт в локальный реестр, инвентарь в кошельке, 3 cross-collection
       синергии, интерфейс `NftProvider` под Helius.
@@ -378,9 +378,9 @@
       настроения из `public/art/profile/` + чипы ресурсов (`lib/profileArt.ts`).
       Идентичность снята целиком: PlayerPortrait, Wardrobe, ProceduralAvatar,
       OfficeRenderer, layers/useLayerContent, WalletView и таб «Кошелёк»,
-      NFT-мок (nftProvider, /api/nft/*, cross-collections, mint при покупке),
+      NFT-мок (nftProvider, /api/nft/_, cross-collections, mint при покупке),
       генетика и пиксель-пак (pixelgen, content/pixel, /api/content/pixel|layers|
-      genetics), tools/art/avatar-v2 + скрипты avatar:* + шаги CI; миграция v5
+      genetics), tools/art/avatar-v2 + скрипты avatar:_ + шаги CI; миграция v5
       дропает genetics/avatar/walletAddress/crossBonuses/room из сейвов.
       Фаза 3 (офис) тоже закрыта: карточка события с баннер-сценами тиров
       `art/office/` (опенспейс → кабинет → свой этаж → верхний этаж, лестница
@@ -441,6 +441,7 @@
       отклонялся). На каждый push/PR гоняются типы, eslint, контент, тесты,
       симулятор и сборка (+ `content-guard` для PR с контентом). История
       задержки — `ci/README.md`.
+
 ### 2.x Слияние PR #11 и В2 (22.10.2026)
 
 - [x] **PR #11 влит вручную** (`arena/e4f67840-itsim`): он не мержился из-за
@@ -554,16 +555,21 @@ NFT-инвентарь и кошелёк удалены с редизайном 
 Хранилище переведено на бэкенды: JSON по умолчанию, `STORAGE=postgres` +
 `DATABASE_URL` — PostgreSQL через Prisma (generated `src/generated/prisma`,
 engine-less `prisma-client`). Структура — SQL-миграции `src/db/migrations/*.sql`
-+ раннер `runMigrations()` (штатный `prisma migrate` офлайн недоступен — тянет
-бинарники). Перенос существующих данных: `npm run storage:import`. Вызовы
-`loadState/saveState/...` стали async (роуты уже были async). Тесты: pg-mem
-через единый адаптер `src/db/adapter.ts` (6 интеграционных). Дизайн и аудит
-расхождений — `docs/PROPOSALS-2026-10-23-storage-postgres.md`.
 
-### P2.7 `npm run format` по всей базе
+- раннер `runMigrations()` (штатный `prisma migrate` офлайн недоступен — тянет
+  бинарники). Перенос существующих данных: `npm run storage:import`. Вызовы
+  `loadState/saveState/...` стали async (роуты уже были async). Тесты: pg-mem
+  через единый адаптер `src/db/adapter.ts` (6 интеграционных). Дизайн и аудит
+  расхождений — `docs/PROPOSALS-2026-10-23-storage-postgres.md`.
 
-Сейчас в CI `continue-on-error`, чтобы не смешивать с содержательными
-правками; нужно отдельное окно.
+### P2.7 `npm run format` по всей базе — **сделано (23.10.2026)**
+
+Prettier прогнан по всей базе (80 файлов, отдельный коммит без содержательных
+правок). `format:check` в CI теперь обязательный шаг (без `continue-on-error`);
+сгенерированный Prisma-клиент и `prisma/` вынесены в `.prettierignore`.
+Внимание при слиянии PR #13: его файлы (README/SPEC/endings и др.) переформатированы
+тоже — если git даст конфликт по формату, брать содержимое PR #13 и прогонять
+`npm run format` заново на этих файлах.
 
 ---
 

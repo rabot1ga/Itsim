@@ -36,7 +36,9 @@ async function deFringe(input) {
   for (let p = 0; p < width * height; p++) {
     const i = p * 4;
     if (buf[i + 3] === 0) continue;
-    const r = buf[i], g = buf[i + 1], b = buf[i + 2];
+    const r = buf[i],
+      g = buf[i + 1],
+      b = buf[i + 2];
     const magenta = r > 110 && b > 110 && g < Math.min(r, b) * 0.72;
     if (magenta) buf[i + 3] = 0;
   }
@@ -47,7 +49,9 @@ async function deFringe(input) {
     for (let x = 0; x < width; x++) {
       const i = (y * width + x) * 4;
       if (alpha[i + 3] === 0) continue;
-      const r = buf[i], g = buf[i + 1], b = buf[i + 2];
+      const r = buf[i],
+        g = buf[i + 1],
+        b = buf[i + 2];
       const pinkish = r > 90 && b > 90 && g < Math.min(r, b) * 0.85;
       if (!pinkish) continue;
       const edge =
@@ -58,7 +62,9 @@ async function deFringe(input) {
       if (edge) buf[i + 3] = 0;
     }
   }
-  return sharp(buf, { raw: { width, height, channels: 4 } }).png().toBuffer();
+  return sharp(buf, { raw: { width, height, channels: 4 } })
+    .png()
+    .toBuffer();
 }
 
 /**
@@ -131,7 +137,9 @@ async function colourRoles(buf, kind) {
     for (let x = 0; x < width; x++) {
       const i = (y * width + x) * 4;
       if (raw[i + 3] < 200) continue;
-      const r = raw[i], g = raw[i + 1], b = raw[i + 2];
+      const r = raw[i],
+        g = raw[i + 1],
+        b = raw[i + 2];
       const lum = 0.299 * r + 0.587 * g + 0.114 * b;
       if (lum < 24) continue; // the black outline itself, never recoloured
       const hex = '#' + [r, g, b].map((v) => v.toString(16).padStart(2, '0')).join('');
@@ -152,7 +160,8 @@ async function colourRoles(buf, kind) {
     .filter((c) => c.share > 0.004);
 
   const isSkin = (c) => {
-    const max = Math.max(c.r, c.g, c.b), min = Math.min(c.r, c.g, c.b);
+    const max = Math.max(c.r, c.g, c.b),
+      min = Math.min(c.r, c.g, c.b);
     if (max < 90 || max - min < 12) return false;
     if (!(c.r > c.g && c.g >= c.b)) return false;
     const hue = (60 * (c.g - c.b)) / (max - min);
@@ -246,7 +255,7 @@ for (const entry of catalogue.sprites) {
     .toBuffer();
 
   const roles = entry.roles ? await colourRoles(out, entry.kind ?? 'floor') : null;
-  const face = entry.kind === 'wall' ? entry.face ?? (await wallFace(out)) : null;
+  const face = entry.kind === 'wall' ? (entry.face ?? (await wallFace(out))) : null;
 
   const file = `${entry.id}.png`;
   fs.writeFileSync(path.join(OUT, file), out);
@@ -260,7 +269,9 @@ for (const entry of catalogue.sprites) {
     ...(face ? { face } : {}),
     ...(roles ? { roles } : {}),
   };
-  console.log(`${entry.id.padEnd(16)} ${String(targetW).padStart(3)}×${String(targetH).padStart(3)}${face ? `  face:${face}` : ''}`);
+  console.log(
+    `${entry.id.padEnd(16)} ${String(targetW).padStart(3)}×${String(targetH).padStart(3)}${face ? `  face:${face}` : ''}`
+  );
 }
 
 fs.writeFileSync(path.join(OUT, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n');

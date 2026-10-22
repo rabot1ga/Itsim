@@ -108,7 +108,6 @@ export const RoomView: React.FC = () => {
         </div>
         <p className="story-footnote">Комната растёт вместе с грейдом: старт → обжитая → офис → студия мечты.</p>
       </section>
-
     </div>
   );
 };

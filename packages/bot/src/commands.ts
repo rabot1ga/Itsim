@@ -65,7 +65,9 @@ export const BOT_COMMANDS = [
 
 /** Mini App button — the only supported way to open a TMA from a chat. */
 export function playButton(miniAppUrl: string, startapp?: string): Record<string, any> {
-  const url = startapp ? `${miniAppUrl}${miniAppUrl.includes('?') ? '&' : '?'}startapp=${encodeURIComponent(startapp)}` : miniAppUrl;
+  const url = startapp
+    ? `${miniAppUrl}${miniAppUrl.includes('?') ? '&' : '?'}startapp=${encodeURIComponent(startapp)}`
+    : miniAppUrl;
   return { inline_keyboard: [[{ text: '🚀 Играть', web_app: { url } }]] };
 }
 
@@ -162,7 +164,10 @@ export function formatSummary(s: PlayerSummary): string {
     `🏅 Ачивок: ${s.achievements}`,
   ];
   if (s.bankedDays > 0) {
-    lines.push('', `🗓 В банке ${s.bankedDays} ${plural(s.bankedDays, 'день', 'дня', 'дней')} — их можно потратить прямо сейчас.`);
+    lines.push(
+      '',
+      `🗓 В банке ${s.bankedDays} ${plural(s.bankedDays, 'день', 'дня', 'дней')} — их можно потратить прямо сейчас.`
+    );
   }
   if (s.careerEnding) {
     lines.push('', `🏁 Финал: <b>${s.careerEnding}</b>`);

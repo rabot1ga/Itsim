@@ -24,7 +24,10 @@ export function isBotConfigured(): boolean {
   return Boolean(config.botToken);
 }
 
-export async function callTelegram<T = any>(method: string, payload: Record<string, any> = {}): Promise<TelegramResult<T>> {
+export async function callTelegram<T = any>(
+  method: string,
+  payload: Record<string, any> = {}
+): Promise<TelegramResult<T>> {
   if (!config.botToken) {
     return { ok: false, mock: true, description: 'BOT_TOKEN not configured (mock mode)' };
   }
@@ -78,7 +81,11 @@ export async function answerPreCheckoutQuery(id: string, ok: boolean, errorMessa
   });
 }
 
-export async function sendMessage(chatId: number | string, text: string, extra: Record<string, any> = {}): Promise<TelegramResult> {
+export async function sendMessage(
+  chatId: number | string,
+  text: string,
+  extra: Record<string, any> = {}
+): Promise<TelegramResult> {
   return callTelegram('sendMessage', { chat_id: chatId, text, parse_mode: 'HTML', ...extra });
 }
 

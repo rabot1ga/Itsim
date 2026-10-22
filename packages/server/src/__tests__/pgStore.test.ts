@@ -33,9 +33,7 @@ async function boot(): Promise<Ctx> {
   // pg-mem не парсит WHERE в ON CONFLICT ... DO UPDATE (Prisma queryCompiler
   // всегда добавляет `WHERE (pk = $N AND 1=1)`); в проде (настоящий PG) он есть.
   const shim = (sql: string) =>
-    sql
-      .replace(/ WHERE \("public"\."\w+"\."\w+" = \$\d+ AND 1=1\)/g, '')
-      .replace(/"public"\./g, '');
+    sql.replace(/ WHERE \("public"\."\w+"\."\w+" = \$\d+ AND 1=1\)/g, '').replace(/"public"\./g, '');
   const query = (sql: string, args: unknown[] = []) => pool.query(shim(sql), args);
   const executor = { query };
   const pgStore = await import('../services/pgStore');
@@ -53,9 +51,7 @@ beforeEach(async () => {
 
 describe('pg-mem: миграции SQL', () => {
   it('создаёт players/purchases и учитывает версию', async () => {
-    const tables = await ctx.query(
-      "SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'"
-    );
+    const tables = await ctx.query("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
     const names = tables.rows.map((r) => r.table_name);
     expect(names).toContain('players');
     expect(names).toContain('purchases');

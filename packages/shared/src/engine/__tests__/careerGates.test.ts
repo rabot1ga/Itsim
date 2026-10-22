@@ -25,15 +25,11 @@ import {
 } from '../../index';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const balance = JSON.parse(
-  readFileSync(join(__dirname, '..', '..', '..', '..', 'content', 'balance.json'), 'utf-8')
-);
+const balance = JSON.parse(readFileSync(join(__dirname, '..', '..', '..', '..', 'content', 'balance.json'), 'utf-8'));
 const GATES: CareerGate[] = balance.careerGates;
 const LIVING = balance.livingCosts;
 const BRANCH_OF: Record<string, string> = (() => {
-  const raw = JSON.parse(
-    readFileSync(join(__dirname, '..', '..', '..', '..', 'content', 'skills.json'), 'utf-8')
-  );
+  const raw = JSON.parse(readFileSync(join(__dirname, '..', '..', '..', '..', 'content', 'skills.json'), 'utf-8'));
   const map: Record<string, string> = {};
   for (const sk of raw.skills ?? raw) if (sk.id && sk.branch) map[sk.id] = sk.branch;
   return map;
@@ -76,7 +72,9 @@ function qualifiedFor(grade: Grade1, extra: Partial<PlayerState> = {}): PlayerSt
     // spread the remaining breadth inside the branch so the sibling cap does not bite
     let missing = g.total - maxSkillLevel(p);
     let i = 0;
-    const siblings = Object.keys(BRANCH_OF).filter((id) => BRANCH_OF[id] === BRANCH_OF.javascript && id !== 'javascript');
+    const siblings = Object.keys(BRANCH_OF).filter(
+      (id) => BRANCH_OF[id] === BRANCH_OF.javascript && id !== 'javascript'
+    );
     while (missing > 0 && siblings.length) {
       const id = siblings[i % siblings.length];
       const add = Math.min(missing, g.skill);

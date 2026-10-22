@@ -1,11 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  migrateState,
-  normalizeState,
-  needsMigration,
-  createNewPlayer,
-  CURRENT_STATE_VERSION,
-} from '../../index';
+import { migrateState, normalizeState, needsMigration, createNewPlayer, CURRENT_STATE_VERSION } from '../../index';
 
 /**
  * Save migrations (engine/migrations.ts).
@@ -31,7 +25,15 @@ function legacySave(): any {
     skills: { javascript: { level: 12, xp: 40 }, react: { level: 7, xp: 10 } },
     perks: ['night_owl'],
     softSkills: { communication: { level: 9, xp: 3 } },
-    job: { companyId: 'startup', position: 'Junior', grade: 'junior', salary: 90000, energyPerDay: 4, daysWorked: 20, daysSinceLastPromotion: 5 },
+    job: {
+      companyId: 'startup',
+      position: 'Junior',
+      grade: 'junior',
+      salary: 90000,
+      energyPerDay: 4,
+      daysWorked: 20,
+      daysSinceLastPromotion: 5,
+    },
     jobWarnings: 0,
     pendingOffers: [],
     currentApplication: null,

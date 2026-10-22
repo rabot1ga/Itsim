@@ -11,12 +11,7 @@ import {
   sendMessage,
   isBotConfigured,
 } from '../services/telegramApi.js';
-import {
-  grantPurchase,
-  hasProduct,
-  purchasesOf,
-  purchasesToday,
-} from '../services/entitlements.js';
+import { grantPurchase, hasProduct, purchasesOf, purchasesToday } from '../services/entitlements.js';
 
 /**
  * Telegram Stars monetization.
@@ -60,8 +55,8 @@ function findProduct(id: string): any | null {
 
 /** Why this user cannot buy this product right now (null = they can). */
 export async function purchaseBlocker(userId: string, product: any): Promise<string | null> {
-  if (!product.repeatable && await hasProduct(userId, product.id)) return 'Уже куплено';
-  if (product.dailyLimit && await purchasesToday(userId, product.id) >= product.dailyLimit) {
+  if (!product.repeatable && (await hasProduct(userId, product.id))) return 'Уже куплено';
+  if (product.dailyLimit && (await purchasesToday(userId, product.id)) >= product.dailyLimit) {
     return `Лимит на сегодня: ${product.dailyLimit}`;
   }
   return null;
@@ -183,10 +178,7 @@ export async function paymentRoutes(app: FastifyInstance) {
       });
 
       if (result.granted) {
-        request.log.info(
-          { userId: buyerId, product: product.id, stars: product.stars },
-          'Stars purchase granted'
-        );
+        request.log.info({ userId: buyerId, product: product.id, stars: product.stars }, 'Stars purchase granted');
         await sendMessage(
           buyerId,
           `✅ Спасибо! Покупка «${product.title}» активирована.\n${result.applied.join('\n') || 'Загляни в игру.'}`

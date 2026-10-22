@@ -36,13 +36,13 @@
   - `players(user_id text PK, state jsonb, updated_at timestamptz)` — сейв
     как JSONB (миграции сейва остаются на уровне движка, как и было);
   - `purchases(charge_id text PK, user_id, product_id, stars, at, mock,
-    refunded_at)` — реестр Stars.
+refunded_at)` — реестр Stars.
   - Сгенерированный клиент (`src/generated/prisma/`) **коммитится**: офлайн-
     сборки и CI не требуют `prisma generate` на месте.
 - **Драйвер**: тонкий `SqlDriverAdapter` поверх `pg.Pool` (свой, ~100 строк:
-    queryRaw/executeRaw/executeScript/транзакции). Тот же адаптер в тестах
-    натравливается на **pg-mem** (in-memory Postgres) — весь SQL-путь
-    проверяется без сервера; официальный `@prisma/adapter-pg` не требуется.
+  queryRaw/executeRaw/executeScript/транзакции). Тот же адаптер в тестах
+  натравливается на **pg-mem** (in-memory Postgres) — весь SQL-путь
+  проверяется без сервера; официальный `@prisma/adapter-pg` не требуется.
 - **Бэкенды**: `STORAGE=postgres` + `DATABASE_URL` → Prisma; по умолчанию —
   JSON (dev и обратная совместимость). Facade `services/gameStore.ts` сохраняет
   имена функций и путь импорта — роуты меняются только добавлением `await`.

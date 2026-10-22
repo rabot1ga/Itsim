@@ -120,9 +120,7 @@ export function createJsonPurchaseBackend(dataDir: string): PurchaseBackend {
   };
 
   const persist = (): void => {
-    atomicWrite(file, JSON.stringify(load(), null, 2), (err) =>
-      console.error('Failed to persist entitlements:', err)
-    );
+    atomicWrite(file, JSON.stringify(load(), null, 2), (err) => console.error('Failed to persist entitlements:', err));
   };
 
   return {

@@ -72,16 +72,10 @@ function columnTypeFromValue(v: unknown): ColumnType {
 function toResultSet(res: SqlExecResult): SqlResultSet {
   // pg-mem отдаёт fields=[] — пустой список НЕ признак отсутствия метаданных.
   const fields = res.fields && res.fields.length ? res.fields : null;
-  const columnNames = fields
-    ? fields.map((f) => f.name)
-    : res.rows[0]
-      ? Object.keys(res.rows[0])
-      : [];
+  const columnNames = fields ? fields.map((f) => f.name) : res.rows[0] ? Object.keys(res.rows[0]) : [];
   const columnTypes = fields
     ? fields.map((f) => OID_TO_COLUMN_TYPE[f.dataTypeID ?? 0] ?? CT.Text)
-    : columnNames.map((n) =>
-        columnTypeFromValue(res.rows.map((r) => r[n]).find((v) => v !== null && v !== undefined))
-      );
+    : columnNames.map((n) => columnTypeFromValue(res.rows.map((r) => r[n]).find((v) => v !== null && v !== undefined)));
   // Строки — массивы в порядке columnNames (контракт driver-adapter).
   // Даты → ISO, jsonb-объекты → строка: движок сериализует их сам.
   const rows = res.rows.map((row) =>
@@ -143,7 +137,9 @@ class ItsimSqlAdapter implements SqlDriverAdapter {
   async startTransaction(isolationLevel?: IsolationLevel): Promise<Transaction> {
     // pg.Pool умеет выделять соединение — транзакция живёт на нём; pg-mem
     // одноконтурный, транзакция живёт на нём же (BEGIN/COMMIT-парами).
-    const tx: SqlExecutor & { release?(): void } = this.executor.connect ? await this.executor.connect() : this.executor;
+    const tx: SqlExecutor & { release?(): void } = this.executor.connect
+      ? await this.executor.connect()
+      : this.executor;
     const wrapped = new ItsimSqlAdapter(tx, this.onTx);
     await wrapped.executor.query('BEGIN', []);
     const options = { isolationLevel: isolationLevel ?? ('ReadCommitted' as IsolationLevel), usePhantomQuery: false };

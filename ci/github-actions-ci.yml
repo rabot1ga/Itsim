@@ -39,7 +39,6 @@ jobs:
 
       - name: Format check (prettier)
         run: npm run format:check
-        continue-on-error: true
 
       - name: Validate content (schemas + cross-references)
         run: npm run validate:content

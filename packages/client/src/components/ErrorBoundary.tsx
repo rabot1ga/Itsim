@@ -5,10 +5,7 @@ import React from 'react';
  * which tells the player nothing and tells us even less. Catch it, show what
  * broke and offer a reload.
  */
-export class ErrorBoundary extends React.Component<
-  { children: React.ReactNode },
-  { error: Error | null }
-> {
+export class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { error: Error | null }> {
   state: { error: Error | null } = { error: null };
 
   static getDerivedStateFromError(error: Error) {
@@ -29,9 +26,7 @@ export class ErrorBoundary extends React.Component<
         <p className="text-sm text-ink-400 max-w-xs">
           Экран не отрисовался. Прогресс сохранён на сервере — попробуйте перезагрузить.
         </p>
-        <pre className="well text-2xs text-left text-ink-500 max-w-full overflow-auto">
-          {error.message}
-        </pre>
+        <pre className="well text-2xs text-left text-ink-500 max-w-full overflow-auto">{error.message}</pre>
         <button className="btn btn-primary" onClick={() => window.location.reload()}>
           Перезагрузить
         </button>

@@ -37,7 +37,9 @@ const corner = (x, y) => {
 };
 const bg = corner(2, 2);
 const isBg = (i) => {
-  const dr = data[i] - bg[0], dg = data[i + 1] - bg[1], db = data[i + 2] - bg[2];
+  const dr = data[i] - bg[0],
+    dg = data[i + 1] - bg[1],
+    db = data[i + 2] - bg[2];
   return Math.sqrt(dr * dr + dg * dg + db * db) < TOL;
 };
 
@@ -52,7 +54,8 @@ for (let p = 0; p < W * H; p++) {
   label[p] = id;
   while (stack.length) {
     const q = stack.pop();
-    const x = q % W, y = (q / W) | 0;
+    const x = q % W,
+      y = (q / W) | 0;
     box.area++;
     if (x < box.x0) box.x0 = x;
     if (x > box.x1) box.x1 = x;
@@ -79,14 +82,17 @@ while (merged) {
   merged = false;
   outer: for (let i = 0; i < objs.length; i++) {
     for (let j = i + 1; j < objs.length; j++) {
-      const a = objs[i], b = objs[j];
+      const a = objs[i],
+        b = objs[j];
       const overlapX = Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0);
       const gapY = Math.max(a.y0, b.y0) - Math.min(a.y1, b.y1);
       const near = overlapX > 0.4 * Math.min(a.x1 - a.x0, b.x1 - b.x0) && gapY < GAP;
       if (near) {
         objs[i] = {
-          x0: Math.min(a.x0, b.x0), y0: Math.min(a.y0, b.y0),
-          x1: Math.max(a.x1, b.x1), y1: Math.max(a.y1, b.y1),
+          x0: Math.min(a.x0, b.x0),
+          y0: Math.min(a.y0, b.y0),
+          x1: Math.max(a.x1, b.x1),
+          y1: Math.max(a.y1, b.y1),
           area: a.area + b.area,
         };
         objs.splice(j, 1);
@@ -105,7 +111,8 @@ const base = path.basename(sheetPath, '.png');
 const cells = [];
 for (let i = 0; i < objs.length; i++) {
   const o = objs[i];
-  const w = o.x1 - o.x0 + 1, h = o.y1 - o.y0 + 1;
+  const w = o.x1 - o.x0 + 1,
+    h = o.y1 - o.y0 + 1;
   const out = Buffer.alloc(w * h * 4);
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
@@ -119,7 +126,9 @@ for (let i = 0; i < objs.length; i++) {
     }
   }
   const file = path.join(outDir, `${base}_${String(i).padStart(2, '0')}.png`);
-  await sharp(out, { raw: { width: w, height: h, channels: 4 } }).png().toFile(file);
+  await sharp(out, { raw: { width: w, height: h, channels: 4 } })
+    .png()
+    .toFile(file);
   cells.push({ index: i, file, width: w, height: h });
 }
 

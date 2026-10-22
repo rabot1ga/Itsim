@@ -90,7 +90,6 @@ export class ContentValidationError extends Error {
   }
 }
 
-
 /**
  * Read + validate every content file. Pure with respect to the process: no
  * console output, no throwing — everything ends up in `issues`.
@@ -375,7 +374,10 @@ function crossValidate(bundle: ContentBundle, issues: ContentIssue[]) {
     }
     // One task per day is the fastest honest pace; a deadline below that is a trap.
     if (project.deadlineDays < project.tasks.length) {
-      err('projects.json', `project "${project.id}": deadline ${project.deadlineDays} d is shorter than ${project.tasks.length} tasks`);
+      err(
+        'projects.json',
+        `project "${project.id}": deadline ${project.deadlineDays} d is shorter than ${project.tasks.length} tasks`
+      );
     }
   }
 

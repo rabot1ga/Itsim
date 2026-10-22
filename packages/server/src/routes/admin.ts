@@ -21,8 +21,7 @@ function adminGuard(request: FastifyRequest, reply: FastifyReply): boolean {
   }
   const provided = String(request.headers['x-admin-token'] ?? '');
   const expected = config.adminToken;
-  const ok =
-    provided.length === expected.length && timingSafeEqual(Buffer.from(provided), Buffer.from(expected));
+  const ok = provided.length === expected.length && timingSafeEqual(Buffer.from(provided), Buffer.from(expected));
   if (!ok) {
     reply.status(401).send({ error: 'Invalid admin token' });
     return false;

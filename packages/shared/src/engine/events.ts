@@ -19,10 +19,7 @@ const SOFT_SKILL_IDS = new Set([
 /**
  * Check if event conditions match player state
  */
-export function checkConditions(
-  conditions: GameEvent['conditions'] | undefined,
-  p: PlayerState
-): boolean {
+export function checkConditions(conditions: GameEvent['conditions'] | undefined, p: PlayerState): boolean {
   if (!conditions) return true;
 
   if (conditions.hasJob !== undefined) {
@@ -90,21 +87,17 @@ export function checkConditions(
 /**
  * Pick an event from pool — section 9.4 algorithm
  */
-export function pickEvent(
-  p: PlayerState,
-  pool: GameEvent[],
-  rng: () => number
-): GameEvent | null {
+export function pickEvent(p: PlayerState, pool: GameEvent[], rng: () => number): GameEvent | null {
   // 1. Pending chain events have absolute priority
-  const pending = p.pendingEvents.find(e => e.triggerDay <= p.currentDay);
+  const pending = p.pendingEvents.find((e) => e.triggerDay <= p.currentDay);
   if (pending) {
-    const event = pool.find(e => e.id === pending.eventId);
+    const event = pool.find((e) => e.id === pending.eventId);
     if (event) return event;
   }
 
   // 2. Filter eligible events (chain-only and action-triggered events are
   // excluded from the random day pool — they fire through their own channels)
-  const eligible = pool.filter(e => {
+  const eligible = pool.filter((e) => {
     if (e.chainOnly) return false;
     if (e.actionTrigger) return false;
 
@@ -125,11 +118,9 @@ export function pickEvent(
 
   // 3. Anti-repetition: reduce weight if tags repeat recently
   const recentTags = p.recentEventTags.slice(-3);
-  const weighted = eligible.map(e => ({
+  const weighted = eligible.map((e) => ({
     event: e,
-    weight: e.tags.some(t => recentTags.includes(t))
-      ? e.weight * 0.35
-      : e.weight,
+    weight: e.tags.some((t) => recentTags.includes(t)) ? e.weight * 0.35 : e.weight,
   }));
 
   return weightedPick(weighted, rng)?.event ?? null;
@@ -139,10 +130,7 @@ export function pickEvent(
  * Apply event effects to player state.
  * Returns a NEW state object (shallow copy) — the caller must use the result.
  */
-export function applyEventEffects(
-  p: PlayerState,
-  choice: EventChoice
-): PlayerState {
+export function applyEventEffects(p: PlayerState, choice: EventChoice): PlayerState {
   const e = choice.effects;
   if (!e) return p;
 
@@ -154,7 +142,9 @@ export function applyEventEffects(
   if (e.health !== undefined) next.health = clamp(next.health + e.health, 0, 100);
   if (e.motivation !== undefined) next.motivation = clamp(next.motivation + e.motivation, 0, 100);
   if (e.reputation !== undefined) next.reputation = clamp(next.reputation + e.reputation, 0, 100);
-  if (e.karma !== undefined) { /* karma is tracking only, no gameplay effect yet */ }
+  if (e.karma !== undefined) {
+    /* karma is tracking only, no gameplay effect yet */
+  }
 
   // Skill effects — XP goes through the normal leveling curve
   if (e.skill) {
@@ -197,10 +187,10 @@ export function applyEventEffects(
  * Get event probability for a given day range (section 9.5)
  */
 export function eventChancePerDay(gameDay: number): number {
-  if (gameDay <= 10) return 0.20;
+  if (gameDay <= 10) return 0.2;
   if (gameDay <= 60) return 0.35;
   if (gameDay <= 150) return 0.28;
-  return 0.20;
+  return 0.2;
 }
 /**
  * Roll action-triggered follow-up events (section 9.6).

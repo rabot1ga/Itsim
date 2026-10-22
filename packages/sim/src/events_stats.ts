@@ -149,7 +149,15 @@ function runAgent(seed: number): RunStats {
     const hasJob = day > 25;
     p.grade = gradeForDay(day);
     p.job = hasJob
-      ? { companyId: 'x', position: 'x', grade: p.grade, salary: 100000, energyPerDay: 4, daysWorked: 1, daysSinceLastPromotion: 0 }
+      ? {
+          companyId: 'x',
+          position: 'x',
+          grade: p.grade,
+          salary: 100000,
+          energyPerDay: 4,
+          daysWorked: 1,
+          daysSinceLastPromotion: 0,
+        }
       : null;
 
     // ---- day event roll ----
@@ -161,7 +169,10 @@ function runAgent(seed: number): RunStats {
         if (pendingIdx >= 0) p.pendingEvents.splice(pendingIdx, 1);
         stats.totalEvents++;
         stats.dayEvents++;
-        if (!seen.has(ev.id)) { seen.add(ev.id); stats.distinct++; }
+        if (!seen.has(ev.id)) {
+          seen.add(ev.id);
+          stats.distinct++;
+        }
         resolve(ev, wasChain);
       }
     }
@@ -175,14 +186,31 @@ function runAgent(seed: number): RunStats {
       const roll = rng();
       let actionId: string;
       let cost = 0;
-      if (roll < 0.28) { actionId = 'study_youtube'; cost = 2; }
-      else if (roll < 0.42) { actionId = hasJob ? 'work_task' : 'study_book'; cost = hasJob ? 4 : 1; }
-      else if (roll < 0.56) { actionId = 'rest_walk'; cost = 1; }
-      else if (roll < 0.68) { actionId = 'networking'; cost = 1; }
-      else if (roll < 0.78) { actionId = 'rest_sleep'; cost = 0; }
-      else if (roll < 0.88) { actionId = 'freelance'; cost = 4; }
-      else if (roll < 0.94) { actionId = 'rest_bar'; cost = 2; }
-      else { actionId = 'rest_hobby'; cost = 1; }
+      if (roll < 0.28) {
+        actionId = 'study_youtube';
+        cost = 2;
+      } else if (roll < 0.42) {
+        actionId = hasJob ? 'work_task' : 'study_book';
+        cost = hasJob ? 4 : 1;
+      } else if (roll < 0.56) {
+        actionId = 'rest_walk';
+        cost = 1;
+      } else if (roll < 0.68) {
+        actionId = 'networking';
+        cost = 1;
+      } else if (roll < 0.78) {
+        actionId = 'rest_sleep';
+        cost = 0;
+      } else if (roll < 0.88) {
+        actionId = 'freelance';
+        cost = 4;
+      } else if (roll < 0.94) {
+        actionId = 'rest_bar';
+        cost = 2;
+      } else {
+        actionId = 'rest_hobby';
+        cost = 1;
+      }
 
       if (energy < cost) continue;
 
@@ -201,14 +229,18 @@ function runAgent(seed: number): RunStats {
       // money flow from the action
       if (actionId === 'study_book') money -= 1500;
       else if (actionId === 'rest_bar') money -= 2000;
-      else if (actionId === 'freelance') money += freelancePayment((p.skills['javascript']?.level ?? 0), p.reputation, 'easy');
+      else if (actionId === 'freelance')
+        money += freelancePayment(p.skills['javascript']?.level ?? 0, p.reputation, 'easy');
 
       // ---- action-triggered follow-up ----
       const ev = maybeTriggerActionEvent(p, events, actionId, undefined, rng);
       if (ev) {
         stats.totalEvents++;
         stats.actionEvents++;
-        if (!seen.has(ev.id)) { seen.add(ev.id); stats.distinct++; }
+        if (!seen.has(ev.id)) {
+          seen.add(ev.id);
+          stats.distinct++;
+        }
         resolve(ev, false);
       }
     }
@@ -237,9 +269,15 @@ const chains = runs.map((r) => r.chainEvents);
 const choices = runs.map((r) => r.choices);
 const distinct = runs.map((r) => r.distinct);
 
-console.log(`Событий за прохождение: среднее ${(totals.reduce((a, b) => a + b, 0) / RUNS).toFixed(1)} · медиана ${med(totals)} · p10-p90: ${pct(totals, 0.1)}-${pct(totals, 0.9)}`);
-console.log(`  из них дневных: ${(days.reduce((a, b) => a + b, 0) / RUNS).toFixed(1)} · по действиям: ${(acts.reduce((a, b) => a + b, 0) / RUNS).toFixed(1)} · цепочек: ${(chains.reduce((a, b) => a + b, 0) / RUNS).toFixed(1)}`);
-console.log(`Разных событий за прохождение (из ${events.length}): ${med(distinct)} (${((med(distinct) / events.length) * 100).toFixed(0)}% пула)`);
+console.log(
+  `Событий за прохождение: среднее ${(totals.reduce((a, b) => a + b, 0) / RUNS).toFixed(1)} · медиана ${med(totals)} · p10-p90: ${pct(totals, 0.1)}-${pct(totals, 0.9)}`
+);
+console.log(
+  `  из них дневных: ${(days.reduce((a, b) => a + b, 0) / RUNS).toFixed(1)} · по действиям: ${(acts.reduce((a, b) => a + b, 0) / RUNS).toFixed(1)} · цепочек: ${(chains.reduce((a, b) => a + b, 0) / RUNS).toFixed(1)}`
+);
+console.log(
+  `Разных событий за прохождение (из ${events.length}): ${med(distinct)} (${((med(distinct) / events.length) * 100).toFixed(0)}% пула)`
+);
 console.log(`Выборов сделано: среднее ${(choices.reduce((a, b) => a + b, 0) / RUNS).toFixed(0)} за прохождение`);
 
 // ---------------------------------------------------------------------------
@@ -249,13 +287,21 @@ console.log(`Выборов сделано: среднее ${(choices.reduce((a,
 console.log('\n=== ВАРИАНТЫ ИСХОДОВ ===');
 const avgEventsPerRun = med(totals);
 const decisionSequences = Math.pow(avgChoices, avgEventsPerRun);
-console.log(`Решения: в среднем ${avgEventsPerRun} событий × ${avgChoices.toFixed(2)} выбора = последовательностей решений`);
+console.log(
+  `Решения: в среднем ${avgEventsPerRun} событий × ${avgChoices.toFixed(2)} выбора = последовательностей решений`
+);
 console.log(`  ≈ 10^${Math.floor(Math.log10(decisionSequences))} (${decisionSequences.toExponential(2)})`);
 
 const careerPaths = 8 * 10 * 5 * 6; // грейды × компании × жильё × финалы (ТЗ)
-console.log(`Макро-пути (по ТЗ): 8 грейдов × 10 компаний × 5 жилья × 6 финалов = ${careerPaths.toLocaleString('ru-RU')}`);
-console.log(`Ачивки: 2^${achievements.length} = ${Math.pow(2, achievements.length).toLocaleString('ru-RU')} комбинаций`);
+console.log(
+  `Макро-пути (по ТЗ): 8 грейдов × 10 компаний × 5 жилья × 6 финалов = ${careerPaths.toLocaleString('ru-RU')}`
+);
+console.log(
+  `Ачивки: 2^${achievements.length} = ${Math.pow(2, achievements.length).toLocaleString('ru-RU')} комбинаций`
+);
 
 const storySpace = geneticCombos * decisionSequences;
 console.log(`Полное пространство «историй» (генетика × решения): ≈ 10^${Math.floor(Math.log10(storySpace))}`);
-console.log(`Вероятность двух одинаковых прохождений: практически нулевая (< 10^-${Math.floor(Math.log10(storySpace) / 2)})`);
+console.log(
+  `Вероятность двух одинаковых прохождений: практически нулевая (< 10^-${Math.floor(Math.log10(storySpace) / 2)})`
+);

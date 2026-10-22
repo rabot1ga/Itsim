@@ -18,11 +18,7 @@ const SIZE_LABELS: Record<string, string> = {
   outsource: 'Аутсорс',
 };
 
-const TEAM = [
-  { npcId: 'teamlead' },
-  { npcId: 'junior_colleague' },
-  { npcId: 'toxic_senior' },
-];
+const TEAM = [{ npcId: 'teamlead' }, { npcId: 'junior_colleague' }, { npcId: 'toxic_senior' }];
 
 const ACTIONS = [
   { id: 'work_task', emoji: '💻', name: 'Закрыть задачу', energy: 4 },

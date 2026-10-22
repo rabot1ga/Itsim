@@ -25,7 +25,7 @@ export async function sprintRoutes(app: FastifyInstance) {
   app.post('/sprint/claim', async (request, reply) => {
     const user = (request as any).telegramUser;
     const userId = String(user.id);
-    const state = await loadState(userId) as StoredState | null;
+    const state = (await loadState(userId)) as StoredState | null;
     if (!state) {
       return reply.status(404).send({ error: 'Game not started' });
     }

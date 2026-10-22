@@ -455,7 +455,7 @@ export async function dayRoutes(app: FastifyInstance) {
     const user = (request as any).telegramUser;
     const userId = String(user.id);
 
-    const state = await loadState(userId) as StoredState | null;
+    const state = (await loadState(userId)) as StoredState | null;
     if (!state) {
       return { error: 'Game not started' };
     }
@@ -497,7 +497,7 @@ export async function dayRoutes(app: FastifyInstance) {
     const userId = String(user.id);
     const { eventId, choiceIndex } = request.body as { eventId?: string; choiceIndex?: number };
 
-    const state = await loadState(userId) as StoredState | null;
+    const state = (await loadState(userId)) as StoredState | null;
     if (!state) return reply.status(404).send({ error: 'Game not started' });
 
     if (!eventId || choiceIndex === undefined) {

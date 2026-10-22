@@ -34,7 +34,7 @@ export async function interviewRoutes(app: FastifyInstance) {
     const user = (request as any).telegramUser;
     const userId = String(user.id);
 
-    const state = await loadState(userId) as StoredState | null;
+    const state = (await loadState(userId)) as StoredState | null;
     if (!state) return reply.status(404).send({ error: 'Game not started' });
 
     const app = state.currentApplication;
@@ -101,7 +101,7 @@ export async function interviewRoutes(app: FastifyInstance) {
     const userId = String(user.id);
     const { questionId, choiceIndex } = request.body as { questionId?: string; choiceIndex?: number };
 
-    const state = await loadState(userId) as StoredState | null;
+    const state = (await loadState(userId)) as StoredState | null;
     if (!state) return reply.status(404).send({ error: 'Game not started' });
 
     const session = state.interviewSession;
@@ -147,7 +147,7 @@ export async function interviewRoutes(app: FastifyInstance) {
     const user = (request as any).telegramUser;
     const userId = String(user.id);
 
-    const state = await loadState(userId) as StoredState | null;
+    const state = (await loadState(userId)) as StoredState | null;
     if (!state) return reply.status(404).send({ error: 'Game not started' });
 
     const session = state.interviewSession;

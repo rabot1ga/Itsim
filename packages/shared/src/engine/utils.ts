@@ -12,10 +12,7 @@ export function clamp(value: number, min: number, max: number): number {
 /**
  * Weighted random pick from items with a `weight` property
  */
-export function weightedPick<T extends { weight: number }>(
-  items: T[],
-  rng: () => number
-): T | null {
+export function weightedPick<T extends { weight: number }>(items: T[], rng: () => number): T | null {
   if (items.length === 0) return null;
 
   const totalWeight = items.reduce((sum, item) => sum + Math.max(0, item.weight), 0);
@@ -37,8 +34,8 @@ export function generateId(): string {
     return crypto.randomUUID();
   }
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = Math.random() * 16 | 0;
-    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    const r = (Math.random() * 16) | 0;
+    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
   });
 }
 /**

@@ -24,9 +24,7 @@ export async function runMigrations(executor: SqlExecutor, log: (msg: string) =>
     []
   );
 
-  const applied = new Set(
-    (await executor.query('SELECT id FROM schema_migrations', [])).rows.map((r) => String(r.id))
-  );
+  const applied = new Set((await executor.query('SELECT id FROM schema_migrations', [])).rows.map((r) => String(r.id)));
 
   const files = readdirSync(MIGRATIONS_DIR)
     .filter((f) => f.endsWith('.sql'))
@@ -38,7 +36,10 @@ export async function runMigrations(executor: SqlExecutor, log: (msg: string) =>
     // Каждый файл — одна транзакция: частично применённой миграции не бывает.
     await executor.query('BEGIN', []);
     try {
-      for (const statement of sql.split(/;\s*(?:\n|$)/).map((s) => s.trim()).filter(Boolean)) {
+      for (const statement of sql
+        .split(/;\s*(?:\n|$)/)
+        .map((s) => s.trim())
+        .filter(Boolean)) {
         await executor.query(statement, []);
       }
       await executor.query('INSERT INTO schema_migrations (id) VALUES ($1)', [file]);

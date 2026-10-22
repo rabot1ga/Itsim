@@ -82,7 +82,9 @@ export const ProfileView: React.FC = () => {
             </span>
           ))}
         </div>
-        <p className="story-footnote">День {player.currentDay ?? 1}. Настроение зависит от энергии, мотивации и выгорания.</p>
+        <p className="story-footnote">
+          День {player.currentDay ?? 1}. Настроение зависит от энергии, мотивации и выгорания.
+        </p>
       </section>
 
       <section className="card">

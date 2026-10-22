@@ -5,3 +5,5 @@ packages/server/data/
 packages/client/public/
 packages/content/**/*.json
 package-lock.json
+packages/server/src/generated/
+packages/server/prisma/

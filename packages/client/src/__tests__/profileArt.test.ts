@@ -29,9 +29,11 @@ describe('profileMoodOf', () => {
 
 describe('арт настроений', () => {
   it('в каталоге ровно три настроения и ничего лишнего', () => {
-    expect(readdirSync(artDir).filter((f) => f.endsWith('.webp')).sort()).toEqual(
-      [...PROFILE_MOODS].map((m) => `${m}.webp`).sort()
-    );
+    expect(
+      readdirSync(artDir)
+        .filter((f) => f.endsWith('.webp'))
+        .sort()
+    ).toEqual([...PROFILE_MOODS].map((m) => `${m}.webp`).sort());
   });
 
   it('каждый баннер — непустой webp', () => {

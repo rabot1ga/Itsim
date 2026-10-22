@@ -115,12 +115,7 @@ function getActionMoneyCost(actionId: string, params: any, state: PlayerState, c
   }
 }
 
-function applyAction(
-  state: StoredState,
-  actionId: string,
-  params: any,
-  content: any
-): ActionResult {
+function applyAction(state: StoredState, actionId: string, params: any, content: any): ActionResult {
   const delta: Record<string, any> = {};
 
   // ---- Study actions (hard skills from balance.xpSources) ----
@@ -650,7 +645,7 @@ export async function actionRoutes(app: FastifyInstance) {
       return reply.status(400).send({ error: 'actionId required' });
     }
 
-    const state = await loadState(userId) as StoredState | null;
+    const state = (await loadState(userId)) as StoredState | null;
     if (!state) {
       return reply.status(404).send({ error: 'Game not started' });
     }

@@ -185,7 +185,13 @@ describe('admin API (used by the bot)', () => {
 
   it('claims nudge candidates once and marks them as notified', async () => {
     const { app, store } = await buildAdminApp();
-    await store.saveState('n1', { version: 2, telegramId: 'n1', firstName: 'Полный банк', currentDay: 5, bankedDays: 7 });
+    await store.saveState('n1', {
+      version: 2,
+      telegramId: 'n1',
+      firstName: 'Полный банк',
+      currentDay: 5,
+      bankedDays: 7,
+    });
     await store.saveState('n2', { version: 2, telegramId: 'n2', firstName: 'Активный', currentDay: 5, bankedDays: 1 });
 
     const call = () =>

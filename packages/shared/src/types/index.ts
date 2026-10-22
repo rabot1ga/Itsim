@@ -118,7 +118,6 @@ export interface PlayerState {
    */
   mentoredJuniors?: number;
 
-
   // Skills
   skills: Record<SkillId, SkillLevel>;
   perks: PerkId[];

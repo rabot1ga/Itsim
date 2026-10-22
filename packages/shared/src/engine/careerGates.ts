@@ -35,11 +35,7 @@ export interface GateProgress {
  * Sum of skill levels inside the branch of the player's main skill.
  * `branchOf` maps skillId → branch (built from content by the server/sim).
  */
-export function mainBranchTotal(
-  p: PlayerState,
-  branchOf: Record<string, string>,
-  mainSkillId?: string
-): number {
+export function mainBranchTotal(p: PlayerState, branchOf: Record<string, string>, mainSkillId?: string): number {
   const main = mainSkillId ?? p.mainSkillId;
   const branch = main ? branchOf[main] : undefined;
   if (!branch) return 0;
@@ -118,7 +114,11 @@ export function gateProgress(
 /**
  * Highest grade the player personally qualifies for (ignores the org budget).
  */
-export function qualifiedGrade(p: PlayerState, gates: CareerGate[], ctx: { branchOf?: Record<string, string>; discount?: number } = {}): Grade | null {
+export function qualifiedGrade(
+  p: PlayerState,
+  gates: CareerGate[],
+  ctx: { branchOf?: Record<string, string>; discount?: number } = {}
+): Grade | null {
   let best: Grade | null = null;
   for (const gate of gates) {
     if (gate.grade === 'unemployed' || gate.special) continue;
@@ -247,7 +247,11 @@ export function dailyLivingCost(
 
   if (p.money < food * 3) {
     // "лапша и гречка": survival mode, no lifestyle, no subscriptions
-    return { amount: Math.round(living.foodBroke ?? 180), broke: true, parts: { food: Math.round(living.foodBroke ?? 180) } };
+    return {
+      amount: Math.round(living.foodBroke ?? 180),
+      broke: true,
+      parts: { food: Math.round(living.foodBroke ?? 180) },
+    };
   }
 
   return { amount, broke: false, parts: { food, lifestyle, housingExtra, subs } };

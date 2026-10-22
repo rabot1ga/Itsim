@@ -6,7 +6,7 @@ import { clamp } from './utils';
  */
 
 const BASE_ENERGY = 10;
-const HEALTH_HIGH_BONUS = 2;   // health > 80
+const HEALTH_HIGH_BONUS = 2; // health > 80
 const HEALTH_LOW_PENALTY = -3; // health < 35
 const MOTIVATION_HIGH_BONUS = 2;
 const MOTIVATION_LOW_PENALTY = -2;
@@ -16,21 +16,21 @@ const MIN_ENERGY = 3;
 
 // Housing bonuses by level
 const HOUSING_BONUS: Record<HousingLevel, number> = {
-  0: 0,  // dorm
-  1: 1,  // outskirts
-  2: 2,  // center
-  3: 2,  // own mortgage
-  4: 3,  // penthouse
+  0: 0, // dorm
+  1: 1, // outskirts
+  2: 2, // center
+  3: 2, // own mortgage
+  4: 3, // penthouse
   5: 0,
 };
 
 // Item energy bonuses — legacy fallback when no content defs are passed
 // (production passes content; ids here fixed to match items.json)
 const LEGACY_ITEM_ENERGY_BONUSES: Record<string, number> = {
-  'herman_miller': 2,
-  'gaming_chair': 1,
-  'coffee_maker': 2,
-  'gym_subscription': 1,
+  herman_miller: 2,
+  gaming_chair: 1,
+  coffee_maker: 2,
+  gym_subscription: 1,
 };
 
 const MAX_ITEM_ENERGY_BONUS = 4;
@@ -83,10 +83,7 @@ export function calculateMaxEnergy(
  * Offline energy banking — section 2.4
  * Days accrue at 1 per 3.5 real hours, max 7 in bank
  */
-export function calculateOfflineBankedDays(
-  lastTickAt: number,
-  now: number
-): number {
+export function calculateOfflineBankedDays(lastTickAt: number, now: number): number {
   const elapsedMs = now - lastTickAt;
   const threePointFiveHours = 3.5 * 3600 * 1000;
   const earned = Math.floor(elapsedMs / threePointFiveHours);

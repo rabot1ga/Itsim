@@ -59,10 +59,7 @@ export function rollInterview(chance: number, rng: () => number): boolean {
 /**
  * Pre-screening phase (section 11.2)
  */
-export function preScreenMatch(
-  skills: Record<string, number>,
-  requirements: Record<string, number>
-): number {
+export function preScreenMatch(skills: Record<string, number>, requirements: Record<string, number>): number {
   const keys = Object.keys(requirements);
   if (keys.length === 0) return 1;
 

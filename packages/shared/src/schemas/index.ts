@@ -376,9 +376,9 @@ export const BalanceSchema = z.object({
           minMoney: z.number().int().min(0).default(100_000_000),
           minGrade: z.enum(['senior', 'teamlead', 'architect', 'cto']).default('senior'),
           title: z.string().default('🚀 Экзит · Стартап-единорог'),
-          description: z.string().default(
-            'Ты ушёл в свой проект, и его оценили в 100 млн. Жизнь на своих условиях — самый дорогой приз.'
-          ),
+          description: z
+            .string()
+            .default('Ты ушёл в свой проект, и его оценили в 100 млн. Жизнь на своих условиях — самый дорогой приз.'),
         })
         .default({}),
       free_artist: z
@@ -387,9 +387,7 @@ export const BalanceSchema = z.object({
           maxMoney: z.number().int().min(0).default(1_000_000),
           minGrade: z.enum(['middle', 'senior', 'teamlead', 'architect', 'cto']).default('senior'),
           title: z.string().default('💻 Свободный художник'),
-          description: z.string().default(
-            'Никакого офиса. Только ты, клиенты и код. Меньше денег — больше свободы.'
-          ),
+          description: z.string().default('Никакого офиса. Только ты, клиенты и код. Меньше денег — больше свободы.'),
         })
         .default({}),
       teacher: z
@@ -417,17 +415,19 @@ export const BalanceSchema = z.object({
       burnout: z
         .object({
           title: z.string().default('🔥 Выгорание'),
-          description: z.string().default(
-            'Здоровье и мотивация в нуле. Тело и психика сказали «стоп». Следующая жизнь — с +15% XP.'
-          ),
+          description: z
+            .string()
+            .default('Здоровье и мотивация в нуле. Тело и психика сказали «стоп». Следующая жизнь — с +15% XP.'),
         })
         .default({}),
       left_it: z
         .object({
           title: z.string().default('💀 Ушёл из IT'),
-          description: z.string().default(
-            'Денег нет, перспектив тоже. Ты закрыл редактор и пошёл учиться на повара. Следующая жизнь — с чистого листа.'
-          ),
+          description: z
+            .string()
+            .default(
+              'Денег нет, перспектив тоже. Ты закрыл редактор и пошёл учиться на повара. Следующая жизнь — с чистого листа.'
+            ),
         })
         .default({}),
     })
@@ -442,11 +442,12 @@ export const BalanceSchema = z.object({
       categories: z
         .array(
           z.object({
-            id: z.string().min(1).regex(/^[a-z0-9_]+$/),
+            id: z
+              .string()
+              .min(1)
+              .regex(/^[a-z0-9_]+$/),
             label: z.string().min(1),
-            match: z
-              .union([z.literal('all'), z.array(z.string())])
-              .default([]),
+            match: z.union([z.literal('all'), z.array(z.string())]).default([]),
             matchIds: z.array(z.string()).default([]),
             matchPrefixes: z.array(z.string()).default([]),
           })

@@ -56,7 +56,9 @@ async function nineSlice(file, w, h, slice) {
       out[i + 3] = ca;
     }
   }
-  return sharp(out, { raw: { width: w, height: h, channels: 4 } }).png().toBuffer();
+  return sharp(out, { raw: { width: w, height: h, channels: 4 } })
+    .png()
+    .toBuffer();
 }
 
 function label(text, color = '#a3acbc') {

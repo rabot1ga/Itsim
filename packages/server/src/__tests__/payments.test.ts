@@ -125,7 +125,11 @@ describe('payments: catalogue and invoices', () => {
     const { app } = await buildApp();
     await app.inject({ method: 'POST', url: '/api/payments/dev-complete', payload: { productId: 'wardrobe_premium' } });
 
-    const res = await app.inject({ method: 'POST', url: '/api/payments/stars', payload: { productId: 'wardrobe_premium' } });
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/payments/stars',
+      payload: { productId: 'wardrobe_premium' },
+    });
     expect(res.statusCode).toBe(409);
     expect(res.json().error).toMatch(/куплено/i);
   });
@@ -133,10 +137,18 @@ describe('payments: catalogue and invoices', () => {
   it('enforces the daily limit of a repeatable product', async () => {
     const { app } = await buildApp();
     for (let i = 0; i < 2; i++) {
-      const ok = await app.inject({ method: 'POST', url: '/api/payments/dev-complete', payload: { productId: 'banked_day' } });
+      const ok = await app.inject({
+        method: 'POST',
+        url: '/api/payments/dev-complete',
+        payload: { productId: 'banked_day' },
+      });
       expect(ok.statusCode).toBe(200);
     }
-    const third = await app.inject({ method: 'POST', url: '/api/payments/dev-complete', payload: { productId: 'banked_day' } });
+    const third = await app.inject({
+      method: 'POST',
+      url: '/api/payments/dev-complete',
+      payload: { productId: 'banked_day' },
+    });
     expect(third.statusCode).toBe(409);
   });
 });

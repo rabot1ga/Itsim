@@ -76,10 +76,7 @@ function parseInitData(initData: string): TelegramUser | null {
 /**
  * Fastify preHandler for auth
  */
-export async function telegramAuthHook(
-  request: FastifyRequest,
-  reply: FastifyReply
-) {
+export async function telegramAuthHook(request: FastifyRequest, reply: FastifyReply) {
   const authHeader = request.headers.authorization;
   if (!authHeader) {
     // Dev-mode fallback: no header at all → Dev user (bulletproof preview)
