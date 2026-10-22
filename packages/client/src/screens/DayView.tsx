@@ -3,7 +3,7 @@ import { useGameStore } from '../store/gameStore';
 import { HomeRoomCard } from '../components/HomeRoomCard';
 import { CareerPressureCard } from '../components/CareerPressureCard';
 import { SprintCard } from '../components/SprintCard';
-import { SectionTitle } from '../components/ui';
+import { SectionTitle, accordionBodyRef } from '../components/ui';
 import { formatMoney } from './actionCatalogue';
 import { tipForDay } from './dayTips';
 
@@ -53,7 +53,7 @@ const YesterdayLog: React.FC<{ text: string }> = ({ text }) => {
           ▾
         </span>
       </button>
-      <div className={`accordion-body ${open ? 'open' : ''}`}>
+      <div className={`accordion-body ${open ? 'open' : ''}`} ref={accordionBodyRef(open)}>
         <div className="accordion-inner">
           <p className="text-sm text-ink-300 leading-relaxed whitespace-pre-line pt-1">{text}</p>
         </div>

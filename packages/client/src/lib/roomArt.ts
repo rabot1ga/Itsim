@@ -4,7 +4,7 @@
  *
  * Четыре тира прогресса переключаются грейдом — комната растёт вместе с
  * карьерой, без нового состояния и миграций:
- *   intern/junior → start · middle → cozy · senior → work · teamlead+ → dream.
+ *   безработный/intern/junior → start · middle → cozy · senior · work · teamlead+ → dream.
  *
  * Пиксельной идентичности (кастомизации) нет: в сценах один постоянный
  * протагонист story-v1/финалов. Provenance арта — в `public/art/room/README.md`.
@@ -14,15 +14,19 @@ export type RoomTier = (typeof ROOM_TIERS)[number];
 
 export function roomTierOf(grade: string): RoomTier {
   switch (grade) {
-    case 'intern':
-    case 'junior':
-      return 'start';
     case 'middle':
       return 'cozy';
     case 'senior':
       return 'work';
-    default:
+    case 'teamlead':
+    case 'architect':
+    case 'cto':
       return 'dream';
+    // unemployed/intern/junior и всё неизвестное (битый сейв, мок, новый
+    // грейд из будущего) — стартовый тир: комната растёт только по известным
+    // ступеням, «студия мечты» по умолчанию была багом (e2e 320px, день 1).
+    default:
+      return 'start';
   }
 }
 

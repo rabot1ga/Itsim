@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { metaXpBonusPct } from '@itsim/shared';
 import { haptic } from '../lib/telegram';
+import { accordionBodyRef } from './ui';
 
 /**
  * Career pressure card (v2.1 balance layer).
@@ -132,7 +133,7 @@ export const CareerPressureCard: React.FC = () => {
             </span>
           </button>
 
-          <div className={`accordion-body ${costOpen ? 'open' : ''}`}>
+          <div className={`accordion-body ${costOpen ? 'open' : ''}`} ref={accordionBodyRef(costOpen)}>
             <div className="accordion-inner">
               <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-ink-400 pt-2 pl-5">
                 <span>Еда, дорога, подписки</span>

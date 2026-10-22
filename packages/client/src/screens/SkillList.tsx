@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { xpToNext } from '@itsim/shared';
+import { accordionBodyRef } from '../components/ui';
 
 export interface SkillInfo {
   id: string;
@@ -102,7 +103,7 @@ export const SkillList: React.FC<SkillListProps> = ({ skills, levels, mainSkillI
                 ▾
               </span>
             </button>
-            <div className={`accordion-body ${isOpen ? 'open' : ''}`}>
+            <div className={`accordion-body ${isOpen ? 'open' : ''}`} ref={accordionBodyRef(isOpen)}>
               <div className="accordion-inner">
                 <div className="skill-group-body">
                   {items.map((skill) => {

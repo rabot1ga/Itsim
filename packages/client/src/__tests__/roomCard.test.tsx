@@ -22,6 +22,7 @@ import { useGameStore } from '../store/gameStore';
 const player = {
   version: 4,
   telegramId: 1,
+  grade: 'unemployed',
   currentDay: 5,
   money: 5000,
   energy: 10,
@@ -71,8 +72,9 @@ describe('комната-карточка и профиль-карточка ж�
 
     // баннер — сцена текущего тира, а не слои room-манифеста
     await waitFor(() => expect(document.querySelector('[aria-label="Твоя комната"] img.story-card-art')).toBeTruthy());
-    expect(document.querySelector('[aria-label="Твоя комната"] img.story-card-art')!.getAttribute('src')).toMatch(
-      /^\/art\/room\/(start|cozy|work|dream)\.webp$/
+    // свежая игра (grade: 'unemployed') — строго стартовый тир, не «студия мечты»
+    expect(document.querySelector('[aria-label="Твоя комната"] img.story-card-art')!.getAttribute('src')).toBe(
+      '/art/room/start.webp'
     );
     // конструктора больше нет: ни слоев аватара, ни слоев комнаты
     expect(document.querySelectorAll('img[src^="/layers/room/"]').length).toBe(0);

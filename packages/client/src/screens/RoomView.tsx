@@ -58,7 +58,7 @@ export const RoomView: React.FC = () => {
 
   return (
     <div className="space-y-4 animate-fade-in">
-      <ScreenTitle emoji="🏠" meta={<span className="num truncate max-w-[140px]">{meta.tagline}</span>}>
+      <ScreenTitle emoji="🏠" meta={<span className="num">{meta.tagline}</span>}>
         Дом
       </ScreenTitle>
 

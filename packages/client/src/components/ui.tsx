@@ -82,6 +82,18 @@ export const SectionTitle: React.FC<{ children: React.ReactNode; className?: str
  * Content-owned emoji (skills, achievements, items) rendered in a neutral slot,
  * so the OS emoji palette stops fighting the interface palette.
  */
+/**
+ * Ref для тела аккордеона (`.accordion-body`): пока свёрнуто — `inert`, поэтому
+ * клик и Tab мертвы СРАЗУ, не дожидаясь 0.22s-задержки `visibility` в CSS
+ * (см. index.css `.accordion-inner`). Без этого в окне анимации сворачивания
+ * строки внутри тела оставались фокусируемыми — e2e accordion.spec это ловил.
+ */
+export const accordionBodyRef =
+  (open: boolean) =>
+  (el: HTMLElement | null): void => {
+    if (el) el.inert = !open;
+  };
+
 export const EmojiToken: React.FC<{ children: React.ReactNode; className?: string }> = ({
   children,
   className = '',

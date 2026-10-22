@@ -605,6 +605,13 @@ select {
   font-weight: 600;
   color: var(--text-mute);
   white-space: nowrap;
+  /* Мета обязана ужиматься с многоточием на уровне блока: inline-span
+     `truncate max-w-[140px]` игнорирует max-width/overflow (так заголовок
+     экрана схлопывался до 0px на 320px — e2e это ловит). */
+  min-width: 0;
+  max-width: 46%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .eyebrow,
