@@ -22,7 +22,15 @@ import {
   seededRng,
   type Offer,
 } from '@itsim/shared';
-import { balanceRng, fmtMoney, recalcMaxEnergy, respondState, sanitizeInterviewQuestion, softOpts, StoredState } from './shared.js';
+import {
+  balanceRng,
+  fmtMoney,
+  recalcMaxEnergy,
+  respondState,
+  sanitizeInterviewQuestion,
+  softOpts,
+  StoredState,
+} from './shared.js';
 
 export async function interviewRoutes(app: FastifyInstance) {
   /**
