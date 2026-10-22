@@ -137,7 +137,6 @@ server {
 
 - Сохранения: `DATA_DIR/<telegramId>.json`, атомарная запись (tmp + rename).
 - Покупки: `DATA_DIR/entitlements.json` (аудит + идемпотентность начислений).
-- NFT-мок: `DATA_DIR/nft_registry.json`.
 
 **PostgreSQL (рекомендуется для прода):** `STORAGE=postgres` + `DATABASE_URL`
 включают Prisma-бэкенд; структуру (`players`, `purchases`) создают SQL-миграции

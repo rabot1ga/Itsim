@@ -617,7 +617,8 @@ npm run build           # полная сборка (shared → content → serv
 тесты падали с «Failed to resolve entry for package "@itsim/content"» (15 тестов), потому
 что сервер импортирует контент из `dist/`.
 
-CI — [`ci/github-actions-ci.yml`](ci/github-actions-ci.yml) (скопируйте в `.github/workflows/ci.yml`,
+CI — GitHub Actions (`.github/workflows/ci.yml`, источник —
+[`ci/github-actions-ci.yml`](ci/github-actions-ci.yml), включён 23.10.2026;
 см. [ci/README.md](ci/README.md)): на каждый push и PR гоняются
 типы, eslint, prettier (`continue-on-error`), валидация контента, все три набора тестов,
 симулятор и сборка. Отдельная джоба `content-guard` включается, только
@@ -696,7 +697,8 @@ CI — [`ci/github-actions-ci.yml`](ci/github-actions-ci.yml) (скопируй�
       `/stats`, `/delete_my_data`, уведомления «банк дней переполнен»
 - [x] Служебное API `/api/admin/*` под `ADMIN_TOKEN` (сводка, nudges, GDPR-удаление)
 
-**NFT/Solana (mock)**
+**NFT/Solana (mock)** *(удалено с редизайном 23.10.2026: пиксельная идентичность
+и NFT-мок сняты целиком — `NftProvider`, кошелёк, cross_collections)*
 
 - [x] Минт предметов в локальный реестр, инвентарь в кошельке, 3 cross-collection синергии,
       интерфейс `NftProvider` под Helius
@@ -716,7 +718,7 @@ CI — [`ci/github-actions-ci.yml`](ci/github-actions-ci.yml) (скопируй�
 
 ### 🔄 В процессе
 
-- [ ] **Иллюстрации финалов** (6 сцен) — экран готов, ждёт арт `/art/endings/*.webp`
+- [x] **Иллюстрации финалов** (6 сцен) — сделаны 23.10.2026 (`/art/endings/*.webp`, см. PR #13)
 - [ ] Автопостинг вех («Стал Senior за 78 дней!»), скины и позиции питомца в комнате
 
 ### 📋 Предстоит
@@ -727,8 +729,9 @@ CI — [`ci/github-actions-ci.yml`](ci/github-actions-ci.yml) (скопируй�
       SQL-миграции + `storage:import`, JSON остаётся дефолтом; см. PROPOSALS-2026-10-23-storage-postgres)
 - [ ] Прогнать `npm run format` по всей кодовой базе (сейчас prettier в CI — `continue-on-error`,
       чтобы не смешивать переформатирование с содержательными правками)
-- [ ] Реальный Solana-провайдер (Helius RPC) вместо `MockNftProvider`
-- [ ] Тесты клиента (сейчас покрыты `shared`, `server`, `bot`)
+- [x] ~~Реальный Solana-провайдер (Helius RPC) вместо `MockNftProvider`~~ — устарело:
+      NFT-мок удалён с редизайном 23.10.2026
+- [x] Тесты клиента (105: art-модули, карточки редизайна, экраны; см. §1.6)
 
 **Геймплей и баланс**
 
