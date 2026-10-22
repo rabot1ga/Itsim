@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useGameStore } from '../store/gameStore';
-import { EmptyState, ScreenTitle, SectionTitle } from '../components/ui';
+import { ScreenTitle } from '../components/ui';
 import { ACTIONS } from './actionCatalogue';
 import { ROOM_TIER_META, roomArtwork, roomTierOf } from '../lib/roomArt';
 
@@ -9,7 +9,6 @@ import { ROOM_TIER_META, roomArtwork, roomTierOf } from '../lib/roomArt';
  * сцена-баннер текущего тира + строки-зоны поверх общего каталога действий.
  * Конструктора комнаты и пиксельной идентичности здесь больше нет: сцена
  * одна на тир, протагонист в ней постоянный, кастомизации нет вовсе.
- * Кошелёк и NFT-мок ниже доживают до захода «снятие идентичности» (v5).
  */
 interface Zone {
   id: string;
@@ -42,11 +41,6 @@ function zoneChips(zone: Zone): string[] {
 export const RoomView: React.FC = () => {
   const player = useGameStore((s) => s.player);
   const performAction = useGameStore((s) => s.performAction);
-  const bindWallet = useGameStore((s) => s.bindWallet);
-  const inventory = useGameStore((s) => s.inventory);
-
-  const [walletInput, setWalletInput] = useState('');
-  const [walletError, setWalletError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
 
   if (!player) return null;
@@ -60,11 +54,6 @@ export const RoomView: React.FC = () => {
     setBusy(zone.id);
     await performAction(zone.action);
     setBusy(null);
-  };
-
-  const handleBind = async () => {
-    const ok = await bindWallet(walletInput.trim());
-    setWalletError(ok ? null : 'Не удалось привязать кошелёк (проверь формат base58)');
   };
 
   return (
@@ -120,58 +109,6 @@ export const RoomView: React.FC = () => {
         <p className="story-footnote">Комната растёт вместе с грейдом: старт → обжитая → офис → студия мечты.</p>
       </section>
 
-      {/* Кошелёк и NFT-мок: уйдут следующим заходом вместе с пиксельной
-          идентичностью (решение 22.10.2026, docs/PROPOSALS-2026-10-22-room-redesign.md). */}
-      <div className="card">
-        <SectionTitle className="mb-3">Кошелёк Solana</SectionTitle>
-        {player.walletAddress ? (
-          <p className="num text-xs text-moss-300 break-all">{player.walletAddress}</p>
-        ) : (
-          <div className="flex gap-2">
-            <input
-              value={walletInput}
-              onChange={(e) => setWalletInput(e.target.value)}
-              placeholder="Base58 адрес…"
-              className="input flex-1 min-w-0"
-              inputMode="text"
-              autoComplete="off"
-              autoCapitalize="none"
-              autoCorrect="off"
-              spellCheck={false}
-              enterKeyHint="done"
-            />
-            <button onClick={handleBind} disabled={walletInput.trim().length < 32} className="btn btn-primary shrink-0">
-              Привязать
-            </button>
-          </div>
-        )}
-        {walletError && (
-          <p className="story-error" role="alert">
-            {walletError}
-          </p>
-        )}
-      </div>
-
-      <div className="card">
-        <SectionTitle className="mb-3">NFT-предметы (мок)</SectionTitle>
-        {(inventory ?? []).length === 0 ? (
-          <EmptyState bare emoji="📦" title="NFT пока нет" hint="Загляни в магазин — покупка смонтится в кошелёк." />
-        ) : (
-          <div className="space-y-1.5">
-            {(inventory ?? []).map((nft: any) => (
-              <div key={nft.name} className="well flex items-center justify-between">
-                <div className="min-w-0">
-                  <p className="text-sm text-ink-100">{nft.name}</p>
-                  <p className="num text-2xs text-ink-500 truncate">
-                    {nft.attributes?.map((a: any) => `${a.trait_type}:${a.value}`).join(' · ')}
-                  </p>
-                </div>
-                <span className="num text-2xs text-sky-300">{nft.symbol}</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
     </div>
   );
 };

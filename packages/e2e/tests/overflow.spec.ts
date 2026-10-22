@@ -29,7 +29,6 @@ const SIDE = [
   'Топ',
   'Офис',
   'Майнинг',
-  'Кошелёк',
   'Финалы',
   'Настройки',
 ] as const;
@@ -119,14 +118,6 @@ test('320px: ни один экран не раздается горизонта
 
   for (const label of SIDE) {
     await openSide(page, label);
-    // «Дом» проверяем с открытыми секциями: и редактор, и гардероб несут свои
-    // ряды «подпись + кнопка», и именно они умеют вылезать за край
-    if (label === 'Дом') {
-      for (const section of [/Настроить комнату/, /Гардероб/]) {
-        const toggle = page.getByRole('button', { name: section });
-        if (await toggle.isVisible().catch(() => false)) await toggle.click();
-      }
-    }
     const problem = await measure(page, label);
     if (problem) problems.push(problem);
     await dismissStory(page);

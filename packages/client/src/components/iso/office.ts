@@ -183,7 +183,7 @@ export function buildOfficeScene(
     const cell: [number, number] = [gx, Math.min(d - 1, gy + 2)];
     if (!free(a, cell[0], cell[1])) continue;
     occupy(a, cell[0], cell[1]);
-    const look = characterLook({ fallbackSeed: `${seed}:crew:${i}` });
+    const look = characterLook({ seed: `${seed}:crew:${i}` });
     crew.push({
       kind: 'char',
       sprite: bases.includes(look.base) ? look.base : bases[i % bases.length],

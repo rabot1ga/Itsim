@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { xpToNext } from '@itsim/shared';
-import { PlayerPortrait } from './PlayerPortrait';
+import { profileArtwork, profileMoodOf } from '../lib/profileArt';
 import { StatBar } from './ui';
 import { skillName } from '../lib/playerLabels';
 
@@ -101,7 +101,7 @@ export const ResourceBar: React.FC = () => {
       {home && (
         <section className="hud" aria-label="Персонаж и состояние">
           <button className="hud-portrait" aria-label="Открыть профиль" onClick={() => setView('profile')}>
-            <PlayerPortrait player={player} size={56} />
+            <img className="hud-mood" src={profileArtwork(profileMoodOf(player))} alt="" />
           </button>
           <div className="hud-identity-copy">
             <div className="hud-level-row">

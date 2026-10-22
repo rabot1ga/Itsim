@@ -1,11 +1,4 @@
-import {
-  SKIN_TONES,
-  HAIR_COLOURS,
-  CLOTH_COLOURS,
-  TROUSER_COLOURS,
-  SHOE_COLOURS,
-  lookColourAllowed,
-} from '@itsim/shared';
+import { SKIN_TONES, HAIR_COLOURS, CLOTH_COLOURS, TROUSER_COLOURS, SHOE_COLOURS } from '@itsim/shared';
 
 export { SKIN_TONES, HAIR_COLOURS, CLOTH_COLOURS, TROUSER_COLOURS, SHOE_COLOURS };
 
@@ -16,8 +9,9 @@ export { SKIN_TONES, HAIR_COLOURS, CLOTH_COLOURS, TROUSER_COLOURS, SHOE_COLOURS 
  * variety comes from recolouring — every base ships a map of which colours are
  * hair, skin, top, trousers and shoes, so swapping a ramp gives a new person
  * without a new drawing. 19 bases × 6 skins × 10 hair × 12 tops × 8 trousers ×
- * 5 shoes is over half a million combinations; a player's own look is picked
- * deterministically from their genetic seed, so it never changes under them.
+ * 5 shoes is over half a million combinations; a figure's look is picked
+ * deterministically from its seed, so it never changes under the player.
+ * Customisation is gone (22.10.2026): the seed only seeds, nobody dresses up.
  */
 
 /**
@@ -66,30 +60,6 @@ export const CHARACTER_BASES: Record<string, BaseLook> = {
   char_a18: { top: 'turtleneck', hair: 'undercut', beard: true },
 };
 
-/** Wardrobe entry id → the silhouette it should read as. */
-const TOP_STYLE: Record<string, BaseLook['top']> = {
-  top_hoodie_gray: 'hoodie',
-  top_hoodie_localhost: 'hoodie',
-  top_hoodie_corp: 'hoodie',
-  top_hoodie_cat: 'hoodie',
-  top_tshirt: 'tshirt',
-  top_shirt: 'shirt',
-  top_jacket: 'jacket',
-};
-
-const HAIR_STYLE: Record<string, BaseLook['hair']> = {
-  hair_buzzcut: 'buzzcut',
-  hair_short: 'short',
-  hair_messy: 'short',
-  hair_long: 'long',
-  hair_bald: 'bald',
-  hair_manbun: 'manbun',
-  hair_curly: 'curly',
-  hair_undercut: 'undercut',
-  hair_spiky: 'short',
-  hair_ponytail: 'ponytail',
-};
-
 /** Stable 32-bit hash — the same seed must always give the same person. */
 export function hashSeed(seed: string): number {
   let h = 2166136261;
@@ -118,52 +88,30 @@ export interface CharacterLook {
 }
 
 export interface LookInput {
-  genetics?: { seed?: string; hairStyle?: string; hairColor?: string; skinTone?: string; top?: string };
-  avatar?: {
-    hair?: string | null;
-    top?: string | null;
-    bottom?: string | null;
-    /** explicit colour choices from the wardrobe */
-    skin?: string | null;
-    hairColor?: string | null;
-    topColor?: string | null;
-    bottomColor?: string | null;
-    shoeColor?: string | null;
-  } | null;
-  /** anything stable and unique when there is no genetic seed yet */
-  fallbackSeed?: string;
+  /** anything stable and unique: the same seed always gives the same person */
+  seed?: string;
 }
 
 /**
- * The player's own figure: the base sprite whose clothes match their wardrobe,
- * recoloured to their genetics.
+ * A figure for the iso scene: base sprite plus a deterministic colour roll.
+ * There is exactly one protagonist story-wise, so the office crew and the pet
+ * aside, nobody customises anybody (identity removal, 22.10.2026).
  */
 export function characterLook(input: LookInput): CharacterLook {
-  const seed = input.genetics?.seed ?? input.fallbackSeed ?? 'anon';
+  const seed = input.seed ?? 'itsim-crew';
   const pick = rolls(seed);
 
-  const wantHair = HAIR_STYLE[input.avatar?.hair ?? input.genetics?.hairStyle ?? ''] ?? null;
-  const wantTop = TOP_STYLE[input.avatar?.top ?? input.genetics?.top ?? ''] ?? null;
-
   const ids = Object.keys(CHARACTER_BASES);
-  const byHair = wantHair ? ids.filter((id) => CHARACTER_BASES[id].hair === wantHair) : ids;
-  const byBoth = wantTop ? byHair.filter((id) => CHARACTER_BASES[id].top === wantTop) : byHair;
-  const pool = byBoth.length ? byBoth : byHair.length ? byHair : ids;
-  const base = pool[hashSeed(seed + ':base') % pool.length];
-
-  // The seed proposes, the wardrobe disposes: an explicit choice always wins.
-  const av = input.avatar;
-  const chosen = (slot: string, value: string | null | undefined, fallback: string) =>
-    value && lookColourAllowed(slot, value) ? value : fallback;
+  const base = ids[hashSeed(seed + ':base') % ids.length];
 
   return {
     base,
     colours: {
-      skin: chosen('skin', av?.skin, SKIN_TONES[pick(SKIN_TONES.length)]),
-      hair: chosen('hairColor', av?.hairColor, HAIR_COLOURS[pick(HAIR_COLOURS.length)]),
-      top: chosen('topColor', av?.topColor, CLOTH_COLOURS[pick(CLOTH_COLOURS.length)]),
-      bottom: chosen('bottomColor', av?.bottomColor, TROUSER_COLOURS[pick(TROUSER_COLOURS.length)]),
-      shoes: chosen('shoeColor', av?.shoeColor, SHOE_COLOURS[pick(SHOE_COLOURS.length)]),
+      skin: SKIN_TONES[pick(SKIN_TONES.length)],
+      hair: HAIR_COLOURS[pick(HAIR_COLOURS.length)],
+      top: CLOTH_COLOURS[pick(CLOTH_COLOURS.length)],
+      bottom: TROUSER_COLOURS[pick(TROUSER_COLOURS.length)],
+      shoes: SHOE_COLOURS[pick(SHOE_COLOURS.length)],
     },
   };
 }

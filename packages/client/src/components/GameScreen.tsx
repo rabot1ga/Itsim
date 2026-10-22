@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { haptic } from '../lib/telegram';
 import { ProfileView } from '../screens/ProfileView';
@@ -14,7 +14,6 @@ import { AchievementsView } from '../screens/AchievementsView';
 import { LeaderboardView } from '../screens/LeaderboardView';
 import { EndingView } from '../screens/EndingView';
 import { MiningView } from '../screens/MiningView';
-import { WalletView } from '../screens/WalletView';
 import { PetView } from '../screens/PetView';
 import { SettingsView } from '../screens/SettingsView';
 import { PixelIcon } from './pixel/PixelIcon';
@@ -40,7 +39,7 @@ const TABS = [
  * «⋮» — an index, not a home for orphans.
  *
  * Every destination below also has a contextual door: офис и финалы — на
- * «Работе», майнинг и кошелёк — в «Магазине», питомец и дом — на «Отдыхе»,
+ * «Работе», майнинг — в «Магазине», питомец и дом — на «Отдыхе»,
  * цели и топ — в «Профиле», профиль — по портрету в HUD. The sheet stays as a
  * compact grid for the times you know where you want to go.
  */
@@ -53,7 +52,6 @@ const MORE = [
   { view: 'leaderboard', emoji: '🏆', label: 'Топ' },
   { view: 'office', emoji: '🖥', label: 'Офис' },
   { view: 'mining', emoji: '⛏', label: 'Майнинг' },
-  { view: 'wallet', emoji: '💼', label: 'Кошелёк' },
   { view: 'endings', emoji: '🏁', label: 'Финалы' },
   { view: 'settings', emoji: '⚙️', label: 'Настройки' },
 ] as const;
@@ -66,7 +64,7 @@ const MORE = [
 const DOCK_VIEWS = new Set<string>(['main', 'career', 'skills', 'rest', 'shop', 'office', 'pet']);
 
 export const GameScreen: React.FC = () => {
-  const { currentView, setView, loadNft, moreOpen, setMoreOpen } = useGameStore();
+  const { currentView, setView, moreOpen, setMoreOpen } = useGameStore();
   const player = useGameStore((s) => s.player);
   const activeEvent = useGameStore((s) => s.activeEvent);
   const chooseEvent = useGameStore((s) => s.chooseEvent);
@@ -89,11 +87,6 @@ export const GameScreen: React.FC = () => {
 
   /** an offer on the table is the one thing worth a marker in the nav */
   const offerWaiting = Boolean(player?.pendingOffers?.length);
-
-  // Preload NFT info when opening the room or the wallet
-  useEffect(() => {
-    if (currentView === 'room' || currentView === 'wallet') loadNft();
-  }, [currentView, loadNft]);
 
   const renderView = () => {
     if (activeEvent && player) {
@@ -148,8 +141,6 @@ export const GameScreen: React.FC = () => {
         return <OfficeView />;
       case 'mining':
         return <MiningView />;
-      case 'wallet':
-        return <WalletView />;
       case 'pet':
         return <PetView />;
       case 'settings':

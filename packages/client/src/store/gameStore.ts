@@ -103,8 +103,6 @@ interface GameState {
   careerOutlook: any;
   /** daily money pressure: «твой день стоит …» */
   costOfDay: any;
-  inventory: any[];
-  heldCollections: string[];
   mining: any;
   /** numbers that just changed, rendered as floating labels */
   gains: Gain[];
@@ -133,9 +131,6 @@ interface GameState {
   clearError: () => void;
   /** drop a floating label once it has finished its flight */
   dropGain: (id: number) => void;
-  loadNft: () => Promise<void>;
-  bindWallet: (address: string) => Promise<boolean>;
-  setMockCollections: (collections: string[]) => Promise<void>;
   unlockPerk: (perkId: string) => Promise<boolean>;
   setMainSkill: (skillId: string) => Promise<boolean>;
   /** pick (or clear, with '') the route highlighted on the skill map (P1.3) */
@@ -157,8 +152,6 @@ export const useGameStore = create<GameState>((set, get) => ({
   activeEvent: null,
   careerOutlook: null,
   costOfDay: null,
-  inventory: [],
-  heldCollections: [],
   mining: null,
   checkIn: null,
   sprint: null,
@@ -408,53 +401,6 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   declineOffer: async (companyId) => {
     return await get().performAction('decline_offer', { companyId });
-  },
-
-  loadNft: async () => {
-    try {
-      const [invRes, ccRes] = await Promise.all([api('/nft/inventory'), api('/nft/cross-collections')]);
-      if (invRes.ok) set({ inventory: invRes.data?.nfts ?? [] });
-      if (ccRes.ok) set({ heldCollections: ccRes.data?.held ?? [] });
-    } catch (err) {
-      console.error('loadNft error:', err);
-    }
-  },
-
-  bindWallet: async (address) => {
-    try {
-      const res = await api('/nft/bind-wallet', {
-        method: 'POST',
-        body: JSON.stringify({ address }),
-      });
-      if (res.ok && res.data?.state) {
-        haptic('success');
-        set({ player: res.data.state, error: null });
-        await get().loadNft();
-        return true;
-      }
-      haptic('error');
-      set({ error: res.data?.error || 'Не удалось привязать кошелёк' });
-      return false;
-    } catch (err) {
-      console.error('bindWallet error:', err);
-      haptic('error');
-      set({ error: 'Сервер недоступен' });
-      return false;
-    }
-  },
-
-  setMockCollections: async (collections) => {
-    try {
-      const res = await api('/nft/mock-collections', {
-        method: 'POST',
-        body: JSON.stringify({ collections }),
-      });
-      if (res.ok) {
-        set({ heldCollections: res.data?.held ?? [], player: res.data?.state ?? get().player });
-      }
-    } catch (err) {
-      console.error('setMockCollections error:', err);
-    }
   },
 
   unlockPerk: async (perkId) => {

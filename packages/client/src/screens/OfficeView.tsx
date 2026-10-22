@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { haptic } from '../lib/telegram';
 import { IsoOffice } from '../components/iso/IsoOffice';
-import { officeMoodOf } from '../components/room/OfficeRenderer';
+import { officeMoodOf } from '../components/iso/officeMood';
 import { EmojiToken, ScreenTitle, SectionTitle, EmptyState, Skeleton } from '../components/ui';
 
 /**

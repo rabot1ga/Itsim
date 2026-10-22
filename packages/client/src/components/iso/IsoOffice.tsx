@@ -26,11 +26,7 @@ export const IsoOffice: React.FC<{
     const vp = viewport(scene.size, manifest.tile);
     const polys = shellPolygons(vp, scene.size, scene.palette, manifest.tile);
 
-    const look = characterLook({
-      genetics: player?.genetics as never,
-      avatar: (player?.avatar as never) ?? null,
-      fallbackSeed: String(player?.telegramId ?? 'player'),
-    });
+    const look = characterLook({ seed: String(player?.telegramId ?? 'player') });
 
     const items: PlacedItem[] = [
       ...scene.items,
