@@ -395,9 +395,19 @@ export const BalanceSchema = z.object({
       teacher: z
         .object({
           minReputation: z.number().int().min(0).default(60),
-          minMentoredJuniors: z.number().int().min(1).default(50),
+          /**
+           * «Учитель» — путь наставника. После ребаланса 22.10.2026 условие
+           * собрано из того, что игра действительно копит: лидерство растит
+           * `applySoftXp`, глубину ремесла меряет `mainSkillLevel`. Мёртвый
+           * счётчик `mentoredJuniors`, который не писал ни один модуль,
+           * убран вместе с недостижимым финалом.
+           */
+          minLeadership: z.number().int().min(0).default(24),
+          minSkillLevel: z.number().int().min(0).default(62),
           title: z.string().default('🎓 Учитель'),
-          description: z.string().default('50 джунов выросли под твоим менторством. Их успехи — твои.'),
+          description: z.string().default(
+            'Джуны, которых ты вёл, выросли в сеньоров и архитекторов. Их успехи — твои.'
+          ),
         })
         .default({}),
       cto: z

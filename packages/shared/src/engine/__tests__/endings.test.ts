@@ -72,7 +72,6 @@ function player(overrides: Partial<PlayerState> = {}): PlayerState {
     burnoutDays: 0,
     brokeDays: 0,
     leadership: 0,
-    mentoredJuniors: 0,
     ...overrides,
   } as PlayerState;
 }
@@ -109,10 +108,27 @@ describe('endings', () => {
     expect(tooRich.find((e) => e.id === 'free_artist')!.available).toBe(false);
   });
 
-  it('teacher needs 50+ mentored juniors', () => {
-    const notYet = checkEndings(player({ reputation: 70, mentoredJuniors: 49 }), BALANCE);
-    expect(notYet.find((e) => e.id === 'teacher')!.available).toBe(false);
-    const yes = checkEndings(player({ reputation: 70, mentoredJuniors: 50 }), BALANCE);
+  it('teacher needs reputation, leadership and main-skill depth (ребаланс 22.10.2026)', () => {
+    const deep = { javascript: { level: 62, xp: 0 } };
+    const shallow = { javascript: { level: 61, xp: 0 } };
+    // не хватает глубины ремесла
+    const noSkill = checkEndings(
+      player({ reputation: 70, leadership: 24, skills: shallow, mainSkillId: 'javascript' }),
+      BALANCE
+    );
+    expect(noSkill.find((e) => e.id === 'teacher')!.available).toBe(false);
+    expect(noSkill.find((e) => e.id === 'teacher')!.missing).toMatch(/основной навык/);
+    // не хватает лидерства
+    const noLead = checkEndings(
+      player({ reputation: 70, leadership: 23, skills: deep, mainSkillId: 'javascript' }),
+      BALANCE
+    );
+    expect(noLead.find((e) => e.id === 'teacher')!.available).toBe(false);
+    // всё сошлось: финал доступен
+    const yes = checkEndings(
+      player({ reputation: 70, leadership: 24, skills: deep, mainSkillId: 'javascript' }),
+      BALANCE
+    );
     expect(yes.find((e) => e.id === 'teacher')!.available).toBe(true);
   });
 
