@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { haptic } from '../lib/telegram';
-import { IsoOffice } from '../components/iso/IsoOffice';
-import { officeMoodOf } from '../components/iso/officeMood';
-import { EmojiToken, ScreenTitle, SectionTitle, EmptyState, Skeleton } from '../components/ui';
+import { officeArtwork, officeTierOf, OFFICE_TIER_META } from '../lib/officeArt';
+import { officeMoodOf, OFFICE_MOOD_META, type OfficeMoodInput } from '../lib/officeMood';
+import { EmojiToken, ScreenTitle, SectionTitle, EmptyState } from '../components/ui';
 
 /**
- * Office (docs/design.md §11) — a skin over the same work actions, rendered with
- * the layer engine. Opened from Career while employed; no tab button.
+ * Офис (docs/design.md §11) — карточка события поверх тех же work-действий
+ * (фаза 3 редизайна 22.10.2026): баннер-сцена тира + строки-действия из общего
+ * каталога, как в RoomView. Открывается из «Работы»; отдельной вкладки нет.
  */
 
 const SIZE_LABELS: Record<string, string> = {
@@ -18,9 +19,15 @@ const SIZE_LABELS: Record<string, string> = {
 };
 
 const TEAM = [
-  { npcId: 'teamlead', layer: 'lead' },
-  { npcId: 'junior_colleague', layer: 'junior' },
-  { npcId: 'toxic_senior', layer: 'toxic' },
+  { npcId: 'teamlead' },
+  { npcId: 'junior_colleague' },
+  { npcId: 'toxic_senior' },
+];
+
+const ACTIONS = [
+  { id: 'work_task', emoji: '💻', name: 'Закрыть задачу', energy: 4 },
+  { id: 'work_overtime', emoji: '🌙', name: 'Овертайм', energy: 5 },
+  { id: 'networking', emoji: '💬', name: 'Стендап / 1:1', energy: 2 },
 ];
 
 function relationMeta(value: number): { emoji: string; label: string; cls: string } {
@@ -37,7 +44,7 @@ export const OfficeView: React.FC = () => {
   const error = useGameStore((s) => s.error);
   const clearError = useGameStore((s) => s.clearError);
 
-  const [officeManifest, setOfficeManifest] = useState<any>(null);
+  const [busy, setBusy] = useState<string | null>(null);
   const [npcs, setNpcs] = useState<any[]>([]);
   const [companies, setCompanies] = useState<any[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -48,7 +55,6 @@ export const OfficeView: React.FC = () => {
       fetch('/api/content/companies').then((r) => r.json()),
     ])
       .then(([n, c]) => {
-        setOfficeManifest(true);
         setNpcs(n.npcs ?? []);
         setCompanies(c.companies ?? []);
       })
@@ -85,26 +91,21 @@ export const OfficeView: React.FC = () => {
   }
 
   const company = companies.find((c: any) => c.id === player.job.companyId);
-  const input = {
-    grade: player.grade,
-    companySize: company?.size ?? 'outsource',
+  const tier = officeTierOf(player.grade);
+  const meta = OFFICE_TIER_META[tier];
+  const mood = officeMoodOf({
     currentDay: player.currentDay ?? 1,
     energy: player.energy ?? 0,
     maxEnergy: player.maxEnergy ?? 16,
     motivation: player.motivation ?? 50,
-    achievements: player.achievements ?? [],
-    relationships: player.relationships ?? {},
+  } satisfies OfficeMoodInput);
+  const moodMeta = OFFICE_MOOD_META[mood];
+
+  const runAction = async (actionId: string) => {
+    setBusy(actionId);
+    await performAction(actionId);
+    setBusy(null);
   };
-  const mood = officeMoodOf(input);
-  const ready = officeManifest;
-
-  const canAct = (energy: number) => (player.energy ?? 0) >= energy;
-
-  const ACTIONS = [
-    { id: 'work_task', emoji: '💻', name: 'Закрыть задачу', energy: 4 },
-    { id: 'work_overtime', emoji: '🌙', name: 'Овертайм', energy: 5 },
-    { id: 'networking', emoji: '💬', name: 'Стендап / 1:1', energy: 2 },
-  ];
 
   return (
     <div className="space-y-4 animate-fade-in">
@@ -127,36 +128,64 @@ export const OfficeView: React.FC = () => {
         </div>
       )}
 
-      {/* Office render */}
-      {ready ? (
-        <IsoOffice
-          office={{
-            companyId: company?.id ?? player.job?.companyId,
-            companySize: company?.size,
-            grade: player.job?.grade,
-            teamSize: TEAM.length,
-            mood,
-            seed: company?.id ?? player.job?.companyId,
+      <section className="story-card" aria-label="Твой офис">
+        <div className="story-card-kicker">
+          офис · {tier} · {moodMeta.emoji} {moodMeta.label}
+        </div>
+        <img
+          className="story-card-art"
+          src={officeArtwork(tier)}
+          alt=""
+          width={512}
+          height={384}
+          onError={(ev) => {
+            // Сцена — украшение и настроение, а не контракт: нет файла —
+            // карточка остаётся текстовой (тот же приём, что у комнаты).
+            ev.currentTarget.style.display = 'none';
           }}
-          player={player}
         />
-      ) : (
-        <Skeleton className="aspect-square" />
-      )}
+        <div className="story-card-copy">
+          <h2>{meta.title}</h2>
+          <p>{meta.description}</p>
+        </div>
+        <div className="story-choices">
+          {ACTIONS.map((a) => {
+            const missing = (player.energy ?? 0) >= a.energy ? [] : ['мало энергии'];
+            return (
+              <div className="story-choice-group" key={a.id}>
+                <button
+                  className="story-choice story-choice-green"
+                  disabled={busy !== null || missing.length > 0}
+                  onClick={() => runAction(a.id)}
+                >
+                  <span>
+                    <span aria-hidden="true">{a.emoji}</span> {busy === a.id ? 'Делаем…' : a.name}
+                  </span>
+                  <span className="story-choice-effects">
+                    <span className="res-chip num">−{a.energy}⚡</span>
+                  </span>
+                </button>
+                {missing.length > 0 && <p className="story-requirements">{missing.join(' · ')}</p>}
+              </div>
+            );
+          })}
+        </div>
+        <p className="story-footnote">Офис растёт вместе с грейдом: опенспейс → кабинет → свой этаж → верхний этаж.</p>
+      </section>
 
       {/* Team */}
       <div>
         <SectionTitle className="mb-2">Команда</SectionTitle>
         <div className="grid grid-cols-3 gap-2">
           {TEAM.map((t) => {
-            const meta = npcs.find((n: any) => n.id === t.npcId);
+            const npc = npcs.find((n: any) => n.id === t.npcId);
             const value = player.relationships?.[t.npcId] ?? 0;
             const rel = relationMeta(value);
             // Same source as FriendsView: avatar field in npcs.json (.png),
             // we serve the optimised .webp in /art/npcs/.
-            const portrait = meta?.avatar ? `/art/npcs/${String(meta.avatar).replace(/\.png$/i, '.webp')}` : null;
+            const portrait = npc?.avatar ? `/art/npcs/${String(npc.avatar).replace(/\.png$/i, '.webp')}` : null;
             return (
-              <div key={t.npcId} className="card card-sm text-center" title={meta?.description ?? ''}>
+              <div key={t.npcId} className="card card-sm text-center" title={npc?.description ?? ''}>
                 {portrait ? (
                   <img
                     src={portrait}
@@ -173,7 +202,7 @@ export const OfficeView: React.FC = () => {
                 ) : (
                   <EmojiToken className="mx-auto">🧑‍💻</EmojiToken>
                 )}
-                <p className="text-xs font-medium text-ink-100 truncate mt-1.5">{meta?.name ?? t.npcId}</p>
+                <p className="text-xs font-medium text-ink-100 truncate mt-1.5">{npc?.name ?? t.npcId}</p>
                 <p className={`flex items-center justify-center gap-1 text-2xs mt-0.5 ${rel.cls}`} title={rel.label}>
                   <span aria-hidden="true">{rel.emoji}</span>
                   <span className="num">{value > 0 ? `+${value}` : value}</span>
@@ -183,26 +212,6 @@ export const OfficeView: React.FC = () => {
           })}
         </div>
         <p className="subtle mt-2">Отношения качаются событиями и нетворкингом</p>
-      </div>
-
-      {/* Office actions — the same work API, office flavor */}
-      <div>
-        <SectionTitle className="mb-2">Рабочий день</SectionTitle>
-        <div className="grid grid-cols-3 gap-2">
-          {ACTIONS.map((a) => {
-            const enabled = canAct(a.energy);
-            return (
-              <button key={a.id} onClick={() => performAction(a.id)} disabled={!enabled} className="tile text-center">
-                <span className="tile-icon" aria-hidden="true">
-                  {a.emoji}
-                </span>
-                <p className="tile-label">{a.name}</p>
-                <p className="tile-meta num">⚡ {a.energy}</p>
-              </button>
-            );
-          })}
-        </div>
-        <p className="subtle mt-2">Учёба и отдых — на «Главной»</p>
       </div>
     </div>
   );

@@ -36,7 +36,6 @@ const player = {
 };
 
 function jsonRoute(url: string): unknown {
-  if (url.includes('/iso/manifest.json')) return { tile: { w: 32, h: 16, wallH: 72 }, sprites: {} };
   if (url.includes('/api/content/pixel')) return { available: false };
   if (url.includes('/api/auth')) return { token: 'test-token', player };
   if (url.includes('/api/game/state')) return { state: player, player, events: [] };
@@ -149,5 +148,50 @@ describe('комната-карточка и профиль-карточка ж�
 
     // слоистой внешности на профиле больше нет
     expect(document.querySelectorAll('img[src^="/layers/avatar-v2/"]').length).toBe(0);
+  });
+
+  it('офис — карточка события: баннер тира растёт с грейдом, iso-сцены нет', async () => {
+    render(<App />);
+    // ставим job только после гидрации стора из /api/game/state: иначе
+    // начальная загрузка затирает setState (урок прошлых тестов файла)
+    await waitFor(() => expect(useGameStore.getState().player).toBeTruthy());
+    useGameStore.setState({
+      player: {
+        ...useGameStore.getState().player!,
+        grade: 'junior',
+        job: {
+          companyId: 'acme',
+          position: 'Инженер',
+          grade: 'junior',
+          salary: 100_000,
+          energyPerDay: 4,
+          daysWorked: 3,
+          daysSinceLastPromotion: 3,
+        },
+      },
+    });
+    await openScreen('Офис');
+
+    const banner = () => document.querySelector('[aria-label="Твой офис"] img.story-card-art');
+    await waitFor(() => expect(banner()).toBeTruthy());
+    expect(banner()!.getAttribute('src')).toBe('/art/office/openspace.webp');
+
+    // строки-действия из общего каталога, а не плитки iso-сцены
+    const choices = [...document.querySelectorAll('[aria-label="Твой офис"] .story-choice')];
+    expect(choices.map((b) => b.textContent ?? '')).toEqual([
+      expect.stringContaining('Закрыть задачу'),
+      expect.stringContaining('Овертайм'),
+      expect.stringContaining('Стендап / 1:1'),
+    ]);
+
+    // тир растёт той же лестницей, что и комната
+    useGameStore.setState({ player: { ...useGameStore.getState().player!, grade: 'middle' } });
+    await waitFor(() => expect(banner()!.getAttribute('src')).toBe('/art/office/cabinet.webp'));
+    useGameStore.setState({ player: { ...useGameStore.getState().player!, grade: 'cto' } });
+    await waitFor(() => expect(banner()!.getAttribute('src')).toBe('/art/office/tower.webp'));
+
+    // iso-сцены на экране больше нет: спрайты остались только иконками магазина
+    expect(document.querySelectorAll('[aria-label="Твой офис"] canvas').length).toBe(0);
+    expect(document.querySelectorAll('[aria-label="Твой офис"] img[src^="/iso/"]').length).toBe(0);
   });
 });

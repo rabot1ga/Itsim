@@ -388,8 +388,11 @@
       генетика и пиксель-пак (pixelgen, content/pixel, /api/content/pixel|layers|
       genetics), tools/art/avatar-v2 + скрипты avatar:* + шаги CI; миграция v5
       дропает genetics/avatar/walletAddress/crossBonuses/room из сейвов.
-      Офис тем же карточным стилем — фаза 3, отдельный PR. Решения, расхождения
-      и объём — `docs/PROPOSALS-2026-10-22-room-redesign.md`.
+      Фаза 3 (офис) тоже закрыта: карточка события с баннер-сценами тиров
+      `art/office/` (опенспейс → кабинет → свой этаж → верхний этаж, лестница
+      общая с комнатой), iso-стек сцены удалён, `IsoIcon`+`public/iso/` остались
+      иконками магазина. Решения, расхождения и объём —
+      `docs/PROPOSALS-2026-10-22-room-redesign.md`.
 - [x] **Вкладки рейтинга по метрикам** (Карьера / Навыки / Деньги / Rep из ТЗ)
       закрыты (24.09.2026) — и закрыты так, чтобы формула не могла удвоиться.
       `engine/rating.ts` теперь отдаёт `ratingParts()`/`ratingMetricOf()`/

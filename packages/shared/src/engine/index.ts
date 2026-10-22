@@ -17,6 +17,4 @@ export * from './sprint';
 export * from './projects';
 export * from './archetypes';
 export * from './utils';
-export * from './isoFinishes';
-export * from './isoLook';
 export * from './endings';
