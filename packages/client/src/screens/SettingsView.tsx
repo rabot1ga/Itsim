@@ -105,7 +105,7 @@ export const SettingsView: React.FC = () => {
           «Новая жизнь» обнуляет карьеру, деньги и предметы. Достижения и мета-прогресс остаются с тобой.
         </p>
         {confirming ? (
-          <div className="grid gap-2 mt-3">
+          <div className="grid gap-2 mt-3 grid-cols-[minmax(0,1fr)]">
             <button className="btn btn-danger w-full" disabled={busy} onClick={reset}>
               {busy ? 'Начинаем заново…' : 'Да, начать новую жизнь'}
             </button>

@@ -90,6 +90,12 @@ const PROMO_COOLDOWN_DAYS = 7;
 // The board meets every N days to elect a CTO (server: cto_elect action + cooldown)
 const CTO_ELECTION_DAYS = 60;
 
+// В2 (22.10.2026): победа на выборах больше не заканчивает партию — финал CTO
+// открывается после этого числа дней в кресле. Ключ тот же, что читают сервер и
+// клиент (`balance.endings.cto.minDaysAsCto`), поэтому симулятор не может
+// молча разъехаться с правилом, которое он обязан проверять.
+const CTO_HOLD_DAYS = (ENDINGS as any).cto?.minDaysAsCto ?? 60;
+
 // Freelance gig cooldown by difficulty (mirrors server rule)
 const FREELANCE_COOLDOWN_DAYS: Record<string, number> = { easy: 3, medium: 5, hard: 7 };
 
@@ -260,7 +266,7 @@ function pickStudySource(money: number, level: number): keyof typeof XP_SOURCES 
   return best;
 }
 
-function simulate(random: () => number): Agent {
+function simulate(random: () => number, days: number = DAYS): Agent {
   const p = createAgentPlayer();
   const agent: Agent = {
     p,
@@ -287,7 +293,7 @@ function simulate(random: () => number): Agent {
     networkedToday: false,
   };
 
-  for (let day = 1; day <= DAYS; day++) {
+  for (let day = 1; day <= days; day++) {
     p.currentDay = day;
     agent.freelanceToday = false;
     agent.networkedToday = false;
@@ -387,11 +393,17 @@ function simulate(random: () => number): Agent {
           p.grade = 'cto';
           agent.jobGrade = 'cto';
           agent.jobSalary = GRADE_SALARIES.cto;
+          p.ctoSinceDay = day;
           recordMilestone(agent.milestones, 'cto', day);
-          recordMilestone(agent.milestones, 'ending_corporate_god', day);
-          agent.ending = 'corporate_god';
         }
       }
+    }
+
+    // Срок в кресле: финал зарабатывается удержанием поста, а не победой на
+    // выборах (зеркалит `ctoTenureDays` + `checkEndings` в shared/engine/endings.ts).
+    if (!agent.ending && p.grade === 'cto' && agent.hasJob && day - (p.ctoSinceDay ?? day) >= CTO_HOLD_DAYS) {
+      agent.ending = 'corporate_god';
+      recordMilestone(agent.milestones, 'ending_corporate_god', day);
     }
 
     // Career endings (ТЗ «Финалы»)
@@ -814,10 +826,12 @@ function main() {
   const architectBy250 = results.filter((r) => (r.milestones.architect ?? Infinity) <= 250).length;
   const architectShare = results.filter((r) => r.milestones.architect !== undefined).length / RUNS;
   const ctoShare = results.filter((r) => r.milestones.cto !== undefined).length / RUNS;
+  const ctoEndingShare = results.filter((r) => r.milestones.ending_corporate_god !== undefined).length / RUNS;
   const burnoutShare = (endingCounts.burnout ?? 0) / RUNS;
   console.log(`  ${architectBy250 <= RUNS * 0.25 ? '✓' : '✗'} Architect before day 250: ${architectBy250}/${RUNS} (≤ 25%)`);
   console.log(`  ${architectShare >= 0.5 ? '✓' : '✗'} Architect share by 365: ${(architectShare * 100).toFixed(0)}% (≥ 50%: the ladder is walkable)`);
-  console.log(`  ${ctoShare <= CTO_MAX_SHARE ? '✓' : '✗'} CTO by 365: ${(ctoShare * 100).toFixed(0)}% (≤ ${(CTO_MAX_SHARE * 100).toFixed(0)}% — endgame must stay hard)`);
+  console.log(`  ${ctoShare <= CTO_MAX_SHARE ? '✓' : '✗'} CTO elected by 365: ${(ctoShare * 100).toFixed(0)}% (≤ ${(CTO_MAX_SHARE * 100).toFixed(0)}% — endgame must stay hard)`);
+  console.log(`  ${ctoEndingShare <= CTO_MAX_SHARE ? '✓' : '✗'} CTO ending claimed by 365: ${(ctoEndingShare * 100).toFixed(0)}% (≤ ${(CTO_MAX_SHARE * 100).toFixed(0)}% — ${CTO_HOLD_DAYS} дней в кресле, избранному после ${DAYS - CTO_HOLD_DAYS}-го дня год не успевает закончиться)`);
   console.log(`  ${burnoutShare <= 0.2 ? '✓' : '✗'} Burnout endings: ${(burnoutShare * 100).toFixed(0)}% (≤ 20%)`);
 
   if (
@@ -827,8 +841,63 @@ function main() {
     architectBy250 > RUNS * 0.25 ||
     architectShare < 0.5 ||
     ctoShare > CTO_MAX_SHARE ||
+    ctoEndingShare > CTO_MAX_SHARE ||
     burnoutShare > 0.2
   ) failed = true;
+
+  // ---- Эндгейм-зонд: два игровых года ----
+  // На горизонте 365 дней CTO не достигается вовсе (0/40): гейт требует 150 дней
+  // в архитекторах при skill 80 · total 122 · comm 66 · english 34 · leadership
+  // 32. Значит коридор «CTO ≤ 35% за год» (SPEC §4) мерил пустоту — он не мог
+  // покраснеть ни при каком балансе, и до В2 это скрывало главное: выборов на
+  // году нет вообще.
+  //
+  // Двухлетний зонд меряет НЕ сложность (потолок 35% — про год, а на двух годах
+  // «разумный игрок» доходит до кресла почти всегда: 40/40, медиана 390-й день),
+  // а новую механику В2: избран → удержал кресло minDaysAsCto дней → только
+  // потом финал. До 22.10.2026 эти два дня совпадали, и «жизни после CTO» в
+  // сейве не существовало.
+  const ENDGAME_DAYS = DAYS * 2;
+  const endgame = Array.from({ length: RUNS }, (_, i) => simulate(rng(SEED + i * 1000), ENDGAME_DAYS));
+  const elected = endgame.map((a) => a.milestones.cto);
+  const claimed = endgame.map((a) => a.milestones.ending_corporate_god);
+  const electedDays = elected.filter((v): v is number => v !== undefined).sort((x, y) => x - y);
+  const claimedDays = claimed.filter((v): v is number => v !== undefined).sort((x, y) => x - y);
+  const median = (xs: number[]) => (xs.length ? xs[Math.floor(xs.length / 2)] : undefined);
+  // срок между избранием и финалом — по каждому прогону, где есть оба
+  const tenures = elected
+    .map((e, i) => (e !== undefined && claimed[i] !== undefined ? (claimed[i] as number) - e : null))
+    .filter((v): v is number => v !== null);
+  const shortTenure = tenures.filter((t) => t < CTO_HOLD_DAYS).length;
+  const electedShare = electedDays.length / RUNS;
+  const claimedShare = claimedDays.length / RUNS;
+
+  console.log(`\n=== Endgame probe (${RUNS} agents × ${ENDGAME_DAYS} days) ===`);
+  console.log(
+    `  CTO elected: ${electedDays.length}/${RUNS}` +
+      (median(electedDays) !== undefined ? `, median day ${median(electedDays)}` : ' — никто не избран')
+  );
+  console.log(
+    `  CTO ending claimed: ${claimedDays.length}/${RUNS}` +
+      (median(claimedDays) !== undefined ? `, median day ${median(claimedDays)}` : '')
+  );
+  console.log(`  tenure elected → claimed: ${tenures.length ? `${Math.min(...tenures)}…${Math.max(...tenures)} дн.` : '—'}`);
+  console.log(
+    `  ${electedDays.length > 0 ? '✓' : '✗'} CTO layer is reachable at all: ${electedDays.length}/${RUNS} ` +
+      `(иначе слой — фикция, которую нечему проверить; на году — ${(ctoShare * 100).toFixed(0)}%)`
+  );
+  console.log(
+    `  ${shortTenure === 0 ? '✓' : '✗'} финал не выдаётся в день выборов: ${shortTenure} прогонов со сроком < ${CTO_HOLD_DAYS} дн.`
+  );
+  console.log(
+    `  ${claimedDays.length <= electedDays.length ? '✓' : '✗'} финалов не больше, чем избраний: ${claimedDays.length} ≤ ${electedDays.length}`
+  );
+  console.log(
+    `  ⓘ за два года кресло берут ${(electedShare * 100).toFixed(0)}% и финал — ${(claimedShare * 100).toFixed(0)}%: ` +
+      `потолок «≤ 35%» из SPEC §4 — про год, на двух годах это измерение, а не гейт (см. docs/TODO.md §2)`
+  );
+
+  if (electedDays.length === 0 || shortTenure > 0 || claimedDays.length > electedDays.length) failed = true;
 
   console.log(`\n${failed ? '❌ Simulation FAILED' : '✅ Simulation complete'}`);
 

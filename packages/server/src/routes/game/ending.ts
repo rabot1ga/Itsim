@@ -1,14 +1,27 @@
 /**
- * Career ending helpers — CTO election (P1.12).
+ * Career ending helpers — CTO election (P1.12) and the CTO tenure that follows.
  *
  * The CTO board election is deliberately not a promotion: a single
- * high-variance roll with a long cooldown on failure. The `applyAction`
- * switch in actions.ts handles the "claim" terminal via the `claim_ending`
- * action; here we own the "kick off the election" logic.
+ * high-variance roll with a long cooldown on failure. Since В2
+ * (docs/PROPOSALS-2026-09-27-endgame.md, принято 22.10.2026) winning it does
+ * NOT end the run: the player becomes a sitting CTO, and the `corporate_god`
+ * ending is claimed from `claim_ending` once the post has been held for
+ * `balance.endings.cto.minDaysAsCto` days (`checkEndings` in shared owns that
+ * rule, so the client preview and the server agree by construction).
+ * The `applyAction` switch in actions.ts handles the "claim" terminal.
  */
-import { calculateRating, ctoElectionChance, gateFor, GRADE_SALARIES, type Grade } from '@itsim/shared';
+import { ctoElectionChance, gateFor, GRADE_SALARIES, type Grade } from '@itsim/shared';
 import { clamp } from '@itsim/shared';
-import { careerGatesOf, fmtMoney, GRADE_POSITIONS, HUMAN_REQ, rng, StoredState } from './shared.js';
+import { careerGatesOf, GRADE_POSITIONS, HUMAN_REQ, rng, StoredState } from './shared.js';
+
+/** Fallback matches `DEFAULTS.cto.minDaysAsCto` in shared/engine/endings.ts. */
+const DEFAULT_CTO_HOLD_DAYS = 60;
+
+/** Сколько дней надо удержать кресло, чтобы финал CTO открылся. */
+export function ctoHoldDays(content: any): number {
+  const raw = content?.balance?.endings?.cto?.minDaysAsCto;
+  return typeof raw === 'number' && Number.isFinite(raw) && raw >= 0 ? Math.floor(raw) : DEFAULT_CTO_HOLD_DAYS;
+}
 
 export function runCtoElection(
   state: StoredState,
@@ -41,10 +54,14 @@ export function runCtoElection(
     state.job = { ...state.job!, position: GRADE_POSITIONS.cto, grade: 'cto', salary, daysSinceLastPromotion: 0 };
     state.grade = 'cto' as Grade;
     state.reputation = clamp(state.reputation + 10, 0, 100);
-    state.careerEnding = 'corporate_god';
+    // В2 (22.10.2026): выборы больше не фиксируют `careerEnding` в день победы —
+    // CTO стал должностью, а финал открывается после `endings.cto.minDaysAsCto`
+    // дней в кресле. День избрания — единственное, что нужно запомнить.
+    state.ctoSinceDay = state.currentDay;
     state.lastPromotionDay = state.currentDay;
+    const hold = ctoHoldDays(content);
     return {
-      message: `👔 Борд проголосовал за тебя (шанс был ${Math.round(chance * 100)}%). Ты CTO — отныне ты отвечаешь за чужие карьеры и за свой сон`,
+      message: `👔 Борд проголосовал за тебя (шанс был ${Math.round(chance * 100)}%). Ты CTO — отныне ты отвечаешь за чужие карьеры и за свой сон. Финал «Корпоративный бог» откроется, когда продержишься в кресле ${hold} дн. (сейчас 0)`,
     };
   }
   state.ctoCooldownUntilDay = state.currentDay + (gate.electionIntervalDays ?? 60);

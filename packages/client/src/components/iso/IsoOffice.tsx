@@ -4,8 +4,8 @@ import { shellPolygons, pointsAttr } from './shell';
 import { buildOfficeScene, OfficeInput } from './office';
 import { characterLook } from './palette';
 import { variantKey } from './recolor';
-import { useRenderMode } from './useRenderMode';
-import { useIsoManifest, useSpriteVariants } from './IsoRoom';
+import { useRenderMode } from '../../lib/useRenderMode';
+import { useIsoManifest, useSpriteVariants } from './manifest';
 
 /**
  * The office, drawn with the same engine as the flat: code-drawn shell, sprite
@@ -77,7 +77,7 @@ export const IsoOffice: React.FC<{
       ))}
       {calls.map((c, i) => {
         const meta = manifest.sprites[c.sprite];
-        const href = c.colours ? variants[variantKey(meta.file, c.colours)] ?? meta.file : meta.file;
+        const href = c.colours ? (variants[variantKey(meta.file, c.colours)] ?? meta.file) : meta.file;
         return (
           <image
             key={`${c.sprite}-${i}`}

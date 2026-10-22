@@ -121,6 +121,82 @@ describe('save migrations', () => {
   });
 });
 
+describe('v4_cto_tenure (В2: CTO — должность, а не финал)', () => {
+  /** Сейв v3: избран CTO, финал зафиксирован выборами в тот же день. */
+  function ctoSave(overrides: Record<string, any> = {}): any {
+    return {
+      ...legacySave(),
+      version: 3,
+      currentDay: 320,
+      grade: 'cto',
+      reputation: 74,
+      leadership: 38,
+      lastPromotionDay: 300,
+      careerEnding: 'corporate_god',
+      job: { companyId: 'search_everything', position: 'CTO', grade: 'cto', salary: 900000 },
+      ...overrides,
+    };
+  }
+
+  it('возвращает сидящему CTO партию: финал снимается, день избрания восстанавливается', () => {
+    const { state, applied, changed } = migrateState<any>(ctoSave());
+
+    expect(applied).toContain('v4_cto_tenure');
+    expect(changed).toBe(true);
+    expect(state.version).toBe(CURRENT_STATE_VERSION);
+    // до v4 выборов хватало, чтобы «закончить жизнь»; теперь это должность
+    expect(state.careerEnding).toBeUndefined();
+    expect(state.ctoSinceDay).toBe(300);
+    // срок уже выбран (320 − 300 = 20 < 60), то есть игрок продолжает играть,
+    // а не получает финал задним числом
+    expect(state.currentDay - state.ctoSinceDay).toBe(20);
+  });
+
+  it('не снимает финал, если кресла уже нет — иначе игрок заперт', () => {
+    // `canStartNewLife` опирается на `careerEnding`, а CTO-финал без работы
+    // недостижим: снять финал у уволенного означало бы закрыть ему обе двери.
+    const { state } = migrateState<any>(ctoSave({ job: null }));
+    expect(state.careerEnding).toBe('corporate_god');
+    expect(state.ctoSinceDay).toBeUndefined();
+  });
+
+  it('без lastPromotionDay день избрания — текущий день, а не NaN', () => {
+    const { state } = migrateState<any>(ctoSave({ lastPromotionDay: undefined }));
+    expect(state.ctoSinceDay).toBe(320);
+  });
+
+  it('не трогает остальные финалы и не выдумывает срок не-CTO', () => {
+    const burnout = migrateState<any>({ ...legacySave(), version: 3, careerEnding: 'burnout', job: null });
+    expect(burnout.state.careerEnding).toBe('burnout');
+    expect(burnout.state.ctoSinceDay).toBeUndefined();
+
+    const architect = migrateState<any>({ ...legacySave(), version: 3, grade: 'architect' });
+    expect(architect.state.ctoSinceDay).toBeUndefined();
+  });
+
+  it('идемпотентна: второй прогон ничего не меняет', () => {
+    const first = migrateState<any>(ctoSave());
+    const second = migrateState<any>(first.state);
+    expect(second.changed).toBe(false);
+    expect(second.applied).toEqual([]);
+    expect(second.state).toEqual(first.state);
+  });
+
+  it('normalizeState выкидывает мусорный срок вместо отрицательных дней', () => {
+    const future: any = { ...createNewPlayer(), currentDay: 100, ctoSinceDay: 250 };
+    normalizeState(future);
+    expect(future.ctoSinceDay).toBeUndefined();
+
+    const garbage: any = { ...createNewPlayer(), currentDay: 100, ctoSinceDay: 'вчера' };
+    normalizeState(garbage);
+    expect(garbage.ctoSinceDay).toBeUndefined();
+
+    const ok: any = { ...createNewPlayer(), currentDay: 100, ctoSinceDay: 40.7 };
+    normalizeState(ok);
+    expect(ok.ctoSinceDay).toBe(40);
+  });
+});
+
 describe('normalizeState', () => {
   it('repairs corrupt resource values instead of propagating NaN', () => {
     const state: any = {

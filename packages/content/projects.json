@@ -79,6 +79,40 @@
         { "id": "alerts", "title": "Настроить алерты", "xp": 24, "energy": 4 },
         { "id": "handover", "title": "Передать команде заказчика", "xp": 20, "energy": 3 }
       ]
+    },
+    {
+      "id": "platform_rescue",
+      "title": "Спасти падающую платформу",
+      "subtitle": "Три дня простоя = расторгнутый контракт",
+      "icon": "chart",
+      "payment": 900000,
+      "reputation": 10,
+      "deadlineDays": 14,
+      "minSkillLevel": 40,
+      "tasks": [
+        { "id": "audit", "title": "Пройти по графикам, логам и дежурствам", "xp": 26, "energy": 4 },
+        { "id": "plan", "title": "Согласовать план декомпозиции с заказчиком", "xp": 22, "energy": 3 },
+        { "id": "hotfix", "title": "Закрыть текущий каскад отказов", "xp": 30, "energy": 5 },
+        { "id": "handover", "title": "Передать дежурство их команде", "xp": 18, "energy": 3 },
+        { "id": "postmortem", "title": "Написать постмортем для их борда", "xp": 20, "energy": 2 }
+      ]
+    },
+    {
+      "id": "ml_governance",
+      "title": "Аудит ML-конвейера в банке",
+      "subtitle": "Модель решает, кому давать кредит",
+      "icon": "rocket",
+      "payment": 1800000,
+      "reputation": 14,
+      "deadlineDays": 18,
+      "minSkillLevel": 60,
+      "tasks": [
+        { "id": "drift", "title": "Найти, где поехал датасет", "xp": 34, "energy": 5 },
+        { "id": "explain", "title": "Объяснить модель человеку из риск-отдела", "xp": 30, "energy": 4 },
+        { "id": "bias", "title": "Прогнать проверку на смещение выборок", "xp": 38, "energy": 6 },
+        { "id": "docs", "title": "Собрать регламент переобучения", "xp": 24, "energy": 3 },
+        { "id": "signoff", "title": "Подписать акт у их юристов", "xp": 20, "energy": 2 }
+      ]
     }
   ]
 }

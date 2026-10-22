@@ -87,6 +87,38 @@ export function lookColourAllowed(slot: string, colour: string): boolean {
   return isLookSlot(slot) && lookPalette(slot).includes(colour.toLowerCase());
 }
 
+/**
+ * Which tint slot of the *layered* manifest a colour row drives — `null` when
+ * the flat art cannot take it: clothing layers ship pre-coloured (no grayscale
+ * master, no `tintSlot` in the avatar manifest), and shoes are not a layer at
+ * all. Those picks still recolour the iso bust and the 32×32 pack, so the rows
+ * stay in the UI; they are just not promises about the room figure.
+ */
+export const LOOK_SLOT_TINT: Record<LookSlotId, string | null> = {
+  skin: 'skinTone',
+  hairColor: 'hairColor',
+  topColor: null,
+  bottomColor: null,
+  shoeColor: null,
+};
+
+/**
+ * Ручные цвета игрока → `{ tintSlot: hex }` для `buildLayerStack`. Только
+ * валидные хексы и только ряды из `LOOK_SLOT_TINT`: всё остальное плоским
+ * мастерам не отдаётся, иначе молча покрасится не то.
+ */
+export function lookTintOverrides(avatar?: Partial<Record<LookSlotId, string | null>> | null): Record<string, string> {
+  const overrides: Record<string, string> = {};
+  if (!avatar) return overrides;
+  for (const slot of LOOK_SLOTS) {
+    const tintSlot = LOOK_SLOT_TINT[slot];
+    const value = avatar[slot];
+    if (!tintSlot || typeof value !== 'string') continue;
+    if (/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(value.trim())) overrides[tintSlot] = value.trim();
+  }
+  return overrides;
+}
+
 /** Which recolour role each wardrobe colour slot drives. */
 export const LOOK_SLOT_ROLE: Record<LookSlotId, string> = {
   skin: 'skin',

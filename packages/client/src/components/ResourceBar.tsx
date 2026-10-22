@@ -3,6 +3,7 @@ import { useGameStore } from '../store/gameStore';
 import { xpToNext } from '@itsim/shared';
 import { PlayerPortrait } from './PlayerPortrait';
 import { StatBar } from './ui';
+import { skillName } from '../lib/playerLabels';
 
 /**
  * Top chrome — deliberately shallow so the screen below gets the pixels.
@@ -23,18 +24,6 @@ const GRADE_LABEL: Record<string, string> = {
   teamlead: 'teamlead',
   architect: 'архитектор',
   cto: 'CTO',
-};
-
-const SKILL_NAMES: Record<string, string> = {
-  javascript: 'JavaScript',
-  typescript: 'TypeScript',
-  python: 'Python',
-  react: 'React',
-  sql: 'SQL',
-  nodejs: 'Node.js',
-  git: 'Git',
-  docker: 'Docker',
-  linux: 'Linux',
 };
 
 /** True for one animation frame after `value` changes — used to bounce a counter. */
@@ -151,7 +140,7 @@ export const ResourceBar: React.FC = () => {
             >
               <i style={{ width: `${pct}%` }} />
               <b className="num">
-                {SKILL_NAMES[id] ?? id} · {maxed ? 'Максимум' : `${skill.xp} / ${need} XP`}
+                {skillName(id)} · {maxed ? 'Максимум' : `${skill.xp} / ${need} XP`}
               </b>
             </div>
             <div className="hud-vitals">
