@@ -1106,6 +1106,19 @@ select {
   image-rendering: pixelated;
   border-block: 1px solid var(--line);
 }
+/* Миниатюра комнаты на «Главной»: тот же пиксельный контракт, что у баннеров
+   событий, но в карточке поменьше. Нет файла — onError прячет <img>. */
+.room-thumb {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  image-rendering: pixelated;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
 .story-card-copy {
   padding: 14px 14px 10px;
 }

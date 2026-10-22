@@ -5,7 +5,6 @@ import { fileURLToPath } from 'node:url';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import App from '../App';
 import { useGameStore } from '../store/gameStore';
-import { tintFilter, tintFromHex } from '@itsim/shared';
 
 /**
  * Слоистый аватар обязан быть примонтирован, а не только существовать.
@@ -17,8 +16,13 @@ import { tintFilter, tintFromHex } from '@itsim/shared';
  * пустые манифесты (`{ avatar: { slots: [] } }`) и проверял только «не упало».
  *
  * Здесь манифесты — настоящие файлы из `packages/content`, так что тест падает,
- * как только ссылка на слой пропадает из любого из двух мест: «Дом» (фигура в
- * комнате) или «Профиль» (портрет).
+ * как только ссылка на слой пропадает из живого экрана.
+ *
+ * После редизайна 22.10.2026 (docs/PROPOSALS-2026-10-22-room-redesign.md)
+ * «Дом» и «Главная» больше не монтируют слоистый аватар: комната — карточка
+ * события со сценой-баннером `/art/room/<тир>.webp` (её и проверяем), а
+ * слоистая фигура остаётся в «Профиле» и iso-офисе до захода «снятие
+ * идентичности» (фаза 2).
  */
 
 const at = (rel: string) => JSON.parse(readFileSync(fileURLToPath(new URL(rel, import.meta.url)), 'utf-8'));
@@ -81,11 +85,6 @@ async function openScreen(label: string) {
 // Окно поиска — только контейнеры фигуры (aria-label у ProceduralAvatar), а не
 // весь экран: карусели гардероба рисуют по <img> на КАЖДУЮ запись манифеста, и
 // «лишний» top_tshirt там — норма витрины, но не нормы одежды персонажа.
-const roomFigureSrcs = () =>
-  [...document.querySelectorAll('[aria-label="Комната"] [aria-label="Аватар игрока"]')].flatMap((box) =>
-    [...box.querySelectorAll('img')].map((i) => i.getAttribute('src'))
-  );
-
 const figureSrcs = () =>
   [...document.querySelectorAll('[aria-label="Аватар игрока"]')].flatMap((box) =>
     [...box.querySelectorAll('img')].map((i) => i.getAttribute('src'))
@@ -106,64 +105,64 @@ describe('слоистый аватар в живых экранах', () => {
     HTMLCanvasElement.prototype.getContext = (() => null) as never;
   });
 
-  it('«Дом» рисует плоскую комнату и фигуру из webp-слоёв, а гардероб — вместо генетики', async () => {
+  it('«Дом» — карточка события: баннер-сцена тира и зоны-строки из каталога', async () => {
     render(<App />);
     await openScreen('Дом');
 
-    // комната стала плоской: слои room-манифеста лежат в кадре
-    await waitFor(() => expect(document.querySelectorAll('img[src^="/layers/room/"]').length).toBeGreaterThan(0));
+    // баннер — сцена текущего тира, а не слои room-манифеста
+    await waitFor(() =>
+      expect(document.querySelector('[aria-label="Твоя комната"] img.story-card-art')).toBeTruthy()
+    );
+    expect(document.querySelector('[aria-label="Твоя комната"] img.story-card-art')!.getAttribute('src')).toMatch(
+      /^\/art\/room\/(start|cozy|work|dream)\.webp$/
+    );
+    // конструктора больше нет: ни слоев аватара, ни слоев комнаты
+    expect(document.querySelectorAll('img[src^="/layers/room/"]').length).toBe(0);
+    expect(document.querySelectorAll('[aria-label="Твоя комната"] img[src^="/layers/avatar-v2/"]').length).toBe(0);
 
-    // фигура стоит именно в комнате (не только в превью гардероба) и одета по
-    // гардеробу: до правки низы не рисовались нигде в принципе
-    await waitFor(() => expect(roomFigureSrcs()).toContain('/layers/avatar-v2/top_jacket.webp'));
-    expect(roomFigureSrcs()).toContain('/layers/avatar-v2/bottom_sweatpants.webp');
-    expect(roomFigureSrcs()).toContain('/layers/avatar-v2/acc_cap.webp');
-    expect(roomFigureSrcs()).toContain('/layers/avatar-v2/body_base.webp');
+    // зоны — строки-действия поверх общего каталога, с чипами эффектов
+    const choices = [...document.querySelectorAll('[aria-label="Твоя комната"] .story-choice')];
+    expect(choices.length).toBeGreaterThanOrEqual(5);
+    const labels = choices.map((b) => b.textContent ?? '');
+    expect(labels.some((t) => t.includes('Проспать до утра'))).toBe(true);
+    expect(labels.some((t) => t.includes('Прогулка вокруг дома'))).toBe(true);
   });
 
-  it('цвет из гардероба красит фигуру в комнате, а не только iso-портрет', async () => {
+  it('тир комнаты растёт с грейдом: баннер меняется', async () => {
     render(<App />);
     await openScreen('Дом');
+    const banner = () => document.querySelector('[aria-label="Твоя комната"] img.story-card-art');
+    await waitFor(() => expect(banner()).toBeTruthy());
 
-    const figure = '[aria-label="Комната"] [aria-label="Аватар игрока"]';
-    const hair = await waitFor(() => {
-      const el = document.querySelector<HTMLImageElement>(`${figure} img[src*="/hair_"]`);
-      expect(el).toBeTruthy();
-      return el!;
-    });
-    // Ряд «Цвет волос» пишет хекс в player.avatar, а плоский стек раньше умел
-    // только палитрные id из генетики — то есть выбор оставался невидимым.
-    expect(hair.getAttribute('style')).toContain(tintFilter(tintFromHex('#2b2320')!));
+    useGameStore.setState({ player: { ...useGameStore.getState().player!, grade: 'junior' } });
+    await waitFor(() => expect(banner()!.getAttribute('src')).toBe('/art/room/start.webp'));
 
-    // Одежда в плоском стеке предокрашена — её ряд честно ничего не красит.
-    const top = document.querySelector<HTMLImageElement>(`${figure} img[src*="top_jacket"]`);
-    expect(top?.getAttribute('style')).toContain('none');
+    useGameStore.setState({ player: { ...useGameStore.getState().player!, grade: 'middle' } });
+    await waitFor(() => expect(banner()!.getAttribute('src')).toBe('/art/room/cozy.webp'));
+
+    useGameStore.setState({ player: { ...useGameStore.getState().player!, grade: 'cto' } });
+    await waitFor(() => expect(banner()!.getAttribute('src')).toBe('/art/room/dream.webp'));
   });
 
   // Двигатель расхождений этого блока: «Главная» годами показывала эскиз
   // story-v1, хотя плоская комната была собрана, и чинить её могли отдельно.
-  it('«Главная» рисует ту же комнату, что и «Дом», а не эскиз', async () => {
+  it('«Главная» показывает миниатюру того же тира, что и баннер «Дома»', async () => {
     // стор модульный: предыдущие тесты этого файла ушли в «Дом» и остались там
     useGameStore.setState({ currentView: 'main' });
     render(<App />);
-    const card = await screen.findByRole('region', { name: 'Твоя комната' });
 
-    // карточка дожидается манифестов и рисует живой стек вместо /art/story-v1/
-    await waitFor(() => expect(card.querySelectorAll('img[src^="/layers/room/"]').length).toBeGreaterThan(0));
-    expect(card.querySelector('img[src*="story-v1"]')).toBeNull();
-    // одежда в карточке та же, что в «Доме»: один avatarComposition, не второй
-    expect([...card.querySelectorAll('img')].map((i) => i.getAttribute('src'))).toContain(
-      '/layers/avatar-v2/top_jacket.webp'
-    );
-    const home = [...card.querySelectorAll('[aria-label="Комната"] img')].map((i) => i.getAttribute('src'));
+    await waitFor(() => expect(document.querySelector('img.room-thumb')).toBeTruthy());
+    const thumbSrc = document.querySelector('img.room-thumb')!.getAttribute('src');
+    expect(thumbSrc).toMatch(/^\/art\/room\/(start|cozy|work|dream)\.webp$/);
+    expect(thumbSrc).not.toContain('story-v1');
 
     await openScreen('Дом');
     await waitFor(() =>
-      expect(document.querySelectorAll('[aria-label="Комната"] img[src^="/layers/room/"]').length).toBeGreaterThan(0)
+      expect(document.querySelector('[aria-label="Твоя комната"] img.story-card-art')).toBeTruthy()
     );
-    const house = [...document.querySelectorAll('[aria-label="Комната"] img')].map((i) => i.getAttribute('src'));
-    expect(home.length).toBeGreaterThan(0);
-    expect(home).toEqual(house);
+    expect(document.querySelector('[aria-label="Твоя комната"] img.story-card-art')!.getAttribute('src')).toBe(
+      thumbSrc
+    );
   });
 
   it('«Профиль» показывает ту же фигуру, что и комната', async () => {

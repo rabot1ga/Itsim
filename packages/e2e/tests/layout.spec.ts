@@ -13,9 +13,10 @@ for (const width of [320, 390, 480]) {
     }
     const room = page.getByRole('region', { name: 'Твоя комната' });
     await expect(room).toBeVisible();
-    // Живая плоская комната (общий с «Домом` useRoomScene). Слои — `<img alt="">`,
-    // роли у них нет, поэтому локатор по src, а не getByRole('img').
-    await expect(room.locator('img[src^="/layers/room/"]').first()).toBeVisible();
+    // Комната — карточка события (решение 22.10.2026, вариант B): баннер-сцена
+    // `/art/room/<тир>.webp`, конструктора слоёв больше нет. У баннера alt="",
+    // роли нет, поэтому локатор по src, а не getByRole('img').
+    await expect(room.locator('img[src^="/art/room/"]').first()).toBeVisible();
     await expect(room.locator('img[src*="story-v1"]')).toHaveCount(0);
     expect(
       await page.evaluate(() => {

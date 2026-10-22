@@ -1,181 +1,127 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useGameStore } from '../store/gameStore';
-import { RoomRenderer } from '../components/room/RoomRenderer';
-import { RoomEditor, entryName } from '../components/room/RoomEditor';
-import { useRoomScene } from '../components/room/useRoomScene';
 import { EmptyState, ScreenTitle, SectionTitle } from '../components/ui';
-import { Wardrobe } from '../components/room/Wardrobe';
-import { ShareCard } from '../components/room/ShareCard';
-import { haptic } from '../lib/telegram';
-import { buildAvatarData, fetchPixelPack, PixelAvatarData } from '../components/room/pixelAvatar';
-import { PixelIdentity } from '../components/room/PixelIdentity';
+import { ACTIONS } from './actionCatalogue';
+import { ROOM_TIER_META, roomArtwork, roomTierOf } from '../lib/roomArt';
 
 /**
- * «Дом» — procedural room (DESIGN.md), NFT inventory (mock Solana),
- * cross-collection synergies and the share card.
+ * «Дом» — комната как карточка события (решение 22.10.2026, вариант B):
+ * сцена-баннер текущего тира + строки-зоны поверх общего каталога действий.
+ * Конструктора комнаты и пиксельной идентичности здесь больше нет: сцена
+ * одна на тир, протагонист в ней постоянный, кастомизации нет вовсе.
+ * Кошелёк и NFT-мок ниже доживают до захода «снятие идентичности» (v5).
  */
+interface Zone {
+  id: string;
+  emoji: string;
+  label: string;
+  action: string;
+  chip?: string;
+  needsJob?: boolean;
+  needsPet?: boolean;
+}
+
+const ZONES: Zone[] = [
+  { id: 'bed', emoji: '🛏️', label: 'Проспать до утра', action: 'rest_sleep', chip: 'день завершится' },
+  { id: 'window', emoji: '🚶', label: 'Прогулка вокруг дома', action: 'rest_walk' },
+  { id: 'rug', emoji: '🎲', label: 'Хобби на коврике', action: 'rest_hobby' },
+  { id: 'desk', emoji: '💻', label: 'Рабочая задача за своим столом', action: 'work_task', needsJob: true },
+  { id: 'shelf', emoji: '📚', label: 'Книга с полки', action: 'study_book' },
+  { id: 'cat', emoji: '🐈', label: 'Покормить кота', action: 'feed_pet', needsPet: true },
+];
+
+function zoneChips(zone: Zone): string[] {
+  if (zone.chip) return [zone.chip];
+  const def = ACTIONS.find((a) => a.id === zone.action);
+  const chips: string[] = [];
+  if (def?.energy) chips.push(`−${def.energy}⚡`);
+  if (def?.cost) chips.push(`−${def.cost} ₽`);
+  return chips;
+}
+
 export const RoomView: React.FC = () => {
   const player = useGameStore((s) => s.player);
+  const performAction = useGameStore((s) => s.performAction);
   const bindWallet = useGameStore((s) => s.bindWallet);
-  const setMockCollections = useGameStore((s) => s.setMockCollections);
   const inventory = useGameStore((s) => s.inventory);
-  const heldCollections = useGameStore((s) => s.heldCollections);
 
-  const [pixelPack, setPixelPack] = useState<Awaited<ReturnType<typeof fetchPixelPack>>>(null);
   const [walletInput, setWalletInput] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [editorOpen, setEditorOpen] = useState(false);
-  const [wardrobeOpen, setWardrobeOpen] = useState(false);
-
-  // Манифесты, композиция комнаты и фигуры — общим хуком: «Главная» и
-  // шаринг-карточка берут ровно его же, поэтому показать другое они уже не могут.
-  const scene = useRoomScene();
-  const { crossCollections } = scene;
-
-  useEffect(() => {
-    fetchPixelPack()
-      .then(setPixelPack)
-      .catch(() => setError('Не удалось загрузить контент'));
-  }, []);
+  const [walletError, setWalletError] = useState<string | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
 
   if (!player) return null;
 
-  const pixelAvatarData: PixelAvatarData | null =
-    pixelPack && player.genetics ? buildAvatarData(pixelPack, player.genetics, player.avatar) : null;
+  const tier = roomTierOf(player.grade);
+  const meta = ROOM_TIER_META[tier];
+  const hasPet = (player.items ?? []).some((i: string) => i.startsWith('pet_'));
+  const zones = ZONES.filter((z) => !z.needsPet || hasPet);
 
-  const traits = player.genetics;
+  const runZone = async (zone: Zone) => {
+    setBusy(zone.id);
+    await performAction(zone.action);
+    setBusy(null);
+  };
 
   const handleBind = async () => {
     const ok = await bindWallet(walletInput.trim());
-    setError(ok ? null : 'Не удалось привязать кошелёк (проверь формат base58)');
+    setWalletError(ok ? null : 'Не удалось привязать кошелёк (проверь формат base58)');
   };
 
   return (
     <div className="space-y-4 animate-fade-in">
-      <ScreenTitle
-        emoji="🏠"
-        meta={
-          traits ? (
-            <span className="num truncate max-w-[120px]" title={traits.seed}>
-              seed {traits.seed.slice(0, 8)}…
-            </span>
-          ) : undefined
-        }
-      >
+      <ScreenTitle emoji="🏠" meta={<span className="num truncate max-w-[140px]">{meta.tagline}</span>}>
         Дом
       </ScreenTitle>
 
-      {/* Комната — плоский слоистый рендер (design.md §13.2): те же слои, что и
-          в редакторе, и полнофигурный персонаж из 500×760 webp-набора. Iso-вид
-          остался только там, где он и задуман: HUD-портрет, карточки, офис. */}
-      {scene.ready && (
-        <RoomRenderer
-          roomManifest={scene.roomManifest}
-          avatarManifest={scene.avatarManifest}
-          traits={scene.traits}
-          geneticsConfig={scene.geneticsConfig}
-          housingLevel={scene.housingLevel}
-          composition={scene.roomComposition}
-          avatarCustom={scene.avatarCustom}
-          petWear={scene.petWear}
-          petFed={scene.petFed}
+      <section className="story-card" aria-label="Твоя комната">
+        <div className="story-card-kicker">твоя комната · {tier}</div>
+        <img
+          className="story-card-art"
+          src={roomArtwork(tier)}
+          alt=""
+          width={512}
+          height={384}
+          onError={(ev) => {
+            // Сцена — украшение и настроение, а не контракт: нет файла —
+            // карточка остаётся текстовой (тот же приём, что у финалов).
+            ev.currentTarget.style.display = 'none';
+          }}
         />
-      )}
-
-      {/* Pet status */}
-      {scene.ready && scene.roomComposition.pet && scene.roomComposition.pet !== 'pet_none' && (
-        <div className="card card-sm flex items-center gap-2.5">
-          <span className="text-lg" aria-hidden="true">
-            🐾
-          </span>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-ink-100 truncate">{entryName(scene.roomComposition.pet)}</p>
-            <p className={`text-xs ${player.petFedToday ? 'text-moss-300' : 'text-ochre-300'}`}>
-              {player.petFedToday ? 'сыт и счастлив до завтра' : 'голоден — покорми во вкладке «День»'}
-            </p>
-          </div>
+        <div className="story-card-copy">
+          <h2>{meta.title}</h2>
+          <p>{meta.description}</p>
         </div>
-      )}
-
-      {/* Room editor */}
-      {scene.ready && (
-        <div className="card">
-          <button
-            onClick={() => {
-              haptic('selection');
-              setEditorOpen((v) => !v);
-            }}
-            aria-expanded={editorOpen}
-            className="w-full flex items-center justify-between touch-target"
-          >
-            <span className="flex items-center gap-2 text-sm font-semibold text-ink-100">
-              <span aria-hidden="true">🛋</span>
-              Настроить комнату
-            </span>
-            <span aria-hidden="true" className={`accordion-chevron ${editorOpen ? 'is-open' : ''}`}>
-              ▾
-            </span>
-          </button>
-          <div className={`accordion-body ${editorOpen ? 'open' : ''}`}>
-            <div className="accordion-inner">
-              <div className="pt-3">
-                <RoomEditor
-                  roomManifest={scene.roomManifest}
-                  geneticsConfig={scene.geneticsConfig}
-                  traits={scene.traits}
-                  player={player}
-                  heldCollections={heldCollections ?? []}
-                  composition={scene.roomComposition}
-                />
+        <div className="story-choices">
+          {zones.map((zone) => {
+            const missing = zone.needsJob && !player.job ? ['нужна работа'] : [];
+            return (
+              <div className="story-choice-group" key={zone.id}>
+                <button
+                  className="story-choice story-choice-green"
+                  disabled={busy !== null || missing.length > 0}
+                  onClick={() => runZone(zone)}
+                >
+                  <span>
+                    <span aria-hidden="true">{zone.emoji}</span> {busy === zone.id ? 'Делаем…' : zone.label}
+                  </span>
+                  <span className="story-choice-effects">
+                    {zoneChips(zone).map((c) => (
+                      <span key={c} className="res-chip num">
+                        {c}
+                      </span>
+                    ))}
+                  </span>
+                </button>
+                {missing.length > 0 && <p className="story-requirements">{missing.join(' · ')}</p>}
               </div>
-            </div>
-          </div>
+            );
+          })}
         </div>
-      )}
+        <p className="story-footnote">Комната растёт вместе с грейдом: старт → обжитая → офис → студия мечты.</p>
+      </section>
 
-      {/* Wardrobe */}
-      {scene.ready && (
-        <div className="card">
-          <button
-            onClick={() => {
-              haptic('selection');
-              setWardrobeOpen((v) => !v);
-            }}
-            aria-expanded={wardrobeOpen}
-            className="w-full flex items-center justify-between touch-target"
-          >
-            <span className="flex items-center gap-2 text-sm font-semibold text-ink-100">
-              <span aria-hidden="true">👕</span>
-              Гардероб
-            </span>
-            <span aria-hidden="true" className={`accordion-chevron ${wardrobeOpen ? 'is-open' : ''}`}>
-              ▾
-            </span>
-          </button>
-          <div className={`accordion-body ${wardrobeOpen ? 'open' : ''}`}>
-            <div className="accordion-inner">
-              <div className="pt-3">
-                <Wardrobe
-                  avatarManifest={scene.avatarManifest}
-                  geneticsConfig={scene.geneticsConfig}
-                  traits={traits}
-                  player={player}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {pixelAvatarData && pixelPack && <PixelIdentity pack={pixelPack} data={pixelAvatarData} />}
-
-      {error && (
-        <div role="alert" className="card card-sm">
-          <p className="text-sm text-clay-300">⚠ {error}</p>
-        </div>
-      )}
-
-      {/* Wallet */}
+      {/* Кошелёк и NFT-мок: уйдут следующим заходом вместе с пиксельной
+          идентичностью (решение 22.10.2026, docs/PROPOSALS-2026-10-22-room-redesign.md). */}
       <div className="card">
         <SectionTitle className="mb-3">Кошелёк Solana</SectionTitle>
         {player.walletAddress ? (
@@ -199,22 +145,17 @@ export const RoomView: React.FC = () => {
             </button>
           </div>
         )}
-        <p className="subtle mt-3">
-          Генетика персонажа детерминированно привязана к кошельку (DESIGN.md 3.1). В проде — через Solana Wallet
-          Adapter.
-        </p>
+        {walletError && (
+          <p className="story-error" role="alert">
+            {walletError}
+          </p>
+        )}
       </div>
 
-      {/* NFT inventory */}
       <div className="card">
         <SectionTitle className="mb-3">NFT-предметы (мок)</SectionTitle>
         {(inventory ?? []).length === 0 ? (
-          <EmptyState
-            bare
-            emoji="📦"
-            title="NFT пока нет"
-            hint="Загляни в магазин (Herman Miller, MacBook…) — покупка смонтится в кошелёк."
-          />
+          <EmptyState bare emoji="📦" title="NFT пока нет" hint="Загляни в магазин — покупка смонтится в кошелёк." />
         ) : (
           <div className="space-y-1.5">
             {(inventory ?? []).map((nft: any) => (
@@ -231,57 +172,6 @@ export const RoomView: React.FC = () => {
           </div>
         )}
       </div>
-
-      {/* Cross-collection synergies */}
-      <div className="card">
-        <SectionTitle className="mb-3">Cross-collection (мок-детект)</SectionTitle>
-        <div className="space-y-2">
-          {crossCollections.map((c: any) => {
-            const held = (heldCollections ?? []).includes(c.collectionId);
-            const bonuses = (c.bonuses ?? []).map((b: any) => `${b.type}=${b.value}`).join(', ');
-            return (
-              <button
-                key={c.collectionId}
-                onClick={() =>
-                  setMockCollections(
-                    held
-                      ? (heldCollections ?? []).filter((x: string) => x !== c.collectionId)
-                      : [...(heldCollections ?? []), c.collectionId]
-                  )
-                }
-                className={`tile w-full flex items-center justify-between gap-2 text-left ${held ? 'is-chosen' : ''}`}
-              >
-                <div className="min-w-0">
-                  <p className="text-sm text-ink-100">{c.collectionName}</p>
-                  <p className="text-2xs text-ink-500 truncate">
-                    {c.nftType} → {c.layerId}
-                    {bonuses ? ` · ${bonuses}` : ''}
-                  </p>
-                </div>
-                <span aria-hidden="true" className={held ? 'text-moss-300' : 'text-ink-500'}>
-                  {held ? '✓' : '+'}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-        <p className="subtle mt-3">
-          В проде владение коллекциями читается on-chain (Helius RPC). Здесь — мок для теста бонусов.
-        </p>
-      </div>
-
-      {/* Share card */}
-      {scene.ready && (
-        <ShareCard
-          traits={scene.traits}
-          player={player}
-          roomManifest={scene.roomManifest}
-          avatarManifest={scene.avatarManifest}
-          geneticsConfig={scene.geneticsConfig}
-          roomComposition={scene.roomComposition}
-          avatarComposition={scene.figureComposition}
-        />
-      )}
     </div>
   );
 };
