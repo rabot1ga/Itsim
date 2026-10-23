@@ -1,4 +1,4 @@
-import { t } from '../lib/i18n';
+import { t, fmtNumber } from '../lib/i18n';
 import { skillName } from '../lib/playerLabels';
 export interface EventEffects {
   money?: number;
@@ -75,7 +75,7 @@ export function effectRows(effects: EventEffects = {}): EffectRow[] {
       label,
       icon,
       emoji,
-      text: `${value > 0 ? '+' : ''}${value.toLocaleString('ru-RU')}${suffix}`,
+      text: `${value > 0 ? '+' : ''}${fmtNumber(value)}${suffix}`,
       good: inverse ? value < 0 : value > 0,
     });
   };
@@ -98,7 +98,7 @@ export function unmetRequirements(req: EventRequirements | undefined, player?: E
   if (req.energy !== undefined && player.energy < req.energy)
     missing.push(t('Нужно энергии: {p0}', { p0: req.energy }));
   if (req.money !== undefined && player.money < req.money)
-    missing.push(t('Нужно денег: {p0} ₽', { p0: req.money.toLocaleString('ru-RU') }));
+    missing.push(t('Нужно денег: {p0} ₽', { p0: fmtNumber(req.money) }));
   for (const [id, level] of Object.entries(req.skill ?? {}))
     if ((player.skills?.[id]?.level ?? 0) < level)
       missing.push(t('{p0}: уровень {level}', { p0: skillName(id), level: level }));

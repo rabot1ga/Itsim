@@ -1,4 +1,4 @@
-import { t } from '../../lib/i18n';
+import { currentLocale, t } from '../../lib/i18n';
 /**
  * Shared types and helpers for the `gameRoutes` family.
  *
@@ -59,15 +59,20 @@ export type StoredState = PlayerState & {
     }>;
   };
 };
-/** Grade → human label. The shop and the office both lean on this map. */
+/** Grade → human label. The shop and the office both lean on this map.
+ *
+ * Значения — сырые ключи словаря (без t() при загрузке модуля): сервер
+ * долгоживущий, константы с t() замёрзли бы в языке старта (beta-gap).
+ * Перевод — на границе: `translateDeep` для полей ответа, `t(label)` для
+ * фрагментов внутри составных сообщений. */
 export const GRADE_POSITIONS: Record<Grade, string> = {
-  unemployed: t('Безработный'),
-  intern: t('Стажёр'),
-  junior: t('Junior-разработчик'),
-  middle: t('Middle-разработчик'),
-  senior: t('Senior-разработчик'),
+  unemployed: 'Безработный',
+  intern: 'Стажёр',
+  junior: 'Junior-разработчик',
+  middle: 'Middle-разработчик',
+  senior: 'Senior-разработчик',
   teamlead: 'Teamlead',
-  architect: t('Архитектор'),
+  architect: 'Архитектор',
   cto: 'CTO',
 };
 /** The default energy cost table for non-study actions. */
@@ -124,21 +129,28 @@ export function __setRngFactoryForTests(factory: RngFactory | null): void {
 export function balanceRng(state: StoredState): () => number {
   return (testRngFactory ?? rngStream)(state);
 }
-/** Format rubles for human-readable output (1 230 ₽ / 12 тыс ₽ / 1.4 млн ₽) */
+/** Format rubles for human-readable output (1 230 ₽ / 12 тыс ₽ / 1.4 млн ₽).
+ * Числа — через `Intl.*` под язык запроса (десят/групповые разделители). */
 export function fmtMoney(amount: number): string {
-  if (amount >= 1000000) return t('{p0} млн ₽', { p0: (amount / 1000000).toFixed(1) });
-  if (amount >= 1000) return t('{p0} тыс ₽', { p0: (amount / 1000).toFixed(0) });
-  return `${amount} ₽`;
+  const tag = currentLocale() === 'en' ? 'en-US' : 'ru-RU';
+  const num = (v: number, digits: number) => new Intl.NumberFormat(tag, { maximumFractionDigits: digits }).format(v);
+  if (amount >= 1000000) return t('{p0} млн ₽', { p0: num(amount / 1000000, 1) });
+  if (amount >= 1000) return t('{p0} тыс ₽', { p0: num(amount / 1000, 0) });
+  return `${num(amount, 0)} ₽`;
 }
-/** Human-friendly requirement keys used by career outlook + CTO election. */
+/** Human-friendly requirement keys used by career outlook + CTO election.
+ *
+ * Сырые ключи словаря (не t()): careerOutlook кладёт их в label — на
+ * границе ответа их переведёт `translateDeep`; `{human}` в ending.ts
+ * обрабатывает t() на месте сборки. */
 export const HUMAN_REQ: Record<string, string> = {
-  skill: t('основной навык'),
-  total: t('всего навыков'),
-  branchTotal: t('навыки в ветке'),
-  comm: t('коммуникация'),
-  english: t('английский'),
-  leadership: t('лидерство'),
-  rep: t('репутация'),
+  skill: 'основной навык',
+  total: 'всего навыков',
+  branchTotal: 'навыки в ветке',
+  comm: 'коммуникация',
+  english: 'английский',
+  leadership: 'лидерство',
+  rep: 'репутация',
 };
 /** Strip the answer from a question before sending it to the client. */
 export function sanitizeInterviewQuestion(q: any) {

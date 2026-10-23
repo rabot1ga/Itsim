@@ -4,6 +4,7 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import { loadContentOrThrow } from '@itsim/content';
 import { checkEndings, createNewPlayer } from '@itsim/shared';
+import { HUMAN_REQ, GRADE_POSITIONS } from '../routes/game/shared.js';
 
 /**
  * CTO как должность, а не как финал (В2, принято 22.10.2026 —
@@ -89,6 +90,8 @@ async function modules(roll?: number) {
   return {
     ending: await import('../routes/game/ending'),
     day: await import('../routes/game/day'),
+    // тот же инстанс lib/i18n, что и у роутов (resetModules) — ALS общая
+    i18n: await import('../lib/i18n.js'),
   };
 }
 
@@ -223,5 +226,23 @@ describe('CTO: порог удержания — контент, а не кон�
     expect(ctoEnding(state).available).toBe(false);
     state.currentDay = 300 + hold;
     expect(ctoEnding(state).available).toBe(true);
+  });
+});
+
+describe('i18n (beta-gap): подписи требований CTO переводятся под язык запроса', () => {
+  it('константы хранят сырые ключи — сервер их не замораживает в языке старта', () => {
+    expect(HUMAN_REQ.rep).toBe('репутация');
+    expect(GRADE_POSITIONS.senior).toBe('Senior-разработчик');
+  });
+
+  it('«{human}» собирается через t() на месте: EN-запрос видит EN-фрагменты', async () => {
+    const { ending, i18n } = await modules(0);
+    // репутации на гейт не хватает — в ответ уходит перечень «чего не хватает»
+    const state = architect({ reputation: 5 });
+    const res = i18n.runWithLocale('en', () => ending.runCtoElection(state, bundle));
+    expect(res.error).toBeDefined();
+    expect(res.error).toContain('Missing:');
+    expect(res.error).toContain('reputation:');
+    expect(res.error).not.toContain('репутация');
   });
 });

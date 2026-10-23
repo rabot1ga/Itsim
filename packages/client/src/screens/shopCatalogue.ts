@@ -1,4 +1,4 @@
-import { t } from '../lib/i18n';
+import { t, fmtNumber } from '../lib/i18n';
 export interface ShopItem {
   id: string;
   name: string;
@@ -94,4 +94,4 @@ export function itemEffects(item: ShopItem): string {
   });
   return labels.join(' · ') || t('Без пассивного бонуса');
 }
-export const shopMoney = (amount: number): string => `${amount.toLocaleString('ru-RU')} ₽`;
+export const shopMoney = (amount: number): string => `${fmtNumber(amount)} ₽`;

@@ -1,4 +1,4 @@
-import { t } from '../lib/i18n';
+import { t, fmtNumber } from '../lib/i18n';
 import React, { useRef, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { metaXpBonusPct } from '@itsim/shared';
@@ -55,7 +55,7 @@ export const CareerPressureCard: React.FC = () => {
     setConfirmLife(false);
     if (!ok) haptic('error');
   };
-  const fmt = (n: number) => `${Math.round(n).toLocaleString('ru-RU')} ₽`;
+  const fmt = (n: number) => `${fmtNumber(Math.round(n))} ₽`;
   const showOutlook = Boolean(outlook && outlook.kind !== 'top');
   if (!cost && !showOutlook && !player.careerEnding) return null;
   return (

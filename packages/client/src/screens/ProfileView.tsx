@@ -1,4 +1,4 @@
-import { t, LOCALES, LOCALE_NAMES, currentLocale, type Locale } from '../lib/i18n';
+import { t, LOCALES, LOCALE_NAMES, currentLocale, type Locale, fmtNumber } from '../lib/i18n';
 import React from 'react';
 import { useGameStore } from '../store/gameStore';
 import { haptic, openTelegramLink, shareLink } from '../lib/telegram';
@@ -45,14 +45,14 @@ export const ProfileView: React.FC = () => {
     [t('Основной навык'), skillName(mainId)],
     [t('Уровень'), String(skill.level)],
     [t('Опыт'), skill.level >= 100 ? t('Максимум') : `${skill.xp} / ${need} XP`],
-    [t('Репутация'), `${Math.round(player.reputation ?? 0).toLocaleString('ru-RU')} ⭐`],
+    [t('Репутация'), `${fmtNumber(Math.round(player.reputation ?? 0))} ⭐`],
     [t('Достижения'), String((player.achievements ?? []).length)],
     [t('Навыков изучено'), String(skills.filter((s) => s.level > 0).length)],
     [t('Предметы'), String((player.items ?? []).length)],
   ];
   const stats: Array<[string, string]> = [
     [t('Дней в игре'), String(player.currentDay ?? 1)],
-    [t('Заработано всего'), `${Math.round(player.totalEarned ?? player.money ?? 0).toLocaleString('ru-RU')} ₽`],
+    [t('Заработано всего'), `${fmtNumber(Math.round(player.totalEarned ?? player.money ?? 0))} ₽`],
     [t('Событий пройдено'), String(eventsSeen)],
     [t('Прожито жизней'), String(player.meta?.lives ?? 0)],
   ];
@@ -60,7 +60,7 @@ export const ProfileView: React.FC = () => {
     ['⚡', `${player.energy ?? 0}/${player.maxEnergy ?? 0}`],
     ['🔥', String(Math.round(player.motivation ?? 0))],
     ['⭐', String(Math.round(player.reputation ?? 0))],
-    ['💰', `${Math.round(player.money ?? 0).toLocaleString('ru-RU')} ₽`],
+    ['💰', `${fmtNumber(Math.round(player.money ?? 0))} ₽`],
   ];
   // Автопостинг вех: лента авто-постов «Стал сеньор за 78 дней!»
   const milestones: Milestone[] = (player.milestones ?? []) as Milestone[];

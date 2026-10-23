@@ -46,8 +46,10 @@ export function runCtoElection(
   }
   const { chance, qualified, missing } = ctoElectionChance(state, gate);
   if (!qualified) {
+    // Фрагменты собираются через t() на месте (а не в константах модуля) —
+    // подпись требований переводится под язык запроса (beta-gap).
     const human = Object.entries(missing)
-      .map(([k, v]) => `${HUMAN_REQ[k] ?? k}: ${v.current}/${v.needed}`)
+      .map(([k, v]) => `${t(HUMAN_REQ[k] ?? k)}: ${v.current}/${v.needed}`)
       .join(', ');
     return { error: t('Тебя не выдвигают. Не хватает: {human}', { human: human }) };
   }

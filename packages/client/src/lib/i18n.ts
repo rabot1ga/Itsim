@@ -34,6 +34,20 @@ export function currentLocale(): Locale {
   return locale;
 }
 
+/** BCP-47 теги для `Intl.*` (этап 4: форматы чисел под язык интерфейса). */
+const LOCALE_TAGS: Record<Locale, string> = { ru: 'ru-RU', en: 'en-US' };
+export function localeTag(): string {
+  return LOCALE_TAGS[locale];
+}
+/** Локализованный формат числа: разделители групп и десятичные под язык. */
+export function fmtNumber(n: number): string {
+  return new Intl.NumberFormat(localeTag()).format(n);
+}
+/** Деньги клиента: «12 345 ₽» (игра в целых). */
+export function fmtMoney(n: number): string {
+  return `${fmtNumber(Math.round(n))} ₽`;
+}
+
 /** Перевод под текущий язык. Ключ — исходная русская строка. */
 export function t(key: string, params?: Record<string, unknown>): string {
   return translate(locale, key, params);

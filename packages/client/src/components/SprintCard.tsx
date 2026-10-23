@@ -1,4 +1,4 @@
-import { t } from '../lib/i18n';
+import { t, fmtNumber } from '../lib/i18n';
 import React, { useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 /**
@@ -16,7 +16,7 @@ import { useGameStore } from '../store/gameStore';
 function fmtMoney(n: number): string {
   if (n >= 1000000) return t('{p0} млн', { p0: (n / 1000000).toFixed(1) });
   if (n >= 10000) return t('{p0} тыс', { p0: Math.round(n / 1000) });
-  return n.toLocaleString('ru-RU');
+  return fmtNumber(n);
 }
 export const SprintCard: React.FC = () => {
   const sprint = useGameStore((s) => s.sprint);

@@ -1,4 +1,4 @@
-import { t, currentLocale, setLocale, isLocale, hasStoredLocale, type Locale } from '../lib/i18n';
+import { t, currentLocale, setLocale, isLocale, hasStoredLocale, type Locale, fmtNumber } from '../lib/i18n';
 import { create } from 'zustand';
 import { haptic } from '../lib/telegram';
 import type { PetRoomPosition } from '@itsim/shared';
@@ -80,7 +80,7 @@ export function diffGains(prev: any, next: any): Gain[] {
     const delta = Math.round((next[f.key] ?? 0) - (prev[f.key] ?? 0));
     if (!delta) continue;
     const sign = delta > 0 ? '+' : '−';
-    const value = Math.abs(delta).toLocaleString('ru-RU');
+    const value = fmtNumber(Math.abs(delta));
     out.push({
       id: ++gainId,
       icon: f.icon,

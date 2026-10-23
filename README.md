@@ -612,7 +612,7 @@ npm test                # контент + vitest (shared/server/bot) + симу
 npm run build           # полная сборка (shared → content → server → client → bot → sim)
 ```
 
-Тесты: **420** (`shared` 186 · `server` 98 · `bot` 22 · `client` 114) + симулятор `--check`
+Тесты: **422** (`shared` 186 · `server` 100 · `bot` 22 · `client` 114) + симулятор `--check`
 (40 × 365 и эндгейм-зонд 40 × 730). Корневой `npm test` сам собирает `@itsim/shared` и
 `@itsim/content` — до 22.10.2026 он собирал только `shared`, и на свежем клоне серверные
 тесты падали с «Failed to resolve entry for package "@itsim/content"» (15 тестов), потому
@@ -706,7 +706,7 @@ CI — GitHub Actions (`.github/workflows/ci.yml`, источник —
 
 **Качество**
 
-- [x] 420 юнит-тестов (движок 186 · сервер 98 · бот 22 · клиент 114), симулятор 40×365 с `--check`-гейтом,
+- [x] 422 юнит-тестов (движок 186 · сервер 100 · бот 22 · клиент 114), симулятор 40×365 с `--check`-гейтом,
       эндгейм-зонд 40×730, `simulate --why`
 - [x] ESLint 9 + Prettier; `lint` = типы + линтер (раньше был только `tsc`)
 - [x] CI GitHub Actions: типы, линтер, контент, тесты, симулятор, сборка

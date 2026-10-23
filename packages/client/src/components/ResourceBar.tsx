@@ -1,4 +1,4 @@
-import { t } from '../lib/i18n';
+import { t, fmtNumber } from '../lib/i18n';
 import React, { useEffect, useRef, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { xpToNext } from '@itsim/shared';
@@ -62,12 +62,12 @@ export const ResourceBar: React.FC = () => {
           </button>
           <span className={`wallet-pill num ${moneyPop ? 'num-pop' : ''}`} aria-label={t('Деньги')}>
             <span aria-hidden="true">💰</span>
-            {Math.round(player.money ?? 0).toLocaleString('ru-RU')} ₽
+            {fmtNumber(Math.round(player.money ?? 0))} ₽
           </span>
           {coins > 0 && (
             <span className="wallet-pill is-gold num" aria-label={t('Монеты')}>
               <span aria-hidden="true">🪙</span>
-              {coins.toLocaleString('ru-RU')}
+              {fmtNumber(coins)}
             </span>
           )}
           <span className="wallet-spacer" />
@@ -107,12 +107,12 @@ export const ResourceBar: React.FC = () => {
               <span className="wallet-spacer" />
               <span className={`wallet-pill num ${moneyPop ? 'num-pop' : ''}`} aria-label={t('Деньги')}>
                 <span aria-hidden="true">💰</span>
-                {Math.round(player.money ?? 0).toLocaleString('ru-RU')} ₽
+                {fmtNumber(Math.round(player.money ?? 0))} ₽
               </span>
               {coins > 0 && (
                 <span className="wallet-pill is-gold num" aria-label={t('Монеты')}>
                   <span aria-hidden="true">🪙</span>
-                  {coins.toLocaleString('ru-RU')}
+                  {fmtNumber(coins)}
                 </span>
               )}
               <span className="wallet-pill is-dim num">

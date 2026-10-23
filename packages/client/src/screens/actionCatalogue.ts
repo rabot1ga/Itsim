@@ -1,4 +1,4 @@
-import { t } from '../lib/i18n';
+import { t, fmtNumber } from '../lib/i18n';
 /**
  * Everything the player can *do* in a day, in one place.
  *
@@ -108,5 +108,5 @@ export interface SideJobInfo {
 export function formatMoney(amount: number): string {
   if (amount >= 1000000) return t('{p0} млн', { p0: (amount / 1000000).toFixed(1) });
   if (amount >= 10000) return t('{p0} тыс', { p0: Math.round(amount / 1000) });
-  return amount.toLocaleString('ru-RU');
+  return fmtNumber(amount);
 }

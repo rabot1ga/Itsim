@@ -1,4 +1,4 @@
-import { t } from '../lib/i18n';
+import { t, fmtNumber } from '../lib/i18n';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { Spinner, EmptyState, ScreenTitle, SectionTitle } from '../components/ui';
@@ -112,8 +112,8 @@ export const MiningView: React.FC = () => {
               {t('Курс')} {mining.price.toFixed(1)} {t('₽/MH · ферма:')} {mining.hashrate} MH/s
             </p>
             <p className="text-xs text-ink-500 mt-1">
-              {t('Валовый доход')} {mining.gross.toLocaleString('ru-RU')} {t('₽, электричество −')}
-              {mining.electricity.toLocaleString('ru-RU')} ₽
+              {t('Валовый доход')} {fmtNumber(mining.gross)} {t('₽, электричество −')}
+              {fmtNumber(mining.electricity)} ₽
             </p>
           </div>
           <div className="shop-product-buy">
@@ -122,7 +122,7 @@ export const MiningView: React.FC = () => {
               aria-label={t('Чистый доход')}
             >
               {mining.net >= 0 ? '+' : ''}
-              {mining.net.toLocaleString('ru-RU')} {t('₽/день')}
+              {fmtNumber(mining.net)} {t('₽/день')}
             </span>
           </div>
         </article>
@@ -152,7 +152,7 @@ export const MiningView: React.FC = () => {
               aria-label={t('Итого за неделю')}
             >
               {weekNet >= 0 ? '+' : ''}
-              {weekNet.toLocaleString('ru-RU')} ₽
+              {fmtNumber(weekNet)} ₽
             </span>
           </header>
           <div className="flex items-end gap-1 h-16">
@@ -208,7 +208,7 @@ export const MiningView: React.FC = () => {
                   </p>
                 </div>
                 <span className={`text-2xs shrink-0 ${f.owned ? 'text-moss-300' : 'text-ink-500'}`}>
-                  {f.owned ? t('установлено') : `${f.price.toLocaleString('ru-RU')} ₽`}
+                  {f.owned ? t('установлено') : `${fmtNumber(f.price)} ₽`}
                 </span>
               </li>
             ))}

@@ -1,4 +1,4 @@
-import { t } from '../lib/i18n';
+import { t, fmtNumber } from '../lib/i18n';
 import React, { useEffect, useState } from 'react';
 import {
   ProjectDef,
@@ -21,7 +21,7 @@ import { Spinner } from './ui';
  * instead of two doors to the same money.
  */
 function fmtMoney(amount: number): string {
-  return `${amount.toLocaleString('ru-RU')} ₽`;
+  return `${fmtNumber(amount)} ₽`;
 }
 function deadlineLabel(daysLeft: number): string {
   if (daysLeft < 0) return t('просрочен');
