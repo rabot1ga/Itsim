@@ -612,7 +612,7 @@ npm test                # контент + vitest (shared/server/bot) + симу
 npm run build           # полная сборка (shared → content → server → client → bot → sim)
 ```
 
-Тесты: **414** (`shared` 186 · `server` 95 · `bot` 22 · `client` 111) + симулятор `--check`
+Тесты: **420** (`shared` 186 · `server` 98 · `bot` 22 · `client` 114) + симулятор `--check`
 (40 × 365 и эндгейм-зонд 40 × 730). Корневой `npm test` сам собирает `@itsim/shared` и
 `@itsim/content` — до 22.10.2026 он собирал только `shared`, и на свежем клоне серверные
 тесты падали с «Failed to resolve entry for package "@itsim/content"» (15 тестов), потому
@@ -706,7 +706,7 @@ CI — GitHub Actions (`.github/workflows/ci.yml`, источник —
 
 **Качество**
 
-- [x] 414 юнит-тестов (движок 186 · сервер 95 · бот 22 · клиент 111), симулятор 40×365 с `--check`-гейтом,
+- [x] 420 юнит-тестов (движок 186 · сервер 98 · бот 22 · клиент 114), симулятор 40×365 с `--check`-гейтом,
       эндгейм-зонд 40×730, `simulate --why`
 - [x] ESLint 9 + Prettier; `lint` = типы + линтер (раньше был только `tsc`)
 - [x] CI GitHub Actions: типы, линтер, контент, тесты, симулятор, сборка
@@ -724,7 +724,9 @@ CI — GitHub Actions (`.github/workflows/ci.yml`, источник —
 - [x] **Автопостинг вех** («Стал Senior за 78 дней!») — лента авто-постов в «Карточке жизни»
       (`shared/engine/milestones.ts`: промоушены/миллион/год/финал, идемпотентно по id;
       сервер пишет на мутациях day/action; шаринг в Telegram — `shareLink`)
-- [ ] Скины и позиции питомца в комнате
+- [x] **Скины и позиции питомца в комнате** — питомец-эмоудзи на сцене комнаты
+      (`lib/petSkins.ts` + якоря `PET_ROOM_META`): 5 позиций и выбор вида из
+      инвентаря, аксессуары бейджем; косметика в сейве (`petRoom`, `POST /api/game/pet-room`)
 
 ### 📋 Предстоит
 

@@ -78,6 +78,17 @@ export interface Milestone {
   params?: Record<string, unknown>;
 }
 
+/** Якоря позиций питомца на сцене комнаты (роадмап: скины и позиции). */
+export const PET_ROOM_POSITIONS = ['bed', 'window', 'rug', 'desk', 'shelf'] as const;
+export type PetRoomPosition = (typeof PET_ROOM_POSITIONS)[number];
+
+/** Косметика питомца в комнате: кто сидит (скин) и где (позиция). */
+export interface PetRoomLook {
+  /** id настоящего питомца из инвентаря (не аксессуар); null — спрятан */
+  skin?: string | null;
+  position?: PetRoomPosition;
+}
+
 // ---- Player State ----
 
 export interface PlayerState {
@@ -142,6 +153,8 @@ export interface PlayerState {
   milestones?: Milestone[];
   /** одноразовый seed ленты: сейвы до фичи не ретро-постятся */
   milestonesSeeded?: boolean;
+  /** Скины и позиции питомца в комнате (роадмап): косметика сейва. */
+  petRoom?: PetRoomLook;
 
   // Skills
   skills: Record<SkillId, SkillLevel>;

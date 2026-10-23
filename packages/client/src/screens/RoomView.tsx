@@ -1,9 +1,11 @@
 import { t } from '../lib/i18n';
 import React, { useState } from 'react';
 import { useGameStore } from '../store/gameStore';
-import { ScreenTitle } from '../components/ui';
+import { ScreenTitle, SectionTitle } from '../components/ui';
 import { ACTIONS } from './actionCatalogue';
-import { ROOM_TIER_META, roomArtwork, roomTierOf } from '../lib/roomArt';
+import { ROOM_TIER_META, PET_ROOM_META, DEFAULT_PET_POSITION, roomArtwork, roomTierOf } from '../lib/roomArt';
+import { PET_SKIN_EMOJI, petEmoji, petBadges } from '../lib/petSkins';
+import type { PetRoomPosition } from '@itsim/shared';
 /**
  * «Дом» — комната как карточка события (решение 22.10.2026, вариант B):
  * сцена-баннер текущего тира + строки-зоны поверх общего каталога действий.
@@ -38,12 +40,23 @@ function zoneChips(zone: Zone): string[] {
 export const RoomView: React.FC = () => {
   const player = useGameStore((s) => s.player);
   const performAction = useGameStore((s) => s.performAction);
+  const setPetRoom = useGameStore((s) => s.setPetRoom);
   const [busy, setBusy] = useState<string | null>(null);
   if (!player) return null;
   const tier = roomTierOf(player.grade);
   const meta = ROOM_TIER_META[tier];
-  const hasPet = (player.items ?? []).some((i: string) => i.startsWith('pet_'));
+  const items = player.items ?? [];
+  const hasPet = items.some((i: string) => i.startsWith('pet_'));
   const zones = ZONES.filter((z) => !z.needsPet || hasPet);
+  // Скины и позиции питомца (роадмап): вид — эмоудзи по виду питомца,
+  // аксессуары — бейджем; позиция — якорь на сцене комнаты.
+  const ownedSkins = items.filter((i: string) => i in PET_SKIN_EMOJI);
+  const look = player.petRoom ?? {};
+  const skin = look.skin === null ? null : (look.skin ?? ownedSkins[0] ?? null);
+  const position: PetRoomPosition = look.position ?? DEFAULT_PET_POSITION;
+  const anchor = PET_ROOM_META[position];
+  const skinEmo = petEmoji(skin);
+  const badges = petBadges(items);
   const runZone = async (zone: Zone) => {
     setBusy(zone.id);
     await performAction(zone.action);
@@ -59,18 +72,35 @@ export const RoomView: React.FC = () => {
         <div className="story-card-kicker">
           {t('твоя комната ·')} {tier}
         </div>
-        <img
-          className="story-card-art"
-          src={roomArtwork(tier)}
-          alt=""
-          width={512}
-          height={384}
-          onError={(ev) => {
-            // Сцена — украшение и настроение, а не контракт: нет файла —
-            // карточка остаётся текстовой (тот же приём, что у финалов).
-            ev.currentTarget.style.display = 'none';
-          }}
-        />
+        <div className="room-pet-stage">
+          <img
+            className="story-card-art"
+            src={roomArtwork(tier)}
+            alt=""
+            width={512}
+            height={384}
+            onError={(ev) => {
+              // Сцена — украшение и настроение, а не контракт: нет файла —
+              // карточка остаётся текстовой (тот же приём, что у финалов).
+              ev.currentTarget.style.display = 'none';
+            }}
+          />
+          {skinEmo && (
+            <div
+              className="room-pet"
+              style={{ left: `${anchor.x}%`, top: `${anchor.y}%` }}
+              role="img"
+              aria-label={t('Питомец в комнате')}
+            >
+              <span className="room-pet-emoji">{skinEmo}</span>
+              {badges.length > 0 && (
+                <span className="room-pet-badges" aria-hidden="true">
+                  {badges.join('')}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
         <div className="story-card-copy">
           <h2>{meta.title}</h2>
           <p>{meta.description}</p>
@@ -103,6 +133,49 @@ export const RoomView: React.FC = () => {
         </div>
         <p className="story-footnote">{t('Комната растёт вместе с грейдом: старт → обжитая → офис → студия мечты.')}</p>
       </section>
+
+      {/* Скины и позиции питомца в комнате (роадмап): косметика сейва */}
+      {ownedSkins.length > 0 && (
+        <section className="card">
+          <SectionTitle>{t('Питомец в комнате')}</SectionTitle>
+          <p className="pet-room-label">{t('Кто в комнате')}</p>
+          <div className="pet-room-row" role="group" aria-label={t('Кто в комнате')}>
+            {ownedSkins.map((id: string) => (
+              <button
+                key={id}
+                type="button"
+                className={skin === id ? 'btn btn-primary' : 'btn btn-ghost'}
+                aria-pressed={skin === id}
+                onClick={() => void setPetRoom({ skin: id })}
+              >
+                <span aria-hidden="true">{PET_SKIN_EMOJI[id]}</span>
+              </button>
+            ))}
+            <button
+              type="button"
+              className={skin === null ? 'btn btn-primary' : 'btn btn-ghost'}
+              aria-pressed={skin === null}
+              onClick={() => void setPetRoom({ skin: null })}
+            >
+              {t('Убрать питомца')}
+            </button>
+          </div>
+          <p className="pet-room-label">{t('Где отдыхает питомец')}</p>
+          <div className="pet-room-row" role="group" aria-label={t('Где отдыхает питомец')}>
+            {(Object.keys(PET_ROOM_META) as PetRoomPosition[]).map((p) => (
+              <button
+                key={p}
+                type="button"
+                className={position === p ? 'btn btn-primary' : 'btn btn-ghost'}
+                aria-pressed={position === p}
+                onClick={() => void setPetRoom({ position: p })}
+              >
+                {PET_ROOM_META[p].label}
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 };

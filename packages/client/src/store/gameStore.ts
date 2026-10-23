@@ -1,6 +1,7 @@
 import { t, currentLocale, setLocale, isLocale, hasStoredLocale, type Locale } from '../lib/i18n';
 import { create } from 'zustand';
 import { haptic } from '../lib/telegram';
+import type { PetRoomPosition } from '@itsim/shared';
 export type Screen = 'menu' | 'game' | 'loading';
 const API_BASE = '/api';
 // Auth: keep the Telegram initData — it is validated on every request
@@ -131,6 +132,7 @@ interface GameState {
    * перезагружает приложение (см. setLocale).
    */
   setLanguage: (language: Locale) => Promise<void>;
+  setPetRoom: (patch: { skin?: string | null; position?: PetRoomPosition }) => Promise<void>;
   chooseEvent: (eventId: string, choiceIndex: number) => Promise<void>;
   applyToCompany: (companyId: string) => Promise<boolean>;
   acceptOffer: (companyId: string) => Promise<boolean>;
@@ -348,6 +350,20 @@ export const useGameStore = create<GameState>((set, get) => ({
       /* без сейва (игра не начата / офлайн) выбор остаётся локальным */
     }
     setLocale(language); // localStorage + перезагрузка
+  },
+  setPetRoom: async (patch) => {
+    // Косметика сейва: скин/позиция питомца в комнате. Локально — сразу
+    // (мгновенный отклик), сервер подтверждает и возвращает каноничный сейв.
+    const prev = get().player;
+    if (prev) {
+      set({ player: { ...prev, petRoom: { ...(prev.petRoom ?? {}), ...patch } } });
+    }
+    try {
+      const res = await api('/game/pet-room', { method: 'POST', body: JSON.stringify(patch) });
+      if (res.data?.state) set({ player: res.data.state, error: null });
+    } catch {
+      /* без сейва косметика остаётся локальной — правил игры она не касается */
+    }
   },
   claimSprint: async () => {
     try {

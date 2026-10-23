@@ -1,4 +1,5 @@
 import { t } from './i18n';
+import type { PetRoomPosition } from '@itsim/shared';
 /**
  * Комната как карточка события (решение 22.10.2026, вариант B): сцена-баннер
  * из `public/art/room/<тир>.webp` + строки-действия из общего каталога.
@@ -32,6 +33,26 @@ export function roomTierOf(grade: string): RoomTier {
 export function roomArtwork(tier: RoomTier): string {
   return `/art/room/${tier}.webp`;
 }
+/**
+ * Позиции питомца на сцене комнаты: якорь в % контейнера арта
+ * (translate(-50%, -100%) — питомец «сидит» на точке). Расклад тиров
+ * однотипный (кровать слева, стол центр, окно справа) — якоря общие.
+ */
+export const PET_ROOM_META: Record<
+  PetRoomPosition,
+  {
+    label: string;
+    x: number;
+    y: number;
+  }
+> = {
+  bed: { label: t('На кровати'), x: 16, y: 58 },
+  window: { label: t('На подоконнике'), x: 78, y: 36 },
+  rug: { label: t('На коврике'), x: 50, y: 84 },
+  desk: { label: t('За столом'), x: 24, y: 50 },
+  shelf: { label: t('На полке'), x: 40, y: 8 },
+};
+export const DEFAULT_PET_POSITION: PetRoomPosition = 'rug';
 export const ROOM_TIER_META: Record<
   RoomTier,
   {

@@ -19,6 +19,8 @@ import {
   createNewPlayer,
   isLocale,
   metaXpMult,
+  PET_ROOM_POSITIONS,
+  type PetRoomPosition,
 } from '@itsim/shared';
 import { recalcMaxEnergy, respondState, resetDailyChallenge, StoredState } from './shared.js';
 function describePerkRequires(requires: Record<string, number>, content: any): string {
@@ -133,6 +135,41 @@ export async function miscRoutes(app: FastifyInstance) {
     const state = (await loadState(userId)) as StoredState | null;
     if (!state) return reply.status(404).send({ error: t('Game not started') });
     state.language = language;
+    await saveState(userId, state);
+    return { state: respondState(state) };
+  });
+  /**
+   * POST /api/game/pet-room — скины и позиции питомца в комнате (роадмап).
+   *
+   * Косметика сейва (не правила): `skin` — id настоящего питомца из
+   * инвентаря (не аксессуар; `null` — спрятать), `position` — якорь из
+   * `PET_ROOM_POSITIONS`. Патч: можно слать только одно из полей.
+   */
+  app.post('/pet-room', async (request, reply) => {
+    const user = (request as any).telegramUser;
+    const userId = String(user.id);
+    const { skin, position } = request.body as {
+      skin?: string | null;
+      position?: string;
+    };
+    const state = (await loadState(userId)) as StoredState | null;
+    if (!state) return reply.status(404).send({ error: t('Game not started') });
+    const petRoom = { ...(state.petRoom ?? {}) };
+    if (skin !== undefined) {
+      // Настоящие питомцы (не бант/корона/очки) — те же определения, что в feed_pet.
+      const isRealPet = (getContent().items as any[]).some((i) => i.id === skin && i.type === 'pet' && i.layerId);
+      if (skin !== null && !(isRealPet && state.items.includes(skin))) {
+        return reply.status(400).send({ error: t('Такого питомца у тебя нет') });
+      }
+      petRoom.skin = skin;
+    }
+    if (position !== undefined) {
+      if (!PET_ROOM_POSITIONS.includes(position as PetRoomPosition)) {
+        return reply.status(400).send({ error: t('Такой позиции нет') });
+      }
+      petRoom.position = position as PetRoomPosition;
+    }
+    state.petRoom = petRoom;
     await saveState(userId, state);
     return { state: respondState(state) };
   });

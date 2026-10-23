@@ -4083,3 +4083,18 @@ Object.assign(en, {
   'Первый миллион на {p1}-й день!': 'First million on day {p1}!',
   'Год в IT — и ты ещё здесь!': 'A year in IT — and you are still here!',
 });
+
+// Pet room skins/positions (роадмап: скины и позиции питомца в комнате)
+Object.assign(en, {
+  'Питомец в комнате': 'Pet in the room',
+  'Кто в комнате': 'Who is in the room',
+  'Где отдыхает питомец': 'Where the pet hangs out',
+  'На кровати': 'On the bed',
+  'На подоконнике': 'On the windowsill',
+  'На коврике': 'On the rug',
+  'За столом': 'At the desk',
+  'На полке': 'On the shelf',
+  'Убрать питомца': 'Hide the pet',
+  'Такого питомца у тебя нет': "You don't have that pet",
+  'Такой позиции нет': 'No such position',
+});
