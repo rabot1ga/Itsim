@@ -1,9 +1,9 @@
+import { t } from '../lib/i18n';
 import React, { useRef, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { metaXpBonusPct } from '@itsim/shared';
 import { haptic } from '../lib/telegram';
 import { accordionBodyRef } from './ui';
-
 /**
  * Career pressure card (v2.1 balance layer).
  *
@@ -21,14 +21,13 @@ import { accordionBodyRef } from './ui';
  * divider says "career, right now".
  */
 const ENDING_LABELS: Record<string, string> = {
-  corporate_god: 'Корпоративный бог',
-  burnout: 'Выгорание',
-  left_it: 'Ушёл из IT',
-  free_artist: 'Свободный художник',
-  teacher: 'Учитель',
-  exit: 'Экзит',
+  corporate_god: t('Корпоративный бог'),
+  burnout: t('Выгорание'),
+  left_it: t('Ушёл из IT'),
+  free_artist: t('Свободный художник'),
+  teacher: t('Учитель'),
+  exit: t('Экзит'),
 };
-
 export const CareerPressureCard: React.FC = () => {
   const player = useGameStore((s) => s.player);
   const cost = useGameStore((s) => s.costOfDay);
@@ -41,9 +40,7 @@ export const CareerPressureCard: React.FC = () => {
   // starts a 5s timer, second tap executes — a fat-fingered restart is a day lost
   const [confirmLife, setConfirmLife] = useState(false);
   const confirmLifeTimer = useRef<number | undefined>(undefined);
-
   if (!player) return null;
-
   const handleNewLife = async () => {
     if (!confirmLife) {
       setConfirmLife(true);
@@ -58,27 +55,27 @@ export const CareerPressureCard: React.FC = () => {
     setConfirmLife(false);
     if (!ok) haptic('error');
   };
-
   const fmt = (n: number) => `${Math.round(n).toLocaleString('ru-RU')} ₽`;
-
   const showOutlook = Boolean(outlook && outlook.kind !== 'top');
   if (!cost && !showOutlook && !player.careerEnding) return null;
-
   return (
     <section className="card space-y-2.5">
       {player.careerEnding && (
         <>
           <div className="border-l-[3px] border-l-gold-300 pl-2.5">
             <div className="text-2xs font-semibold uppercase tracking-[0.09em] text-gold-300">
-              Финал · {metaXpBonusPct(player.meta) > 0 ? `жизнь ${player.meta!.lives} завершена` : 'глава прожита'}
+              {t('Финал ·')}{' '}
+              {metaXpBonusPct(player.meta) > 0
+                ? t('жизнь {p0} завершена', { p0: player.meta!.lives })
+                : t('глава прожита')}
             </div>
             <div className="text-sm font-semibold text-white mt-0.5">
               {ENDING_LABELS[player.careerEnding] ?? player.careerEnding}
             </div>
             <div className="mt-1 text-xs text-ink-400 leading-relaxed">
               {player.careerEnding === 'corporate_god'
-                ? 'Ты в борде. Поздравляем: теперь ты отвечаешь за чужие карьеры и за свой сон.'
-                : 'Игра продолжается — это отмеченная глава, а не титр. Но назад дороги уже нет.'}
+                ? t('Ты в борде. Поздравляем: теперь ты отвечаешь за чужие карьеры и за свой сон.')
+                : t('Игра продолжается — это отмеченная глава, а не титр. Но назад дороги уже нет.')}
             </div>
 
             {/* Prestige (P1.1): what survives and what the next life gives back */}
@@ -86,10 +83,12 @@ export const CareerPressureCard: React.FC = () => {
               {metaXpBonusPct(player.meta) > 0 && (
                 <p className="flex items-center gap-1.5 text-gold-300/90">
                   <span aria-hidden="true">🔥</span>
-                  Мета-бонус: навсегда <span className="num">+{metaXpBonusPct(player.meta)}% XP</span>
+                  {t('Мета-бонус: навсегда')} <span className="num">+{metaXpBonusPct(player.meta)}% XP</span>
                 </p>
               )}
-              <p className="text-ink-500">Ачивки, покупки и стрик входа не сгорают. Навыки, деньги и вещи — да.</p>
+              <p className="text-ink-500">
+                {t('Ачивки, покупки и стрик входа не сгорают. Навыки, деньги и вещи — да.')}
+              </p>
             </div>
 
             <button
@@ -98,16 +97,16 @@ export const CareerPressureCard: React.FC = () => {
               className={`btn btn-secondary w-full text-sm mt-2.5 ${confirmLife ? '!text-clay-300' : ''}`}
             >
               {busy
-                ? 'Начинаем…'
+                ? t('Начинаем…')
                 : confirmLife
-                  ? 'Точно? Всё начнётся с дня 1'
+                  ? t('Точно? Всё начнётся с дня 1')
                   : player.meta && player.meta.lives > 0
-                    ? `♻ Начать жизнь ${player.meta.lives + 1}`
-                    : '♻ Начать новую жизнь'}
+                    ? t('♻ Начать жизнь {p0}', { p0: player.meta.lives + 1 })
+                    : t('♻ Начать новую жизнь')}
             </button>
             {confirmLife && (
               <p className="mt-1 text-2xs text-clay-300 leading-tight">
-                Следующая жизнь даст +15% XP навсегда. Нажми ещё раз — или просто подожди.
+                {t('Следующая жизнь даст +15% XP навсегда. Нажми ещё раз — или просто подожди.')}
               </p>
             )}
           </div>
@@ -123,10 +122,11 @@ export const CareerPressureCard: React.FC = () => {
             className="w-full flex items-center gap-2 text-left touch-target"
           >
             <span aria-hidden="true">🪙</span>
-            <span className="flex-1 text-sm font-semibold text-ink-100">Стоимость дня</span>
+            <span className="flex-1 text-sm font-semibold text-ink-100">{t('Стоимость дня')}</span>
             <span className={`num text-sm font-semibold ${cost.balanceDaily >= 0 ? 'text-moss-300' : 'text-clay-300'}`}>
               {cost.balanceDaily >= 0 ? '+' : ''}
-              {fmt(cost.balanceDaily)}/день
+              {fmt(cost.balanceDaily)}
+              {t('/день')}
             </span>
             <span aria-hidden="true" className={`accordion-chevron ${costOpen ? 'is-open' : ''}`}>
               ▾
@@ -136,19 +136,19 @@ export const CareerPressureCard: React.FC = () => {
           <div className={`accordion-body ${costOpen ? 'open' : ''}`} ref={accordionBodyRef(costOpen)}>
             <div className="accordion-inner">
               <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs text-ink-400 pt-2 pl-5">
-                <span>Еда, дорога, подписки</span>
+                <span>{t('Еда, дорога, подписки')}</span>
                 <span className="num text-right text-ink-100">−{fmt(cost.daily)}</span>
-                <span>Аренда (в пересчёте на день)</span>
+                <span>{t('Аренда (в пересчёте на день)')}</span>
                 <span className="num text-right text-ink-100">−{fmt(cost.rent)}</span>
                 {cost.wealthTax > 0 && (
                   <>
-                    <span>Налог на состояние/лайфстайл</span>
+                    <span>{t('Налог на состояние/лайфстайл')}</span>
                     <span className="num text-right text-ochre-300">−{fmt(cost.wealthTax)}</span>
                   </>
                 )}
                 {cost.incomeDaily > 0 && (
                   <>
-                    <span>Зарплата (в пересчёте на день)</span>
+                    <span>{t('Зарплата (в пересчёте на день)')}</span>
                     <span className="num text-right text-moss-300">+{fmt(cost.incomeDaily)}</span>
                   </>
                 )}
@@ -158,7 +158,7 @@ export const CareerPressureCard: React.FC = () => {
 
           {cost.broke && (
             <div className="text-xs text-ochre-300 pl-5">
-              Режим «гречка и лапша»: расходы урезаны, но настроение тает. Нужен доход.
+              {t('Режим «гречка и лапша»: расходы урезаны, но настроение тает. Нужен доход.')}
             </div>
           )}
         </div>
@@ -171,7 +171,7 @@ export const CareerPressureCard: React.FC = () => {
             <div className="flex items-baseline justify-between gap-2">
               <span className="flex items-center gap-1.5 text-sm font-semibold text-ink-100">
                 <span aria-hidden="true">🎯</span>
-                {outlook!.kind === 'cto_election' ? outlook!.label : `До «${outlook!.label}»`}
+                {outlook!.kind === 'cto_election' ? outlook!.label : t('До «{p0}»', { p0: outlook!.label })}
               </span>
               {typeof outlook!.progress === 'number' && (
                 <span className="num text-xs text-ink-400">{outlook!.progress}%</span>
@@ -191,8 +191,10 @@ export const CareerPressureCard: React.FC = () => {
                 <div className="mt-2 space-y-1 text-xs">
                   {outlook!.ready ? (
                     <div className="text-moss-300">
-                      Требования выполнены. Ждём ревью: через {outlook!.daysToReview} дн.
-                      {outlook!.competition > 1 ? ` · мест на двоих: ${outlook!.competition} претендента` : ''}
+                      {t('Требования выполнены. Ждём ревью: через')} {outlook!.daysToReview} {t('дн.')}
+                      {outlook!.competition > 1
+                        ? t(' · мест на двоих: {p0} претендента', { p0: outlook!.competition })
+                        : ''}
                     </div>
                   ) : (
                     outlook!.missing.map((m: any) => (
@@ -206,7 +208,7 @@ export const CareerPressureCard: React.FC = () => {
                   )}
                 </div>
                 <div className="mt-2 text-2xs text-ink-600 leading-relaxed">
-                  Грейды растут от глубины (основной навык + ветка), а не от количества курсов.
+                  {t('Грейды растут от глубины (основной навык + ветка), а не от количества курсов.')}
                 </div>
               </>
             )}
@@ -216,8 +218,8 @@ export const CareerPressureCard: React.FC = () => {
                 <div className="mt-2 text-xs text-ink-300">
                   {outlook!.ready ? (
                     <>
-                      Борд готов тебя выслушать. Шанс: <b className="num text-moss-300">{outlook!.chance}%</b>. Провал —
-                      минус 60 дней и 4 репутации.
+                      {t('Борд готов тебя выслушать. Шанс:')} <b className="num text-moss-300">{outlook!.chance}%</b>
+                      {t('. Провал — минус 60 дней и 4 репутации.')}
                     </>
                   ) : (
                     <div className="space-y-1">
@@ -242,8 +244,8 @@ export const CareerPressureCard: React.FC = () => {
                   }}
                 >
                   {outlook!.cooldownDays > 0
-                    ? `Борд занят (${outlook!.cooldownDays} дн.)`
-                    : 'Выдвинуться в CTO · 3 энергии'}
+                    ? t('Борд занят ({p0} дн.)', { p0: outlook!.cooldownDays })
+                    : t('Выдвинуться в CTO · 3 энергии')}
                 </button>
               </>
             )}

@@ -1,3 +1,4 @@
+import { t } from '../lib/i18n';
 import React, { useEffect, useRef, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import {
@@ -14,7 +15,6 @@ import { Spinner, EmptyState, ScreenTitle, SectionTitle } from '../components/ui
 import { NavLinks } from '../components/NavLinks';
 import { StarsShop } from '../components/StarsShop';
 import { IsoIcon, spriteForItem, HOUSING_SPRITE } from '../components/iso/IsoIcon';
-
 type HousingDef = {
   level: number;
   name: string;
@@ -25,21 +25,19 @@ type HousingDef = {
   saveMult: number;
   saveStreakDays: number;
 };
-
 /** Compose the small "bonus" caption from the structured fields */
 function housingBonus(h: HousingDef): string {
   const parts: string[] = [];
-  if (h.energyBonus) parts.push(`+${h.energyBonus} энергия`);
-  if (h.motivationBonus) parts.push(`+${h.motivationBonus} настроение`);
-  return parts.length ? parts.join(', ') : 'базовое';
+  if (h.energyBonus) parts.push(t('+{p0} энергия', { p0: h.energyBonus }));
+  if (h.motivationBonus) parts.push(t('+{p0} настроение', { p0: h.motivationBonus }));
+  return parts.length ? parts.join(', ') : t('базовое');
 }
-
 // Hard-coded fallback used only while /api/content/balance hasn't resolved.
 // The values mirror balance.json so the section is never empty.
 const FALLBACK_HOUSING: HousingDef[] = [
   {
     level: 0,
-    name: 'Общага',
+    name: t('Общага'),
     cost: 5000,
     energyBonus: 0,
     motivationBonus: 0,
@@ -49,7 +47,7 @@ const FALLBACK_HOUSING: HousingDef[] = [
   },
   {
     level: 1,
-    name: 'Однушка на окраине',
+    name: t('Однушка на окраине'),
     cost: 25000,
     energyBonus: 1,
     motivationBonus: 0,
@@ -59,7 +57,7 @@ const FALLBACK_HOUSING: HousingDef[] = [
   },
   {
     level: 2,
-    name: 'Квартира в центре',
+    name: t('Квартира в центре'),
     cost: 50000,
     energyBonus: 2,
     motivationBonus: 5,
@@ -69,7 +67,7 @@ const FALLBACK_HOUSING: HousingDef[] = [
   },
   {
     level: 3,
-    name: 'Своя квартира (ипотека)',
+    name: t('Своя квартира (ипотека)'),
     cost: 40000,
     energyBonus: 2,
     motivationBonus: 10,
@@ -79,7 +77,7 @@ const FALLBACK_HOUSING: HousingDef[] = [
   },
   {
     level: 4,
-    name: 'Пентхаус',
+    name: t('Пентхаус'),
     cost: 150000,
     energyBonus: 3,
     motivationBonus: 15,
@@ -88,7 +86,6 @@ const FALLBACK_HOUSING: HousingDef[] = [
     saveStreakDays: 70,
   },
 ];
-
 export const ShopView: React.FC = () => {
   const player = useGameStore((s) => s.player);
   const performAction = useGameStore((s) => s.performAction);
@@ -103,7 +100,6 @@ export const ShopView: React.FC = () => {
   const [note, setNote] = useState<string | null>(null);
   const [housing, setHousing] = useState<HousingDef[]>([]);
   const [shopCatalogue, setShopCatalogue] = useState<ShopCategoryDef[] | null>(null);
-
   useEffect(() => {
     const controller = new AbortController();
     setLoaded(false);
@@ -125,7 +121,6 @@ export const ShopView: React.FC = () => {
       });
     return () => controller.abort();
   }, [attempt]);
-
   // Housing comes from the same balance.json the server uses (3.6: HOUSING
   // moved out of a hard-coded array into content). We keep a local copy as a
   // graceful fallback in case the content service is down on first paint.
@@ -144,11 +139,8 @@ export const ShopView: React.FC = () => {
       });
     return () => controller.abort();
   }, []);
-
   const shopTabs = shopCatalogue ? shopCategoriesFromBalance(shopCatalogue) : SHOP_CATEGORIES;
-
   const HOUSING = housing.length > 0 ? housing : FALLBACK_HOUSING;
-
   const buy = async (id: string, action = 'buy_item') => {
     if (lock.current) return;
     lock.current = true;
@@ -156,23 +148,21 @@ export const ShopView: React.FC = () => {
     setNote(null);
     try {
       const ok = await performAction(action, action === 'buy_item' ? { itemId: id } : undefined);
-      if (ok) setNote(action === 'buy_item' ? 'Покупка сохранена. Предмет теперь твой.' : 'Переезд оформлен.');
+      if (ok) setNote(action === 'buy_item' ? t('Покупка сохранена. Предмет теперь твой.') : t('Переезд оформлен.'));
     } finally {
       lock.current = false;
       setBusy(null);
     }
   };
-
   if (!player) return null;
   const canAfford = (price: number) => (player.money ?? 0) >= price;
   const visible = items.filter((item) => itemInCategory(item, category, shopCatalogue ?? undefined));
-
   return (
     <div className="space-y-4 animate-fade-in">
       <ScreenTitle emoji="🛍" meta={<span className="num text-moss-300">{shopMoney(player.money ?? 0)}</span>}>
-        Магазин
+        {t('Магазин')}
       </ScreenTitle>
-      <div className="segmented" role="group" aria-label="Категории товаров">
+      <div className="segmented" role="group" aria-label={t('Категории товаров')}>
         {shopTabs.map((tab) => (
           <button key={tab.id} aria-pressed={category === tab.id} onClick={() => setCategory(tab.id)}>
             {tab.label}
@@ -189,25 +179,25 @@ export const ShopView: React.FC = () => {
           {error}
         </p>
       )}
-      {!loaded && <Spinner label="Открываем магазин…" />}
+      {!loaded && <Spinner label={t('Открываем магазин…')} />}
       {loadError && (
         <div className="card">
           <EmptyState
             emoji="🛍"
-            title="Магазин недоступен"
-            hint="Не удалось загрузить каталог. Попробуй ещё раз."
+            title={t('Магазин недоступен')}
+            hint={t('Не удалось загрузить каталог. Попробуй ещё раз.')}
             bare
           />
           <button className="btn btn-secondary w-full" onClick={() => setAttempt((n) => n + 1)}>
-            Повторить загрузку
+            {t('Повторить загрузку')}
           </button>
         </div>
       )}
       {loaded && !loadError && visible.length === 0 && (
-        <EmptyState emoji="📦" title="Здесь пока пусто" hint="Загляни в другую категорию." />
+        <EmptyState emoji="📦" title={t('Здесь пока пусто')} hint={t('Загляни в другую категорию.')} />
       )}
       {loaded && !loadError && (
-        <div className="grid grid-cols-1 gap-2" aria-label="Товары">
+        <div className="grid grid-cols-1 gap-2" aria-label={t('Товары')}>
           {visible.map((item) => {
             const owned = (player.items ?? []).includes(item.id);
             const affordable = canAfford(item.price);
@@ -233,13 +223,16 @@ export const ShopView: React.FC = () => {
                   <h3>{item.name}</h3>
                   <p className="shop-product-effects">{itemEffects(item)}</p>
                   <details className="shop-product-details">
-                    <summary>Описание{item.nft ? ' · NFT' : ''}</summary>
+                    <summary>
+                      {t('Описание')}
+                      {item.nft ? ' · NFT' : ''}
+                    </summary>
                     <p>{item.description}</p>
                   </details>
                 </div>
                 <div className="shop-product-buy">
                   {owned ? (
-                    <span className="text-xs text-moss-300">✓ куплено</span>
+                    <span className="text-xs text-moss-300">{t('✓ куплено')}</span>
                   ) : (
                     <>
                       <span className={`shop-price num ${affordable ? '' : 'is-short'}`}>{shopMoney(item.price)}</span>
@@ -249,14 +242,16 @@ export const ShopView: React.FC = () => {
                         className={`btn btn-sm ${affordable ? 'btn-primary' : 'btn-secondary'}`}
                         title={
                           affordable
-                            ? `Купить за ${shopMoney(item.price)}`
-                            : `Не хватает ${shopMoney(item.price - (player.money ?? 0))}`
+                            ? t('Купить за {p0}', { p0: shopMoney(item.price) })
+                            : t('Не хватает {p0}', { p0: shopMoney(item.price - (player.money ?? 0)) })
                         }
                       >
-                        {busy === item.id ? '…' : 'Купить'}
+                        {busy === item.id ? '…' : t('Купить')}
                       </button>
                       {!affordable && (
-                        <span className="sr-only">Не хватает {shopMoney(item.price - (player.money ?? 0))}</span>
+                        <span className="sr-only">
+                          {t('Не хватает')} {shopMoney(item.price - (player.money ?? 0))}
+                        </span>
                       )}
                     </>
                   )}
@@ -267,16 +262,17 @@ export const ShopView: React.FC = () => {
         </div>
       )}
       <details className="card shop-stars">
-        <summary>Telegram Stars · косметика и поддержка</summary>
+        <summary>{t('Telegram Stars · косметика и поддержка')}</summary>
         <StarsShop />
       </details>
 
       {/* Housing section */}
       <div className="card mt-3">
-        <SectionTitle>Жильё</SectionTitle>
+        <SectionTitle>{t('Жильё')}</SectionTitle>
         <p className="subtle my-3">
-          Указан месячный платёж. Для переезда нужны запас денег, стабильный доход и время накопления — условия проверит
-          сервер.
+          {t(
+            'Указан месячный платёж. Для переезда нужны запас денег, стабильный доход и время накопления — условия проверит сервер.'
+          )}
         </p>
         <div className="space-y-2">
           {HOUSING.map((h) => {
@@ -286,9 +282,7 @@ export const ShopView: React.FC = () => {
             return (
               <div
                 key={h.level}
-                className={`flex items-center justify-between gap-2 p-2.5 rounded-xl border ${
-                  current ? 'border-moss-500 bg-moss-900/30' : 'border-ink-700 bg-ink-950'
-                }`}
+                className={`flex items-center justify-between gap-2 p-2.5 rounded-xl border ${current ? 'border-moss-500 bg-moss-900/30' : 'border-ink-700 bg-ink-950'}`}
               >
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="plate w-10 h-10 shrink-0 p-0.5">
@@ -299,18 +293,21 @@ export const ShopView: React.FC = () => {
                       {h.name}
                     </span>
                     <span className="text-xs text-ink-500 ml-2">{housingBonus(h)}</span>
-                    {!current && <span className="block text-2xs text-ink-600 mt-0.5">меняет фон комнаты</span>}
+                    {!current && <span className="block text-2xs text-ink-600 mt-0.5">{t('меняет фон комнаты')}</span>}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="num text-xs text-ink-400">{shopMoney(h.cost)}/мес</span>
+                  <span className="num text-xs text-ink-400">
+                    {shopMoney(h.cost)}
+                    {t('/мес')}
+                  </span>
                   {isNext && !current && (
                     <button
                       disabled={!affordable || busy !== null}
                       onClick={() => buy('housing', 'upgrade_housing')}
                       className={`btn btn-sm ${affordable ? 'btn-primary' : 'btn-secondary'}`}
                     >
-                      Переехать
+                      {t('Переехать')}
                     </button>
                   )}
                 </div>
@@ -321,7 +318,7 @@ export const ShopView: React.FC = () => {
       </div>
 
       <NavLinks
-        links={[{ view: 'mining', emoji: '⛏', label: 'Майнинг-ферма', hint: 'оборудование, доход и прогноз' }]}
+        links={[{ view: 'mining', emoji: '⛏', label: t('Майнинг-ферма'), hint: t('оборудование, доход и прогноз') }]}
       />
     </div>
   );

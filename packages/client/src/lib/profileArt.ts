@@ -1,3 +1,4 @@
+import { t } from './i18n';
 /**
  * Профиль как «карточка жизни» (решение 22.10.2026, вариант A): баннер рисует
  * того же протагониста, что story-v1 и финалы, в одном из трёх настроений.
@@ -9,14 +10,12 @@
  */
 export const PROFILE_MOODS = ['normal', 'tired', 'burnout'] as const;
 export type ProfileMood = (typeof PROFILE_MOODS)[number];
-
 export interface ProfileMoodInput {
   energy: number;
   maxEnergy: number;
   motivation: number;
   burnoutDays?: number;
 }
-
 /**
  * Выгорание перекрывает всё: счётчик дней выгорания или обвал мотивации ниже
  * 25 — и портрет честно показывает выгоревшего героя. Дальше усталость:
@@ -27,22 +26,26 @@ export function profileMoodOf(input: ProfileMoodInput): ProfileMood {
   if (input.energy <= Math.max(2, Math.round((input.maxEnergy || 16) / 3))) return 'tired';
   return 'normal';
 }
-
 export function profileArtwork(mood: ProfileMood): string {
   return `/art/profile/${mood}.webp`;
 }
-
-export const PROFILE_MOOD_META: Record<ProfileMood, { label: string; line: string }> = {
+export const PROFILE_MOOD_META: Record<
+  ProfileMood,
+  {
+    label: string;
+    line: string;
+  }
+> = {
   normal: {
-    label: 'В ритме',
-    line: 'Энергия и мотивация держат планку: задачи и события идут спокойно.',
+    label: t('В ритме'),
+    line: t('Энергия и мотивация держат планку: задачи и события идут спокойно.'),
   },
   tired: {
-    label: 'Накопилась усталость',
-    line: 'Энергия на исходе: сон, прогулка или хобби помогут больше, чем овертайм.',
+    label: t('Накопилась усталость'),
+    line: t('Энергия на исходе: сон, прогулка или хобби помогут больше, чем овертайм.'),
   },
   burnout: {
-    label: 'Выгорание',
-    line: 'Мотивация на нуле. Восстановление важнее любых дедлайнов — береги себя.',
+    label: t('Выгорание'),
+    line: t('Мотивация на нуле. Восстановление важнее любых дедлайнов — береги себя.'),
   },
 };

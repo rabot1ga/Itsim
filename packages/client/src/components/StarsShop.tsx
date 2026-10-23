@@ -1,7 +1,7 @@
+import { t } from '../lib/i18n';
 import React, { useEffect, useState } from 'react';
 import { useGameStore, apiRequest } from '../store/gameStore';
 import { haptic, openInvoice } from '../lib/telegram';
-
 /**
  * Telegram Stars section of the shop (`content/monetization.json`).
  *
@@ -12,7 +12,6 @@ import { haptic, openInvoice } from '../lib/telegram';
  * Without a bot token (local dev) the server answers with a mock link and a
  * `devComplete` endpoint that simulates the purchase.
  */
-
 interface StarsProduct {
   id: string;
   title: string;
@@ -23,7 +22,6 @@ interface StarsProduct {
   owned: boolean;
   blocked: string | null;
 }
-
 export const StarsShop: React.FC = () => {
   const refreshState = useGameStore((s) => s.refreshState);
   const [products, setProducts] = useState<StarsProduct[]>([]);
@@ -32,7 +30,6 @@ export const StarsShop: React.FC = () => {
   const [busy, setBusy] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
-
   const load = async () => {
     const { ok, data } = await apiRequest('/payments/products');
     if (ok) {
@@ -42,28 +39,23 @@ export const StarsShop: React.FC = () => {
     }
     setLoaded(true);
   };
-
   useEffect(() => {
     load();
   }, []);
-
   const buy = async (product: StarsProduct) => {
     setBusy(product.id);
     setNote(null);
     haptic('tap');
-
     const { ok, data } = await apiRequest('/payments/stars', {
       method: 'POST',
       body: JSON.stringify({ productId: product.id }),
     });
-
     if (!ok) {
       setBusy(null);
       haptic('error');
-      setNote(data?.error ?? 'Не удалось создать счёт');
+      setNote(data?.error ?? t('Не удалось создать счёт'));
       return;
     }
-
     if (data.mock && data.devComplete) {
       // Local development: no Bot API, so complete the purchase directly.
       const res = await apiRequest('/payments/dev-complete', {
@@ -73,20 +65,19 @@ export const StarsShop: React.FC = () => {
       setBusy(null);
       if (res.ok) {
         haptic('success');
-        setNote(`(dev) ${res.data.applied?.join(', ') || 'куплено'}`);
+        setNote(t('(dev) {p0}', { p0: res.data.applied?.join(', ') || 'куплено' }));
         await Promise.all([load(), refreshState()]);
       } else {
         haptic('error');
-        setNote(res.data?.error ?? 'Покупка не прошла');
+        setNote(res.data?.error ?? t('Покупка не прошла'));
       }
       return;
     }
-
     openInvoice(data.invoiceLink, async (status) => {
       setBusy(null);
       if (status === 'paid') {
         haptic('success');
-        setNote('✅ Оплачено — награда уже в игре');
+        setNote(t('✅ Оплачено — награда уже в игре'));
         // The webhook grants asynchronously; give it a beat, then re-read.
         setTimeout(() => {
           load();
@@ -94,17 +85,15 @@ export const StarsShop: React.FC = () => {
         }, 1500);
       } else if (status === 'failed') {
         haptic('error');
-        setNote('Оплата не прошла');
+        setNote(t('Оплата не прошла'));
       }
     });
   };
-
   if (!loaded || products.length === 0) return null;
-
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <h3 className="eyebrow">⭐ За Telegram Stars</h3>
+        <h3 className="eyebrow">{t('⭐ За Telegram Stars')}</h3>
         {mock && <span className="chip !text-ink-500 ml-2">dev</span>}
       </div>
       {policy && <p className="text-xs text-ink-500 leading-relaxed">{policy}</p>}

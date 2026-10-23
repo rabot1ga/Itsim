@@ -1,3 +1,4 @@
+import { t } from '../lib/i18n';
 import React, { useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { ActionGrid, toTile } from '../components/ActionGrid';
@@ -5,7 +6,6 @@ import { ScreenTitle, SectionTitle, StatBar } from '../components/ui';
 import { NavLinks } from '../components/NavLinks';
 import { actionsOf } from './actionCatalogue';
 import { inviteLink, openTelegramLink, haptic } from '../lib/telegram';
-
 /**
  * Отдых — recovery and people on one screen.
  *
@@ -14,9 +14,7 @@ import { inviteLink, openTelegramLink, haptic } from '../lib/telegram';
  * choice — sleep is free and slow, the bar costs money and friends, the gym
  * trades money for health.
  */
-
 const BOT_NAME = 'itlife_simulator_bot';
-
 /** Feedable pets — cosmetic accessories (pet_bow/...) are not dinner guests. */
 const REAL_PETS = [
   'pet_cat',
@@ -29,7 +27,6 @@ const REAL_PETS = [
   'pet_hamster',
   'pet_fish',
 ];
-
 export const RestView: React.FC = () => {
   const player = useGameStore((s) => s.player);
   const setView = useGameStore((s) => s.setView);
@@ -37,9 +34,7 @@ export const RestView: React.FC = () => {
   const error = useGameStore((s) => s.error);
   const clearError = useGameStore((s) => s.clearError);
   const [busy, setBusy] = useState(false);
-
   if (!player) return null;
-
   const run = async (id: string) => {
     if (busy) return;
     setBusy(true);
@@ -49,19 +44,16 @@ export const RestView: React.FC = () => {
       setBusy(false);
     }
   };
-
   const invite = () => {
     haptic('medium');
     openTelegramLink(inviteLink(BOT_NAME, player.telegramId ?? 'player'));
   };
-
   const hasPet = (player.items ?? []).some((id: string) => REAL_PETS.includes(id));
   const money = player.money ?? 0;
-
   return (
     <div className="space-y-4 animate-fade-in">
       <ScreenTitle emoji="🌿" meta={`${Math.round(player.energy ?? 0)} / ${player.maxEnergy ?? 10} ⚡`}>
-        Отдых
+        {t('Отдых')}
       </ScreenTitle>
 
       {error && (
@@ -70,7 +62,7 @@ export const RestView: React.FC = () => {
             <span aria-hidden="true">⚠️</span>
             <span>{error}</span>
           </p>
-          <p className="text-2xs text-ink-500 mt-1 pl-5">Нажми, чтобы скрыть</p>
+          <p className="text-2xs text-ink-500 mt-1 pl-5">{t('Нажми, чтобы скрыть')}</p>
         </button>
       )}
 
@@ -86,15 +78,15 @@ export const RestView: React.FC = () => {
             <span className="shrink-0" aria-hidden="true">
               ⚡
             </span>
-            Энергия на исходе. «Поспать» восстановит её — сон доступен даже при нуле.
+            {t('Энергия на исходе. «Поспать» восстановит её — сон доступен даже при нуле.')}
           </p>
         )}
       </section>
 
       <section>
-        <SectionTitle className="mb-2">Восстановление</SectionTitle>
+        <SectionTitle className="mb-2">{t('Восстановление')}</SectionTitle>
         <ActionGrid
-          label="Отдых"
+          label={t('Отдых')}
           actions={actionsOf('rest').map((a) => toTile(a, Boolean(player.job)))}
           energy={player.energy ?? 0}
           money={money}
@@ -104,9 +96,9 @@ export const RestView: React.FC = () => {
       </section>
 
       <section>
-        <SectionTitle className="mb-2">Люди</SectionTitle>
+        <SectionTitle className="mb-2">{t('Люди')}</SectionTitle>
         <ActionGrid
-          label="Социальные действия"
+          label={t('Социальные действия')}
           actions={actionsOf('social').map((a) => toTile(a, Boolean(player.job)))}
           energy={player.energy ?? 0}
           money={money}
@@ -114,7 +106,7 @@ export const RestView: React.FC = () => {
           onRun={run}
         />
         <p className="text-2xs text-ink-600 mt-1.5">
-          Нетворкинг растит репутацию и связи — именно они приносят офферы и события.
+          {t('Нетворкинг растит репутацию и связи — именно они приносят офферы и события.')}
         </p>
       </section>
 
@@ -125,30 +117,30 @@ export const RestView: React.FC = () => {
           className="btn btn-secondary w-full text-sm"
         >
           <span aria-hidden="true">🐾</span>
-          {player.petFedToday ? 'Питомец сыт до завтра' : 'Покормить питомца · 500 ₽'}
+          {player.petFedToday ? t('Питомец сыт до завтра') : t('Покормить питомца · 500 ₽')}
         </button>
       )}
 
       <NavLinks
         links={[
-          { view: 'room', emoji: '🏠', label: 'Дом', hint: 'комната, декор, гардероб' },
-          { view: 'pet', emoji: '🐾', label: 'Питомец', hint: 'еда, настроение, аксессуары' },
+          { view: 'room', emoji: '🏠', label: t('Дом'), hint: t('комната, декор, гардероб') },
+          { view: 'pet', emoji: '🐾', label: t('Питомец'), hint: t('еда, настроение, аксессуары') },
         ]}
       />
 
       {/* Friends: the roster lives on its own screen, the invite lives here */}
       <section className="card">
-        <SectionTitle>Друзья</SectionTitle>
+        <SectionTitle>{t('Друзья')}</SectionTitle>
         <p className="subtle mt-1">
-          Знакомые дают события, помощь и репутацию. Приглашённый друг — бонус обоим при первом входе.
+          {t('Знакомые дают события, помощь и репутацию. Приглашённый друг — бонус обоим при первом входе.')}
         </p>
         <div className="flex flex-wrap gap-2 mt-3">
           <button className="btn btn-primary flex-1" onClick={invite}>
             <span aria-hidden="true">🎁</span>
-            Пригласить друга
+            {t('Пригласить друга')}
           </button>
           <button className="btn btn-secondary flex-1" onClick={() => setView('friends')}>
-            Все знакомые →
+            {t('Все знакомые →')}
           </button>
         </div>
       </section>

@@ -1,12 +1,11 @@
+import { t } from '../lib/i18n';
 import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { Spinner, ScreenTitle, SectionTitle, ResChip } from '../components/ui';
-
 /**
  * Achievements screen — all 17 achievements with earned state and
  * client-side progress bars (computed from player state + conditions).
  */
-
 /** One emoji per goal type — the chrome speaks emoji (docs/design-system.md §1). */
 const GOAL_EMOJI: Record<string, string> = {
   grade_reached: '💼',
@@ -16,7 +15,6 @@ const GOAL_EMOJI: Record<string, string> = {
   events_seen: '🎲',
   special: '⭐',
 };
-
 /** Coins paid out for a finished goal — mirrors the meta ledger on the server. */
 const GOAL_REWARD: Record<string, number> = {
   grade_reached: 150,
@@ -26,38 +24,39 @@ const GOAL_REWARD: Record<string, number> = {
   events_seen: 60,
   special: 120,
 };
-
 interface AchievementInfo {
   id: string;
   name: string;
   description: string;
   icon: string;
-  condition: { type: string; target?: string | number };
+  condition: {
+    type: string;
+    target?: string | number;
+  };
 }
-
 const GRADE_INDEX = ['unemployed', 'intern', 'junior', 'middle', 'senior', 'teamlead', 'architect', 'cto'];
-
 export const AchievementsView: React.FC = () => {
   const player = useGameStore((s) => s.player);
   const [achievements, setAchievements] = useState<AchievementInfo[]>([]);
-
   useEffect(() => {
     fetch('/api/content/achievements')
       .then((r) => r.json())
       .then((data) => setAchievements(data.achievements ?? []))
       .catch(() => setAchievements([]));
   }, []);
-
   if (!player) return null;
-
   const earned = new Set(player.achievements ?? []);
   const eventsSeen = Object.values(player.eventHistory ?? {}).reduce((sum: number, h: any) => sum + h.count, 0);
   const maxSkillLevel = Object.values(player.skills ?? {}).reduce(
     (max: number, s: any) => Math.max(max, s.level ?? 0),
     0
   );
-
-  const progress = (a: AchievementInfo): { value: number; target: number } => {
+  const progress = (
+    a: AchievementInfo
+  ): {
+    value: number;
+    target: number;
+  } => {
     const t = Number(a.condition.target ?? 0);
     switch (a.condition.type) {
       case 'grade_reached':
@@ -94,12 +93,13 @@ export const AchievementsView: React.FC = () => {
         return { value: 0, target: 1 };
     }
   };
-
   const earnedCount = achievements.filter((a) => earned.has(a.id)).length;
   const goals = achievements.filter((a) => !earned.has(a.id));
   const trophies = achievements.filter((a) => earned.has(a.id));
-
-  const GoalRow: React.FC<{ a: AchievementInfo; done: boolean }> = ({ a, done }) => {
+  const GoalRow: React.FC<{
+    a: AchievementInfo;
+    done: boolean;
+  }> = ({ a, done }) => {
     const { value, target } = progress(a);
     const pct = Math.max(0, Math.min(100, (value / Math.max(1, target)) * 100));
     return (
@@ -114,7 +114,7 @@ export const AchievementsView: React.FC = () => {
           <div className="flex items-center justify-between gap-2">
             <span className={`text-sm font-semibold ${done ? 'text-gold-300' : 'text-ink-100'}`}>{a.name}</span>
             <span className="goal-reward num">
-              {done ? 'выполнено' : `+${GOAL_REWARD[a.condition.type] ?? 60}`}
+              {done ? t('выполнено') : `+${GOAL_REWARD[a.condition.type] ?? 60}`}
               {!done && <span aria-hidden="true">🪙</span>}
             </span>
           </div>
@@ -133,18 +133,17 @@ export const AchievementsView: React.FC = () => {
       </div>
     );
   };
-
   return (
     <div className="space-y-4 animate-fade-in">
       <ScreenTitle emoji="🎯" meta={`${earnedCount} / ${achievements.length || 17}`}>
-        Цели
+        {t('Цели')}
       </ScreenTitle>
 
-      {achievements.length === 0 && <Spinner label="Загрузка целей…" />}
+      {achievements.length === 0 && <Spinner label={t('Загрузка целей…')} />}
 
       {goals.length > 0 && (
         <>
-          <SectionTitle>В работе</SectionTitle>
+          <SectionTitle>{t('В работе')}</SectionTitle>
           <div className="space-y-2">
             {goals.map((a) => (
               <GoalRow key={a.id} a={a} done={false} />
@@ -155,7 +154,10 @@ export const AchievementsView: React.FC = () => {
 
       {trophies.length > 0 && (
         <>
-          <SectionTitle>Ачивки ({trophies.length})</SectionTitle>
+          <SectionTitle>
+            {t('Ачивки (')}
+            {trophies.length})
+          </SectionTitle>
           <div className="space-y-2">
             {trophies.map((a) => (
               <GoalRow key={a.id} a={a} done />
@@ -165,15 +167,14 @@ export const AchievementsView: React.FC = () => {
       )}
 
       <p className="subtle">
-        Цели платят монетами <span aria-hidden="true">🪙</span> — их курс не сгорает при «новой жизни».{' '}
-        <ResChip tone="gold">мета-валюта</ResChip>
+        {t('Цели платят монетами')} <span aria-hidden="true">🪙</span> {t('— их курс не сгорает при «новой жизни».')}{' '}
+        <ResChip tone="gold">{t('мета-валюта')}</ResChip>
       </p>
     </div>
   );
 };
-
 function fmt(n: number): string {
   if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M`;
-  if (n >= 1000) return `${Math.round(n / 1000)}к`;
+  if (n >= 1000) return t('{p0}к', { p0: Math.round(n / 1000) });
   return String(Math.round(n));
 }

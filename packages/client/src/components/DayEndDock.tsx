@@ -1,3 +1,4 @@
+import { t } from '../lib/i18n';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import {
@@ -7,7 +8,6 @@ import {
   setMainButtonProgress,
   showMainButton,
 } from '../lib/telegram';
-
 /**
  * «Завершить день» — the one button that moves the game forward.
  *
@@ -20,12 +20,10 @@ import {
  * Inside Telegram the native MainButton does this job instead; the dock hides
  * itself so the two never stack.
  */
-
 interface DayEndDockProps {
   /** false while a story card is waiting for an answer, or on side screens */
   visible: boolean;
 }
-
 export const DayEndDock: React.FC<DayEndDockProps> = ({ visible }) => {
   const player = useGameStore((s) => s.player);
   const advanceDay = useGameStore((s) => s.advanceDay);
@@ -35,7 +33,6 @@ export const DayEndDock: React.FC<DayEndDockProps> = ({ visible }) => {
   const useNativeCta = isMainButtonSupported() && !nativeFailed;
   const currentDay = player?.currentDay ?? 1;
   const shown = visible && Boolean(player);
-
   const finishDay = useCallback(async () => {
     if (finishing) return;
     setFinishing(true);
@@ -49,7 +46,6 @@ export const DayEndDock: React.FC<DayEndDockProps> = ({ visible }) => {
       document.getElementById('game-scroll')?.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [finishing, advanceDay]);
-
   // Native Telegram MainButton replaces the in-page dock when available.
   useEffect(() => {
     if (!useNativeCta) return;
@@ -60,10 +56,9 @@ export const DayEndDock: React.FC<DayEndDockProps> = ({ visible }) => {
     const handler = () => {
       void finishDay();
     };
-    showMainButton(`Завершить день ${currentDay}`, handler);
+    showMainButton(t('Завершить день {currentDay}', { currentDay: currentDay }), handler);
     return () => hideMainButton(handler);
   }, [useNativeCta, shown, finishDay, currentDay]);
-
   /**
    * Trust, then verify: if the native button never becomes visible (an old
    * client, a rejected API call), the dock takes the job back rather than
@@ -76,12 +71,9 @@ export const DayEndDock: React.FC<DayEndDockProps> = ({ visible }) => {
     }, 400);
     return () => window.clearTimeout(timer);
   }, [useNativeCta, shown, currentDay]);
-
   if (!shown || useNativeCta || !player) return null;
-
   const energy = player.energy ?? 0;
   const spent = energy <= 0;
-
   return (
     <div className="day-dock">
       <button
@@ -91,16 +83,16 @@ export const DayEndDock: React.FC<DayEndDockProps> = ({ visible }) => {
         aria-describedby={spent ? 'day-dock-hint' : undefined}
       >
         {finishing ? (
-          'Считаем день…'
+          t('Считаем день…')
         ) : (
           <>
-            Завершить день <span className="num">{currentDay}</span> →
+            {t('Завершить день')} <span className="num">{currentDay}</span> →
           </>
         )}
       </button>
       {spent && !finishing && (
         <p id="day-dock-hint" className="day-dock-hint">
-          Энергия кончилась — день пора закрыть
+          {t('Энергия кончилась — день пора закрыть')}
         </p>
       )}
     </div>

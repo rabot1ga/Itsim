@@ -1,9 +1,9 @@
+import { t } from '../lib/i18n';
 import React, { useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { ScreenTitle } from '../components/ui';
 import { ACTIONS } from './actionCatalogue';
 import { ROOM_TIER_META, roomArtwork, roomTierOf } from '../lib/roomArt';
-
 /**
  * «Дом» — комната как карточка события (решение 22.10.2026, вариант B):
  * сцена-баннер текущего тира + строки-зоны поверх общего каталога действий.
@@ -19,16 +19,14 @@ interface Zone {
   needsJob?: boolean;
   needsPet?: boolean;
 }
-
 const ZONES: Zone[] = [
-  { id: 'bed', emoji: '🛏️', label: 'Проспать до утра', action: 'rest_sleep', chip: 'день завершится' },
-  { id: 'window', emoji: '🚶', label: 'Прогулка вокруг дома', action: 'rest_walk' },
-  { id: 'rug', emoji: '🎲', label: 'Хобби на коврике', action: 'rest_hobby' },
-  { id: 'desk', emoji: '💻', label: 'Рабочая задача за своим столом', action: 'work_task', needsJob: true },
-  { id: 'shelf', emoji: '📚', label: 'Книга с полки', action: 'study_book' },
-  { id: 'cat', emoji: '🐈', label: 'Покормить кота', action: 'feed_pet', needsPet: true },
+  { id: 'bed', emoji: '🛏️', label: t('Проспать до утра'), action: 'rest_sleep', chip: t('день завершится') },
+  { id: 'window', emoji: '🚶', label: t('Прогулка вокруг дома'), action: 'rest_walk' },
+  { id: 'rug', emoji: '🎲', label: t('Хобби на коврике'), action: 'rest_hobby' },
+  { id: 'desk', emoji: '💻', label: t('Рабочая задача за своим столом'), action: 'work_task', needsJob: true },
+  { id: 'shelf', emoji: '📚', label: t('Книга с полки'), action: 'study_book' },
+  { id: 'cat', emoji: '🐈', label: t('Покормить кота'), action: 'feed_pet', needsPet: true },
 ];
-
 function zoneChips(zone: Zone): string[] {
   if (zone.chip) return [zone.chip];
   const def = ACTIONS.find((a) => a.id === zone.action);
@@ -37,33 +35,30 @@ function zoneChips(zone: Zone): string[] {
   if (def?.cost) chips.push(`−${def.cost} ₽`);
   return chips;
 }
-
 export const RoomView: React.FC = () => {
   const player = useGameStore((s) => s.player);
   const performAction = useGameStore((s) => s.performAction);
   const [busy, setBusy] = useState<string | null>(null);
-
   if (!player) return null;
-
   const tier = roomTierOf(player.grade);
   const meta = ROOM_TIER_META[tier];
   const hasPet = (player.items ?? []).some((i: string) => i.startsWith('pet_'));
   const zones = ZONES.filter((z) => !z.needsPet || hasPet);
-
   const runZone = async (zone: Zone) => {
     setBusy(zone.id);
     await performAction(zone.action);
     setBusy(null);
   };
-
   return (
     <div className="space-y-4 animate-fade-in">
       <ScreenTitle emoji="🏠" meta={<span className="num">{meta.tagline}</span>}>
-        Дом
+        {t('Дом')}
       </ScreenTitle>
 
-      <section className="story-card" aria-label="Твоя комната">
-        <div className="story-card-kicker">твоя комната · {tier}</div>
+      <section className="story-card" aria-label={t('Твоя комната')}>
+        <div className="story-card-kicker">
+          {t('твоя комната ·')} {tier}
+        </div>
         <img
           className="story-card-art"
           src={roomArtwork(tier)}
@@ -82,7 +77,7 @@ export const RoomView: React.FC = () => {
         </div>
         <div className="story-choices">
           {zones.map((zone) => {
-            const missing = zone.needsJob && !player.job ? ['нужна работа'] : [];
+            const missing = zone.needsJob && !player.job ? [t('нужна работа')] : [];
             return (
               <div className="story-choice-group" key={zone.id}>
                 <button
@@ -91,7 +86,7 @@ export const RoomView: React.FC = () => {
                   onClick={() => runZone(zone)}
                 >
                   <span>
-                    <span aria-hidden="true">{zone.emoji}</span> {busy === zone.id ? 'Делаем…' : zone.label}
+                    <span aria-hidden="true">{zone.emoji}</span> {busy === zone.id ? t('Делаем…') : zone.label}
                   </span>
                   <span className="story-choice-effects">
                     {zoneChips(zone).map((c) => (
@@ -106,7 +101,7 @@ export const RoomView: React.FC = () => {
             );
           })}
         </div>
-        <p className="story-footnote">Комната растёт вместе с грейдом: старт → обжитая → офис → студия мечты.</p>
+        <p className="story-footnote">{t('Комната растёт вместе с грейдом: старт → обжитая → офис → студия мечты.')}</p>
       </section>
     </div>
   );

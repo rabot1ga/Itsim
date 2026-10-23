@@ -1,5 +1,5 @@
+import { t } from '../lib/i18n';
 import { skillName } from '../lib/playerLabels';
-
 export interface EventEffects {
   money?: number;
   energy?: number;
@@ -22,7 +22,12 @@ export interface EventRequirements {
 export interface EventPlayer {
   energy: number;
   money: number;
-  skills?: Record<string, { level: number }>;
+  skills?: Record<
+    string,
+    {
+      level: number;
+    }
+  >;
   relationships?: Record<string, number>;
 }
 export interface EffectRow {
@@ -35,25 +40,23 @@ export interface EffectRow {
   emoji: string;
   good: boolean;
 }
-
 const PEOPLE: Record<string, string> = {
-  teamlead: 'Алексей Петрович',
-  junior_colleague: 'Маша',
-  toxic_senior: 'Дмитрий Борисович',
-  uni_friend: 'Саня',
-  hr_anna: 'Анна из HR',
+  teamlead: t('Алексей Петрович'),
+  junior_colleague: t('Маша'),
+  toxic_senior: t('Дмитрий Борисович'),
+  uni_friend: t('Саня'),
+  hr_anna: t('Анна из HR'),
 };
 const RESOURCES: Array<[keyof EventEffects, string, string, string, string, boolean]> = [
-  ['money', 'Деньги', 'coin', '💰', ' ₽', false],
-  ['energy', 'Энергия', 'bolt', '⚡', '', false],
-  ['motivation', 'Настроение', 'flame', '😊', '', false],
-  ['health', 'Здоровье', 'heart', '❤️', '', false],
-  ['reputation', 'Репутация', 'star', '⭐', '', false],
-  ['karma', 'Карма', 'dice', '🍀', '', false],
-  ['burnoutDays', 'Дни выгорания', 'warn', '🔥', ' дн.', true],
-  ['jobWarnings', 'Замечания на работе', 'warn', '⚠️', '', true],
+  ['money', t('Деньги'), 'coin', '💰', ' ₽', false],
+  ['energy', t('Энергия'), 'bolt', '⚡', '', false],
+  ['motivation', t('Настроение'), 'flame', '😊', '', false],
+  ['health', t('Здоровье'), 'heart', '❤️', '', false],
+  ['reputation', t('Репутация'), 'star', '⭐', '', false],
+  ['karma', t('Карма'), 'dice', '🍀', '', false],
+  ['burnoutDays', t('Дни выгорания'), 'warn', '🔥', t(' дн.'), true],
+  ['jobWarnings', t('Замечания на работе'), 'warn', '⚠️', '', true],
 ];
-
 /** No totals: +XP for one skill must not cancel −XP for another. */
 export function effectRows(effects: EventEffects = {}): EffectRow[] {
   const rows: EffectRow[] = [];
@@ -79,32 +82,32 @@ export function effectRows(effects: EventEffects = {}): EffectRow[] {
   for (const [key, label, icon, emoji, suffix, inverse] of RESOURCES)
     add(key, label, icon, emoji, effects[key], suffix, inverse);
   for (const [id, xp] of Object.entries(effects.skill ?? {}))
-    add(`skill:${id}`, `Опыт · ${skillName(id)}`, 'book', '✨', xp, ' XP');
+    add(`skill:${id}`, t('Опыт · {p0}', { p0: skillName(id) }), 'book', '✨', xp, ' XP');
   for (const [id, value] of Object.entries(effects.relation ?? {}))
-    add(`relation:${id}`, `Отношения · ${PEOPLE[id] ?? id}`, 'people', '👥', value);
+    add(`relation:${id}`, t('Отношения · {p0}', { p0: PEOPLE[id] ?? id }), 'people', '👥', value);
   return rows;
 }
-
 export function choiceTone(rows: EffectRow[]): 'green' | 'amber' | 'red' | 'purple' {
   const good = rows.some((row) => row.good),
     bad = rows.some((row) => !row.good);
   return good && bad ? 'amber' : bad ? 'red' : good ? 'green' : 'purple';
 }
-
 export function unmetRequirements(req: EventRequirements | undefined, player?: EventPlayer): string[] {
   if (!req || !player) return [];
   const missing: string[] = [];
-  if (req.energy !== undefined && player.energy < req.energy) missing.push(`Нужно энергии: ${req.energy}`);
+  if (req.energy !== undefined && player.energy < req.energy)
+    missing.push(t('Нужно энергии: {p0}', { p0: req.energy }));
   if (req.money !== undefined && player.money < req.money)
-    missing.push(`Нужно денег: ${req.money.toLocaleString('ru-RU')} ₽`);
+    missing.push(t('Нужно денег: {p0} ₽', { p0: req.money.toLocaleString('ru-RU') }));
   for (const [id, level] of Object.entries(req.skill ?? {}))
-    if ((player.skills?.[id]?.level ?? 0) < level) missing.push(`${skillName(id)}: уровень ${level}`);
+    if ((player.skills?.[id]?.level ?? 0) < level)
+      missing.push(t('{p0}: уровень {level}', { p0: skillName(id), level: level }));
   for (const [id, value] of Object.entries(req.minRelation ?? {}))
-    if ((player.relationships?.[id] ?? 0) < value) missing.push(`Отношения с ${PEOPLE[id] ?? id}: ${value}`);
+    if ((player.relationships?.[id] ?? 0) < value)
+      missing.push(t('Отношения с {p0}: {value}', { p0: PEOPLE[id] ?? id, value: value }));
   // npcPresent has no supplied presence context. Do not invent a client-side lock.
   return missing;
 }
-
 /** Specific story IDs first, then explicit title topics, then broad tags. */
 export function eventArtwork(tags: string[], title = '', eventId = ''): string {
   const exact: Record<string, string> = {
@@ -158,7 +161,6 @@ export function eventArtwork(tags: string[], title = '', eventId = ''): string {
   }
   return `/art/story-v1/${scene}.webp`;
 }
-
 /** Content emoji are decorative; pixel icons provide consistent resource symbols. */
 export function storyLabel(text: string): string {
   return text

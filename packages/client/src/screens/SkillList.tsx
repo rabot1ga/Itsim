@@ -1,7 +1,7 @@
+import { t } from '../lib/i18n';
 import React, { useState } from 'react';
 import { xpToNext } from '@itsim/shared';
 import { accordionBodyRef } from '../components/ui';
-
 export interface SkillInfo {
   id: string;
   name: string;
@@ -12,31 +12,44 @@ export interface SkillInfo {
   parent?: string;
   unlockAt?: Record<string, number>;
 }
-
 interface SkillListProps {
   skills: SkillInfo[];
-  levels: Record<string, { level: number; xp: number }>;
+  levels: Record<
+    string,
+    {
+      level: number;
+      xp: number;
+    }
+  >;
   mainSkillId?: string | null;
   busy: boolean;
-  route?: { steps: Array<{ skillId: string; target: number }> } | null;
+  route?: {
+    steps: Array<{
+      skillId: string;
+      target: number;
+    }>;
+  } | null;
   onPick: (id: string) => void;
 }
-
 /** School headers — emoji + human name, in the order a career usually grows. */
-export const BRANCH_META: Record<string, { name: string; emoji: string }> = {
+export const BRANCH_META: Record<
+  string,
+  {
+    name: string;
+    emoji: string;
+  }
+> = {
   frontend: { name: 'Frontend', emoji: '🎨' },
   backend: { name: 'Backend', emoji: '⚙️' },
   mobile: { name: 'Mobile', emoji: '📱' },
   qa: { name: 'QA', emoji: '🔍' },
   devops: { name: 'DevOps', emoji: '🐳' },
   ai_ml: { name: 'AI / ML', emoji: '🤖' },
-  cybersec: { name: 'Кибербез', emoji: '🛡️' },
+  cybersec: { name: t('Кибербез'), emoji: '🛡️' },
   gamedev: { name: 'GameDev', emoji: '🎮' },
   blockchain: { name: 'Blockchain', emoji: '⛓️' },
 };
-
 const BRANCH_ORDER = Object.keys(BRANCH_META);
-
 /** Two-letter monogram, the way the reference draws skill badges. */
 const SYMBOLS: Record<string, string> = {
   javascript: 'JS',
@@ -52,15 +65,17 @@ const SYMBOLS: Record<string, string> = {
   docker: 'Dk',
   linux: 'Lx',
 };
-
 export function missingRequirements(skill: SkillInfo, levels: SkillListProps['levels'], skills: SkillInfo[]): string[] {
   return Object.entries(skill.unlockAt ?? {})
     .filter(([id, need]) => (levels[id]?.level ?? 0) < need)
-    .map(
-      ([id, need]) => `${skills.find((s) => s.id === id)?.name ?? id}: ур. ${need} (сейчас ${levels[id]?.level ?? 0})`
+    .map(([id, need]) =>
+      t('{p0}: ур. {need} (сейчас {p1})', {
+        p0: skills.find((s) => s.id === id)?.name ?? id,
+        need: need,
+        p1: levels[id]?.level ?? 0,
+      })
     );
 }
-
 /**
  * Learning — a flat list grouped by school, one accordion per school.
  *
@@ -79,11 +94,9 @@ export const SkillList: React.FC<SkillListProps> = ({ skills, levels, mainSkillI
   const [open, setOpen] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(branches.map((b, i) => [b, i === 0]))
   );
-
   const toggle = (branch: string) => setOpen((prev) => ({ ...prev, [branch]: !prev[branch] }));
-
   return (
-    <section aria-label="Список навыков">
+    <section aria-label={t('Список навыков')}>
       {branches.map((branch) => {
         const meta = BRANCH_META[branch] ?? { name: branch, emoji: '📘' };
         const items = skills.filter((s) => s.branch === branch);
@@ -133,16 +146,18 @@ export const SkillList: React.FC<SkillListProps> = ({ skills, levels, mainSkillI
                           <span className="skill-row-title">
                             <h3>{skill.name}</h3>
                             {main ? (
-                              <span className="skill-main-mark">основной</span>
+                              <span className="skill-main-mark">{t('основной')}</span>
                             ) : (
-                              <span className="skill-row-level num">ур. {level}</span>
+                              <span className="skill-row-level num">
+                                {t('ур.')} {level}
+                              </span>
                             )}
                           </span>
                           <span className="skill-row-progress">
                             <span
                               className="meter"
                               role="progressbar"
-                              aria-label={`Прогресс ${skill.name}`}
+                              aria-label={t('Прогресс {p0}', { p0: skill.name })}
                               aria-valuemin={0}
                               aria-valuemax={maxed ? skill.maxLevel : need}
                               aria-valuenow={maxed ? level : xp}
@@ -154,12 +169,18 @@ export const SkillList: React.FC<SkillListProps> = ({ skills, levels, mainSkillI
                                 }}
                               />
                             </span>
-                            <span className="skill-row-xp num">{maxed ? 'максимум' : `${xp} / ${need} XP`}</span>
+                            <span className="skill-row-xp num">{maxed ? t('максимум') : `${xp} / ${need} XP`}</span>
                           </span>
                           {milestone && (
-                            <span className="skill-row-note">Веха пути · цель: ур. {milestone.target}</span>
+                            <span className="skill-row-note">
+                              {t('Веха пути · цель: ур.')} {milestone.target}
+                            </span>
                           )}
-                          {locked && <span className="skill-row-note">Нужно: {requirements.join(' · ')}</span>}
+                          {locked && (
+                            <span className="skill-row-note">
+                              {t('Нужно:')} {requirements.join(' · ')}
+                            </span>
+                          )}
                         </span>
                       </button>
                     );

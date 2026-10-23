@@ -1,3 +1,4 @@
+import { t } from './i18n';
 /**
  * Telegram Mini App helpers — one place for all WebApp API access.
  *
@@ -6,7 +7,6 @@
  * - haptic(): impact / notification / selection feedback (no-op outside Telegram)
  * - MainButton / BackButton wrappers with safe fallbacks for browser dev
  */
-
 interface TelegramMainButton {
   show: () => void;
   hide: () => void;
@@ -18,7 +18,6 @@ interface TelegramMainButton {
   hideProgress: () => void;
   readonly isVisible: boolean;
 }
-
 interface TelegramBackButton {
   show: () => void;
   hide: () => void;
@@ -26,13 +25,11 @@ interface TelegramBackButton {
   offClick: (cb: () => void) => void;
   readonly isVisible: boolean;
 }
-
 interface TelegramHaptics {
   impactOccurred: (style: 'light' | 'medium' | 'heavy' | 'rigid' | 'soft') => void;
   notificationOccurred: (type: 'error' | 'success' | 'warning') => void;
   selectionChanged: () => void;
 }
-
 interface TelegramWebApp {
   ready: () => void;
   expand: () => void;
@@ -54,21 +51,19 @@ interface TelegramWebApp {
   BackButton?: TelegramBackButton;
   HapticFeedback?: TelegramHaptics;
 }
-
 declare global {
   interface Window {
-    Telegram?: { WebApp?: TelegramWebApp };
+    Telegram?: {
+      WebApp?: TelegramWebApp;
+    };
   }
 }
-
 export function getTelegram(): TelegramWebApp | undefined {
   return window.Telegram?.WebApp;
 }
-
 export function isTelegram(): boolean {
   return !!window.Telegram?.WebApp;
 }
-
 /**
  * Is this an actual Telegram client, or just our page with the SDK loaded?
  *
@@ -85,13 +80,10 @@ export function isTelegramRuntime(): boolean {
   if (tg.platform && tg.platform !== 'unknown') return true;
   return Boolean(tg.initData);
 }
-
 let initialized = false;
-
 /** Call once at startup (main.tsx). Safe to call in a plain browser. */
 /** The app background (--bg in index.css) — Telegram's chrome is painted to match. */
 export const APP_INK = '#0d1117';
-
 /** Re-apply header/background colours (safe to call again after a theme change). */
 export function applyTelegramChrome(): void {
   const tg = getTelegram();
@@ -103,12 +95,10 @@ export function applyTelegramChrome(): void {
     /* noop */
   }
 }
-
 export function initTelegramApp(): void {
   const tg = getTelegram();
   if (!tg || initialized) return;
   initialized = true;
-
   try {
     tg.ready();
   } catch {
@@ -119,7 +109,6 @@ export function initTelegramApp(): void {
   } catch {
     /* noop */
   }
-
   // Keep the app at full height and sync the CSS var Telegram gives us.
   const syncViewport = () => {
     const h = tg.viewportStableHeight || tg.viewportHeight;
@@ -133,7 +122,6 @@ export function initTelegramApp(): void {
   } catch {
     /* older clients */
   }
-
   // Blend the native chrome into our dark theme.
   try {
     tg.setHeaderColor?.(APP_INK);
@@ -141,7 +129,6 @@ export function initTelegramApp(): void {
   } catch {
     /* noop */
   }
-
   // Prevent the "swipe down closes the app" gesture from fighting our scroll.
   try {
     tg.disableVerticalSwipes?.();
@@ -149,11 +136,9 @@ export function initTelegramApp(): void {
     /* Bot API < 7.7 */
   }
 }
-
 // ---------------------------------------------------------------------------
 // Haptics
 // ---------------------------------------------------------------------------
-
 export type HapticKind =
   | 'tap' // light impact — default button press
   | 'medium'
@@ -162,7 +147,6 @@ export type HapticKind =
   | 'success' // offer, achievement, level-up
   | 'error' // failed action
   | 'warning';
-
 /** No-op outside Telegram or on clients without HapticFeedback. */
 export function haptic(kind: HapticKind = 'tap'): void {
   const hf = getTelegram()?.HapticFeedback;
@@ -191,15 +175,12 @@ export function haptic(kind: HapticKind = 'tap'): void {
     /* noop */
   }
 }
-
 // ---------------------------------------------------------------------------
 // MainButton (native bottom CTA)
 // ---------------------------------------------------------------------------
-
 export function isMainButtonSupported(): boolean {
   return isTelegramRuntime() && !!getTelegram()?.MainButton;
 }
-
 export function showMainButton(text: string, onClick: () => void): void {
   const btn = getTelegram()?.MainButton;
   if (!btn) return;
@@ -211,7 +192,6 @@ export function showMainButton(text: string, onClick: () => void): void {
     /* noop */
   }
 }
-
 export function hideMainButton(onClick?: () => void): void {
   const btn = getTelegram()?.MainButton;
   if (!btn) return;
@@ -222,7 +202,6 @@ export function hideMainButton(onClick?: () => void): void {
     /* noop */
   }
 }
-
 /** Did the client actually put the native button on screen? */
 export function isMainButtonVisible(): boolean {
   try {
@@ -231,7 +210,6 @@ export function isMainButtonVisible(): boolean {
     return false;
   }
 }
-
 export function setMainButtonProgress(busy: boolean): void {
   const btn = getTelegram()?.MainButton;
   if (!btn) return;
@@ -242,11 +220,9 @@ export function setMainButtonProgress(busy: boolean): void {
     /* noop */
   }
 }
-
 // ---------------------------------------------------------------------------
 // BackButton (native top-left back)
 // ---------------------------------------------------------------------------
-
 export function showBackButton(onClick: () => void): void {
   const btn = getTelegram()?.BackButton;
   if (!btn) return;
@@ -257,7 +233,6 @@ export function showBackButton(onClick: () => void): void {
     /* noop */
   }
 }
-
 export function hideBackButton(onClick?: () => void): void {
   const btn = getTelegram()?.BackButton;
   if (!btn) return;
@@ -268,13 +243,10 @@ export function hideBackButton(onClick?: () => void): void {
     /* noop */
   }
 }
-
 // ---------------------------------------------------------------------------
 // Payments (Telegram Stars)
 // ---------------------------------------------------------------------------
-
 export type InvoiceStatus = 'paid' | 'cancelled' | 'failed' | 'pending';
-
 /**
  * Open a Stars invoice. Inside Telegram this is the native payment sheet;
  * in a plain browser (local dev) we fall back to a new tab so the flow is at
@@ -293,11 +265,9 @@ export function openInvoice(url: string, callback?: (status: InvoiceStatus) => v
   window.open(url, '_blank');
   callback?.('pending');
 }
-
 // ---------------------------------------------------------------------------
 // Sharing / invites
 // ---------------------------------------------------------------------------
-
 /**
  * Open a t.me link (invite, share). Inside Telegram it uses the native
  * navigation; in a browser it opens a tab so the flow stays testable.
@@ -314,10 +284,9 @@ export function openTelegramLink(url: string): void {
   }
   window.open(url, '_blank', 'noopener');
 }
-
 /** Invite deep link for the referral flow: `startapp=ref_<telegramId>`. */
 export function inviteLink(botName: string, telegramId: string | number): string {
-  const text = encodeURIComponent('Симулятор жизни айтишника — залетай, у меня уже своя квартира и кот.');
+  const text = encodeURIComponent(t('Симулятор жизни айтишника — залетай, у меня уже своя квартира и кот.'));
   const target = encodeURIComponent(`https://t.me/${botName}?startapp=ref_${telegramId}`);
   return `https://t.me/share/url?url=${target}&text=${text}`;
 }

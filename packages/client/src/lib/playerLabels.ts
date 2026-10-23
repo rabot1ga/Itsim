@@ -1,3 +1,4 @@
+import { t } from './i18n';
 /**
  * Человеческие подписи игрока: название навыка, грейд.
  *
@@ -7,7 +8,6 @@
  * эффектов события. Неизвестный id отдаётся как есть — контент всегда шире,
  * чем этот список, и молча пустая строка была бы хуже.
  */
-
 export const SKILL_NAMES: Record<string, string> = {
   javascript: 'JavaScript',
   typescript: 'TypeScript',
@@ -20,25 +20,22 @@ export const SKILL_NAMES: Record<string, string> = {
   git: 'Git',
   docker: 'Docker',
   linux: 'Linux',
-  english: 'Английский',
-  communication: 'Коммуникация',
+  english: t('Английский'),
+  communication: t('Коммуникация'),
 };
-
 export function skillName(id: string): string {
   return SKILL_NAMES[id] ?? id;
 }
-
 export const GRADE_LABELS: Record<string, string> = {
-  unemployed: 'В начале пути',
-  intern: 'Стажёр',
+  unemployed: t('В начале пути'),
+  intern: t('Стажёр'),
   junior: 'Junior Developer',
   middle: 'Middle Developer',
   senior: 'Senior Developer',
   teamlead: 'Teamlead',
-  architect: 'Архитектор',
+  architect: t('Архитектор'),
   cto: 'CTO',
 };
-
 export function gradeLabel(grade?: string | null): string {
   if (!grade) return GRADE_LABELS.unemployed;
   return GRADE_LABELS[grade] ?? grade;

@@ -1,3 +1,4 @@
+import { t } from '../lib/i18n';
 import React, { useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { haptic } from '../lib/telegram';
@@ -20,7 +21,6 @@ import { PixelIcon } from './pixel/PixelIcon';
 import { GainStream } from './GainStream';
 import { EventCard, EventOutcomeCard, type EventChoice } from './EventCard';
 import { DayEndDock } from './DayEndDock';
-
 /**
  * Five destinations stay visible; everything else lives in «⋮».
  *
@@ -28,13 +28,12 @@ import { DayEndDock } from './DayEndDock';
  * friends roster is a place you visit — it opens from «Отдых» and from «⋮».
  */
 const TABS = [
-  { view: 'main', icon: 'house', label: 'Главная' },
-  { view: 'career', icon: 'briefcase', label: 'Работа' },
-  { view: 'skills', icon: 'book', label: 'Обучение' },
-  { view: 'rest', icon: 'heart', label: 'Отдых' },
-  { view: 'shop', icon: 'bag', label: 'Магазин' },
+  { view: 'main', icon: 'house', label: t('Главная') },
+  { view: 'career', icon: 'briefcase', label: t('Работа') },
+  { view: 'skills', icon: 'book', label: t('Обучение') },
+  { view: 'rest', icon: 'heart', label: t('Отдых') },
+  { view: 'shop', icon: 'bag', label: t('Магазин') },
 ] as const;
-
 /**
  * «⋮» — an index, not a home for orphans.
  *
@@ -44,25 +43,23 @@ const TABS = [
  * compact grid for the times you know where you want to go.
  */
 const MORE = [
-  { view: 'profile', emoji: '👤', label: 'Профиль' },
-  { view: 'room', emoji: '🏠', label: 'Дом' },
-  { view: 'friends', emoji: '👥', label: 'Друзья' },
-  { view: 'pet', emoji: '🐾', label: 'Питомец' },
-  { view: 'achievements', emoji: '🎯', label: 'Цели' },
-  { view: 'leaderboard', emoji: '🏆', label: 'Топ' },
-  { view: 'office', emoji: '🖥', label: 'Офис' },
-  { view: 'mining', emoji: '⛏', label: 'Майнинг' },
-  { view: 'endings', emoji: '🏁', label: 'Финалы' },
-  { view: 'settings', emoji: '⚙️', label: 'Настройки' },
+  { view: 'profile', emoji: '👤', label: t('Профиль') },
+  { view: 'room', emoji: '🏠', label: t('Дом') },
+  { view: 'friends', emoji: '👥', label: t('Друзья') },
+  { view: 'pet', emoji: '🐾', label: t('Питомец') },
+  { view: 'achievements', emoji: '🎯', label: t('Цели') },
+  { view: 'leaderboard', emoji: '🏆', label: t('Топ') },
+  { view: 'office', emoji: '🖥', label: t('Офис') },
+  { view: 'mining', emoji: '⛏', label: t('Майнинг') },
+  { view: 'endings', emoji: '🏁', label: t('Финалы') },
+  { view: 'settings', emoji: '⚙️', label: t('Настройки') },
 ] as const;
-
 /**
  * Tabs where a day is being spent, so the «Завершить день» dock belongs there.
  * Side screens (профиль, дом, настройки…) stay quiet — you go there to look,
  * not to burn the turn.
  */
 const DOCK_VIEWS = new Set<string>(['main', 'career', 'skills', 'rest', 'shop', 'office', 'pet']);
-
 export const GameScreen: React.FC = () => {
   const { currentView, setView, moreOpen, setMoreOpen } = useGameStore();
   const player = useGameStore((s) => s.player);
@@ -70,8 +67,11 @@ export const GameScreen: React.FC = () => {
   const chooseEvent = useGameStore((s) => s.chooseEvent);
   const error = useGameStore((s) => s.error);
   /** the choice just made, kept on screen as a receipt until dismissed */
-  const [outcome, setOutcome] = useState<{ title: string; tags: string[]; choice: EventChoice } | null>(null);
-
+  const [outcome, setOutcome] = useState<{
+    title: string;
+    tags: string[];
+    choice: EventChoice;
+  } | null>(null);
   /**
    * An event can arrive from any action, not only from ending the day — so it
    * is rendered above every tab. Otherwise studying on «Обучение» would hand
@@ -84,10 +84,8 @@ export const GameScreen: React.FC = () => {
       setOutcome({ title: event.title, tags: event.tags ?? [], choice });
     }
   };
-
   /** an offer on the table is the one thing worth a marker in the nav */
   const offerWaiting = Boolean(player?.pendingOffers?.length);
-
   const renderView = () => {
     if (activeEvent && player) {
       return (
@@ -149,13 +147,11 @@ export const GameScreen: React.FC = () => {
         return <DayView />;
     }
   };
-
   // Wrap tab switches with selection haptics
   const nav = (view: string) => {
     if (view !== currentView) haptic('selection');
     setView(view);
   };
-
   return (
     <div className="relative flex-1 flex flex-col overflow-hidden">
       {/* Whatever the last action paid out, on its way up the screen */}
@@ -170,11 +166,11 @@ export const GameScreen: React.FC = () => {
       {moreOpen && (
         <>
           <button
-            aria-label="Закрыть меню"
+            aria-label={t('Закрыть меню')}
             onClick={() => setMoreOpen(false)}
             className="sheet-backdrop animate-fade-in"
           />
-          <div role="dialog" aria-modal="true" aria-label="Меню" className="sheet animate-slide-up safe-area-pb">
+          <div role="dialog" aria-modal="true" aria-label={t('Меню')} className="sheet animate-slide-up safe-area-pb">
             <div className="sheet-grip" />
             <div className="menu-grid">
               {MORE.map((item) => {
@@ -202,7 +198,7 @@ export const GameScreen: React.FC = () => {
       <DayEndDock visible={DOCK_VIEWS.has(currentView) && !activeEvent && !outcome} />
 
       {/* Bottom navigation */}
-      <nav className="tabbar" aria-label="Основная навигация">
+      <nav className="tabbar" aria-label={t('Основная навигация')}>
         {TABS.map((tab) => (
           <NavButton
             key={tab.view}
@@ -217,7 +213,6 @@ export const GameScreen: React.FC = () => {
     </div>
   );
 };
-
 const NavButton: React.FC<{
   icon: string;
   label: string;

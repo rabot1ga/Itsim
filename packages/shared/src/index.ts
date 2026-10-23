@@ -1,3 +1,6 @@
+// i18n
+export * from './i18n/index';
+
 // Types
 export * from './types/index';
 

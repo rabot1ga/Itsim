@@ -1,27 +1,30 @@
+import { t } from '../lib/i18n';
 import { create } from 'zustand';
 import { haptic } from '../lib/telegram';
-
 export type Screen = 'menu' | 'game' | 'loading';
-
 const API_BASE = '/api';
-
 // Auth: keep the Telegram initData — it is validated on every request
 // (Telegram-canonical pattern; no JWT lifecycle to break the preview)
 let authInitData: string | null = null;
-
 /**
  * Authenticated API call. Exported as `apiRequest` for screens that fetch on
  * their own (leaderboard) — every endpoint behind `telegramAuthHook` needs the
  * `Authorization: tma <initData>` header, a bare `fetch()` gets a 401 in prod.
  */
-async function api(path: string, init: RequestInit = {}): Promise<{ ok: boolean; status: number; data: any }> {
+async function api(
+  path: string,
+  init: RequestInit = {}
+): Promise<{
+  ok: boolean;
+  status: number;
+  data: any;
+}> {
   const headers: Record<string, string> = {
     Authorization: authInitData ? `tma ${authInitData}` : '',
     ...(init.headers as Record<string, string> | undefined),
   };
   // Only send Content-Type when there is a body (Fastify rejects empty JSON bodies)
   if (init.body) headers['Content-Type'] = 'application/json';
-
   const res = await fetch(`${API_BASE}${path}`, {
     ...init,
     headers,
@@ -29,9 +32,7 @@ async function api(path: string, init: RequestInit = {}): Promise<{ ok: boolean;
   const data = await res.json().catch(() => ({}));
   return { ok: res.ok, status: res.status, data };
 }
-
 export const apiRequest = api;
-
 /**
  * Fire-and-forget product telemetry (roadmap P0.3). The server appends to
  * NDJSON; a failure must never slow down or break the game.
@@ -41,7 +42,6 @@ function track(event: string, payload?: Record<string, unknown>): void {
     /* telemetry is best-effort */
   });
 }
-
 /**
  * A number that just changed, on its way up the screen.
  *
@@ -56,17 +56,19 @@ export interface Gain {
   text: string;
   tone: 'good' | 'bad';
 }
-
-const GAIN_FIELDS: Array<{ key: string; icon: string; unit?: string; round?: number }> = [
+const GAIN_FIELDS: Array<{
+  key: string;
+  icon: string;
+  unit?: string;
+  round?: number;
+}> = [
   { key: 'money', icon: '🪙', unit: '₽' },
   { key: 'energy', icon: '⚡' },
   { key: 'motivation', icon: '😊' },
   { key: 'health', icon: '❤️' },
   { key: 'reputation', icon: '⭐' },
 ];
-
 let gainId = 0;
-
 /** What moved between two states, as floating labels. */
 export function diffGains(prev: any, next: any): Gain[] {
   if (!prev || !next) return [];
@@ -86,10 +88,9 @@ export function diffGains(prev: any, next: any): Gain[] {
   const levels = (st: any) =>
     Object.values(st?.skills ?? {}).reduce((sum: number, sk: any) => sum + (sk?.level ?? 0), 0);
   const up = levels(next) - levels(prev);
-  if (up > 0) out.push({ id: ++gainId, icon: '📚', text: `+${up} ур.`, tone: 'good' });
+  if (up > 0) out.push({ id: ++gainId, icon: '📚', text: t('+{up} ур.', { up: up }), tone: 'good' });
   return out;
 }
-
 interface GameState {
   initialized: boolean;
   screen: Screen;
@@ -106,7 +107,6 @@ interface GameState {
   mining: any;
   /** numbers that just changed, rendered as floating labels */
   gains: Gain[];
-
   // Actions
   initGame: (initData: string) => Promise<void>;
   /** daily check-in result from the server: { claimed, streak, money, nextMoney } | null */
@@ -141,7 +141,6 @@ interface GameState {
   answerInterview: (questionId: string, choiceIndex: number) => Promise<any>;
   finishInterview: () => Promise<any>;
 }
-
 export const useGameStore = create<GameState>((set, get) => ({
   initialized: false,
   screen: 'loading',
@@ -156,11 +155,9 @@ export const useGameStore = create<GameState>((set, get) => ({
   checkIn: null,
   sprint: null,
   gains: [],
-
   initGame: async (initData: string) => {
     try {
       authInitData = initData;
-
       // 1. Auth: validate initData (server-side check + health ping)
       const auth = await api('/auth/telegram', {
         method: 'POST',
@@ -169,13 +166,11 @@ export const useGameStore = create<GameState>((set, get) => ({
       if (!auth.ok) {
         throw new Error(auth.data?.error || 'Auth failed');
       }
-
       // 2. Load game state (auth via tma initData, no token lifecycle)
       const stateRes = await api('/game/state');
       if (!stateRes.ok) {
         throw new Error(stateRes.data?.error || 'Failed to load game state');
       }
-
       set({
         initialized: true,
         player: stateRes.data.state,
@@ -209,7 +204,6 @@ export const useGameStore = create<GameState>((set, get) => ({
       });
     }
   },
-
   refreshState: async () => {
     const res = await api('/game/state');
     if (res.ok && res.data?.state) {
@@ -223,7 +217,6 @@ export const useGameStore = create<GameState>((set, get) => ({
       });
     }
   },
-
   setScreen: (screen) => set({ screen, moreOpen: false }),
   setView: (view) => {
     set({ currentView: view, moreOpen: false });
@@ -231,13 +224,10 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
   setMoreOpen: (open) => set({ moreOpen: open }),
   clearError: () => set({ error: null }),
-
   dropGain: (id) => set((s) => ({ gains: s.gains.filter((g) => g.id !== id) })),
-
   performAction: async (actionId, params) => {
     const { player } = get();
     if (!player) return false;
-
     try {
       const res = await api('/game/action', {
         method: 'POST',
@@ -261,7 +251,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       }
       if (!res.ok) {
         haptic('error');
-        set({ error: res.data?.error || 'Действие не выполнено' });
+        set({ error: res.data?.error || t('Действие не выполнено') });
         return false;
       }
       // Feel the action: purchases thud, offers celebrate, the rest just tap.
@@ -274,11 +264,10 @@ export const useGameStore = create<GameState>((set, get) => ({
     } catch (err) {
       console.error('Action error:', err);
       haptic('error');
-      set({ error: 'Сервер недоступен' });
+      set({ error: t('Сервер недоступен') });
       return false;
     }
   },
-
   advanceDay: async () => {
     const before = get().player;
     try {
@@ -296,7 +285,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       }
       if (!res.ok) {
         haptic('error');
-        set({ error: res.data?.error || 'Не удалось завершить день' });
+        set({ error: res.data?.error || t('Не удалось завершить день') });
       } else {
         haptic('medium');
         track('day_end', { day: res.data?.state?.currentDay });
@@ -304,10 +293,9 @@ export const useGameStore = create<GameState>((set, get) => ({
     } catch (err) {
       console.error('Advance day error:', err);
       haptic('error');
-      set({ error: 'Сервер недоступен' });
+      set({ error: t('Сервер недоступен') });
     }
   },
-
   startNewLife: async () => {
     try {
       const res = await api('/game/new-life', { method: 'POST' });
@@ -328,16 +316,15 @@ export const useGameStore = create<GameState>((set, get) => ({
         return true;
       }
       haptic('error');
-      set({ error: res.data?.error || 'Не удалось начать новую жизнь' });
+      set({ error: res.data?.error || t('Не удалось начать новую жизнь') });
       return false;
     } catch (err) {
       console.error('New life error:', err);
       haptic('error');
-      set({ error: 'Сервер недоступен' });
+      set({ error: t('Сервер недоступен') });
       return false;
     }
   },
-
   claimSprint: async () => {
     try {
       const res = await api('/game/sprint/claim', { method: 'POST' });
@@ -353,16 +340,15 @@ export const useGameStore = create<GameState>((set, get) => ({
         return true;
       }
       haptic('error');
-      set({ error: res.data?.error || 'Не удалось получить награду' });
+      set({ error: res.data?.error || t('Не удалось получить награду') });
       return false;
     } catch (err) {
       console.error('Sprint claim error:', err);
       haptic('error');
-      set({ error: 'Сервер недоступен' });
+      set({ error: t('Сервер недоступен') });
       return false;
     }
   },
-
   chooseEvent: async (eventId, choiceIndex) => {
     const before = get().player;
     try {
@@ -382,27 +368,23 @@ export const useGameStore = create<GameState>((set, get) => ({
       }
       if (!res.ok) {
         haptic('error');
-        set({ error: res.data?.error || 'Выбор не принят' });
+        set({ error: res.data?.error || t('Выбор не принят') });
       }
     } catch (err) {
       console.error('Event choice error:', err);
       haptic('error');
-      set({ error: 'Сервер недоступен' });
+      set({ error: t('Сервер недоступен') });
     }
   },
-
   applyToCompany: async (companyId) => {
     return await get().performAction('apply_job', { companyId });
   },
-
   acceptOffer: async (companyId) => {
     return await get().performAction('accept_offer', { companyId });
   },
-
   declineOffer: async (companyId) => {
     return await get().performAction('decline_offer', { companyId });
   },
-
   unlockPerk: async (perkId) => {
     try {
       const res = await api('/game/unlock-perk', {
@@ -415,15 +397,14 @@ export const useGameStore = create<GameState>((set, get) => ({
         return true;
       }
       haptic('error');
-      set({ error: res.data?.error || 'Не удалось открыть перк' });
+      set({ error: res.data?.error || t('Не удалось открыть перк') });
       return false;
     } catch (err) {
       console.error('unlockPerk error:', err);
-      set({ error: 'Сервер недоступен' });
+      set({ error: t('Сервер недоступен') });
       return false;
     }
   },
-
   setMainSkill: async (skillId) => {
     try {
       const res = await api('/game/main-skill', {
@@ -437,15 +418,14 @@ export const useGameStore = create<GameState>((set, get) => ({
         return true;
       }
       haptic('error');
-      set({ error: res.data?.error || 'Не удалось выбрать навык' });
+      set({ error: res.data?.error || t('Не удалось выбрать навык') });
       return false;
     } catch (err) {
       console.error('setMainSkill error:', err);
-      set({ error: 'Сервер недоступен' });
+      set({ error: t('Сервер недоступен') });
       return false;
     }
   },
-
   chooseArchetype: async (archetypeId) => {
     try {
       const res = await api('/game/archetype/choose', {
@@ -459,15 +439,14 @@ export const useGameStore = create<GameState>((set, get) => ({
         return true;
       }
       haptic('error');
-      set({ error: res.data?.error || 'Не удалось выбрать путь' });
+      set({ error: res.data?.error || t('Не удалось выбрать путь') });
       return false;
     } catch (err) {
       console.error('chooseArchetype error:', err);
-      set({ error: 'Сервер недоступен' });
+      set({ error: t('Сервер недоступен') });
       return false;
     }
   },
-
   claimArchetype: async (archetypeId) => {
     try {
       const res = await api('/game/archetype/claim', {
@@ -481,28 +460,26 @@ export const useGameStore = create<GameState>((set, get) => ({
         return true;
       }
       haptic('error');
-      set({ error: res.data?.error || 'Не удалось получить бонус пути' });
+      set({ error: res.data?.error || t('Не удалось получить бонус пути') });
       return false;
     } catch (err) {
       console.error('claimArchetype error:', err);
-      set({ error: 'Сервер недоступен' });
+      set({ error: t('Сервер недоступен') });
       return false;
     }
   },
-
   startInterview: async () => {
     try {
       const res = await api('/game/interview/start', { method: 'POST', body: JSON.stringify({}) });
       if (res.data?.state) set({ player: res.data.state, error: null });
-      if (!res.ok) set({ error: res.data?.error || 'Не удалось начать собеседование' });
+      if (!res.ok) set({ error: res.data?.error || t('Не удалось начать собеседование') });
       return res.data;
     } catch (err) {
       console.error('startInterview error:', err);
-      set({ error: 'Сервер недоступен' });
+      set({ error: t('Сервер недоступен') });
       return null;
     }
   },
-
   answerInterview: async (questionId, choiceIndex) => {
     try {
       const res = await api('/game/interview/answer', {
@@ -513,20 +490,19 @@ export const useGameStore = create<GameState>((set, get) => ({
       return res.data;
     } catch (err) {
       console.error('answerInterview error:', err);
-      set({ error: 'Сервер недоступен' });
+      set({ error: t('Сервер недоступен') });
       return null;
     }
   },
-
   finishInterview: async () => {
     try {
       const res = await api('/game/interview/finish', { method: 'POST', body: JSON.stringify({}) });
       if (res.data?.state) set({ player: res.data.state, error: null });
-      if (!res.ok) set({ error: res.data?.error || 'Не удалось завершить собеседование' });
+      if (!res.ok) set({ error: res.data?.error || t('Не удалось завершить собеседование') });
       return res.data;
     } catch (err) {
       console.error('finishInterview error:', err);
-      set({ error: 'Сервер недоступен' });
+      set({ error: t('Сервер недоступен') });
       return null;
     }
   },
