@@ -3767,3 +3767,260 @@ Object.assign(en, {
   '🧘 Попробовать медитацию': '🧘 Try meditation',
   '🪑 Спина требует справедливости': '🪑 The back demands justice',
 });
+
+Object.assign(en, {
+  '«Будет кот, пицца и Диксит. Ты обязан прийти», — пишет друг. В трекере — дедлайн, но друг настойчив.':
+    '“There will be a cat, pizza and Dixit. You must come,” writes a friend. In the tracker — a deadline, but the friend is persistent.',
+  '«Есть разговор», — сказал тимлид. Обычно это значит либо повышение, либо «нам нужно поговорить о твоих оценках». Обед за его счёт.':
+    '“We need to talk,” said the team lead. Usually that means either a promotion or “we need to talk about your estimates”. Lunch is on him.',
+  '«Ну, в этот раз не позор», — сказал токсичный сеньор. Это лучший комплимент, который от него слышали за год.':
+    '“Well, no disgrace this time,” said the toxic senior. That is the best compliment heard from him in a year.',
+  '«Похвала от токсика — редкий ачивмент». Сохранено.': '“Praise from a toxic — a rare achievement”. Saved.',
+  '«Привет! Помнишь меня? В баре? Так вот, у нас открылась вакансия, и я сразу подумала о тебе».':
+    '“Hi! Remember me? From the bar? So, we have an opening and I thought of you right away”.',
+  '«Сам разберёшься, это закаляет» 🗿': '“You will figure it out yourself, it builds character” 🗿',
+  '«Ты свидетель!» — сообщил друг. Времени на подготовку — две недели. Костюм у тебя один, и тот с выпускного.':
+    '“You are the witness!” — the friend announced. Two weeks to prepare. You have one suit, from the graduation party.',
+  'Анна не обиделась, но рекрутеры всё записывают. Даже «не время».':
+    'Anna was not offended, but the recruiters write everything down. Even “not now”.',
+  'Аргументированно отстоять решение 📊': 'Defend the decision with arguments 📊',
+  'Вечер настолок. Ты победил в Диксите и проиграл в «Колонизаторов». Лучший вечер месяца.':
+    'A board game evening. You won at Dixit and lost at “Colonizers”. The best evening of the month.',
+  'Взять часть его задач 💪': 'Take over part of his tasks 💪',
+  'Все посмеялись, конфликт растворился. Токсик скривился, но отстал.':
+    'Everyone laughed, the conflict dissolved. The toxic one grimaced, but backed off.',
+  'Встретились в кофейне. Говорили о рынке, зарплатах и твоём будущем.':
+    'Met at a coffee shop. Talked about the market, salaries and your future.',
+  'Говорили о карьере и твоих сильных сторонах. Приятно, когда тебя видят.':
+    'You talked about the career and your strengths. It is nice when someone sees you.',
+  'Дедлайн закрыт. Друг прислал фото: «ты многое упустил». Кот был великолепен.':
+    'The deadline is closed. The friend sent a photo: “you missed a lot”. The cat was magnificent.',
+  'Джун всё понял и записал. Ты — легенда онбординга.':
+    'The junior got it all and wrote it down. You are the onboarding legend.',
+  'Джун разобрался. Через три дня. И запомнил, к кому не подходить.':
+    'The junior figured it out. In three days. And remembered whom not to approach.',
+  'Джун стоит у твоего стола с ноутбуком и взглядом «я всё сломал». Код сломан, но дух не сломлен.':
+    'A junior stands at your desk with a laptop and an “I broke everything” look. The code is broken, but the spirit is not.',
+  'Джун ушёл читать. Вернулся с ещё большим количеством вопросов.':
+    'The junior went to read. Came back with even more questions.',
+  'Друг понял. Но осадочек остался. Свадьба прошла без тебя.':
+    'Your friend understood. But the aftertaste stayed. The wedding happened without you.',
+  'Записать в дневник достижений 📓': 'Write it in the achievements journal 📓',
+  'Не вмешиваться 🤐': 'Do not interfere 🤐',
+  'Он нашёл, что не так. Три часа объяснял. Ты сам напросился.':
+    'He found what was wrong. Explained for three hours. You asked for it.',
+  'Он хмыкнул. Лёд тронулся. На миллиметр.': 'He snorted. The ice moved. By a millimeter.',
+  'Остаться и закрыть задачи 💻': 'Stay and close the tasks 💻',
+  'Отказаться: «дедлайн» 💻': 'Decline: “deadline” 💻',
+  'Отказаться: «много задач» 💼': 'Decline: “lots of tasks” 💼',
+  'Отложить: «сейчас не время» ⏳': 'Postpone: “not the time” ⏳',
+  'Перевести в шутку 😄': 'Turn it into a joke 😄',
+  'Поблагодарить с достоинством 🙏': 'Thank him with dignity 🙏',
+  'Подарили с женой миксер. Друг был рад и без твоего тоста.':
+    'They gifted a mixer with his wife. The friend was happy even without your toast.',
+  'Позиция интересная. Анна обещала «замолвить словечко».':
+    'The position is interesting. Anna promised to “put in a good word”.',
+  'Пойти и заплатить за обоих 💳': 'Go and pay for both 💳',
+  'Пойти и отдохнуть 🎲': 'Go and relax 🎲',
+  'Помочь и объяснить 🧑‍🏫': 'Help and explain 🧑‍🏫',
+  'Посоветовать взять отпуск 🏖': 'Advise to take a vacation 🏖',
+  'Предложить встретиться за кофе ☕': 'Suggest meeting for coffee ☕',
+  'Предложить собраться у тебя 🏠': 'Suggest gathering at your place 🏠',
+  'Прийти гостем с подарком 🎁': 'Come as a guest with a gift 🎁',
+  'Принять приглашение 🍜': 'Accept the invitation 🍜',
+  'Промолчал. Вечером переписывал всё под его требования. И злился.':
+    'Stayed silent. In the evening rewrote everything to his requirements. And was angry.',
+  'Промолчать и злиться весь день 😤': 'Stay silent and be angry all day 😤',
+  'Разгрузил тимлида. Он выдохнул и впервые за неделю пошутил.':
+    'Took a load off the team lead. He exhaled and joked for the first time in a week.',
+  'Свадьба удалась. Тост был лучшим — все плакали. Даже ты.':
+    'The wedding was a success. The toast was the best — everyone cried. Even you.',
+  'Скинуть ссылку на документацию 🔗': 'Send a link to the documentation 🔗',
+  'Собрались у тебя. Кот гостей оценил, пиццу — особенно.':
+    'Gathered at your place. The cat approved of the guests, the pizza — especially.',
+  'Согласиться быть свидетелем 🎩': 'Agree to be the best man 🎩',
+  'Спросить детали вакансии 💼': 'Ask about the job details 💼',
+  'Спросить: «а что не так?» 🤨': 'Ask: “and what is wrong?” 🤨',
+  'Тимлид третий день сидит с пустым взглядом. Созвоны, отчёты, заказчик — всё на нём. Ты видишь, что он не справляется.':
+    'The team lead has been sitting with an empty stare for the third day. Calls, reports, the client — all on him. You see he is not coping.',
+  'Тимлид удивился и оценил. Теперь ты «человек, который угощает».':
+    'The team lead was surprised and appreciated it. Now you are “the one who treats”.',
+  'Тимлид ушёл в отпуск. Вернулся человеком. Все выдохнули.':
+    'The team lead went on vacation. Came back a human. Everyone exhaled.',
+  'Токсичный сеньор опять публично раскритиковал твоё решение. Все смотрят на тебя. Момент истины.':
+    'The toxic senior publicly criticized your decision again. Everyone is looking at you. The moment of truth.',
+  'Ты выбрал задачи. Тимлид понял. Но что-то в его взгляде изменилось.':
+    'You chose the tasks. The team lead understood. But something in his look changed.',
+  'Ты привёл метрики. Команда на твоей стороне. Токсик замолчал.':
+    'You brought the metrics. The team is on your side. The toxic one went quiet.',
+  'Ты прошёл мимо. Через неделю тимлид ушёл на больничный.':
+    'You walked past. A week later the team lead went on sick leave.',
+  '🎮 Друг зовёт на вечер настолок': '🎮 A friend calls for a board game night',
+  '🐣 Джун пришёл за помощью': '🐣 A junior came for help',
+  '💒 Друг из универа женится': '💒 A university friend is getting married',
+  '📩 Анна из HR написала первой': '📩 Anna from HR wrote first',
+  '🔥 Ссора с токсиком на дейлике': '🔥 A quarrel with the toxic at standup',
+  '😰 Тимлид на грани выгорания': '😰 The team lead is on the edge of burnout',
+  '😼 Токсичный сеньор похвалил твой код': '😼 The toxic senior praised your code',
+  '🧑‍🏫 Тимлид позвал на обед': '🧑‍🏫 The team lead invited you to lunch',
+  '30 задач за 30 дней. Скилл вырос заметно. Сон — нет.': '30 tasks in 30 days. The skill grew noticeably. Sleep — no.',
+  'В комьюнити запустили челлендж: задача каждый день, 30 дней подряд. Выглядит как проверка на прочность.':
+    'The community launched a challenge: a task every day, 30 days in a row. Looks like a stress test.',
+  'Вдвоём не страшно. Пара программирует каждую неделю.': 'It is not scary together. You pair-program every week.',
+  'Все обсуждают сертификацию по твоему стеку. Стоит дорого, готовиться долго, но в резюме — строчка.':
+    'Everyone discusses the certification for your stack. It is expensive, the prep is long, but there is a line in the résumé.',
+  'Вступить в клуб 📖': 'Join the club 📖',
+  'Гайд пригодился троим. Ты — автор методички.':
+    'The guide came in handy for three people. You are the author of the methodology.',
+  'Глава в неделю — посильно. Обсуждения — лучшая часть.':
+    'A chapter a week — doable. The discussions are the best part.',
+  'Группа держит в тонусе. Алгоритмы перестали пугать.':
+    'The group keeps you in shape. Algorithms stopped being scary.',
+  'Заниматься соло 🐺': 'Study solo 🐺',
+  'Записать мини-гайд по теме 📝': 'Write a mini-guide on the topic 📝',
+  'Записаться на экзамен 📝': 'Sign up for the exam 📝',
+  'Знакомый собирает группу для подготовки по алгоритмам. Встречи дважды в неделю, разборы задач.':
+    'An acquaintance is gathering a group for algorithms prep. Meetings twice a week, problem breakdowns.',
+  'Знание при тебе. Но им не поделился — оно не выросло.':
+    'The knowledge is yours. But you did not share it — so it did not grow.',
+  'Игнорировать: «старое работает» 🙈': 'Ignore: “the old works” 🙈',
+  'Изменения просмотрел. Глубоко — не нырнул.': 'Skimmed the changes. Did not dive deep.',
+  'Клуб обсуждает без тебя. Книга пылится в списке «потом».':
+    'The club discusses without you. The book gathers dust on the “later” list.',
+  'Коллега зовёт в книжный клуб: «Читаем по главе в неделю, потом обсуждаем». Книга — про архитектуру. Толстая.':
+    'A colleague calls you to a book club: “We read a chapter a week, then discuss”. The book is about architecture. Thick.',
+  'Команда поблагодарила. Ты почувствовал себя лектором.': 'The team said thank you. You felt like a lecturer.',
+  'Маленький шаг перерос в рабочий прототип. Паралич отступил.':
+    'A small step grew into a working prototype. The paralysis receded.',
+  'Ментор разложил развилку по полочкам. Ясности — больше.':
+    'The mentor laid out the crossroads on the shelves. There is more clarity.',
+  'Мнения разделились. Но у тебя — больше данных.': 'Opinions diverged. But you — have more data.',
+  'На платформе раздают бесплатные 30-минутные сессии с менторами. Ты успел записаться на последнюю.':
+    'The platform is giving away free 30-minute sessions with mentors. You managed to book the last one.',
+  'Найти напарника для практики 🤝': 'Find a practice partner 🤝',
+  'Начать с маленького шага 🐾': 'Start with a small step 🐾',
+  'Новые модули — как новая версия себя. Полезно.': 'New modules — like a new version of yourself. Useful.',
+  'Оставить знание себе 🤫': 'Keep the knowledge to yourself 🤫',
+  'Отказаться: «не до книг» 🙅': 'Decline: “no time for books” 🙅',
+  'Отложить: «сначала практика» ⏳': 'Postpone: “practice first” ⏳',
+  'Платформа обновила курс, который ты проходил: новые модули, свежие примеры. Старая версия устарела.':
+    'The platform updated a course you took: new modules, fresh examples. The old version is outdated.',
+  'Попросить ревью резюме 📄': 'Ask for a résumé review 📄',
+  'Присоединиться к группе 🧠': 'Join the group 🧠',
+  'Пробежаться по изменениям 👀': 'Skim the changes 👀',
+  'Пройти новые модули 🆕': 'Take the new modules 🆕',
+  'Пропустить: «не до алгоритмов» 🙅': 'Skip: “no time for algorithms” 🙅',
+  'Проснулся через час. Сессия прошла без тебя.': 'Woke up an hour later. The session went on without you.',
+  'Проспать сессию 😴': 'Sleep through the session 😴',
+  'Просто смотреть чужие решения 👀': 'Just watch others’ solutions 👀',
+  'Работает. Пока. Обновления не спрашивают.': 'It works. For now. The updates do not ask.',
+  'Рассказать ещё и команде 🎤': 'Tell the team as well 🎤',
+  'Резюме переписано. Теперь оно «продаёт».': 'The résumé is rewritten. Now it “sells”.',
+  'Решать по настроению 🎲': 'Solve by mood 🎲',
+  'Решение взвешенное. Практика важнее бумаги.': 'A weighed decision. Practice matters more than paper.',
+  'Решил 12 из 30. Мягкий режим — тоже режим.': 'Solved 12 of 30. The gentle mode is a mode too.',
+  'Сам — медленнее, но в своём темпе.': 'Alone — slower, but at your own pace.',
+  'Сдал! Сертификат — в рамке, строчка — в резюме.': 'Passed! The certificate — in a frame, the line — in the résumé.',
+  'Смотреть — тоже учиться. Но не то же самое.': 'Watching is learning too. But not the same.',
+  'Собеседование с алгоритмами случится. Оно всегда случается.':
+    'The algorithms interview will happen. It always happens.',
+  'Соло — тоже путь. Медленнее, но твой.': 'Solo is a path too. Slower, but yours.',
+  'Спросить про карьерную развилку 🧭': 'Ask about the career crossroads 🧭',
+  'Спросить, окупилась ли у коллег 💬': 'Ask a colleague if it paid off 💬',
+  'Теории — вагон. Практики — ноль. Цикл повторяется.': 'Theory — a wagon. Practice — zero. The cycle repeats.',
+  'Ты объяснял коллеге сложную тему и внезапно осознал: пока объяснял, сам всё понял. Магия обучения.':
+    'You were explaining a hard topic to a colleague and suddenly realized: while explaining, you understood it yourself. The magic of learning.',
+  'Ты прочитал гору теории, но проект не двигается. В голове — «а вдруг делаю неправильно?» Знакомый паралич.':
+    'You read a mountain of theory, but the project is not moving. In your head — “what if I am doing it wrong?” A familiar paralysis.',
+  'Участвовать и не пропускать 🔥': 'Participate and do not skip 🔥',
+  'Читать ещё больше теории 📚': 'Read even more theory 📚',
+  'Читать самому, без клуба 🙇': 'Read on your own, without the club 🙇',
+  '⚡ 30-дневный челлендж кода': '⚡ A 30-day coding challenge',
+  '🎁 Бесплатная сессия с ментором': '🎁 A free session with a mentor',
+  '🎓 Объяснил другому — понял сам': '🎓 Explained to another — understood it yourself',
+  '👥 Учебная группа по алгоритмам': '👥 An algorithms study group',
+  '📚 Книжный клуб для айтишников': '📚 A book club for IT people',
+  '📜 Сертификация: стоит ли?': '📜 Certification: is it worth it?',
+  '🔄 Твой курс обновился': '🔄 Your course was updated',
+  '🤔 Теория vs практика': '🤔 Theory vs practice',
+  'В книге оказалась старая закладка-купюра. Приятный бонус.':
+    'An old banknote bookmark turned out to be in the book. A nice bonus.',
+  'Вздремнул. Камера заметила. Штраф, но ты выспался.': 'Napped. The camera noticed. A fine, but you got your sleep.',
+  'Взять контакт и договориться о коллабе 🤝': 'Take the contact and arrange a collab 🤝',
+  'Взяться за рояль 🎹': 'Take on the grand piano 🎹',
+  'Выпросить побольше стикеров 🎁': 'Beg for more stickers 🎁',
+  'Деньги за ментора уплачены. Ментор ждал. Зря.': 'The mentor was paid. The mentor waited. In vain.',
+  'Добавить в LinkedIn 📄': 'Add on LinkedIn 📄',
+  'Задать все накопившиеся вопросы ❓': 'Ask all the accumulated questions ❓',
+  'Игнорировать: свой путь лучше 🚶': 'Ignore: your own path is better 🚶',
+  'Идеальная дисциплина. Камеры зафиксировали. Начальство довольно.':
+    'Perfect discipline. The cameras recorded it. The bosses are pleased.',
+  'Инвестор слушал внимательно и оставил визитку. «Позвоните, когда будет демо».':
+    'The investor listened carefully and left a business card. “Call when you have a demo”.',
+  'Коллаб намечен. Твой пет-проект может попасть в их блог.':
+    'A collab is planned. Your pet project may end up in their blog.',
+  'Команда поставила огонёчки. Джун спросил, где записаться.':
+    'The team left fire reactions. The junior asked where to sign up.',
+  'Курс пройден, тесты сданы. На почте — сертификат. Осталось решить, что с ним делать.':
+    'The course is done, the tests passed. In the mail — a certificate. Now to decide what to do with it.',
+  'Медленно, но без травм. Бригадир поворчал, но принял.':
+    'Slow, but without injuries. The foreman grumbled, but accepted.',
+  'Ментор ответил на всё. Два вопроса оказались «гениальными».':
+    'The mentor answered everything. Two questions turned out to be “brilliant”.',
+  'На митапе ты разговорился с Developer Advocate крупной платформы. У него полные карманы стикеров и желание слушать.':
+    'At the meetup you got talking with a Developer Advocate of a big platform. He has pockets full of stickers and a willingness to listen.',
+  'На полях — заметки карандашом: формулы, стрелки, «вот тут автор врёт». Похоже, до тебя её читал кто-то гениальный.':
+    'Pencil notes in the margins: formulas, arrows, “here the author lies”. Looks like someone brilliant read it before you.',
+  'На публике не выжал. Зато стало весело.': 'Did not shine in public. But it got fun.',
+  'На смене привезли рояль. Буквально рояль. Клиент на четвёртом этаже, лифт не работает.':
+    'A grand piano arrived at the shift. A literal grand piano. The client is on the fourth floor, the elevator does not work.',
+  'Ночь на чтение. Охранял серверы и качал архитектуру. Двойная польза.':
+    'A night of reading. Guarded the servers and absorbed architecture. Double benefit.',
+  'Обойти территорию трижды 🔦': 'Walk the grounds three times 🔦',
+  'Оказывается, в курс входят живые код-ревью от ментора. Ты думал, будет просто видео.':
+    'Turns out the course includes live code reviews from a mentor. You thought it would be just videos.',
+  'Он скинул проект их команде. Кто-то поставил звезду.': 'He passed the project to their team. Someone left a star.',
+  'Охраняешь офис, где гудит серверная. Вокруг тишина. Времени — целая ночь. В кармане — книга по архитектуре.':
+    'You are guarding an office where the server room hums. Silence all around. A whole night of time. In your pocket — a book on architecture.',
+  'Папка растёт. Когда-нибудь ты всё это покажешь.': 'The folder grows. Someday you will show all of it.',
+  'Пассажир оставил щедрые чаевые и хороший рейтинг.': 'The passenger left generous tips and a good rating.',
+  'Подремать на посту 💤': 'Doze off at the post 💤',
+  'Позвать всех посмотреть на следующий подход 👀': 'Call everyone to watch the next attempt 👀',
+  'Позвать напарников 🤝': 'Call the partners 🤝',
+  'Показать свой проект прямо с телефона 📱': 'Show your project straight from the phone 📱',
+  'Пометки срезали путь. Сложные места стали понятнее.': 'The notes cut the path short. The hard parts became clearer.',
+  'Попросить ревью пет-проекта 🔍': 'Ask for a review of the pet project 🔍',
+  'Похвастаться в рабочем чате 🎉': 'Brag in the work chat 🎉',
+  'Проверить, не вложены ли деньги 💵': 'Check whether the money is invested 💵',
+  'Промолчать и смотреть лекции 🙈': 'Stay silent and watch lectures 🙈',
+  'Просто хорошо довезти 😌': 'Just drive well 😌',
+  'Профиль стал чуть весомее. Рекрутёры заметили.': 'The profile got a bit weightier. The recruiters noticed.',
+  'Работать в своём темпе 🐢': 'Work at your own pace 🐢',
+  'Разделили вес и деньги. Зато спина в порядке.': 'Split the weight and the money. But the back is fine.',
+  'Рассказать про свой проект 🚀': 'Tell about your project 🚀',
+  'Ревью на 40 комментариев. Половина — полезные, половина — «подумай ещё».':
+    'A review of 40 comments. Half are useful, half are “think again”.',
+  'Рекорд есть рекорд. Ты просто делаешь свою работу.': 'A record is a record. You are just doing your job.',
+  'Рояль поднят. Спина — нет. Клиент дал чаевые и посоветовал массажиста.':
+    'The grand piano is up. The back — not. The client tipped and recommended a masseur.',
+  'Скромно продолжить тренировку 😌': 'Modestly continue the workout 😌',
+  'Следовать пометкам 🧭': 'Follow the notes 🧭',
+  'Сохранить в папку «на будущее» 📁': 'Save it to the “for later” folder 📁',
+  'Сторис собрал лайки. Друзья пишут «красава».': 'The story gathered likes. Friends write “nice one”.',
+  'Сфоткать вес для истории 📸': 'Snap the weight for history 📸',
+  'Тридцать стикеров. Ноутбук заклеен. Счастье.': 'Thirty stickers. The laptop is covered. Happiness.',
+  'Ты выжал вес, о котором мечтал полгода. Штанга поднялась. Зал обернулся.':
+    'You lifted the weight you dreamed of for half a year. The bar went up. The gym turned around.',
+  'Ты вёз человека в костюме. Разговорились. Оказалось, он инвестирует в IT-стартапы и ищет «интересных людей».':
+    'You drove a man in a suit. You got talking. Turns out he invests in IT startups and looks for “interesting people”.',
+  'Читать книгу всю смену 📖': 'Read the book the whole shift 📖',
+  'Шёл своим путём. Дольше, но зато по-своему.': 'Went your own way. Longer, but on your own terms.',
+  '🌙 Ночная смена у серверной': '🌙 A night shift by the server room',
+  '🎓 Курс оказался с живым ментором': '🎓 The course had a live mentor',
+  '🏅 Сертификат Stepik получен': '🏅 The Stepik certificate is in',
+  '🏆 Личный рекорд в жиме': '🏆 A personal bench press record',
+  '💪 Сегодня ты — кран': '💪 Today you are the crane',
+  '📖 В книге — пометки прошлого владельца': '📖 Notes of the previous owner in the book',
+  '🚗 Пассажир оказался инвестором': '🚗 The passenger turned out to be an investor',
+  '🧑‍💼 Познакомился с Developer Advocate': '🧑‍💼 Met a Developer Advocate',
+});
