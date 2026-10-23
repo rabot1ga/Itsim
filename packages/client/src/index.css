@@ -1129,6 +1129,20 @@ select {
   border-radius: 8px;
 }
 
+/* Иллюстрация финала (public/art/endings/*.webp): полноэкранный баннер поверх
+   карточки «Финалы», 5:3 как исходник; нет файла — onError прячет <img>. */
+.ending-art {
+  display: block;
+  width: calc(100% + 32px);
+  margin: -16px -16px 12px;
+  height: auto;
+  aspect-ratio: 5 / 3;
+  object-fit: cover;
+  image-rendering: pixelated;
+  border-radius: calc(var(--radius-card) - 1px) calc(var(--radius-card) - 1px) 0 0;
+  border-bottom: 1px solid var(--line);
+}
+
 .story-card-copy {
   padding: 14px 14px 10px;
 }

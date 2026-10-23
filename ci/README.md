@@ -39,7 +39,7 @@ git add .github/workflows/ci.yml && git commit -m "CI: enable GitHub Actions"
    случайно закрывал шаг 1 (`tsc -p packages/content` эмитит `dist`), то есть тесты
    зависели от побочного эффекта проверки типов. Корневой `npm test` теперь собирает
    оба пакета сам, поэтому локально и в CI порядок совпадает
-6. `npm run test -w packages/shared|server|bot|client` — 421 юнит-тест
+6. `npm run test -w packages/shared|server|bot|client` — 424 юнит-теста
    (`shared` 221 · `server` 72 · `bot` 22 · `client` 106)
 7. `npm run test -w packages/sim` — симулятор баланса: коридоры вех, комплаенс поздней
    игры и эндгейм-зонд (40 × 730 дней, срок удержания кресла CTO)

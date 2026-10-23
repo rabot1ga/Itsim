@@ -36,6 +36,7 @@ import {
   nextGateOf,
   gateFor,
   ctoElectionChance,
+  checkEndings,
   type CareerGate,
   GRADE_SALARIES,
   GRADE_ORDER,
@@ -732,6 +733,8 @@ interface RunResult {
   maxNoIncome: number;
   ending: string | null;
   livingCost: number;
+  /** конечное состояние агента: нужно измерителю достижимости финалов */
+  player: PlayerState;
 }
 
 function main() {
@@ -755,6 +758,7 @@ function main() {
       maxNoIncome: agent.maxNoIncome,
       ending: agent.ending,
       livingCost: LIVING ? dailyLivingCost(agent.p, LIVING).amount : 0,
+      player: agent.p,
     });
   }
 
@@ -924,6 +928,44 @@ function main() {
   );
 
   if (electedDays.length === 0 || shortTenure > 0 || claimedDays.length > electedDays.length) failed = true;
+
+  // ---- Достижимость положительных финалов (страх «мёртвых» условий) ----
+  // Урок 22.10.2026: финал `teacher` читал `player.mentoredJuniors`, который не
+  // писал ни один модуль, — условие не могло выполниться никогда, и ни один гейт
+  // этого не замечал, потому что коридоры смотрели только на CTO и выгорания.
+  // Здесь все четыре «положительных» финала меряются тем же движком, что и
+  // клиент (`checkEndings` из @itsim/shared), на конечном состоянии двухлетних
+  // прогонов: ноль у `teacher`/`free_artist`/`cto` означает мёртвое условие.
+  const reachSeen: Record<'cto' | 'exit' | 'free_artist' | 'teacher', Set<number>> = {
+    cto: new Set(),
+    exit: new Set(),
+    free_artist: new Set(),
+    teacher: new Set(),
+  };
+  // Два горизонта, а не один: окно `free_artist` — деньги ≤ 1 млн, и к концу
+  // второго года архитектор его перерастает по зарплате, тогда как на году ещё
+  // в нём. Поэтому «достижим» = доступен хотя бы на одном из финалов года/двух.
+  const horizons: Array<[string, PlayerState[]]> = [
+    ['365', results.map((r) => r.player)],
+    ['730', endgame.map((a) => a.p)],
+  ];
+  for (const [, states] of horizons) {
+    states.forEach((p, i) => {
+      for (const req of checkEndings(p, balance)) {
+        if (req.available && req.id in reachSeen) reachSeen[req.id as keyof typeof reachSeen].add(i);
+      }
+    });
+  }
+  console.log('\n=== Endings reachability (checkEndings на финалах 365 и 730 дней) ===');
+  for (const [id, set] of Object.entries(reachSeen)) {
+    console.log(`  ${set.size > 0 ? '✓' : '✗'} ${id}: ${set.size}/${RUNS}`);
+  }
+  console.log(
+    `  ⓘ exit требует ${Math.round((balance.endings?.exit?.minMoney ?? 100_000_000) / 1_000_000)} млн: ` +
+      'это осознанный денежный sink за горизонтом симулятора, а не мёртвое условие ' +
+      '(docs/PROPOSALS-2026-09-27-endgame.md §0.5), поэтому гейтом он не считается'
+  );
+  if (reachSeen.cto.size === 0 || reachSeen.free_artist.size === 0 || reachSeen.teacher.size === 0) failed = true;
 
   console.log(`\n${failed ? '❌ Simulation FAILED' : '✅ Simulation complete'}`);
 

@@ -1346,8 +1346,6 @@ Object.assign(en, {
     'Required: reputation {rep}+, money {money}+, grade {grade}+ (now {repNow}/{moneyNow}/{gradeNow})',
   'Нужно: репутация {rep}+, деньги ≤ {money}, грейд {grade}+ (сейчас {repNow}/{moneyNow}/{gradeNow})':
     'Required: reputation {rep}+, money ≤ {money}, grade {grade}+ (now {repNow}/{moneyNow}/{gradeNow})',
-  'Нужно: репутация {rep}+, джунов на менторстве {juniors}+ (сейчас {repNow}/{mentoredNow})':
-    'Required: reputation {rep}+, mentored juniors {juniors}+ (now {repNow}/{mentoredNow})',
   '{p0} ₽': '{p0} ₽',
   джун: 'junior',
   мидл: 'middle',
@@ -4066,4 +4064,11 @@ Object.assign(en, {
   'Язык не поддерживается': 'Language not supported',
   'Выбор сохраняется в профиле и подхватывается на других устройствах.':
     'The choice is saved in your profile and picked up on your other devices.',
+});
+
+Object.assign(en, {
+  'Нужно: репутация {rep}+, лидерство {lead}+, основной навык {skill}+ (сейчас {repNow}/{leadNow}/{skillNow})':
+    'Required: reputation {rep}+, leadership {lead}+, main skill {skill}+ (now {repNow}/{leadNow}/{skillNow})',
+  'Джуны, которых ты вёл, выросли в сеньоров и архитекторов. Их успехи — твои.':
+    'The juniors you led grew into seniors and architects. Their success is yours.',
 });

@@ -322,9 +322,10 @@
         },
         "teacher": {
             "minReputation": 60,
-            "minMentoredJuniors": 50,
+            "minLeadership": 24,
+            "minSkillLevel": 62,
             "title": "🎓 Учитель",
-            "description": "50 джунов выросли под твоим менторством. Их успехи — твои."
+            "description": "Джуны, которых ты вёл, выросли в сеньоров и архитекторов. Их успехи — твои."
         },
         "cto": {
             "minReputation": 68,
