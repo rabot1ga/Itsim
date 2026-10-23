@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { checkEndings, ctoTenureDays } from '@itsim/shared';
 import { ScreenTitle } from '../components/ui';
+import { endingArtwork } from '../lib/endingArt';
 
 const ENDING_EMOJI: Record<string, string> = {
   cto: '👑',
@@ -99,6 +100,20 @@ export const EndingView: React.FC = () => {
               className={`card ${e.available ? 'panel-note panel-note-gold' : 'panel-note panel-note-sky'}`}
               aria-label={e.title}
             >
+              <img
+                className="ending-art"
+                src={endingArtwork(e.id)}
+                alt=""
+                width={512}
+                height={307}
+                loading="lazy"
+                decoding="async"
+                onError={(ev) => {
+                  // Иллюстрация — украшение, а не контракт: нет файла — карточка
+                  // остаётся текстовой (тот же приём, что у портретов в FriendsView).
+                  ev.currentTarget.style.display = 'none';
+                }}
+              />
               <div className="flex items-start gap-2 mb-1.5">
                 <span className="text-base leading-none" aria-hidden="true">
                   {ENDING_EMOJI[e.id] ?? (e.available ? '⭐' : '🔒')}

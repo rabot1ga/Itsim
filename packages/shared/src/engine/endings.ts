@@ -1,5 +1,6 @@
 import type { PlayerState, Grade } from '../types';
 import type { BalanceConfig } from '../schemas';
+import { mainSkillLevel } from './skills';
 
 /**
  * Career endings — проверка того, что игрок достиг одного из финалов.
@@ -9,7 +10,7 @@ import type { BalanceConfig } from '../schemas';
  *                    удержание поста `endings.cto.minDaysAsCto` дней
  *   - `exit`       : стартап ≥ 100 млн (money + reputation + senior+)
  *   - `free_artist`: фриланс (senior+ при деньгах < 1 млн)
- *   - `teacher`    : 50+ джунов на менторстве
+ *   - `teacher`    : репутация наставника + лидерство + глубина основного навыка
  *   - `burnout`    : терминальное — здоровье/мотивация в нуле N дней подряд
  *   - `left_it`    : терминальное — без денег N дней подряд
  *
@@ -73,9 +74,10 @@ const DEFAULTS = {
   },
   teacher: {
     minReputation: 60,
-    minMentoredJuniors: 50,
+    minLeadership: 24,
+    minSkillLevel: 62,
     title: '🎓 Учитель',
-    description: '50 джунов выросли под твоим менторством. Их успехи — твои.',
+    description: 'Джуны, которых ты вёл, выросли в сеньоров и архитекторов. Их успехи — твои.',
   },
   burnout: {
     title: '🔥 Выгорание',
@@ -144,7 +146,7 @@ export function checkEndings(player: PlayerState, balance: BalanceConfig | undef
   const money = Math.round(player.money ?? 0);
   const grade = (player.grade ?? 'unemployed') as Grade;
   const leadership = Math.round(leadershipLevel(player));
-  const mentored = Math.round(player.mentoredJuniors ?? 0);
+  const mainSkill = Math.round(mainSkillLevel(player));
   const burnoutDays = Math.round(player.burnoutDays ?? 0);
   const brokeDays = Math.round(player.brokeDays ?? 0);
 
@@ -198,15 +200,16 @@ export function checkEndings(player: PlayerState, balance: BalanceConfig | undef
     description: free.description,
   });
 
-  // ── Positive: Teacher
+  // ── Positive: Teacher (путь наставника: репутация + лидерство + глубина навыка)
   const teacher = { ...DEFAULTS.teacher, ...endings.teacher };
-  const teacherMet = rep >= teacher.minReputation && mentored >= teacher.minMentoredJuniors;
+  const teacherMet =
+    rep >= teacher.minReputation && leadership >= teacher.minLeadership && mainSkill >= teacher.minSkillLevel;
   out.push({
     id: 'teacher',
     action: 'claim',
     available: teacherMet,
     missing: !teacherMet
-      ? `Нужно: репутация ${teacher.minReputation}+, джунов на менторстве ${teacher.minMentoredJuniors}+ (сейчас ${rep}/${mentored})`
+      ? `Нужно: репутация ${teacher.minReputation}+, лидерство ${teacher.minLeadership}+, основной навык ${teacher.minSkillLevel}+ (сейчас ${rep}/${leadership}/${mainSkill})`
       : undefined,
     title: teacher.title,
     description: teacher.description,

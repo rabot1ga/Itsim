@@ -272,14 +272,6 @@ export interface PlayerState {
    * первым, а сюда падает только как фолбэк для сейвов, где его заполнили.
    */
   leadership?: number;
-  /**
-   * Сколько джунов выросло под менторством игрока (финал `teacher` требует 50).
-   * ОТКРЫТЫЙ ДЕФЕКТ (найден 22.10.2026): поле читает только `checkEndings`,
-   * а не записывает ни один модуль — финал «Учитель» недостижим. Разбор и
-   * варианты — docs/TODO.md §2.
-   */
-  mentoredJuniors?: number;
-
   // Procedural generation (DESIGN.md) — optional for backward compatibility
   walletAddress?: string;
   genetics?: GeneticTraits;
