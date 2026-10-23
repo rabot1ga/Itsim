@@ -4072,3 +4072,14 @@ Object.assign(en, {
   'Джуны, которых ты вёл, выросли в сеньоров и архитекторов. Их успехи — твои.':
     'The juniors you led grew into seniors and architects. Their success is yours.',
 });
+
+// Milestone autoposts (автопостинг вех, README «В процессе»)
+Object.assign(en, {
+  Вехи: 'Milestones',
+  Поделиться: 'Share',
+  'Финал: {p0}': 'The ending: {p0}',
+  '🌟 Веха: {p0}': '🌟 Milestone: {p0}',
+  'Стал {p0} за {p1} {p2}!': 'Became {p0} in {p1} {p2}!',
+  'Первый миллион на {p1}-й день!': 'First million on day {p1}!',
+  'Год в IT — и ты ещё здесь!': 'A year in IT — and you are still here!',
+});

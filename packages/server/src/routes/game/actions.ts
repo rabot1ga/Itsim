@@ -27,6 +27,7 @@ import {
   projectComplete,
   projectFailurePenalty,
   projectPayout,
+  recordMilestones,
   remainingTasks,
   weeklySalary,
   bumpSprintProgress,
@@ -706,6 +707,10 @@ export async function actionRoutes(app: FastifyInstance) {
     state.totalActions += 1;
     state.maxEnergy = recalcMaxEnergy(state, content);
     state.ratingScore = calculateRating(state);
+    // Автопостинг вех («Стал сеньор за 78 дней!»): финал/миллион — пост в ленту
+    for (const m of recordMilestones(state, content.balance)) {
+      finalMessage += `\n${t('🌟 Веха: {p0}', { p0: t(m.key, m.params) })}`;
+    }
     await saveState(userId, state);
     // Action-triggered follow-up events (bar -> HR, freelance -> ghost client, ...)
     let triggeredEvent = null as ReturnType<typeof maybeTriggerActionEvent>;

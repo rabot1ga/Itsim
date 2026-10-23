@@ -2280,6 +2280,37 @@ select {
   animation: numPop 0.24s ease-out;
 }
 
+/* Лента вех (автопостинг): пост + кнопка «Поделиться» */
+.milestone-feed {
+  margin-top: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  list-style: none;
+}
+.milestone-post {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+}
+.milestone-body {
+  flex: 1;
+  min-width: 0;
+}
+.milestone-caption {
+  font-size: 14px;
+  color: var(--text-primary);
+}
+.milestone-day {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-in,
   .animate-pop-in,

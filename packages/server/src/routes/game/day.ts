@@ -28,6 +28,7 @@ import {
   projectDaysLeft,
   projectFailurePenalty,
   promotionChance,
+  recordMilestones,
   startProject,
   reviewInterval,
   rollInterview,
@@ -478,6 +479,10 @@ export async function dayRoutes(app: FastifyInstance) {
     for (const a of earned) {
       messages.push(t('🏆 Достижение: {p0} {p1} — {p2}', { p0: a.icon, p1: a.name, p2: a.description }));
     }
+    // Автопостинг вех: промоушен/миллион/год — пост в ленту профиля
+    for (const m of recordMilestones(state, content.balance)) {
+      messages.push(t('🌟 Веха: {p0}', { p0: t(m.key, m.params) }));
+    }
     await saveState(userId, state);
     return {
       state: respondState(state, messages.length > 0 ? messages.join('\n') : undefined),
@@ -554,7 +559,10 @@ export async function dayRoutes(app: FastifyInstance) {
     const earned = checkAchievements(state, content.achievements);
     const followup = choice.followup ?? '';
     const extra = earned.map((a) => t('🏆 Достижение: {p0} {p1}', { p0: a.icon, p1: a.name })).join('\n');
-    const message = [followup, extra].filter(Boolean).join('\n') || undefined;
+    const milestones = recordMilestones(state, content.balance)
+      .map((m) => t('🌟 Веха: {p0}', { p0: t(m.key, m.params) }))
+      .join('\n');
+    const message = [followup, extra, milestones].filter(Boolean).join('\n') || undefined;
     state.maxEnergy = recalcMaxEnergy(state, content);
     state.ratingScore = calculateRating(state);
     await saveState(userId, state);

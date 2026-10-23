@@ -66,6 +66,18 @@ export interface LivingCosts {
 /** Career endings (ТЗ «Финалы») */
 export type CareerEnding = 'corporate_god' | 'exit' | 'free_artist' | 'teacher' | 'burnout' | 'left_it';
 
+/** Пост ленты вех (автопостинг, README): caption — gettext-ключ + params. */
+export interface Milestone {
+  /** идемпотентный id факта: `grade:senior`, `million`, `year`, `ending:exit` */
+  id: string;
+  /** игровой день, когда веха случилась */
+  day: number;
+  /** gettext-ключ подписи; клиент/сервер собирают через t(key, params) */
+  key: string;
+  /** параметры подписи; строковые значения t() авто-переводит */
+  params?: Record<string, unknown>;
+}
+
 // ---- Player State ----
 
 export interface PlayerState {
@@ -121,6 +133,15 @@ export interface PlayerState {
    * i18n; границы валидируют через `isLocale`.
    */
   language?: string;
+
+  /**
+   * Автопостинг вех (README «В процессе»): лента авто-постов карьеры и жизни
+   * («Стал сеньор за 78 дней!»). Записывает сервер при мутациях сейва,
+   * клиент показывает в «Карточке жизни» и шарит в Telegram.
+   */
+  milestones?: Milestone[];
+  /** одноразовый seed ленты: сейвы до фичи не ретро-постятся */
+  milestonesSeeded?: boolean;
 
   // Skills
   skills: Record<SkillId, SkillLevel>;

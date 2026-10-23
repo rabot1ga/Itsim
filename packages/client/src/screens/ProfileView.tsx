@@ -1,11 +1,12 @@
 import { t, LOCALES, LOCALE_NAMES, currentLocale, type Locale } from '../lib/i18n';
 import React from 'react';
 import { useGameStore } from '../store/gameStore';
-import { haptic } from '../lib/telegram';
+import { haptic, openTelegramLink, shareLink } from '../lib/telegram';
 import { ScreenTitle, SectionTitle, StatBar } from '../components/ui';
-import { xpToNext } from '@itsim/shared';
+import { xpToNext, type Milestone } from '@itsim/shared';
 import { gradeLabel, skillName } from '../lib/playerLabels';
 import { profileArtwork, profileMoodOf, PROFILE_MOOD_META } from '../lib/profileArt';
+const BOT_NAME = 'itlife_simulator_bot';
 const LINKS: Array<{
   view: string;
   emoji: string;
@@ -61,6 +62,8 @@ export const ProfileView: React.FC = () => {
     ['⭐', String(Math.round(player.reputation ?? 0))],
     ['💰', `${Math.round(player.money ?? 0).toLocaleString('ru-RU')} ₽`],
   ];
+  // Автопостинг вех: лента авто-постов «Стал сеньор за 78 дней!»
+  const milestones: Milestone[] = (player.milestones ?? []) as Milestone[];
   return (
     <div className="space-y-4 animate-fade-in">
       <ScreenTitle emoji="👤">{t('Профиль')}</ScreenTitle>
@@ -114,6 +117,39 @@ export const ProfileView: React.FC = () => {
           ))}
         </dl>
       </section>
+
+      {/* Автопостинг вех (README «В процессе»): авто-посты карьеры и жизни
+          «Стал сеньор за 78 дней!» — лента + шаринг в Telegram. */}
+      {milestones.length > 0 && (
+        <section className="card">
+          <SectionTitle>{t('Вехи')}</SectionTitle>
+          <ul className="milestone-feed">
+            {milestones.map((m) => {
+              const caption = t(m.key, m.params);
+              return (
+                <li key={m.id} className="milestone-post">
+                  <div className="milestone-body">
+                    <p className="milestone-caption">{caption}</p>
+                    <p className="milestone-day">
+                      {t('День')} {m.day}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={() => {
+                      haptic('selection');
+                      openTelegramLink(shareLink(caption, BOT_NAME, (player as any).telegramId ?? 'player'));
+                    }}
+                  >
+                    {t('Поделиться')}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
 
       {/* Поле языка профиля (P2.5, этап 3): выбор живёт в сейве — новый девайс
           подхватывает его, запросы по-прежнему несут X-Locale. */}

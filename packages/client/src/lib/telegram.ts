@@ -290,3 +290,8 @@ export function inviteLink(botName: string, telegramId: string | number): string
   const target = encodeURIComponent(`https://t.me/${botName}?startapp=ref_${telegramId}`);
   return `https://t.me/share/url?url=${target}&text=${text}`;
 }
+/** Share link for a milestone post (автопостинг вех): same deep link, custom caption. */
+export function shareLink(text: string, botName: string, telegramId: string | number): string {
+  const target = encodeURIComponent(`https://t.me/${botName}?startapp=ref_${telegramId}`);
+  return `https://t.me/share/url?url=${target}&text=${encodeURIComponent(text)}`;
+}

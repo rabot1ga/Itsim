@@ -18,3 +18,4 @@ export * from './projects';
 export * from './archetypes';
 export * from './utils';
 export * from './endings';
+export * from './milestones';
