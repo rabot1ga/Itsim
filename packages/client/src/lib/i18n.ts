@@ -11,7 +11,7 @@ import { t as translate, getStoredLocale, setStoredLocale, isLocale, LOCALES, ty
 export type { Locale };
 export { LOCALES, isLocale };
 
-let locale: Locale = getStoredLocale();
+const locale: Locale = getStoredLocale(); // смена языка = перезагрузка модулей
 
 export function currentLocale(): Locale {
   return locale;
