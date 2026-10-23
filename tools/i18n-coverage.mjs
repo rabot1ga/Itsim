@@ -38,8 +38,8 @@ for (const file of files) {
   }
 }
 
-// Контент-ключи (P2.5, этап 3): значения контент-JSON. pixel/ — служебные
-// метки пиксель-инструментов (не игроку), из отчёта исключены.
+// Контент-ключи (P2.5, этап 3): значения контент-JSON, включая pixel/
+// (метки пиксель-билдера — в общем словаре с 2026-10-24).
 function collectStrings(node, out) {
   if (typeof node === 'string') {
     if (CYRILLIC.test(node)) out.add(node);
@@ -54,7 +54,7 @@ function walkJson(dir, out = []) {
     const p = join(dir, name);
     const st = statSync(p);
     if (st.isDirectory()) {
-      if (name === 'i18n' || name === 'node_modules' || name === 'pixel') continue;
+      if (name === 'i18n' || name === 'node_modules') continue;
       walkJson(p, out);
     } else if (name.endsWith('.json')) out.push(p);
   }
