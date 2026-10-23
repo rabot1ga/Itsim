@@ -1363,3 +1363,553 @@ Object.assign(en, {
     'The interview is scheduled. Chances are middling — get ready.',
   'Ты явно сильнее позиции — интервьюер расслаблен.': 'You are clearly overqualified — the interviewer is relaxed.',
 });
+
+Object.assign(en, {
+  '0 мс — это «как можно скорее», но после текущего синхронного кода: колбэк уходит в очередь макрозадач event loop.':
+    '0 ms means "as soon as possible", but after the current synchronous code: the callback goes to the event loop macrotask queue.',
+  '7 = rwx для владельца, 5 = r-x для группы и остальных. Числа — это биты прав.':
+    '7 = rwx for the owner, 5 = r-x for the group and everyone else. The numbers are permission bits.',
+  'Bias-variance tradeoff — это про…': 'The bias-variance tradeoff is about…',
+  'Event loop заблокируется, и все запросы встанут': 'The event loop blocks and all requests stall',
+  'GIL не даёт потокам исполнять байткод одновременно. Для CPU-bound — multiprocessing, для I/O — потоки ок.':
+    'The GIL stops threads from executing bytecode at the same time. For CPU-bound work — multiprocessing, for I/O threads are fine.',
+  'Game feel: отзывчивость, скрин-шейк, звук, ясные награды. Механика + фидбек = удовольствие.':
+    'Game feel: responsiveness, screen shake, sound, clear rewards. Mechanics + feedback = fun.',
+  'HTTPS = HTTP + TLS: шифруется весь трафик. Провайдер видит домен, но не содержимое.':
+    'HTTPS = HTTP + TLS: all traffic is encrypted. The provider sees the domain, not the content.',
+  'INNER — пересечение. LEFT — всё из левой + совпадения справа. Не перепутай на собеседовании.':
+    'INNER — intersection. LEFT — everything from the left + matches from the right. Do not mix them up at an interview.',
+  'JSX — это «HTML в JS». На деле превращается в обычные вызовы функций. Магия — на этапе сборки.':
+    'JSX is "HTML in JS". In reality it compiles to plain function calls. The magic happens at build time.',
+  'Java компилируется в байткод, а JVM его исполняет. Поэтому «Write once, run anywhere».':
+    'Java compiles to bytecode and the JVM runs it. Hence "Write once, run anywhere".',
+  'List comprehension — компактное создание списка из итерации. Читается почти как английский.':
+    'A list comprehension builds a list from an iteration compactly. Reads almost like English.',
+  'Node однопоточный: пока крутится цикл, никто не ответит. Тяжёлое — в воркеры или нативно.':
+    'Node is single-threaded: while the loop spins, nobody answers. Heavy work goes to workers or native code.',
+  'Node перезапустится': 'Node restarts',
+  'Reflow пересчитывает раскладку, repaint — только пиксели. Поэтому анимируй transform и opacity.':
+    'Reflow recalculates layout, repaint only pixels. So animate transform and opacity.',
+  'Reflow — пересчитывает геометрию всей страницы': 'Reflow — recalculates the geometry of the whole page',
+  'Spring управляет объектами за тебя (IoC/DI) и даёт кучу модулей: web, data, security.':
+    'Spring manages objects for you (IoC/DI) and ships tons of modules: web, data, security.',
+  'Tuple быстрее': 'A tuple is faster',
+  'Tuple неизменяем': 'A tuple is immutable',
+  'Tuple только для строк': 'A tuple is for strings only',
+  'Unit медленнее': 'Unit is slower',
+  'Unit тестирует функцию, e2e — весь пользовательский сценарий':
+    'A unit test tests a function, an e2e test covers the whole user scenario',
+  'Unit — быстро и точечно. E2E — медленно и целиком. В пирамиде тестирования unit — в основании.':
+    'Unit — fast and pinpoint. E2E — slow and whole. In the testing pyramid units are at the base.',
+  '`===` сравнивает значение и тип без приведения': '`===` compares value and type without coercion',
+  '`==` приводит типы (и творит чудеса), `===` — строгое сравнение. В серьёзном коде почти всегда `===`.':
+    '`==` coerces types (and performs miracles), `===` is strict comparison. In serious code it is almost always `===`.',
+  '`==` работает быстрее': '`==` works faster',
+  '`==` только для строк': '`==` is for strings only',
+  '`@decorator` — просто синтаксический сахар для `fn = decorator(fn)`. Оборачиваешь поведение, не трогая код.':
+    '`@decorator` is just syntactic sugar for `fn = decorator(fn)`. You wrap behavior without touching the code.',
+  'all быстрее': 'all is faster',
+  'all ждёт все промисы, race — первый завершившийся': 'all waits for all promises, race — for the first settled one',
+  'all — «все вместе и по порядку», race — «кто первый прибежал». Есть ещё allSettled — тот, который не падает.':
+    'all is "everyone together in order", race is "who came first". There is also allSettled — the one that never fails.',
+  'any выключает проверки, unknown — «не знаю что, но сначала докажи». Безопасность за небольшую цену.':
+    'any turns off checks, unknown says "I do not know what it is, but prove it first". Safety for a small price.',
+  'const запрещает переприсваивание ссылки. Содержимое объекта менять можно — поэтому `const arr = []` и `arr.push()` работают.':
+    '`const` forbids reassigning the reference. The object contents can still change — that is why `const arr = []` and `arr.push()` work.',
+  'e2e не бывает': 'There is no e2e',
+  'fetch скачивает изменения, не трогая рабочую ветку. pull сразу сливает. Осторожнее с pull.':
+    'fetch downloads changes without touching the working branch. pull merges right away. Be careful with pull.',
+  'fetch удаляет ветки': 'fetch deletes branches',
+  'inline > id > class > тег. Именно поэтому !important — оружие последней надежды (и боли).':
+    'inline > id > class > tag. That is exactly why !important is a last-resort weapon (and a pain).',
+  'inline-стиль': 'inline style',
+  'interface удобно расширять (extends), а type умеет unions и intersections. В командах чаще договариваются об одном стиле.':
+    '`interface` is easy to extend (extends), `type` can do unions and intersections. Teams usually agree on one style.',
+  'npm быстрее': 'npm is faster',
+  'npx выполняет пакет без глобальной установки': 'npx runs a package without installing it globally',
+  'npx подхватывает пакет на лету. Поэтому `npx create-react-app` работает без `npm i -g`.':
+    'npx picks a package up on the fly. That is why `npx create-react-app` works without `npm i -g`.',
+  'npx удаляет пакеты': 'npx deletes packages',
+  'pull работает только в GitHub': 'pull works in GitHub only',
+  'race ждёт все промисы': 'race waits for all promises',
+  'rebase делает историю линейной и чистой. Правило хорошего тона: не переписывай общие ветки.':
+    'rebase makes history linear and clean. Good manners: never rewrite shared branches.',
+  'text-align: center на родителе': 'text-align: center on the parent',
+  'unknown не существует': 'unknown does not exist',
+  'База данных': 'A database',
+  'Базу данных': 'The database',
+  'Баланс между недообучением и переобучением': 'The balance between underfitting and overfitting',
+  'Безопасный обмен данными между горутинами': 'Safe data exchange between goroutines',
+  'Бич CI: сегодня красный, завтра зелёный. Причины — гонки, таймауты, общее состояние.':
+    'The CI scourge: red today, green tomorrow. Causes — races, timeouts, shared state.',
+  'Блокировка сервера': 'Server blocking',
+  'Браузер сам прикладывает cookies жертвы. Защита: CSRF-токены и SameSite-атрибуты.':
+    "The browser attaches the victim's cookies itself. Defenses: CSRF tokens and SameSite attributes.",
+  'В VM — своя ОС целиком. Контейнер — изолированный процесс на общем ядре. Отсюда лёгкость и скорость.':
+    'A VM has its own whole OS. A container is an isolated process on a shared kernel. Hence the lightness and speed.',
+  'Весь канал между браузером и сервером': 'The whole channel between the browser and the server',
+  'Взлом пароля': 'Cracking a password',
+  'Виртуальная машина, выполняющая байткод Java': 'A virtual machine that runs Java bytecode',
+  'Владелец — всё, остальные — чтение и выполнение': 'The owner gets everything, everyone else gets read and execute',
+  'Внедрение вредоносного скрипта в страницу жертвы': "Injecting a malicious script into the victim's page",
+  'Все права всем': 'All permissions for everyone',
+  'Все строки из левой': 'All rows from the left',
+  'Все строки из обеих таблиц': 'All rows from both tables',
+  'Всегда type': 'Always type',
+  'Всегда window': 'Always window',
+  'Встреча раз в год': 'A meeting once a year',
+  'Выбор языка': 'Choosing a language',
+  'Выложить в репозиторий': 'Push to the repository',
+  'Глобальная блокировка интерпретатора, ограничивающая потоки': 'A global interpreter lock that constrains threads',
+  'Горутина — это…': 'A goroutine is…',
+  'Горутины дешевле потоков ОС, их тысячи. Общаются через каналы: «не делись памятью — общайся».':
+    'Goroutines are cheaper than OS threads, thousands of them. They talk through channels: "do not share memory — communicate".',
+  Графика: 'Graphics',
+  'Группируешь и считаешь агрегаты: COUNT, SUM, AVG. Частый сосед — HAVING, который фильтрует группы.':
+    'You group and compute aggregates: COUNT, SUM, AVG. The frequent companion is HAVING, which filters groups.',
+  'Декомпозировать и заложить буфер на неопределённость': 'Decompose and budget a buffer for uncertainty',
+  'Декоратор в Python — это…': 'A decorator in Python is…',
+  'Делает значение полностью неизменяемым': 'Makes a value fully immutable',
+  'Дженерик — «тип-параметр». Функция работает с любым типом, но сохраняет информацию о нём.':
+    'A generic is a "type parameter". The function works with any type but keeps the type information.',
+  Длина: 'Length',
+  'Для union-типов и примитивов; interface — для объектов и расширений':
+    'For union types and primitives; `interface` is for objects and extensions',
+  'Для видео': 'For video',
+  'Для генерации кода': 'For code generation',
+  'Для группировки строк по значениям колонки': 'For grouping rows by column values',
+  'Для звука': 'For sound',
+  'Для интернета': 'For the internet',
+  'Для красоты в DevTools': 'For looking pretty in DevTools',
+  'Для логирования': 'For logging',
+  'Для паролей': 'For passwords',
+  'Для сборки': 'For building',
+  'Для сети': 'For networking',
+  'Для соединения таблиц': 'For joining tables',
+  'Для сортировки': 'For sorting',
+  'Для сортировки по алфавиту': 'For sorting alphabetically',
+  'Для стилизации': 'For styling',
+  'Для тестов': 'For tests',
+  'Для типобезопасного переиспользования функций и компонентов': 'For type-safe reuse of functions and components',
+  'Для удаления дублей': 'For removing duplicates',
+  'Для чего нужен GROUP BY?': 'What is GROUP BY for?',
+  'Договор в PDF': 'A contract in PDF',
+  'Дроби на мелкие части — оценка точнее. Буфер — честность перед собой и командой.':
+    'Break work into small parts — the estimate gets more accurate. A buffer is honesty with yourself and the team.',
+  'Зависит от погоды': 'Depends on the weather',
+  'Замыкание — это…': 'A closure is…',
+  'Запрещает переприсваивание, но не мутацию объекта': 'Forbids reassignment but not object mutation',
+  'Зачем useEffect массив зависимостей?': 'Why does useEffect need a dependency array?',
+  'Зачем нужен `key` в списках?': 'What is `key` for in lists?',
+  'Зачем нужен индекс и какая у него цена?': 'What is an index for and what does it cost?',
+  'Зачем нужны volumes?': 'What are volumes for?',
+  'Зачем нужны дженерики?': 'What are generics for?',
+  'Зачем нужны каналы в Go?': 'What are channels in Go for?',
+  'Зачем нужны стримы?': 'What are streams for?',
+  'Злоумышленник заставляет страницу выполнить его скрипт. Защита: экранирование и Content Security Policy.':
+    'An attacker makes the page run their script. Defenses: escaping and Content Security Policy.',
+  'Знаменитый DAO-хак: повторный вход выкачивает средства. Лечится: сперва обновляй состояние, потом переводи.':
+    'The famous DAO hack: re-entering drains funds. The fix: update state first, transfer after.',
+  'Знаменитый баг JavaScript, который уже нельзя исправить — слишком много кода на нём держится. null — примитив, но typeof врёт.':
+    'The famous JavaScript bug that can never be fixed — too much code depends on it. null is a primitive, but typeof lies.',
+  Игра: 'A game',
+  'Игровой движок': 'A game engine',
+  'Из звуков': 'From sounds',
+  'Из меню': 'From the menu',
+  'Из сохранений': 'From save files',
+  'Из чего состоит игровой цикл?': 'What is a game loop made of?',
+  'Индекс — как оглавление книги: читать быстрее, но каждую вставку нужно дописывать в оглавление.':
+    "An index is like a book's table of contents: reads are faster, but every insert has to append to the contents.",
+  Интерфейс: 'Interface',
+  'Итеративные спринты с ролями, артефактами и церемониями': 'Iterative sprints with roles, artifacts and ceremonies',
+  'Каждая операция в EVM стоит газа. Сложный контракт = дорогой вызов. Поэтому оптимизируют.':
+    'Every operation in the EVM costs gas. A complex contract = an expensive call. That is why they optimize.',
+  'Каждый кадр: ввод → логика → рендер. 60 раз в секунду. Сломаешь цикл — сломаешь игру.':
+    'Every frame: input → logic → render. 60 times a second. Break the loop — break the game.',
+  'Как обновить состояние на основе предыдущего?': 'How do you update state based on the previous one?',
+  'Как отцентрировать блок во flex-контейнере?': 'How do you center a block in a flex container?',
+  'Как правильно оценивать задачи?': 'How do you estimate tasks properly?',
+  'Как работает CSRF?': 'How does CSRF work?',
+  'Какой селектор победит в споре?': 'Which selector wins the dispute?',
+  'Канал — труба между горутинами. Данные идут безопасно, без гонок и мьютексов.':
+    'A channel is a pipe between goroutines. Data flows safely, no races or mutexes.',
+  Класс: 'A class',
+  'Классика: justify-content — по главной оси, align-items — по поперечной. Выучил раз — живёшь спокойно.':
+    'The classics: justify-content is the main axis, align-items the cross axis. Learn it once — live calmly.',
+  'Клонирует репозиторий': 'Clones the repository',
+  'Когда выбрать type, а не interface?': 'When should you choose `type` over `interface`?',
+  'Когда выполнится колбэк из `setTimeout(fn, 0)`?': 'When does the callback from `setTimeout(fn, 0)` run?',
+  'Код на блокчейне, который исполняется автоматически': 'Code on the blockchain that runs automatically',
+  'Код, который живёт на блокчейне и исполняется, когда соблюдены условия. Без посредников и без кнопки «отменить».':
+    'Code that lives on the blockchain and executes when conditions are met. No middlemen and no "undo" button.',
+  'Коллега публично раскритиковал твоё решение. Лучший ход?':
+    'A colleague publicly criticized your decision. What is the best move?',
+  'Комиссия банка': 'Bank fee',
+  'Компилятор C': 'A C compiler',
+  'Контейнер эфемерен: удалил — потерял данные. Volume хранит их на хосте. Это как внешний диск.':
+    'A container is ephemeral: delete it — lose the data. A volume stores them on the host. Like an external drive.',
+  'Контейнеры делят ядро хоста и легче': 'Containers share the host kernel and are lighter',
+  'Контейнеры медленнее': 'Containers are slower',
+  'Контейнеры — это ОС': 'Containers are an OS',
+  'Контракт вызывает сам себя повторно до завершения первой операции':
+    'The contract calls itself again before the first operation completes',
+  'Короткие спринты, стендапы, ретро. Смысл — быстрая обратная связь и адаптация.':
+    'Short sprints, standups, retros. The point is fast feedback and adaptation.',
+  'Кортеж нельзя изменить после создания. Зато его можно использовать как ключ словаря.':
+    'A tuple cannot be changed after creation. But it can be used as a dictionary key.',
+  Кошелёк: 'A wallet',
+  'Кража железа': 'Stealing hardware',
+  'Кража приватного ключа': 'Stealing the private key',
+  Криптовалюта: 'Cryptocurrency',
+  'Курс валют': 'Exchange rate',
+  'Лексическому this из места создания': 'The lexical `this` of the creation site',
+  'Лёгкий поток исполнения в Go': 'A lightweight execution thread in Go',
+  'Метод деплоя': 'A deployment method',
+  'Модель выучила всё навсегда': 'The model learned everything forever',
+  'Модель зазубрила ответы вместо закономерностей. Лечение: регуляризация, больше данных, проще модель.':
+    'The model memorized answers instead of patterns. Fixes: regularization, more data, a simpler model.',
+  'Модель начнёт расходиться, ошибка запляшет': 'The model will start diverging, the error will dance',
+  'Модель отлично работает на трейне и плохо на новых данных':
+    'The model works great on the train set and poorly on new data',
+  'Модель сломалась': 'The model broke',
+  'Модель станет точнее': 'The model will get more accurate',
+  'Модуль для GUI': 'A GUI module',
+  'Мягко откатывает': 'Rolls back gently',
+  'Назвать число наугад': 'Guess a number',
+  'Написать жалобу': 'File a complaint',
+  'Написать на стикере': 'Write it on a sticky note',
+  'Настоящий класс, как в Java': 'A real class, like in Java',
+  Никак: 'No way',
+  'Никакой цены': 'No cost at all',
+  Никогда: 'Never',
+  'Никогда, только interface': 'Never, only interface',
+  'Никому никогда не показывать': 'Never show it to anyone',
+  Ничего: 'Nothing',
+  'Ничего не шифрует': 'Encrypts nothing',
+  Ничем: 'Nothing',
+  'Ничем, это одно и то же': 'Nothing, it is the same thing',
+  'Обновление состояния + отрисовка каждый кадр': 'State update + rendering every frame',
+  'Обрабатывать данные по частям, не загружая всё в память':
+    'Process data in chunks instead of loading it all into memory',
+  'Обучение ускорится без последствий': 'Training will speed up with no consequences',
+  Одинаково: 'The same',
+  'Он быстрее компилируется': 'It compiles faster',
+  'Ответить тем же': 'Reply in kind',
+  'Отправить в поддержку': 'Send it to support',
+  'Ошибка компилятора': 'A compiler error',
+  'Ошибка синтаксиса': 'A syntax error',
+  'Перебор паролей': 'Password brute-forcing',
+  'Передаёшь функцию — получаешь актуальный prev. Прямое чтение state может отдать устаревшее значение при батчинге.':
+    'You pass a function — you get the actual prev. Reading state directly can give a stale value under batching.',
+  'Переключает ветку': 'Switches a branch',
+  'Переписывает историю, перенося коммиты на новое основание': 'Rewrites history, moving commits onto a new base',
+  'Петли вызова и понятный фидбек на действия игрока': 'Those game-feel loops and clear feedback on player actions',
+  'Плагин для браузера': 'A browser plugin',
+  'Плата за вычисления и хранение в сети': 'Fees for computation and storage on the network',
+  Погоду: 'The weather',
+  'Под капотом — всё те же прототипы и функции. class — удобная обёртка, а не новая механика.':
+    'Under the hood it is all the same prototypes and functions. `class` is a convenient wrapper, not new mechanics.',
+  'После всего синхронного кода': 'After all the synchronous code',
+  'Приватный ключ = деньги. Кто его знает, тот и владелец. Даже «поддержка кошелька» его не попросит.':
+    'The private key is the money. Whoever knows it owns it. Even "wallet support" will never ask for it.',
+  'Программа для созвонов': 'A video-calling program',
+  'Простая модель — высокий bias. Сложная — высокая variance. Ты ищешь золотую середину.':
+    'A simple model — high bias. A complex one — high variance. You are looking for the golden middle.',
+  'Пустой массив — «только при монтировании». С зависимостями — перезапуск при их изменении. Без массива — на каждый рендер.':
+    'An empty array means "only on mount". With dependencies — re-run when they change. Without an array — on every render.',
+  'Разговор наедине и факты вместо эмоций. Публичная перепалка разрушает команду быстрее бага в проде.':
+    'A private talk and facts instead of emotions. A public squabble destroys a team faster than a prod bug.',
+  'Разметку данных': 'Data markup',
+  Рецепты: 'Recipes',
+  'Сайт-злоумышленник отправляет запрос от имени жертвы с её cookies':
+    "An attacker's site sends requests on behalf of the victim using their cookies",
+  'Самой функции': 'The function itself',
+  'Синтаксис для описания UI, компилируется в вызовы createElement':
+    'Syntax for describing UI that compiles into createElement calls',
+  'Синтаксический сахар над прототипным наследованием': 'Syntactic sugar over prototypal inheritance',
+  'Слишком большой шаг — пролетаешь мимо минимума. Слишком маленький — ползёшь вечность.':
+    'Too big a step — you fly past the minimum. Too small — you crawl forever.',
+  'Слишком много данных': 'Too much data',
+  'Смарт-контракт — это…': 'A smart contract is…',
+  'Создаёт бэкап': 'Creates a backup',
+  'Создаёт генератор': 'Creates a generator',
+  'Создаёт глобальную переменную': 'Creates a global variable',
+  'Создаёт список [0,2,4,6,8]': 'Creates the list [0,2,4,6,8]',
+  'Создаёт тег': 'Creates a tag',
+  'Спам транзакциями': 'Spamming with transactions',
+  'Специальный класс': 'A special class',
+  Сплетни: 'Gossip',
+  'Спокойно обсудить факты наедине': 'Calmly discuss the facts in private',
+  'Способ закрыть вкладку': 'A way to close a tab',
+  'Способ импорта': 'A way to import',
+  'Спросить у PM': 'Ask the PM',
+  'Сразу же': 'Immediately',
+  'Стабильный key помогает React понять, что изменилось. Index в качестве key — классическая грабля.':
+    'A stable key helps React understand what changed. Index as the key is a classic pitfall.',
+  'Стирает изменения безвозвратно (вместе с несохранённым)': 'Erases changes irreversibly (including unsaved ones)',
+  'Стрелочные функции не создают свой this — берут его из внешней области видимости. Поэтому в обработчиках их любят.':
+    'Arrow functions do not create their own `this` — they take it from the outer scope. That is why handlers love them.',
+  'Стрим читает/пишет порциями. Гигабайтный файл не взорвёт память — красота.':
+    'A stream reads/writes in chunks. A gigabyte file will not blow up the memory — lovely.',
+  Тег: 'A tag',
+  'Тест без проверок': 'A test with no assertions',
+  'Тест на скорость': 'A speed test',
+  'Тест, который всегда зелёный': 'A test that is always green',
+  'Тест, падающий нестабильно без изменения кода': 'A test that fails intermittently without any code change',
+  'Тип данных': 'A data type',
+  'То же, что рекурсия': 'The same as recursion',
+  Токен: 'A token',
+  'Только в браузере': 'Only in the browser',
+  'Только для красоты': 'Only for looks',
+  'Только для примитивов': 'Only for primitives',
+  'Только картинки': 'Only images',
+  'Только несовпадающие': 'Only the non-matching ones',
+  'Только пароли': 'Only passwords',
+  'Только совпадающие строки из обеих таблиц': 'Only the matching rows from both tables',
+  'Только чтение': 'Read-only',
+  'Топливо для машин': 'Fuel for machines',
+  'Требует проверки типа перед использованием': 'Requires a type check before use',
+  'Три вопроса — и пошёл работать. Стендап длиной в час — это уже не стендап.':
+    'Three questions and you get to work. An hour-long standup is not a standup anymore.',
+  'Тяжёлый процесс': 'A heavyweight process',
+  Уволиться: 'Quit',
+  'Удалить файл': 'Delete the file',
+  'Удаляет коммиты': 'Deletes commits',
+  'Умножает range': 'Multiplies range',
+  'Умножить на 0.5': 'Multiply by 0.5',
+  'Ускоряет всё': 'Speeds up everything',
+  'Ускоряет выборки, но замедляет запись': 'Speeds up reads but slows down writes',
+  'Фреймворк с dependency injection и готовыми модулями':
+    'A framework with dependency injection and ready-made modules',
+  'Функция таскает с собой переменные из места создания. На этом построены колбэки, счётчики и половина собеседований.':
+    'A function carries the variables from where it was created. Callbacks, counters and half of all interviews are built on this.',
+  'Функция, которая помнит область видимости, где была создана':
+    'A function that remembers the scope where it was created',
+  'Функция, оборачивающая другую функцию': 'A function that wraps another function',
+  'Функция-исключение': 'An exception function',
+  Цена: 'Price',
+  'Цену серверов': 'The price of servers',
+  'Цикл не выполнится': 'The loop will not run',
+  'Чем Promise.all отличается от Promise.race?': 'How is Promise.all different from Promise.race?',
+  'Чем `===` отличается от `==`?': 'How is `===` different from `==`?',
+  'Чем `unknown` лучше `any`?': 'Why is `unknown` better than `any`?',
+  'Чем git pull отличается от git fetch?': 'How is git pull different from git fetch?',
+  'Чем npx отличается от npm?': 'How is npx different from npm?',
+  'Чем tuple отличается от list?': 'How is a tuple different from a list?',
+  'Чем unit-тест отличается от e2e?': 'How is a unit test different from e2e?',
+  'Чем контейнер отличается от виртуальной машины?': 'How is a container different from a virtual machine?',
+  'Чему равен `this` в стрелочной функции?': 'What is `this` in an arrow function?',
+  'Через Wi-Fi': 'Over Wi-Fi',
+  'Через вирус': 'Via a virus',
+  'Через почту': 'By email',
+  'Что будет, если learning rate слишком большой?': 'What happens if the learning rate is too high?',
+  'Что вернёт `typeof null`?': 'What does `typeof null` return?',
+  'Что возвращает INNER JOIN?': 'What does INNER JOIN return?',
+  'Что даёт Spring?': 'What does Spring give you?',
+  'Что делает `[x*2 for x in range(5)]`?': 'What does `[x*2 for x in range(5)]` do?',
+  'Что делает git rebase?': 'What does git rebase do?',
+  'Что делает git reset --hard?': 'What does git reset --hard do?',
+  'Что делает игру «весёлой»?': 'What makes a game "fun"?',
+  'Что делать с приватным ключом?': 'What do you do with the private key?',
+  'Что дороже для браузера: reflow или repaint?': 'What is more expensive for the browser: reflow or repaint?',
+  'Что значит chmod 755?': 'What does chmod 755 mean?',
+  'Что именно шифрует HTTPS?': 'What exactly does HTTPS encrypt?',
+  'Что на самом деле делает `const`?': 'What does `const` actually do?',
+  'Что рассказывают на дейлике?': 'What do people say at a daily?',
+  'Что сделал, что будешь делать, какие блокеры': 'What you did, what you will do, what the blockers are',
+  'Что случится, если в Node выполнить тяжёлый синхронный цикл?':
+    'What happens if you run a heavy synchronous loop in Node?',
+  'Что такое GIL?': 'What is the GIL?',
+  'Что такое JSX?': 'What is JSX?',
+  'Что такое JVM?': 'What is the JVM?',
+  'Что такое Scrum простыми словами?': 'What is Scrum in plain words?',
+  'Что такое XSS-атака?': 'What is an XSS attack?',
+  'Что такое `class` в JavaScript?': 'What is `class` in JavaScript?',
+  'Что такое flaky-тест?': 'What is a flaky test?',
+  'Что такое reentrancy-атака?': 'What is a reentrancy attack?',
+  'Что такое газ в Ethereum?': 'What is gas in Ethereum?',
+  'Что такое переобучение?': 'What is overfitting?',
+  'Чтобы React сопоставлял элементы при ререндере': 'So that React can match elements on re-render',
+  'Чтобы данные переживали пересоздание контейнера': 'So that data survives a container re-creation',
+  'Чтобы запускать эффект только при изменении указанных значений':
+    'To run the effect only when the listed values change',
+  'Чтобы писать код без типов': 'To write code without types',
+  'Чтобы эффект выполнялся на каждый рендер': 'To run the effect on every render',
+  'Это кнопка «удалить всё». Несохранённые изменения уйдут навсегда. Сначала git stash или commit.':
+    'It is the "delete everything" button. Unsaved changes go away forever. Use git stash or commit first.',
+  'Это линтер': 'It is a linter',
+  'Это одно и то же': 'It is the same thing',
+  'Это синонимы': 'They are synonyms',
+  'Это список импортов': 'It is the list of imports',
+  'Это то же самое': 'It is the same',
+  'Это шифрование данных': 'It is data encryption',
+  'Язык сервера': 'The server language',
+  '«Подозрительная операция», — сообщает банк. Карта заблокирована. Ты не помнишь никакой подозрительной операции.':
+    '“A suspicious operation,” says the bank. The card is blocked. You remember no suspicious operation.',
+  '«Поезд временно остановлен по техническим причинам». Ты в тоннеле. Телефон на 3%. Планы рушатся.':
+    '“The train is temporarily stopped for technical reasons.” You are in a tunnel. Phone at 3%. Plans are falling apart.',
+  'В отделении — очередь из пенсионеров. Карту разблокировали. День потерян.':
+    'The branch has a line of pensioners. The card is unblocked. The day is lost.',
+  'Вернули деньги. Здоровье, правда, не вернули.': 'The money is back. Health, unfortunately, is not.',
+  'Виноват ларёк, идти ругаться 😤': 'The kiosk is to blame — going to argue 😤',
+  'Врач сказал «классика» и выписал диету. Рис, курица, никакой шаурмы.':
+    'The doctor said “classic” and prescribed a diet. Rice, chicken, no shawarma.',
+  'Вызвать врача 🏥': 'Call a doctor 🏥',
+  'Дать гостевую сеть с лимитом 🤝': 'Give them a guest network with a limit 🤝',
+  'Дать пароль от основной сети 🙈': 'Give them the main network password 🙈',
+  'День потерян. Шаурма победила. Реванш — не скоро.': 'The day is lost. Shawarma won. Revenge will not come soon.',
+  'Достать ноутбук и поработать 💻': 'Get the laptop out and work 💻',
+  'Звонить в поддержку 🎧': 'Call support 🎧',
+  'Коллективная паника — тоже объединение. Ничего не изменилось, но полегчало.':
+    'Collective panic is still togetherness. Nothing changed, but it feels better.',
+  'Наличка выручила. Правда, сдачу теперь носить неудобно.':
+    'Cash saved the day. Though carrying the change around is awkward now.',
+  'Настроил гостевую сеть. Сосед доволен, твой канал — в безопасности.':
+    'Set up a guest network. The neighbor is happy, your connection is safe.',
+  'Отказать вежливо 🚫': 'Refuse politely 🚫',
+  'Паниковать вместе со всеми 😱': 'Panic together with everyone 😱',
+  'Плюнуть и платить наличкой 💵': 'Spit it and pay with cash 💵',
+  'Подкаст на английском. Хоть какая-то польза от тоннеля.':
+    'A podcast in English. At least some use out of the tunnel.',
+  'Слушать подкаст и ждать 🎧': 'Listen to a podcast and wait 🎧',
+  'Сорок минут на линии. Оператор разблокировал карту за минуту. Подписка на музыку — вот и вся «подозрительная операция».':
+    'Forty minutes on the line. The operator unblocked the card in one. A music subscription — that was the whole “suspicious operation”.',
+  'Сосед обиделся и теперь смотрит на тебя в лифте. Ну и ладно.':
+    'The neighbor took offense and now stares at you in the elevator. Oh well.',
+  'Сосед снизу узнал, что ты «в этих ваших компьютерах». Просит пароль. «Мне только почту проверить».':
+    'The downstairs neighbor learned you are “into these computer things”. Asks for the password. “I just need to check my email”.',
+  'Соседи смотрели как на инопланетянина. Одна задача закрыта в тоннеле.':
+    'The neighbors looked at you like an alien. One task closed in the tunnel.',
+  'Сходить в отделение 🏢': 'Go to the branch 🏢',
+  'Терпеть и пить активированный уголь 💊': 'Endure and drink activated charcoal 💊',
+  'Через неделю твоя сеть тормозит. Сосед качает «что-то большое».':
+    'A week later your network is crawling. The neighbor is downloading “something big”.',
+  'Шаурма на углу выглядела аппетитно. Через два часа ты понял, что это была ловушка.':
+    'The shawarma on the corner looked appetizing. Two hours later you realized it was a trap.',
+  '🌯 Шаурма отомстила': '🌯 Shawarma struck back',
+  '🏦 Банк заблокировал карту': '🏦 The bank blocked the card',
+  '📶 Сосед просит пароль от Wi-Fi': '📶 The neighbor asks for the Wi-Fi password',
+  '🚇 Застрял в метро на час': '🚇 Stuck in the metro for an hour',
+  'Вентиляторы воют, карты греются до сотки. Пахнет палёным термопастой и потраченным депозитом.':
+    'Fans are howling, cards heat to a hundred. It smells like burnt thermal paste and a spent deposit.',
+  'Держишь. Курс, конечно, скорректировался, но вера осталась.':
+    'You hold. The rate did correct, of course, but the faith stayed.',
+  'Крипта полетела вверх. Твой кошелёк приятно тёплый, а в чатах — паника и эйфория одновременно.':
+    'Crypto flew up. Your wallet is pleasantly warm, and the chats are panicking and euphoric at once.',
+  'Открыл окно. Зимой это даже работает.': 'Opened the window. In winter this even works.',
+  'Поставить жидкое охлаждение 🧊': 'Install liquid cooling 🧊',
+  'Проветрить и надеяться 🤞': 'Air the room and hope 🤍',
+  'Продал на пике. Через час курс упал. Ты — гений.':
+    'Sold at the peak. An hour later the rate fell. You are a genius.',
+  'Продать монеты по пику 💸': 'Sell the coins at the peak 💸',
+  'Теперь ферма шумит как серверная ЦОД. Зато холодная.': 'Now the rig hums like a data center. But it is cold.',
+  'ХОДЛ! К луне 🚀': 'HODL! To the moon 🚀',
+  '📈 Курс взлетел!': '📈 The rate skyrocketed!',
+  '🔥 Ферма перегрелась': '🔥 The rig overheated',
+  'HR провела беседу. Дмитрий Борисович теперь пишет комментарии повежливее.':
+    'HR had a talk with him. Dmitry Borisovich now writes politer comments.',
+  'Вежливо исправить все замечания 📝': 'Politely fix every comment 📝',
+  'Вежливо отказаться — у тебя свои планы 📋': 'Politely decline — you have your own plans 📋',
+  'Вы сели вместе. Он объясняет, ты пишешь. Оказывается, он просто староват для конфликтов.':
+    'You sat down together. He explains, you write. Turns out he is just too old for conflicts.',
+  'Вы стали отличной командой. Его опыт + твоя энергия. Баланс.':
+    'You became a great team. His experience + your energy. Balance.',
+  'Дискуссия заняла 2 часа. Но ты отстоял свой код.': 'The discussion took 2 hours. But you defended your code.',
+  'Дмитрий Борисович подходит к тебе после стендапа: «Слушай, я тут подумал… Ты нормально работаешь. Хочешь, вместе подокументируем нашу архитектуру?»':
+    'Dmitry Borisovich comes up after standup: “Listen, I’ve been thinking… You work fine. Want to document our architecture together?”',
+  'Жалоба ушла в HR. Ответ пришёл через месяц: «Принято к сведению».':
+    'The complaint went to HR. The answer came a month later: “Noted”.',
+  'Игнорировать — работаем 🤝': 'Ignore it — keep working 🤝',
+  'Комментарии были по делу. Код стал лучше. Ты начинаешь уважать его.':
+    'The comments were on point. The code got better. You are starting to respect him.',
+  'Конфликт исчерпан. Никто не победил, никто не проиграл. Просто рабочие будни.':
+    'The conflict is over. Nobody won, nobody lost. Just working days.',
+  'Напряжение спало. Ты сделал выводы. Дмитрий Борисович тоже.':
+    'The tension is gone. You drew conclusions. So did Dmitry Borisovich.',
+  'Обратиться к HR 📋': 'Go to HR 📋',
+  'Остаться и дожать 💪': 'Stay and push through 💪',
+  'Ответить на каждый комментарий аргументированно 🗣️': 'Reply to every comment with arguments 🗣️',
+  'Подать жалобу в HR 📋': 'File a complaint with HR 📋',
+  'Пожаловаться тимлиду 🤫': 'Complain to the team lead 🤫',
+  'Позвать его на парное программирование 👥': 'Invite him to pair programming 👥',
+  'Попробовать помириться через кофе ☕': 'Try to make peace over coffee ☕',
+  'После той дискуссии в офисе напряжённая тишина. Дмитрий Борисович проходит мимо и демонстративно не здоровается. Команда разделилась.':
+    'After that discussion the office is tense and quiet. Dmitry Borisovich walks past and pointedly does not greet you. The team split.',
+  'Предложить перевестись в другой проект 🔄': 'Suggest moving to another project 🔄',
+  'Прошло 10 дней. Новый PR. Дмитрий Борисович снова нашёл, к чему придраться. Но на этот раз его комментарии выглядят… конструктивными?':
+    'Ten days passed. A new PR. Dmitry Borisovich found something to nitpick again. But this time his comments look… constructive?',
+  'Снова исправить — он явно знает, о чём говорит 📚': 'Fix them again — he clearly knows what he is talking about 📚',
+  'Согласиться — будет полезно 🤝': 'Agree — it will be useful 🤝',
+  'Тимлид всё-таки поговорил с Дмитрием Борисовичем. Тот в ярости. Теперь вся команда чувствует напряжение.':
+    'The team lead did talk to Dmitry Borisovich after all. He is furious. Now the whole team feels the tension.',
+  'Тимлид сказал «разберёмся». Ничего не изменилось.': 'The team lead said “we’ll look into it”. Nothing changed.',
+  'Ты исправил все 37. Три из них действительно были полезны.': 'You fixed all 37. Three of them were actually useful.',
+  'Ты купил ему кофе. «Слушай, давай начнём заново?» Он улыбнулся. Впервые.':
+    'You bought him coffee. “Listen, can we start over?” He smiled. For the first time.',
+  'Ты остался. Через месяц Дмитрий Борисович уволился. Ты выиграл.':
+    'You stayed. A month later Dmitry Borisovich quit. You won.',
+  'Ты отказался. Но теперь у тебя есть уважение коллеги.': 'You declined. But now you have your colleague’s respect.',
+  'Ты открываешь PR. Через 10 минут приходит ревью от Дмитрия Борисовича: 37 комментариев. Половина — «это ужасно», «переписать», «ты чему учился?».':
+    'You open a PR. Ten minutes later a review from Dmitry Borisovich: 37 comments. Half of them “this is awful”, “rewrite it”, “where did you study?”.',
+  'Ты перевёлся. Новый проект, новый тимлид. Спокойствие.': 'You transferred. New project, new team lead. Peace.',
+  'Ты просто делаешь свою работу. Дмитрий Борисович тоже.': 'You just do your job. Dmitry Borisovich too.',
+  'Хорошо. Работаем дальше.': 'Good. Let us keep working.',
+  '⚖️ Статус-кво восстановлен': '⚖️ Status quo restored',
+  '🎉 Неожиданный союзник': '🎉 An unexpected ally',
+  '😤 HR-разбирательство': '😤 HR proceedings',
+  '😤 Он снова придирается': '😤 He is nitpicking again',
+  '😤 Открытый конфликт': '😤 Open conflict',
+  '😤 Первое унижение на код-ревью': '😤 The first code-review humiliation',
+  'HR анонсировала тимбилдинг: верёвочный парк, шашлыки и нетворкинг. В пятницу после работы.':
+    'HR announced a team building: rope park, shashlik and networking. Friday after work.',
+  '«Да, код неидеален. Вот план рефакторинга.» Сеньор офигел.':
+    '“Yes, the code is not perfect. Here is a refactoring plan.” The senior is stunned.',
+  '«Почитай документацию.» Маша пошла читать. И читает до сих пор.':
+    '“Read the docs.” Masha went to read. And is still reading.',
+  'Ворчать и делать по-старому 😤': 'Grumble and do it the old way 😤',
+  'Дмитрий Борисович на дейлике: «Кто писал этот код? Нет, я просто хочу понять, кто это сделал.»':
+    'Dmitry Borisovich at the daily: “Who wrote this code? No, I just want to understand who did it.”',
+  'Коротко и по делу. Маша вдохновлена. Ты — хороший наставник.':
+    'Short and to the point. Masha is inspired. You are a good mentor.',
+  'Маша всё поняла. Через неделю она закроет тикет быстрее тебя.':
+    'Masha got it all. In a week she will close the ticket faster than you.',
+  'Маша подходит: «Извините, можете объяснить, как работает этот микросервис? Я уже час сижу.»':
+    'Masha comes over: “Excuse me, can you explain how this microservice works? I’ve been stuck for an hour.”',
+  'Написать друзьям — есть ли вакансии 🤝': 'Ask friends if there are openings 🤝',
+  'Новая технология оказалась интересной. Ты уже написал POC.':
+    'The new technology turned out interesting. You have already written a POC.',
+  'Обновить резюме и посмотреть рынок 📝': 'Update the CV and check the market 📝',
+  'Объяснить на пальцах за 5 минут 🤏': 'Explain it simply in 5 minutes 🤏',
+  'Отмазаться — много работы 📋': 'Decline — too much work 📋',
+  'Отметился, поел шашлык, ушёл. Все довольны.': 'Showed up, ate a shashlik, left. Everyone is happy.',
+  'По офису ходят слухи: грядут сокращения. Кого-то уволят. Ты смотришь на свою зарплату и начинаешь волноваться.':
+    'Rumors circulate the office: layoffs are coming. Someone will be fired. You look at your salary and start to worry.',
+  'Пойти — будет весело 🎉': 'Go — it will be fun 🎉',
+  'Пошутить в ответ 😄': 'Joke back 😄',
+  'Предложить мигрировать постепенно 🐢': 'Suggest migrating gradually 🐢',
+  'Признать и предложить рефакторинг 🛠️': 'Admit it and suggest refactoring 🛠️',
+  'Прийти, но уйти через час 🏃': 'Come, but leave after an hour 🏃',
+  'Промолчать и кивать 🤐': 'Stay silent and nod 🤐',
+  'Работать усерднее, чтобы быть незаменимым 💪': 'Work harder to become indispensable 💪',
+  'Рынок горячий. Ты успокоился. Но резюме обновил.': 'The market is hot. You calmed down. But updated the CV anyway.',
+  'С энтузиазмом изучить новое 🔥': 'Dive into the new thing with enthusiasm 🔥',
+  'Саня сказал, что у них ищут людей. План Б есть.': 'Sanya said they are hiring. Plan B exists.',
+  'Сесть и объяснить — час времени 🧑‍🏫': 'Sit down and explain — an hour of time 🧑‍🏫',
+  'Скинуть ссылку на документацию 📄': 'Send a link to the docs 📄',
+  'Твой план миграции приняли. Ты — герой спринта.': 'Your migration plan was accepted. You are the sprint hero.',
+  'Технология всё равно внедрится. А ты будешь тем, кто ворчал.':
+    'The technology will be adopted anyway. And you will be the one who grumbled.',
+  'Тимбилдинг удался. Ты узнал, что тимлид коллекционирует фигурки драконов.':
+    'Team building worked out. You learned the team lead collects dragon figurines.',
+  'Тимлид объявил: «Переходим на новую технологию. Всем изучить до следующего спринта.»':
+    'The team lead announced: “We are moving to a new technology. Everyone study it before the next sprint.”',
+  'Ты взял ещё задач. Пусть только попробуют уволить.': 'You took on more tasks. Just let them try to fire you.',
+  'Ты остался. В офисе было подозрительно тихо. И грустно.': 'You stayed. The office was suspiciously quiet. And sad.',
+  'Ты пошутил. Команда засмеялась. Дмитрий Борисович — нет.': 'You joked. The team laughed. Dmitry Borisovich did not.',
+  'Ты промолчал. Но внутри всё кипит.': 'You stayed silent. But inside everything is boiling.',
+  '🎤 Стэндап с сеньором': '🎤 Standup with the senior',
+  '🎯 Тимбилдинг': '🎯 Team building',
+  '👨‍🏫 Стажёр просит помощи': '👨‍🏫 The intern asks for help',
+  '📉 Слухи о сокращении': '📉 Layoff rumors',
+  '🚀 Новая технология': '🚀 New technology',
+});
