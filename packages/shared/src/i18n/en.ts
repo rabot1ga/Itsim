@@ -2709,3 +2709,440 @@ Object.assign(en, {
   '🙏 Мейнтейнер просит помощи': '🙏 The maintainer asks for help',
   '🤖 Новый AI-инструмент делает твою работу': '🤖 A new AI tool does your job',
 });
+
+Object.assign(en, {
+  '32 дюйма счастья. Теперь у тебя два окна браузера помещаются.':
+    '32 inches of happiness. Now two browser windows fit.',
+  'Асфальт плавится, вентилятор гоняет горячий воздух, а кондиционер в твоей квартире — это открытое окно.':
+    'The asphalt is melting, the fan pushes hot air around, and the AC in your apartment is an open window.',
+  'Бариста рассказала про свою смену. Ты теперь «тот самый отзывчивый».':
+    'The barista told you about her shift. Now you are “that super responsive one”.',
+  'Брат счастлив. Теперь он тоже хочет «стать программистом».':
+    'The brother is happy. Now he also wants to “become a programmer”.',
+  'В приюте сказали, что котёнка быстро заберут. Ты проверил через неделю — забрали.':
+    'The shelter said the kitten would be taken fast. You checked in a week — it was taken.',
+  'Весь район сидит без электричества. Дедлайн через три часа, ноутбук заряжен на 40%.':
+    'The whole block is without power. The deadline is in three hours, the laptop is at 40%.',
+  'Взять кофе и поработать за столиком 💻': 'Grab coffee and work at a table 💻',
+  'Взять новый монитор со скидкой 🖥': 'Take the new monitor on sale 🖥',
+  'Взять чай вместо кофе 🍵': 'Take tea instead of coffee 🍵',
+  'Вызвать слесаря 🔧': 'Call a locksmith 🔧',
+  'Выйти гулять по сугробам ⛄': 'Go walking through the snowdrifts ⛄',
+  'Гречка по цене воздуха, кофе — полцены. Очередь уже заняла полмагазина.':
+    'Buckwheat at air-price, coffee at half price. The queue already holds half the store.',
+  'Диплом на месте. Экзамены сданы. Ты уже сеньор. Выдох.':
+    'The diploma is in. The exams are passed. You are a senior now. Exhale.',
+  'Дисциплина. Корзина — строго по списку.': 'Discipline. The cart strictly by the list.',
+  'Доехал за два часа. В офисе — никого. Ты герой, но зачем.':
+    'Took two hours to get there. The office is empty. You are a hero, but why.',
+  'Доставка привезла всё, кроме того, что ты хотел. Но это уже традиция.':
+    'The delivery brought everything except the thing you wanted. But that is already a tradition.',
+  'Друг приехал с ключами и шутками. Хорошо, что дал запасные.':
+    'A friend arrived with keys and jokes. Good thing you gave him a spare set.',
+  'За ночь выпало полметра снега. Общественный транспорт встал, а у тебя — куча задач и никакого желания выходить из дома.':
+    'Overnight half a meter of snow fell. Public transport stopped, and you have a pile of tasks and zero desire to leave the house.',
+  'Забрать домой 🏠': 'Take it home 🏠',
+  'Забыть про него 🙈': 'Forget about it 🙈',
+  'Заказать доставку домой 🛵': 'Order delivery home 🛵',
+  'Закупиться впрок 📦': 'Stock up in advance 📦',
+  'Запасы на месяц. Гречка и кофе — основа пирамиды айтишника.':
+    'Supplies for a month. Buckwheat and coffee are the base of the IT person’s pyramid.',
+  'Искать полдня 🔍': 'Look for half a day 🔍',
+  'Кабель, коврик, кружка «senior». Мелочи кончились на пяти тысячах.':
+    'A cable, a mousepad, a “senior” mug. Small things ran out at five thousand.',
+  'Кафе, вайфай, дедлайн. Ремонт соседей больше не твоя проблема.':
+    'Café, wifi, deadline. The neighbors’ renovation is no longer your problem.',
+  'Кинуть монету 🪙': 'Flip a coin 🪙',
+  'Ключей нет ни в карманах, ни в сумке, ни под ковриком. Дверь закрыта. Ты — снаружи.':
+    'No keys in the pockets, the bag, or under the mat. The door is closed. You are outside.',
+  'Коворкинг спас дедлайн. Заодно познакомился с соседями по столу.':
+    'The coworking saved the deadline. Also got to know the desk neighbors.',
+  'Конспекты с первого курса. Зато вспомнил, зачем учился.':
+    'Notes from the first year. But it reminded you why you studied.',
+  'Кот в восторге от коробки из-под игрушек. Сами игрушки — по настроению.':
+    'The cat is thrilled with the box from the toys. The toys themselves — mood dependent.',
+  'Кот согласился с режимом. Почти. Один тапок всё же пострадал.':
+    'The cat agreed to the regime. Almost. One slipper still suffered.',
+  'Котёнок поел и посмотрел благодарно. Ты ушёл, но он запомнил.':
+    'The kitten ate and looked grateful. You left, but it remembered.',
+  'Кофе бесплатный, задача закрыта. Отзыв написал честный.':
+    'The coffee is free, the task is closed. Wrote an honest review.',
+  'Кто-то подарил тебе фикус. Ты не просил. Но теперь у тебя есть фикус по имени Фёдор.':
+    'Someone gifted you a ficus. You did not ask. But now you have a ficus called Fedor.',
+  'Купить «по мелочи» 🛍': 'Shop “for odds and ends” 🛍',
+  'Купить автополив 💧': 'Buy an auto-watering system 💧',
+  'Купить вентилятор-пушку 🌀': 'Buy a turbofan 🌀',
+  'Купить игрушки и когтеточку 🧶': 'Buy toys and a scratching post 🧶',
+  'Купить только нужное ✔️': 'Buy only what is needed ✔️',
+  'Купить шумоподавляющие наушники 🎧': 'Buy noise-canceling headphones 🎧',
+  'Маленький серый котёнок сидит у подъезда и смотрит на тебя. На улице холодно. Он не уходит.':
+    'A small grey kitten sits by the entrance and looks at you. It is cold outside. It does not leave.',
+  'Музыкант кивнул и продолжил. Мелодия весь день в голове.':
+    'The musician nodded and kept playing. The melody was in your head all day.',
+  'Нашлись в куртке, которую ты «точно проверил». Классика.':
+    'Found them in the jacket you “definitely checked”. Classic.',
+  'Ноутбук стал сервером. Гудит в углу и майнит... ничего, просто греется.':
+    'The laptop became a server. Hums in the corner and mines… nothing, just warms up.',
+  'Ночной режим: три коммита и сбитый режим сна.': 'Night mode: three commits and a broken sleep schedule.',
+  'Озеро, мороженое, ни одного созвона. Перезагрузка удалась.':
+    'A lake, ice cream, not a single call. The reboot worked.',
+  'Оказалось, ему снится то же самое. Коллективная травма сближает.':
+    'Turned out he dreams about the same thing. Collective trauma bonds.',
+  'Остановиться и дослушать 🎵': 'Stop and listen through 🎵',
+  'Отнести в приют 🐾': 'Take it to the shelter 🐾',
+  'Парень с гитарой играет что-то душевное. Мимо спешат люди. Ты замедляешь шаг.':
+    'A guy with a guitar plays something heartfelt. People rush past. You slow down.',
+  'Пересмотреть старые конспекты 📒': 'Reread the old notes 📒',
+  'Перфоратор сверлит с восьми утра. Твои созвоны превратились в сеанс шумовой терапии.':
+    'The drill starts at eight a.m. Your calls turned into a noise-therapy session.',
+  'Пижама, кофе, ноутбук. Офис рыдал от зависти.': 'Pajamas, coffee, laptop. The office wept with envy.',
+  'Подарить младшему брату 🎁': 'Gift it to the younger brother 🎁',
+  'Позвонить другу, у него запасные 🤝': 'Call a friend, he has spares 🤝',
+  'Позвонить одногруппнику посмеяться 📞': 'Call a classmate for a laugh 📞',
+  'Пойти в коворкинг 💼': 'Go to the coworking 💼',
+  'Покормить и уйти 🍲': 'Feed it and leave 🍲',
+  'Поливать каждый день и разговаривать 🌿': 'Water it every day and talk to it 🌿',
+  'Превратить в домашний сервер 🖥': 'Turn it into a home server 🖥',
+  'Приучать к лотку и режиму 📋': 'Train it to the litter box and a regime 📋',
+  'Продал за вечер. Покупатель торговался, но у тебя опыт собеседований.':
+    'Sold it in an evening. The buyer bargained, but you have interview experience.',
+  'Продать за хорошую цену 💰': 'Sell it at a good price 💰',
+  'Пройти мимо, опаздываешь 🏃': 'Walk past, you are late 🏃',
+  'Прокопать машину и поехать в офис 🚗': 'Dig the car out and drive to the office 🚗',
+  'Проснуться и проверить диплом 🎓': 'Wake up and check the diploma 🎓',
+  'Прошло два дня. Кот уже нашёл твою клавиатуру, кабель зарядки и самое тёплое место в доме.':
+    'Two days passed. The cat has already found your keyboard, the charging cable and the warmest spot in the house.',
+  'Пылится старый ноутбук. Кто-то написал: «отдам за 15 тысяч, заберите сегодня». А ведь его можно продать и подороже.':
+    'An old laptop is gathering dust. Someone wrote: “taking 15 thousand for it, pick up today”. But you could sell it for more.',
+  'Пять минут музыки. Оказалось, именно их не хватало.':
+    'Five minutes of music. Turns out that was exactly what was missing.',
+  'Работать из дома под пледом 🏠': 'Work from home under a blanket 🏠',
+  'Работать из кафе ☕': 'Work from a café ☕',
+  'Работать ночью, спать днём 🌙': 'Work at night, sleep by day 🌙',
+  'Работать при свечах на остатках батареи 🕯': 'Work by candlelight on battery leftovers 🕯',
+  'Разговориться с баристой 🗣': 'Chat up the barista 🗣',
+  'Романтично. Успел закоммитить до отключения. Чуть-чуть.': 'Romantic. Managed to commit before the shutdown. Barely.',
+  'Скидки везде. Мониторы, кресла, клавиатуры — всё кричит «купи меня». Твоя сила воли трещит по швам.':
+    'Discounts everywhere. Monitors, chairs, keyboards — everything screams “buy me”. Your willpower is cracking.',
+  'Слепил снеговика с флагом «no bugs». Соседи оценили.':
+    'Built a snowman with a “no bugs” flag. The neighbors approved.',
+  'Слесарь вскрыл за пять минут. Ты оплатил его час работы.':
+    'The locksmith opened it in five minutes. You paid for his hour of work.',
+  'Снится, что ты на экзамене по матанализу, а билет — «объясните, почему прод упал». Ты не готов.':
+    'You dream you are at a calculus exam and the ticket is “explain why prod went down”. You are not ready.',
+  'Сфоткать и завести коту инстаграм 📸': 'Snap it and give the cat an Instagram 📸',
+  'Теперь хотя бы шумно, но прохладно. Продуктивность вернулась.':
+    'Now it is at least noisy but cool. Productivity is back.',
+  'Терпеть и злиться 😤': 'Endure and be angry 😤',
+  'Технологии победили природу. Фёдор поливается по расписанию.':
+    'Technology beat nature. Fedor waters itself on schedule.',
+  'Тишина. Почти. Перфоратор чувствуется, но не слышится.': 'Silence. Almost. The drill is felt, but not heard.',
+  'Три недели шума. Сосед закончил. Ты — почти нет.': 'Three weeks of noise. The neighbor finished. You — almost not.',
+  'Ты теперь котопапа. Куплен лоток, корм и маленькая лежанка.':
+    'You are a cat dad now. Bought a litter box, food and a small bed.',
+  'Ты устоял. Гордость распирает. Скидки обидчиво мигают.':
+    'You held out. Pride swells. The discounts blink in offense.',
+  'У кота 200 подписчиков за неделю. Ты — его менеджер.': 'The cat has 200 followers in a week. You are its manager.',
+  'У кофейни акция: кофе за отзыв. Бариста улыбается и ждёт твой отзыв. Кофе уже налит.':
+    'The coffee shop has a promo: coffee for a review. The barista smiles and waits for your review. The coffee is already poured.',
+  'Уехать к озеру на день 🏖': 'Go to the lake for a day 🏖',
+  'Успел вовремя. Но мелодию вспоминал весь день.': 'Made it in time. But the melody stayed all day.',
+  'Устоять и ничего не купить 🧘': 'Hold out and buy nothing 🧘',
+  'Устроить вечер без интернета 📖': 'Have an evening without internet 📖',
+  'Фёдор растёт. Говорят, растения чувствуют заботу. Фёдор чувствует.':
+    'Fedor is growing. They say plants feel care. Fedor feels it.',
+  'Чай без кофеина. Сердце благодарит, прод всё равно не деплоится.':
+    'Decaf tea. The heart is grateful, prod still does not deploy.',
+  'Через месяц ты вспомнил. Фёдор не вспомнил.': 'In a month you remembered. Fedor did not remember.',
+  'Читал бумажную книгу. Странное, но приятное чувство.': 'Read a paper book. A strange but pleasant feeling.',
+  '☕ Бесплатный кофе в кофейне': '☕ Free coffee at the café',
+  '⚡ Отключили свет': '⚡ The power went out',
+  '❄️ Снегопад парализовал город': '❄️ A snowfall paralyzed the city',
+  '🌱 Ты завёл растение': '🌱 You got a plant',
+  '🎸 Уличный музыкант играет на переходе': '🎸 A street musician plays at the crossing',
+  '🐈 Котёнок у подъезда': '🐈 A kitten by the entrance',
+  '🐱 Кот осваивается дома': '🐱 The cat settles in at home',
+  '💻 Продажа старого ноутбука': '💻 Selling the old laptop',
+  '📚 Кошмар: ты снова на экзамене': '📚 Nightmare: you are at an exam again',
+  '🔑 Потерял ключи': '🔑 Lost the keys',
+  '🔨 Соседи начали ремонт': '🔨 The neighbors started renovating',
+  '🛒 Большая акция в магазине': '🛒 A big sale at the store',
+  '🛒 Чёрная пятница': '🛒 Black Friday',
+  '🥵 Жара под сорок': '🥵 A heatwave of forty degrees',
+  '02:40, в чате инцидента четырнадцать человек, и все ждут, что скажешь ты. Раньше ты бы уже чинил; теперь от тебя ждут решения — кого поднять, что отключить, кому звонить первым.':
+    '02:40, fourteen people in the incident chat, and everyone waits for what you will say. Before, you would already be fixing; now they expect decisions from you — whom to wake up, what to turn off, whom to call first.',
+  '«Мы просчитались» — три слова, после которых борд разговаривает с тобой как со взрослым.':
+    '“We miscalculated” — three words after which the board talks to you as an adult.',
+  '«Ответственный — я. Срок — квартал». Это единственная формулировка, после которой борд перестаёт искать виноватых.':
+    '“I am the one responsible. The deadline is a quarter”. That is the only phrasing after which the board stops looking for someone to blame.',
+  '«Сервис падал трижды за год, и каждый раз мы решали не чинить». Борд впервые увидел счёт за свои же решения — и выделил квартал на план.':
+    '“The service fell three times this year, and each time we decided not to fix it”. The board saw the bill for its own decisions for the first time — and funded a quarter for a plan.',
+  'Борд дал деньги и два месяца. Ты только что купил себе работу, зато с покрытием.':
+    'The board gave money and two months. You just bought yourself work, but with coverage.',
+  'Борд принял отставку в тот же день, без обсуждения. Кресло освободилось — вместе с твоим сроком в нём: грейд снова архитектор, выборы можно пройти заново.':
+    'The board accepted the resignation the same day, without discussion. The chair is free — along with your term in it: the grade is architect again, and the elections can be passed anew.',
+  'В повестке один пункт и ни одного слайда: «достаточно ли мы доверяем текущему CTO». Голосов семь, и троих из них ты сам привёл в компанию.':
+    'One agenda item and not a single slide: “do we trust the current CTO enough”. Seven votes, and three of them you brought into the company yourself.',
+  'Вести раскат самому 🎛': 'Drive the rollout yourself 🎛',
+  'Взять опцион вместо денег 📈': 'Take options instead of money 📈',
+  'Взять ответственность и попросить квартал на план 🗓': 'Take responsibility and ask for a quarter for a plan 🗓',
+  'Вопрос закрыли за один день. Команда запомнила это навсегда, а борд получил первое предупреждение о твоём стиле.':
+    'The question was closed in one day. The team will remember it forever, and the board got the first warning about your style.',
+  'Выторговать контр-офис 📈': 'Bargain for a private office 📈',
+  'Говорить без слайдов 🎯': 'Speak without slides 🎯',
+  'Голосование сняли с повестки: «пусть сначала докажет». Ты получил год и человека, которого теперь учишь своему креслу.':
+    'The vote was pulled from the agenda: “let him prove it first”. You got a year and a person you now teach your chair.',
+  'Двадцать человек, продукт на колене и вера, что ты придёшь и всё починишь. Деньги — опцион и «после раунда». В графе «зарплата» стоит прочерк, который они называют гибкостью.':
+    'Twenty people, a product on its knees and a faith that you will come and fix everything. The money is options and “after the round”. In the “salary” field there is a dash they call flexibility.',
+  'Делегировать и спросить результат утром ☕': 'Delegate and demand the result in the morning ☕',
+  'Деньги пришли, вопрос остался: ты куплен, и это все знают — включая тебя.':
+    'The money arrived, the question remains: you are bought, and everyone knows it — including you.',
+  'Завернуть инициативу на полке 🔒': 'Shelve the initiative 🔒',
+  'Зал вежливо слушал три минуты, потом начал смотреть в телефон. Ты узнал этот звук.':
+    'The hall politely listened for three minutes, then started looking at phones. You recognized that sound.',
+  'Зал молчал сорок секунд. Потом финансовый директор сказал: «Спасибо, что не стали врать». Через 18 дней борд соберётся снова — уже про тебя.':
+    'The hall was silent for forty seconds. Then the CFO said: “Thank you for not lying”. In 18 days the board will gather again — about you.',
+  'Защищать стратегию лично, без презентации 🛡': 'Defend the strategy personally, without a presentation 🛡',
+  'Инцидент закрыт за двадцать минут и за триста тысяч штрафов. Борд это заметит — на постмортеме через 10 дней.':
+    'The incident closed in twenty minutes and three hundred thousand in fines. The board will notice it — at the postmortem in 10 days.',
+  'К утру работало, к обеду снова нет. К вечеру работало уже то, что ты хотел.':
+    'By morning it worked, by lunch it did not again. By evening what you wanted was working.',
+  'Коробку оставили. Два часа вопросов вы стоили дороже, чем сама коробка.':
+    'They kept the box. Two hours of questions — you cost more than the box itself.',
+  'На планёрке человек, которого ты нанимал джуном, объясняет борду границу сервисов так, как ты объяснял бы год назад. Разница в том, что у него ещё остались силы на вечер.':
+    'At the planning meeting, a person you hired as a junior explains the service boundaries to the board the way you would have a year ago. The difference is he still has energy for the evening.',
+  'Назвать причину: не люди, а архитектура и бюджет 🧱': 'Name the cause: not people, but architecture and budget 🧱',
+  'Написать заявление до голосования ✍️': 'Resign before the vote ✍️',
+  'Нашли. Подняли под твой гонорар. Первый разговор о деньгах с инвестором теперь про тебя.':
+    'They found him. Raised him at your fee. The first talk about money with an investor is now about you.',
+  'Не подписывать и уйти 🔑': 'Do not sign and walk away 🔑',
+  'Никто не спросил про вторую базу. Пока.': 'Nobody asked about the second database. For now.',
+  'Ночная версия лучше утренней на порядок. И хуже утренней по здоровью.':
+    'The night version is an order of magnitude better than the morning one. And worse than the morning one for your health.',
+  'Обычно на постмортем приходят те, кто чинил. Сегодня в звонке семь человек, которые не открывали редактор годами, и у каждого вопрос «кто виноват».':
+    'Usually the postmortem is attended by those who fixed things. Today seven people are on the call who have not opened an editor in years, and each has the question “who is to blame”.',
+  'Он защищал схему так, что у финансового не осталось вопросов. У тебя их было два, и ты их задал вслух.':
+    'He defended the schema so well that finance had no questions left. You had two, and you asked them out loud.',
+  'Он перезвонит через полгода, с той же фразой. Ты снова скажешь «нет», и снова это будет твой выбор.':
+    'He will call back in half a year with the same phrase. You will say “no” again, and it will again be your choice.',
+  'Он собрал зал лучше тебя. Вопросы после доклада были его, а не твои — и это тоже было твоим решением.':
+    'He gathered the hall better than you. The questions after the talk were his, not yours — and that too was your decision.',
+  'Они возьмут человека хуже и назовут это храбростью. Ты вернёшься к своей схеме и к своему дежурству.':
+    'They will take a worse person and call it courage. You will return to your schema and your on-call.',
+  'Опцион — бумага. Вера в неё — нет. Первые полгода ты будешь спать по шесть часов.':
+    'An option is paper. Belief in it is not. For the first half year you will sleep six hours.',
+  'Организаторы дали слот, который обычно отдают вице-президенту, и попросили «без презентаций про продажи». В третьем ряду сидят джуны из твоей команды с телефонами.':
+    'The organizers gave a slot usually given to a vice president and asked for “no sales slides”. In the third row sit juniors from your team with phones.',
+  'Оставить архитектуру себе 🏛': 'Keep the architecture to yourself 🏛',
+  'Отдать архитектуру и уйти в людей 🧑‍🏫': 'Hand the architecture over and move to people 🧑‍🏫',
+  'Отдать отчёт финдиректору и уехать в отпуск 🏝': 'Give the report to the CFO and go on vacation 🏝',
+  'Отдать раскат тимлиду, остаться на схеме 📐': 'Hand the rollout to the team lead, stay on the schema 📐',
+  'Отдать сцену джуну 🎓': 'Give the stage to a junior 🎓',
+  'Отказать: у меня тут команда 👥': 'Decline: I have a team here 👥',
+  'Откатить и признать ошибку вслух 📢': 'Roll back and admit the mistake out loud 📢',
+  'Отключить проблемный сервис и объявить это решением 🧯': 'Turn off the problem service and declare it a decision 🧯',
+  'Отстоять всех, вырезав себя из бонуса ✂️': 'Defend everyone, cutting yourself out of the bonus ✂️',
+  'Отстоять план без правок 🛡': 'Defend the plan without edits 🛡',
+  'Первый же сервис лёг на проде в 03:40. Ты поднял его раньше, чем заказчик заметил.':
+    'The very first service fell on prod at 03:40. You raised it before the client noticed.',
+  'Письмо без обратного адреса, визит через день. Спрашивают про основание хранения, про экспорт, про то, почему в логах лежат паспорта. Твой главный инженер отвечает за шесть секунд слишком быстро.':
+    'A letter with no return address, a visit the next day. They ask about the legal basis for storage, about export, about why passports sit in the logs. Your lead engineer answers six seconds too fast.',
+  'Подняли в 06:10. Дежурный джун написал потом: «впервые видел, чтобы CTO сидел в звонке до конца». Через 10 дней будет постмортем.':
+    'Raised at 06:10. The on-call junior wrote afterwards: “first time I saw a CTO sit in a call to the end”. In 10 days there will be a postmortem.',
+  'Поднять вопрос легаси-хранилища на борде 🛠': 'Raise the legacy storage question at the board 🛠',
+  'Показать всё как есть 🔍': 'Show everything as it is 🔍',
+  'Показать правду: квартал провален 🩻': 'Tell the truth: the quarter is a failure 🩻',
+  'Полка выдержала ещё год. Монолит — нет, но это станет видно не тебе.':
+    'The shelf held another year. The monolith did not, but that will not be visible to you.',
+  'Половина схемы — это не половина работы: переделывать придётся всю.':
+    'Half the schema is not half the work: you will have to redo it all.',
+  'Попросить деньги вперёд 💵': 'Ask for money upfront 💵',
+  'Поставить его перед бордом 🎤': 'Put him in front of the board 🎤',
+  'Предложить преемника и остаться на переходный год 🎗': 'Propose a successor and stay for the transition year 🎗',
+  'Приняли. Но один человек в комнате видел графики и понял, что дело не в нагрузке.':
+    'They accepted. But one person in the room saw the charts and understood it was not about load.',
+  'Продать квартал как «трансформацию» 📈': 'Sell the quarter as a “transformation” 📈',
+  'Свалить на нагрузку и погоду 🌦': 'Blame the load and the weather 🌦',
+  'Сидеть в инциденте до утра вместе с дежурными 🌙': 'Sit in the incident until morning with the on-call 🌙',
+  'Сказать «нет» и выспаться 😴': 'Say “no” and get some sleep 😴',
+  'Слайд с восходящей стрелкой купили. Ты купил себе квартал — и обязанность теперь соответствовать стрелке.':
+    'They bought the slide with the rising arrow. You bought yourself a quarter — and the duty to match the arrow now.',
+  'Согласиться на половину решения 🤝': 'Agree to half a solution 🤝',
+  'Сократить по цифрам 📊': 'Cut it down by the numbers 📊',
+  'Сон вернулся, цифры — нет. Борд запомнил не провал, а то, что докладывал не ты. Это первое предупреждение.':
+    'Sleep came back, the numbers did not. The board remembered not the failure, but that the report was not from you. That is the first warning.',
+  'Сорок минут, один слайд с текстом «извините» и стоячие овации, которых ты не заслужил, но они были.':
+    'Forty minutes, one slide saying “sorry” and standing ovations you did not deserve — but they happened.',
+  'Список подписали без тебя. Твоё имя внесли в него следующим пунктом — отдельным цветом.':
+    'The list was signed without you. Your name was added to it as the next item — in a separate color.',
+  'Спрятать грязное хранилище под ковёр 🗄': 'Sweep the dirty storage under the rug 🗄',
+  'Схема твоя, шрам — его. Так устроено делегирование, ты об этом читал.':
+    'The schema is yours, the scar is his. That is how delegation works, you have read about it.',
+  'Сходить на встречи хотя бы из интереса 🚪': 'Go to at least some meetings out of curiosity 🚪',
+  'Таблица не ошиблась ни в одном имени. Это не утешает.':
+    'The table did not miss a single name. That does not comfort.',
+  'Тебя просят объяснить архитектуру людям, которые платят за неё больше, чем понимают. На слайде — та же схема, что ты рисовал в ночь перед дедлайном; в зале — финансовый директор, который уже нашёл в ней «лишнюю» коробку.':
+    'You are asked to explain the architecture to people who pay for it more than they understand it. On the slide is the same schema you drew the night before the deadline; in the hall is the CFO who has already found an “extra” box in it.',
+  'Тот самый сервис, который ты считал скучным, лёг в час пика и утащил за собой два соседних. В чате 400 сообщений, в календаре — созвон с заказчиком через сорок минут.':
+    'The very service you thought was boring fell at peak hour and took two neighbors with it. 400 messages in the chat, a call with the client in forty minutes on the calendar.',
+  'Три года все знали, что монолит надо резать. Теперь у этого есть бюджет, срок и люди, которые будут ругаться. Ты либо ведёшь раскат сам, либо отдаёшь тому, кто моложе и ещё не знает, что это невозможно.':
+    'For three years everyone knew the monolith had to be cut. Now it has a budget, a deadline and people who will argue. You either drive the rollout yourself, or hand it to someone younger who still does not know it is impossible.',
+  'Три месяца в кресле, и борд хочет услышать, куда ушли деньги. В папке — тот же техдолг, что ты обещал разобрать «после релиза», и два сорванных срока, которые теперь называются «пересмотренным планом».':
+    'Three months in the chair, and the board wants to hear where the money went. In the folder is the same tech debt you promised to clear “after the release”, and two missed deadlines now called a “revised plan”.',
+  'Три офиса, четыре питча, ноль решений. Но ты впервые за год вспомнил, чего стоишь.':
+    'Three offices, four pitches, zero decisions. But for the first time in a year you remembered what you are worth.',
+  'Ты снова самый компетентный в комнате. Комната при этом растёт медленнее, чем могла бы.':
+    'You are the most competent one in the room again. The room meanwhile grows slower than it could.',
+  'Уволить дежурного, чтобы закрыть вопрос 🪓': 'Fire the on-call to close the question 🪓',
+  'Уйти дописывать схему в ночь 🌙': 'Go finish the schema overnight 🌙',
+  'Утром всё работало, и чужие люди были уверены, что ты просто не пришёл. Постмортем через 10 дней будет про это.':
+    'In the morning everything worked, and strangers were sure you simply did not show up. The postmortem in 10 days will be about that.',
+  'Финансовый прислал таблицу и просит сократить 12 % подразделения. Он не знает, кто из них ведёт дежурства. Ты знаешь, и это ровно та причина, по которой список пришёл к тебе.':
+    'Finance sent a table and asks to cut 12% of the division. He does not know which of them run the on-call. You do, and that is exactly why the list came to you.',
+  'Фонд закрыли твоим годовым бонусом. Одиннадцать человек об этом не узнают, и это правильно.':
+    'The fund was closed with your annual bonus. Eleven people will not find out, and that is right.',
+  'Хедхантер знает имя твоего тимлида и то, что ты делал в 2019-м. Вилка на три нуля выше текущей, а в конце разговора — «подумай до пятницы», которое длится ровно до пятницы.':
+    'A headhunter knows your team lead’s name and what you did in 2019. A range three zeros above your current one, and at the end of the conversation — “think about it by Friday”, which lasts exactly until Friday.',
+  'Через квартал твоё подразделение стало единственным, где не уходят. Это был твой новый ремесленный навык.':
+    'In a quarter your division became the only one where people do not leave. That was your new craft skill.',
+  'Четыре «за», трое воздержались. Воздержавшихся ты запомнил поимённо — и это, кажется, и есть работа CTO.':
+    'Four “for”, three abstained. You remembered the abstainers by name — and that, apparently, is the CTO’s job.',
+  'Чинить на коленях до утра 🌙': 'Fix it on your knees until morning 🌙',
+  'Читать по бумажке 📄': 'Read from a paper sheet 📄',
+  'Штраф оказался дешевле, чем ты боялся, а вот расчистка логов — дороже.':
+    'The fine turned out cheaper than you feared, but cleaning up the logs — more expensive.',
+  '✂️ Список из одиннадцати имён': '✂️ A list of eleven names',
+  '🎗 Тот, кто уже делает твою работу': '🎗 The one who already does your job',
+  '🎤 Ключевой доклад: зал на две тысячи': '🎤 The keynote: a hall of two thousand',
+  '📊 Первый квартальный отчёт перед бордом': '📊 The first quarterly report to the board',
+  '📋 Регулятор пришёл с проверкой данных': '📋 The regulator came to audit the data',
+  '📐 Борд слушает твою схему': '📐 The board listens to your schema',
+  '🔥 Раскат пошёл не туда': '🔥 The rollout went the wrong way',
+  '🕵️ Звонок с тремя нулями': '🕵️ A call with three zeros',
+  '🗳 Борд голосует о доверии': '🗳 The board votes on confidence',
+  '🚀 Стартап зовёт техническим директором': '🚀 A startup calls you CTO',
+  '🚨 Прод лежит, и теперь это твоя фамилия': '🚨 Prod is down, and now it is your last name',
+  '🧱 Монолит решили делить': '🧱 The monolith is being split',
+  '🧾 Постмортем, на который пришёл борд': '🧾 The postmortem the board attended',
+  '«Только в этот раз», — говорит тимлид. В трекере — релиз в понедельник. У тебя были планы на выходные.':
+    '“Just this once,” says the team lead. In the tracker — a release on Monday. You had weekend plans.',
+  'Аргументы были сильные. Решение — окончательное.': 'The arguments were strong. The decision is final.',
+  'Баг-лог похудел на треть. Красота.': 'The bug log slimmed down by a third. Beauty.',
+  'Буфер спас квартал. Ты — мастер реализма.': 'The buffer saved the quarter. You are the master of realism.',
+  'Взять шефство 🤝': 'Take them under your wing 🤝',
+  'Выйти и спасти релиз 🦸': 'Step in and save the release 🦸',
+  'Выходные удались. Релиз перенесли на вторник.': 'The weekend turned out great. The release was moved to Tuesday.',
+  'Гладить всех питомцев по очереди 🐾': 'Pet all the office pets in turn 🐾',
+  'Демо вживую: «сейчас починим» 🔧': 'Live demo: “we will fix it right now” 🔧',
+  'День на мемы. Потом — новый старт.': 'A day for memes. Then — a fresh start.',
+  'День планирования: стикеры, спринты, «реалистичные оценки». Ты знаешь, чем это кончится.':
+    'Planning day: sticky notes, sprints, “realistic estimates”. You know how this ends.',
+  'Доклад зашёл. Вопросы — интересные. Обед — продуктивный.':
+    'The talk went well. The questions were interesting. The lunch was productive.',
+  'Заложить буфер на всё 🛟': 'Pad everything with a buffer 🛟',
+  'Заняться своими задачами 🙈': 'Do your own tasks 🙈',
+  'Зря не поверил: неделю реально дали. Упустил.': 'You should have believed: they really gave a week. You missed it.',
+  'Извлечь уроки и двигаться дальше 🧭': 'Draw the lessons and move on 🧭',
+  'Камера включалась «случайно». Все всё поняли.':
+    'The camera turned on “by accident”. Everyone understood everything.',
+  'Квартал вышел горячим. Слишком горячим.': 'The quarter ran hot. Too hot.',
+  'Компания переезжает в новый офис. Красивый, светлый, но в два раза дальше от дома. И с open space.':
+    'The company is moving to a new office. Beautiful, bright, but twice as far from home. And with an open space.',
+  'Компания разрешила привести питомцев. Офис превратился в зоопарк. Кот сидит на твоей клавиатуре.':
+    'The company allowed pets in the office. The office became a zoo. The cat sits on your keyboard.',
+  'Компания устраивает brown bag: доклады во время обеда. Тебя просят рассказать про свою область.':
+    'The company runs brown bags: talks during lunch. You are asked to speak about your area.',
+  'Компромисс принят. Ретро закончилось миром.': 'The compromise was accepted. The retro ended in peace.',
+  'Компромисс: два часа дома. И выходные, и совесть.':
+    'A compromise: two hours at home. Both the weekend and the conscience.',
+  'Лучший рабочий день в году. Продуктивность — ноль, счастье — сто.':
+    'The best workday of the year. Productivity — zero, happiness — a hundred.',
+  'Менеджмент выделил целую неделю на рефакторинг. Без новых фич, без дедлайнов. Слишком хорошо, чтобы быть правдой.':
+    'Management allocated a whole week for refactoring. No new features, no deadlines. Too good to be true.',
+  'Метрики поползли вверх после твоей фичи. Пользователи довольны. Дашборд выглядит как салют.':
+    'The metrics climbed after your feature. Users are happy. The dashboard looks like fireworks.',
+  'Молча рисовать в стикерах 🎨': 'Quietly draw on sticky notes 🎨',
+  'Напомнить про премию 💰': 'Remind about the bonus 💰',
+  'Не верить и работать как обычно 🤨': 'Do not believe it and work as usual 🤨',
+  'Неделя уборки в коде. Дышать стало легче.': 'A week of cleaning up the code. Breathing got easier.',
+  'Новичок расцвёл за месяц. Ты — ментор, сам того не заметив.':
+    'The newcomer bloomed in a month. You became a mentor without noticing.',
+  'Новичок смотрит на кодовую базу с ужасом. Ты вспоминаешь себя в первый день. Всё повторяется.':
+    'The newcomer looks at the codebase in horror. You remember your first day. It all repeats.',
+  'Новичок справился сам. Но мог бы быстрее — с твоей помощью.':
+    'The newcomer managed alone. But could have been faster — with your help.',
+  'Новый менеджер решил, что 8 утра — «идеальное время для синхронизации». Команда в трауре.':
+    'The new manager decided 8 a.m. is “the perfect time to sync”. The team is in mourning.',
+  'Новый офис — норм. Дорога — не очень.': 'The new office is fine. The commute — not so much.',
+  'Обсуждение «что пошло не так» переросло в горячий спор. Две команды, два мнения, одна доска со стикерами.':
+    'The “what went wrong” discussion grew into a heated argument. Two teams, two opinions, one board of sticky notes.',
+  'Оплакать и уйти в запой мемов 😢': 'Mourn it and go on a meme binge 😢',
+  'Опыт остался. Команду перевели на новый проект.': 'The experience stayed. The team was moved to a new project.',
+  'Отказаться: «не умею выступать» 🙈': 'Decline: “I do not know how to speak” 🙈',
+  'Отказаться: «у меня планы» 🙅': 'Decline: “I have plans” 🙅',
+  'Отстоять свою позицию 🗣': 'Defend your position 🗣',
+  'Оценивать честно 📐': 'Estimate honestly 📐',
+  'Перейти на удалёнку 🏠': 'Switch to remote 🏠',
+  'Перенесли. Клиент понял. Репутация — частично.':
+    'It was postponed. The client understood. The reputation — partially.',
+  'Перенести демо «по техническим причинам» 🙈': 'Postpone the demo “for technical reasons” 🙈',
+  'Подготовить доклад 🎤': 'Prepare a talk 🎤',
+  'Подготовить запасной скринкаст 🎥': 'Prepare a backup screencast 🎥',
+  'Подключаться из кровати с камерой 😴': 'Join from bed with the camera on 😴',
+  'Помочь с переездом 💪': 'Help with the move 💪',
+  'Помочь удалённо пару часов 🏠': 'Help remotely for a couple of hours 🏠',
+  'Починили на глазах у клиента. Опасно, но сработало.': 'Fixed it in front of the client. Risky, but it worked.',
+  'Предложить компромисс 🤝': 'Propose a compromise 🤝',
+  'Предложить перенести на 10 📊': 'Propose moving it to 10 📊',
+  'Презентация на 15 минут. Аплодисменты. Ты — автор хита.':
+    'A 15-minute presentation. Applause. You are the author of a hit.',
+  'Презентовать результаты команде 🎤': 'Present the results to the team 🎤',
+  'Премию дали. Но осадочек у менеджера остался.': 'The bonus was given. But the manager kept a little grudge.',
+  'Привык за две недели. Утром даже нравится. Почти.': 'Got used to it in two weeks. Even like mornings now. Almost.',
+  'Привыкнуть и вставать раньше 🌅': 'Get used to it and wake up earlier 🌅',
+  'Провести экскурсию по кодовой базе 🗺': 'Give a tour of the codebase 🗺',
+  'Проект, в который ты вложил полгода, закрыли. «Стратегическое решение». Полгода — стратегически — в архив.':
+    'A project you poured half a year into was closed. “A strategic decision”. Half a year — strategically — into the archive.',
+  'Просто переехать со всеми 😌': 'Just move along with everyone 😌',
+  'Работал. Кот всё равно сел на клавиатуру.': 'It worked. The cat sat on the keyboard anyway.',
+  'Работать, не отвлекаясь 💻': 'Work without distractions 💻',
+  'Разобрать самые больные места 🔧': 'Take apart the sorest spots 🔧',
+  'Релиз спасён. Выходные — нет. Но героем быть приятно.':
+    'The release is saved. The weekend — not. But it feels nice to be a hero.',
+  'Сделать доклад-мем 😄': 'Give a meme talk 😄',
+  'Скринкаст спас демо. Клиент ничего не заметил. Профи.':
+    'The screencast saved the demo. The client noticed nothing. Pro.',
+  'Скромно принять похвалу 🙇': 'Modestly accept the praise 🙇',
+  'Скромность украшает. Метрики — тоже.': 'Modesty is an adornment. So are the metrics.',
+  'Слушал чужой доклад. Мог бы и ты. В следующий раз.':
+    'Listened to someone else’s talk. You could have given one. Next time.',
+  'Смешной доклад запомнили больше всех.': 'The funny talk was remembered the most.',
+  'Собрал подписи команды. Менеджер сдался. Ты — герой.':
+    'You gathered the team’s signatures. The manager gave in. You are the hero.',
+  'Соглашаться на всё подряд 🙈': 'Agree to everything 🙈',
+  'Спорить с менеджментом 📊': 'Argue with the management 📊',
+  'Таскал коробки. Тимлид оценил. Спина — по-другому.':
+    'Carried boxes. The team lead appreciated it. The back — differently.',
+  'Твои стикеры-каракули всех развеселили.': 'Your sticky-note doodles cheered everyone up.',
+  'Твою позицию записали в action items. Приятно.': 'Your position was written into the action items. Nice.',
+  'Тихо закрывать баги 🐛': 'Quietly close bugs 🐛',
+  'Удалёнка одобрена. Офис — для очных встреч.': 'Remote is approved. The office is for in-person meetings.',
+  'Устроить фотосессию питомцам 📸': 'Organize a photoshoot for the pets 📸',
+  'Фото разлетелись по чатам. Питомцы — новые звёзды.': 'The photos flew around the chats. The pets are the new stars.',
+  'Через час — демо для клиента. А прод в этот момент показывает то, чего не должен. Классика жанра.':
+    'In an hour — a demo for the client. And prod is busy showing something it should not. A classic of the genre.',
+  'Честные оценки — редкость. Менеджер был удивлён.': 'Honest estimates are a rarity. The manager was surprised.',
+  'Экскурсия заняла три часа. Новичок записывал всё.': 'The tour took three hours. The newcomer wrote everything down.',
+  '⏰ Стендап перенесли на 8 утра': '⏰ The standup moved to 8 a.m.',
+  '⚡ Спор на ретроспективе': '⚡ An argument at the retro',
+  '🎬 Демо клиенту, а прод шалит': '🎬 A demo to the client while prod misbehaves',
+  '🐶 День питомцев в офисе': '🐶 Pets day at the office',
+  '👶 В команду пришёл новенький': '👶 A newcomer joined the team',
+  '📅 Просят выйти в выходные': '📅 They ask you to work the weekend',
+  '📈 Твоя фича взлетела': '📈 Your feature took off',
+  '📋 Планирование квартала': '📋 Quarterly planning',
+  '📦 Офис переезжает': '📦 The office is moving',
+  '🛑 Проект закрыли': '🛑 The project was closed',
+  '🥪 Внутренний доклад на обеде': '🥪 An internal talk at lunch',
+  '🧹 Неделя рефакторинга': '🧹 Refactoring week',
+});
