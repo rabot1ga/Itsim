@@ -72,6 +72,11 @@ export function seededRng(seed: string): () => number {
  * (`stripInternal` на сервере). Hex 16 байт.
  */
 export function makeRngSalt(): string {
+  // ITSIM_RNG_SALT пинит соль — воспроизводимые прогоны e2e/dev (P2.5).
+  // В браузере переменной нет: клиентская соль остаётся случайной.
+  const pinned = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env
+    ?.ITSIM_RNG_SALT;
+  if (pinned) return pinned;
   const bytes = new Uint8Array(16);
   const cryptoObj = (globalThis as { crypto?: { getRandomValues?: (a: Uint8Array) => Uint8Array } }).crypto;
   if (cryptoObj?.getRandomValues) {

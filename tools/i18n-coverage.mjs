@@ -18,7 +18,7 @@ function walk(dir, out = []) {
     const p = join(dir, name);
     const st = statSync(p);
     if (st.isDirectory()) {
-      if (name === '__tests__' || name === 'node_modules' || name === 'dist') continue;
+      if (name === '__tests__' || name === 'node_modules' || name === 'dist' || name === 'generated') continue;
       walk(p, out);
     } else if (/\.(ts|tsx)$/.test(name) && !/\.test\.tsx?$/.test(name) && name !== 'i18n.ts') {
       out.push(p);
@@ -28,7 +28,9 @@ function walk(dir, out = []) {
 }
 
 const keys = new Set();
-for (const file of walk('packages/client/src')) {
+const roots = ['packages/client/src', 'packages/server/src'];
+const files = roots.flatMap((r) => walk(r));
+for (const file of files) {
   const src = readFileSync(file, 'utf-8');
   for (const m of src.matchAll(/\bt\(\s*(['"])((?:[^'"\\]|\\.)*?)\1/g)) {
     const key = m[2].replace(/\\(['"\\])/g, '$1');
@@ -45,7 +47,7 @@ for (const [name, dict] of Object.entries(dicts)) {
   lines.push(`${name}: ${translated}/${keys.size} (${pct.toFixed(1)}%)`);
   if (pct < min) thresholdFailed = true;
 }
-console.log(`ключей клиента: ${keys.size}`);
+console.log(`ключей клиента+сервера: ${keys.size}`);
 for (const l of lines) console.log(l);
 if (thresholdFailed) {
   console.error(`покрытие ниже порога ${min}%`);

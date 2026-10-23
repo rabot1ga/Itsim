@@ -1,3 +1,4 @@
+import { t } from '../../lib/i18n';
 /**
  * Tiny internal helper re-exports so `actions.ts` and `day.ts` share the
  * daily-challenge code without depending on the bigger day file.
@@ -5,7 +6,6 @@
 import { seededRng } from '@itsim/shared';
 import { clamp, activeSprintTheme, rollSprint, sprintWeekEndsAtMs, sprintDaysLeft } from '@itsim/shared';
 import { StoredState } from './shared.js';
-
 /**
  * Deterministic daily challenge for a player + day
  */
@@ -17,7 +17,6 @@ export function resetDailyChallenge(state: StoredState, content: any): void {
   const def = list[Math.floor(rng() * list.length)];
   state.dailyChallenge = { day: state.currentDay, id: def.id, progress: 0, count: def.count, done: false };
 }
-
 /**
  * Bump challenge progress after a successful action; returns a message
  * when the challenge completes (rewards are granted here).
@@ -29,23 +28,19 @@ export function bumpChallenge(state: StoredState, content: any, actionId: string
   if (!def) return null;
   const hit = def.match === 'prefix' ? actionId.startsWith(def.action) : actionId === def.action;
   if (!hit) return null;
-
   ch.progress = Math.min(ch.count, ch.progress + 1);
   if (ch.progress < ch.count) return null;
-
   ch.done = true;
   const reward = def.reward ?? {};
   if (reward.money) state.money += reward.money;
   if (reward.motivation) state.motivation = clamp(state.motivation + reward.motivation, 0, 100);
   if (reward.reputation) state.reputation = clamp(state.reputation + reward.reputation, 0, 100);
-
   const parts: string[] = [];
   if (reward.money) parts.push(`+${reward.money} ₽`);
   if (reward.motivation) parts.push(`+${reward.motivation} 🔥`);
   if (reward.reputation) parts.push(`+${reward.reputation} ⭐`);
-  return `🎯 Задание дня выполнено: ${parts.join(', ')}`;
+  return t('🎯 Задание дня выполнено: {p0}', { p0: parts.join(', ') });
 }
-
 /**
  * Resolved, client-ready sprint view — what the banner in «День» renders.
  * Extracted from game.ts in P1.14 so `state.ts` and `sprint.ts` can share it.

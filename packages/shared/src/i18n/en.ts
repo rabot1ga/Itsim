@@ -715,3 +715,244 @@ Object.assign(en, {
   '😊 Настроение': '😊 Mood',
   '🧭 Направления': '🧭 Tracks',
 });
+
+Object.assign(en, {
+  '+{p0} день в банке': '+{p0} day in the bank',
+  '+{p0} мотивации': '+{p0} motivation',
+  '+{reputation} репутации': '+{reputation} reputation',
+  'CTO выбирают из архитекторов — сначала дорасти до архит':
+    'CTOs are elected from architects — grow into an architect first',
+  'Junior-разработчик': 'Junior developer',
+  'Middle-разработчик': 'Middle developer',
+  'Senior-разработчик': 'Senior developer',
+  '\\n🎯 Спринт недели выполнен — награда ждёт в карточке спринта':
+    '\\n🎯 Weekly sprint done — the reward waits in the sprint card',
+  '\\n🏆 Путь {titles} пройден — забери бонус в карточке пути':
+    '\\n🏆 Path {titles} cleared — claim the bonus in the path card',
+  'endingId обязателен': 'endingId is required',
+  '{p0} {p1}: +{p2}. «Это временно, я же айтишник» — говоришь ты себе':
+    '{p0} {p1}: +{p2}. «It is temporary, I am in tech after all» — you tell yourself',
+  '{p0} млн ₽': '{p0}M ₽',
+  '{p0} тыс ₽': '{p0}K ₽',
+  Английский: 'English',
+  'Аренда по карману доходу: нужно от {p0}/мес (у тебя {p1})':
+    'Rent must fit your income: from {p0}/mo required (you have {p1})',
+  Архитектор: 'Architect',
+  'Банк офлайн-дней пуст. Он копится, пока тебя нет: 1 день за 3.5 часа':
+    'The offline-day bank is empty. It fills while you are away: 1 day per 3.5 hours',
+  Безработный: 'Unemployed',
+  'Борд ещё не отошёл после прошлого раунда. Попробуй через {p0} дн.':
+    'The board has not recovered from the last round. Try again in {p0} d',
+  'Борд не стал ждать третьего предупреждения': 'The board did not wait for the third warning',
+  'Вопрос не найден': 'Question not found',
+  'Вы на вершине лестницы': 'You are at the top of the ladder',
+  'Выборы CTO': 'CTO election',
+  Выступления: 'Public speaking',
+  'Добро пожаловать в IT Life Simulator! 💻': 'Welcome to IT Life Simulator! 💻',
+  'Заявка не найдена или устарела': 'Application not found or expired',
+  Игрок: 'Player',
+  'Игрок {p0}': 'Player {p0}',
+  Кибербез: 'Cybersecurity',
+  Коммуникация: 'Communication',
+  'Компания не найдена': 'Company not found',
+  Лидерство: 'Leadership',
+  'Лимит на сегодня: {p0}': 'Today’s limit: {p0}',
+  'Лучше уже некуда. Это пентхаус, Карл': 'It does not get any better. This is the penthouse, Carl',
+  'Мало просто иметь {p0}: нужен запас {saveMult}× месячного платежа ({p1})':
+    'Having {p0} is not enough: you need {saveMult}× the monthly payment in reserve ({p1})',
+  'Навык «{p0}» заблокирован. Нужно: {parentReq}': 'Skill «{p0}» is locked. Required: {parentReq}',
+  'Навык не найден': 'Skill not found',
+  'Награда этой недели уже получена': 'This week’s reward is already claimed',
+  'Не выполнены требования: {p0}': 'Requirements not met: {p0}',
+  'Не хватает денег': 'Not enough money',
+  'Не хватает денег для этого выбора': 'Not enough money for this choice',
+  'Не хватает денег на переезд': 'Not enough money to move',
+  'Не хватает энергии для этого выбора': 'Not enough energy for this choice',
+  'Не хватает энергии — заверши день или отдохни': 'Not enough energy — finish the day or rest',
+  'Недостаточно вопросов для собеседования': 'Not enough questions for an interview',
+  'Недостаточно навыков для этого выбора': 'Not enough skills for this choice',
+  'Неизвестная подработка': 'Unknown side job',
+  'Неизвестное действие': 'Unknown action',
+  'Неизвестный навык': 'Unknown skill',
+  'Некорректный вариант ответа': 'Invalid answer option',
+  'Некорректный выбор': 'Invalid choice',
+  'Нет активного отклика': 'No active application',
+  'Нет активного проекта': 'No active project',
+  'Нетворкинг на сегодня закончился: митапы не резиновые. Завтра — новый барак':
+    'Networking is over for today: meetups are not endless. Tomorrow — a new shift',
+  'Новая жизнь началась! 💻': 'A new life has begun! 💻',
+  'Новая жизнь открывается после финала карьеры: CTO, выгорание или уход из IT':
+    'New life unlocks after a career ending: CTO, burnout or leaving IT',
+  'Нужен английский {p0}+. Твой уровень: {english}. Качай язык!':
+    'English {p0}+ required. Your level: {english}. Train the language!',
+  'Нужен навык {p0}+ в основной специализации': 'Skill {p0}+ required in your main specialty',
+  'Нужна большая компания: без штата и борда выборы не имеют смысла':
+    'A big company is required: without staff and a board, elections make no sense',
+  'Ответь на все вопросы, чтобы завершить собеседование': 'Answer all questions to finish the interview',
+  'Отклик отозван. Заказчики кармы плакали': 'Application withdrawn. The karma clients wept',
+  'Отношения недостаточно хорошие для этого выбора': 'Relationships are not good enough for this choice',
+  'Оффер не найден': 'Offer not found',
+  'Оффер не найден или истёк': 'Offer not found or expired',
+  'Оффер отклонён. HR переживёт... наверное': 'Offer declined. HR will survive... probably',
+  'Переезд — привычка, а не импульс: держи подушку ещё {p0} дн.':
+    'Moving is a habit, not an impulse: keep the cushion for {p0} more days',
+  'Перк не найден': 'Perk not found',
+  'Перк уже открыт': 'Perk already unlocked',
+  'Питомец уже сыт. Хватит на сегодня': 'The pet is full already. Enough for today',
+  'Подсветка пути снята': 'Path highlight removed',
+  'Пока рано откликаться — подтяни навыки (18+ суммарно) и коммуникацию':
+    'Too early to apply — train skills (18+ total) and communication',
+  'Покупка недоступна': 'Purchase unavailable',
+  'Предмет не найден': 'Item not found',
+  'Проект больше не доступен': 'Project is no longer available',
+  'Путь CTO не настроен в контенте': 'The CTO path is not configured in content',
+  'Сегодня уже была подработка. Совмещать курьера и баристу нельзя — проверено':
+    'You already had a side job today. Courier and barista do not mix — checked',
+  'Сегодня уже откликался. Заказчики тоже спят': 'You already applied today. Clients sleep too',
+  'Сейчас нет активного спринта': 'No active sprint right now',
+  'Сначала возьми проект': 'Take a project first',
+  'Сначала закрой все задачи проекта': 'Close all project tasks first',
+  'Собеседование назначено на день {p0}. Приходи вовремя — а пока подтяни скиллы':
+    'The interview is scheduled for day {p0}. Come on time — and train your skills meanwhile',
+  'Собеседование не назначено': 'No interview scheduled',
+  'Собеседование не начато': 'Interview not started',
+  'Событие не найдено': 'Event not found',
+  'Сокращение дошло до верхнего этажа': 'The layoffs reached the top floor',
+  Стажёр: 'Intern',
+  Стрессоустойчивость: 'Stress resistance',
+  'Счёт выписан другому игроку': 'The bill was issued to another player',
+  'Такого заказа нет на бирже': 'No such order on the market',
+  'Такого пути нет': 'No such path',
+  'Такого финала нет': 'No such ending',
+  'Тебя не выдвигают. Не хватает: {human}': 'You are not being promoted. Missing: {human}',
+  'Товар недоступен': 'Product unavailable',
+  'У тебя нет питомца. Купи его в магазине': 'You have no pet. Buy one in the shop',
+  'У тебя нет работы': 'You have no job',
+  'У тебя нет работы. Сначала откликнись на вакансию в разделе «Карьера»':
+    'You have no job. Apply for a vacancy in the «Career» section first',
+  'У тебя уже есть активный отклик. Дождись результата': 'You already have an active application. Wait for the result',
+  'У тебя уже есть работа. Сначала уволься... то есть дойди до выгорания':
+    'You already have a job. Quit first... that is, burn out first',
+  'Уже куплено': 'Already bought',
+  'Финал уже зафиксирован. Начни новую жизнь — там': 'The ending is already sealed. Start a new life — there',
+  'Цели спринта ещё не выполнены': 'Sprint goals are not done yet',
+  'Эта задача уже сделана или её нет в проекте': 'This task is already done or not in the project',
+  'Эта подработка откроется позже': 'This side job opens later',
+  'Это событие уже не активно': 'This event is no longer active',
+  'Этот источник знаний больше ничего не даёт — пора переходить на следующий уровень':
+    'This knowledge source gives nothing more — time to move to the next level',
+  английский: 'english',
+  'всего навыков': 'skills total',
+  'значок «{p0}»': 'badge «{p0}»',
+  коммуникация: 'communication',
+  лидерство: 'leadership',
+  'навыки в ветке': 'skills in the branch',
+  'неизвестная метрика «{metric}», доступны: {p0}': 'unknown metric «{metric}», available: {p0}',
+  'основной навык': 'main skill',
+  'открыто в гардеробе/комнате: {p0}': 'unlocked in the wardrobe/room: {p0}',
+  репутация: 'reputation',
+  '⌛ Дедлайн проекта «{p0}» прошёл. Заказчик ушёл: −{penalty} репутации':
+    '⌛ Project «{p0}» deadline passed. The client left: −{penalty} reputation',
+  '⏰ Офлайн-день использован: полная энергия и +10 мотивации. В банке осталось {p0}':
+    '⏰ Offline day used: full energy and +10 motivation. {p0} left in the bank',
+  '⏳ Оффер{p0} истек{p1}: {p2}': '⏳ Offer{p0} expired{p1}: {p2}',
+  '♻ Жизнь {lives} началась с чистого листа.': '♻ Life {lives} starts with a clean slate.',
+  '♻ Жизнь {lives} началась с чистого листа. Ачивки и покупки с тобой — и навсегда +{pct}% к XP.':
+    '♻ Life {lives} starts with a clean slate. Achievements and purchases stay with you — and a permanent +{pct}% XP.',
+  '⚠️ Не хватило денег на жильё ({p0}). Мотивация упала. Срочно нужен доход!':
+    '⚠️ Not enough money for housing ({p0}). Motivation dropped. Income needed now!',
+  '⛏ Курс упал: ферма ушла в минус на {p0}': '⛏ The rate fell: the rig went {p0} into the red',
+  '⛏ Не хватило на электричество — ферма стояла весь день':
+    '⛏ Not enough money for electricity — the rig sat idle all day',
+  '⛏ Ферма намайнила: +{p0} (электричество −{p1})': '⛏ The rig mined: +{p0} (electricity −{p1})',
+  '✅ {p0}. Все задачи готовы — можно сдавать проект': '✅ {p0}. All tasks are done — you can submit the project',
+  '✅ {p0}. Осталось задач: {left}': '✅ {p0}. Tasks left: {left}',
+  '✅ Верно! Интервьюер кивает.': '✅ Correct! The interviewer nods.',
+  '✅ Спасибо! Покупка «{p0}» активирована.\\n{p1}': '✅ Thank you! Purchase «{p0}» activated.\\n{p1}',
+  '✨ Перк открыт: {p0} — {p1}': '✨ Perk unlocked: {p0} — {p1}',
+  '❌ Мимо. Зато теперь точно запомнишь.': '❌ Missed. But now you will definitely remember.',
+  '🇬🇧 Английский: бесплатные уроки с котиками. Уровень {p0}': '🇬🇧 English: free lessons with cats. Level {p0}',
+  '🇬🇧 Интенсивный курс английского: уровень {p0}. Now you can ask for a raise':
+    '🇬🇧 Intensive English course: level {p0}. Now you can ask for a raise',
+  '🌙 Переработка. Начальник доволен (+{p0}), спина — нет': '🌙 Overtime. The boss is happy (+{p0}), your back is not',
+  '🍖 Питомец сыт и счастлив. Урчит, мурчит, виляет (+3 🔥)':
+    '🍖 The pet is fed and happy. Purring, chirping, wagging (+3 🔥)',
+  '🍜 На еду не хватило — сегодня на гречке. Расходы: {p0}/день':
+    '🍜 Not enough money for food — buckwheat today. Expenses: {p0}/day',
+  '🍺 Бар с друзьями: обсудили дженерики, легаси и почему всё горит':
+    '🍺 Bar with friends: generics, legacy and why everything is on fire',
+  '🎉 Собеседование в «{p0}» пройдено! Оффер: {p1}, {p2}/мес. Действует 5 дней — принять в «Карьере»':
+    '🎉 Interview at «{p0}» passed! Offer: {p1}, {p2}/mo. Valid for 5 days — accept in «Career»',
+  '🎉 Собеседование пройдено ({correct}/{total})! Оффер: {p0}, {p1}/мес — прими его в «Карьере»':
+    '🎉 Interview passed ({correct}/{total})! Offer: {p0}, {p1}/mo — accept it in «Career»',
+  '🎉 Ты принят в «{p0}» на позицию {p1}! Зарплата: {p2}/мес': '🎉 You are hired at «{p0}» as {p1}! Salary: {p2}/mo',
+  '🎤 Собеседование в «{p0}» началось!': '🎤 Interview at «{p0}» has started!',
+  '🎮 Хобби-вечер. Да, сборка лего — это тоже хобби': '🎮 Hobby evening. Yes, building LEGO is a hobby too',
+  '🎯 Задание дня выполнено: {p0}': '🎯 Daily challenge done: {p0}',
+  '🎯 Основной навык: {p0}': '🎯 Main skill: {p0}',
+  '🏁 Спринт «{p0}» закрыт: {p1}': '🏁 Sprint «{p0}» closed: {p1}',
+  '🏁 Финал зафиксирован: {p0}': '🏁 Ending sealed: {p0}',
+  '🏆 Достижение: {p0} {p1}': '🏆 Achievement: {p0} {p1}',
+  '🏆 Достижение: {p0} {p1} — {p2}': '🏆 Achievement: {p0} {p1} — {p2}',
+  '🏆 Путь «{p0}» пройден до конца: {p1}': '🏆 Path «{p0}» completed to the end: {p1}',
+  '🏋️ Качалка. Мышцы болят, зато деплой не страшен': '🏋️ Gym. Muscles ache, but deploys do not scare you',
+  '🏠 Оплачено жильё: {p0}': '🏠 Housing paid: {p0}',
+  '🏠 Переезд: новый уровень жилья {next}. Запах картонных коробок — запах свободы':
+    '🏠 Moving: new housing level {next}. The smell of cardboard boxes is the smell of freedom',
+  '🏦 Налог на состояние и образ жизни: −{p0}. Деньги «под матрасом» обесцениваются — реинвестируй':
+    '🏦 Wealth and lifestyle tax: −{p0}. Money under the mattress loses value — reinvest it',
+  '👔 Борд проголосовал за тебя (шанс был {p0}%). Ты CTO — отныне ты отвечаешь за чужие карьеры и за свой сон. Финал «Корпоративный бог» откроется, когда продержишься в кресле {hold} дн. (сейчас 0)':
+    '👔 The board voted for you (the chance was {p0}%). You are the CTO — from now on you answer for other careers and your own sleep. The «Corporate god» ending opens after you hold the chair for {hold} days (0 now)',
+  '💀 15 дней без денег и без работы. Ты ушёл из IT — в деревню, за теплицы. Финал: «Ушёл из IT»':
+    '💀 15 days with no money and no job. You left IT — to the village, to the greenhouses. Ending: «Left IT»',
+  '💀 Три предупреждения — тебя уволили из {p0}. Свобода!': '💀 Three warnings — you were fired from {p0}. Freedom!',
+  '💰 Зарплата: +{p0}': '💰 Salary: +{p0}',
+  '💼 Задачи + разбор чужого кода. Растёшь не только ты':
+    '💼 Tasks + reviewing someone else’s code. You are not the only one growing',
+  '💼 Закрыл рабочие задачи. Ретроспектива отменена, все свободны':
+    '💼 Closed the work tasks. Retro cancelled, everyone is free',
+  '📁 Заказчик выбрал тебя: «{p0}». Дедлайн — день {p1}': '📁 The client picked you: «{p0}». Deadline — day {p1}',
+  '📄 Отклик в «{p0}» отправлен. {p1} Собеседование через 2 дня':
+    '📄 Application to «{p0}» sent. {p1} Interview in 2 days',
+  '📉 Сокращение в «{p0}». Ты в списке. Рынок, держись!': '📉 Layoffs at «{p0}». You are on the list. Market, hold on!',
+  '📋 Ревью на {p0}: место пока занято. Ты у уреза — качай глубину, не ширину':
+    '📋 Review for {p0}: the seat is taken for now. You are at the cut — train depth, not breadth',
+  '📚 Учёба: {skillId}{leveled}': '📚 Studying: {skillId}{leveled}',
+  '📦 «{p0}» сдан в срок: +{p1}, +{p2} репутации': '📦 «{p0}» delivered on time: +{p1}, +{p2} reputation',
+  '📦 «{p0}» сдан с опозданием: {p1} вместо {p2}': '📦 «{p0}» delivered late: {p1} instead of {p2}',
+  '📨 Отклик на «{p0}» отправлен. Заказчик ответит утром — шанс {p1}%':
+    '📨 Application for «{p0}» sent. The client replies in the morning — chance {p1}%',
+  '📭 «{p0}»: заказчик выбрал исполнителя опытнее. Попробуй ещё раз':
+    '📭 «{p0}»: the client picked a more experienced developer. Try again',
+  '📭 «{p0}»: пока ты ждал, взялся другой проект — заказчик ушёл':
+    '📭 «{p0}»: while you waited, another project took it — the client left',
+  '📭 Заказ сняли с биржи ещё до ответа. Бывает':
+    '📭 The order was pulled from the market before the reply. It happens',
+  '🔥 Выгорание. Ты ушёл в отпуск длиной в жизнь: ноутбук в ящик, тикеты чужие. Финал: «Пчеловод»':
+    '🔥 Burnout. You went on a vacation called life: laptop in the drawer, tickets someone else’s. Ending: «Beekeeper»',
+  '🔥 Ты на грани выгорания. Срочно отдохни!': '🔥 You are on the edge of burnout. Rest now!',
+  '🗑 Выборы проиграны ({p0}% было). Борд выбрал «человека системы». Минус 4 репутации, минус 10 мотивации':
+    '🗑 Elections lost ({p0}% was). The board picked «a man of the system». Minus 4 reputation, minus 10 motivation',
+  '😔 «{p0}»: мы впечатлены вашим резюме, но решили двигаться с другим кандидатом. Не расстраивайся — попробуй ещё раз через пару дней':
+    '😔 «{p0}»: we are impressed with your CV, but decided to go with another candidate. Do not worry — try again in a couple of days',
+  '😔 Собеседование ({correct}/{total}): «мы впечатлены, но решили двигаться с другим кандидатом». Подтяни навыки и пробуй снова!':
+    '😔 Interview ({correct}/{total}): «we are impressed, but decided to go with another candidate». Train your skills and try again!',
+  '😴 Поспал как человек. Или как айтишник: 10 часов': '😴 Slept like a human. Or like a techie: 10 hours',
+  '🚀 Пет-проект: ещё один TODO-трекер в портфолио. Репутация растёт':
+    '🚀 Pet project: one more TODO-tracker for the portfolio. Reputation grows',
+  '🚀 Повышение! Теперь ты {p0} ({p1}/мес). Поздравляем, тебя ждёт ещё больше созвонов':
+    '🚀 Promotion! You are now {p0} ({p1}/mo). Congratulations, even more calls await',
+  '🚪 Проект брошен. Заказчик расстроен: −{penalty} репутации':
+    '🚪 Project abandoned. The client is upset: −{penalty} reputation',
+  '🚶 Прогулка. Впервые за неделю увидел солнце': '🚶 Walk. Saw the sun for the first time in a week',
+  '🛒 Куплено: {p0}': '🛒 Bought: {p0}',
+  '🛠 «{p0}» ушёл другому, но тестовое задание оплатили: +{p1}':
+    '🛠 «{p0}» went to someone else, but the trial task was paid: +{p1}',
+  '🤝 Митап: новые знакомства (+{p0} в контактах). Доклад был скучный, пицца — нет':
+    '🤝 Meetup: new contacts (+{p0}). The talk was boring, the pizza was not',
+  '🤝 Митап: раздал визитки, собрал 40 стикеров. Репутация растёт':
+    '🤝 Meetup: handed out cards, collected 40 stickers. Reputation grows',
+  '🧭 Путь «{p0}» выбран — следуй вехам на карте': '🧭 Path «{p0}» chosen — follow the milestones on the map',
+  '🪑 {reason}: кресло CTO занял кто-то другой. Ты снова архитектор (в кресле было {held} дн. из {p0}) — выборы можно пройти заново':
+    '🪑 {reason}: someone else took the CTO chair. You are an architect again (held it for {held} of {p0} days) — you can run in the elections again',
+});

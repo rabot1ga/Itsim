@@ -1,4 +1,4 @@
-import { t } from '../lib/i18n';
+import { t, currentLocale } from '../lib/i18n';
 import { create } from 'zustand';
 import { haptic } from '../lib/telegram';
 export type Screen = 'menu' | 'game' | 'loading';
@@ -21,6 +21,8 @@ async function api(
 }> {
   const headers: Record<string, string> = {
     Authorization: authInitData ? `tma ${authInitData}` : '',
+    // P2.5: сервер переводит сообщения ответа под язык клиента
+    'X-Locale': currentLocale(),
     ...(init.headers as Record<string, string> | undefined),
   };
   // Only send Content-Type when there is a body (Fastify rejects empty JSON bodies)

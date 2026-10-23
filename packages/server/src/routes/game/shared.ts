@@ -1,3 +1,4 @@
+import { t } from '../../lib/i18n';
 /**
  * Shared types and helpers for the `gameRoutes` family.
  *
@@ -34,7 +35,6 @@ import {
   seededRng,
   makeRngSalt,
 } from '@itsim/shared';
-
 /** The on-disk shape of the player's state (extends PlayerState with server-only fields) */
 export type StoredState = PlayerState & {
   telegramId: string;
@@ -52,22 +52,24 @@ export type StoredState = PlayerState & {
   firstName: string;
   interviewSession?: {
     companyId: string;
-    questions: Array<{ id: string; chosen: number | null; correct: boolean | null }>;
+    questions: Array<{
+      id: string;
+      chosen: number | null;
+      correct: boolean | null;
+    }>;
   };
 };
-
 /** Grade → human label. The shop and the office both lean on this map. */
 export const GRADE_POSITIONS: Record<Grade, string> = {
-  unemployed: 'Безработный',
-  intern: 'Стажёр',
-  junior: 'Junior-разработчик',
-  middle: 'Middle-разработчик',
-  senior: 'Senior-разработчик',
+  unemployed: t('Безработный'),
+  intern: t('Стажёр'),
+  junior: t('Junior-разработчик'),
+  middle: t('Middle-разработчик'),
+  senior: t('Senior-разработчик'),
   teamlead: 'Teamlead',
-  architect: 'Архитектор',
+  architect: t('Архитектор'),
   cto: 'CTO',
 };
-
 /** The default energy cost table for non-study actions. */
 export const EXTRA_ENERGY_COSTS: Record<string, number> = {
   work_task: 4,
@@ -97,7 +99,6 @@ export const EXTRA_ENERGY_COSTS: Record<string, number> = {
   customize_avatar: 0,
   claim_ending: 0,
 };
-
 /**
  * Серверный RNG баланса (P2.4, docs/PROPOSALS-2026-10-23-rng.md).
  *
@@ -113,43 +114,36 @@ export function rngStream(state: StoredState): () => number {
     return seededRng(`${state.telegramId}:${state.rngSalt}:${seq}`)();
   };
 }
-
 type RngFactory = (state: StoredState) => () => number;
 let testRngFactory: RngFactory | null = null;
-
 /** Тестовый сейм: задать поток бросков явно (вместо моков Math.random). */
 export function __setRngFactoryForTests(factory: RngFactory | null): void {
   testRngFactory = factory;
 }
-
 // Фабрика с тестовым сеймом: прод всегда берёт rngStream.
 export function balanceRng(state: StoredState): () => number {
   return (testRngFactory ?? rngStream)(state);
 }
-
 /** Format rubles for human-readable output (1 230 ₽ / 12 тыс ₽ / 1.4 млн ₽) */
 export function fmtMoney(amount: number): string {
-  if (amount >= 1000000) return `${(amount / 1000000).toFixed(1)} млн ₽`;
-  if (amount >= 1000) return `${(amount / 1000).toFixed(0)} тыс ₽`;
+  if (amount >= 1000000) return t('{p0} млн ₽', { p0: (amount / 1000000).toFixed(1) });
+  if (amount >= 1000) return t('{p0} тыс ₽', { p0: (amount / 1000).toFixed(0) });
   return `${amount} ₽`;
 }
-
 /** Human-friendly requirement keys used by career outlook + CTO election. */
 export const HUMAN_REQ: Record<string, string> = {
-  skill: 'основной навык',
-  total: 'всего навыков',
-  branchTotal: 'навыки в ветке',
-  comm: 'коммуникация',
-  english: 'английский',
-  leadership: 'лидерство',
-  rep: 'репутация',
+  skill: t('основной навык'),
+  total: t('всего навыков'),
+  branchTotal: t('навыки в ветке'),
+  comm: t('коммуникация'),
+  english: t('английский'),
+  leadership: t('лидерство'),
+  rep: t('репутация'),
 };
-
 /** Strip the answer from a question before sending it to the client. */
 export function sanitizeInterviewQuestion(q: any) {
   return { id: q.id, skillId: q.skillId, tier: q.tier, text: q.text, options: q.options };
 }
-
 /** Probability of an event rolling on a given day (curved by career phase). */
 export function eventPhaseChance(balance: any, day: number): number {
   if (day <= 10) return balance.eventChanceOnboarding ?? 0.2;
@@ -157,21 +151,25 @@ export function eventPhaseChance(balance: any, day: number): number {
   if (day <= 150) return balance.eventChanceMid ?? 0.28;
   return balance.eventChanceLate ?? 0.2;
 }
-
 /** Attach the UI message to the response state. */
 export function respondState(state: StoredState, message?: string) {
   return { ...stripInternal(state), _lastEvent: message };
 }
-
 /** Flat skill → level map (archetype progress is derived from these). */
 export function skillLevelMap(state: StoredState): Record<string, number> {
   const map: Record<string, number> = {};
   for (const [id, v] of Object.entries(state.skills ?? {})) {
-    map[id] = (v as { level?: number } | undefined)?.level ?? 0;
+    map[id] =
+      (
+        v as
+          | {
+              level?: number;
+            }
+          | undefined
+      )?.level ?? 0;
   }
   return map;
 }
-
 /**
  * Career gates: content-driven (balance.careerGates) with a graceful fallback to
  * the built-in table so an old content bundle still boots.
@@ -191,9 +189,7 @@ export function careerGatesOf(content: any): CareerGate[] {
     special: grade === 'cto',
   }));
 }
-
 const branchMapCache = new Map<string, Record<string, string>>();
-
 /** Map of skill id → branch name, derived from the loaded content. */
 export function branchOfMap(content: any): Record<string, string> {
   const key = `${(content.skills as any[])?.length ?? 0}:${(content.skills as any[])?.[0]?.id ?? ''}`;
@@ -206,7 +202,6 @@ export function branchOfMap(content: any): Record<string, string> {
   branchMapCache.set(key, map);
   return map;
 }
-
 /**
  * Monthly recurring costs granted by owned items (gym subscription, internet, ...).
  * Content-driven: an item with effects.monthlyCost is a subscription, not a purchase.
@@ -220,13 +215,11 @@ export function monthlySubscriptions(state: StoredState, content: any): number {
   }
   return total;
 }
-
 /** Soft-skill tuning from content (saturation keeps people skills un-farmable) */
 export function softOpts(content: any) {
   const cfg = content.balance?.softSkills ?? { saturatesAt: 30, xpDamping: 0.5 };
   return { saturatesAt: cfg.saturatesAt ?? 30, damping: cfg.xpDamping ?? 0.5 };
 }
-
 /** What the next promotion actually needs — the late game should be legible. */
 export function careerOutlook(state: StoredState, content: any) {
   const gates = careerGatesOf(content);
@@ -238,14 +231,14 @@ export function careerOutlook(state: StoredState, content: any) {
       const { chance, qualified, missing } = ctoElectionChance(state, cto);
       return {
         kind: 'cto_election',
-        label: 'Выборы CTO',
+        label: t('Выборы CTO'),
         ready: qualified,
         chance: Math.round(chance * 100),
         cooldownDays: Math.max(0, (state.ctoCooldownUntilDay ?? 0) - state.currentDay),
         missing: Object.entries(missing).map(([k, v]) => ({ key: k, label: HUMAN_REQ[k] ?? k, ...v })),
       };
     }
-    return { kind: 'top', label: 'Вы на вершине лестницы' };
+    return { kind: 'top', label: t('Вы на вершине лестницы') };
   }
   const progress = gateProgress(state, next, { branchOf });
   const interval = reviewInterval(gates, state.grade);
@@ -262,7 +255,6 @@ export function careerOutlook(state: StoredState, content: any) {
     missing: Object.entries(progress.missing).map(([k, v]) => ({ key: k, label: HUMAN_REQ[k] ?? k, ...v })),
   };
 }
-
 /**
  * Daily money pressure summary: «твой день стоит X ₽». This is what makes the
  * late game a decision and not a spreadsheet with growing numbers.
@@ -281,7 +273,6 @@ export function costOfDay(state: StoredState, content: any) {
     balanceDaily: Math.round(weekly / 7) - breakdown.daily - breakdown.rent - breakdown.wealthTax,
   };
 }
-
 /** Highest grade the player currently qualifies for (depth + breadth + soft skills) */
 export function targetGrade(state: StoredState, content: any): Grade | null {
   const discount = Math.min(0.5, perkEffectSum(state, content, 'jobRequirementDiscount'));
@@ -300,7 +291,6 @@ export function targetGrade(state: StoredState, content: any): Grade | null {
   }
   return qualifiedGrade(state, careerGatesOf(content), { branchOf: branchOfMap(content), discount });
 }
-
 /** Sum a numeric perk effect across all owned perks */
 export function perkEffectSum(state: StoredState, content: any, effectKey: string): number {
   let total = 0;
@@ -311,46 +301,37 @@ export function perkEffectSum(state: StoredState, content: any, effectKey: strin
   }
   return total;
 }
-
 /** Total energy bonus from owned perks */
 export function perkEnergyBonus(state: StoredState, content: any): number {
   return perkEffectSum(state, content, 'energyBonus');
 }
-
 /** Recalculate max energy including owned perk bonuses */
 export function recalcMaxEnergy(state: StoredState, content: any): number {
   return calculateMaxEnergy(state, perkEnergyBonus(state, content), content.items);
 }
-
 /** Effective motivation for XP gains (learning perks boost it) */
 export function xpMotivation(state: StoredState, content: any): number {
   const learning = perkEffectSum(state, content, 'learningBonus');
   return state.motivation + Math.round(learning / 0.006); // 0.15 → +25
 }
-
 /** Raw XP multiplied by owned item bonuses (headphones, macbook, ...) */
 export function xpGain(state: StoredState, content: any, base: number): number {
   return Math.round(base * itemXpMult(state.items, content.items) * metaXpMult(state.meta));
 }
-
 /** Soft-XP gain convenience used across the action set */
 export { applySoftXp, hashrateOfItems, careerLevelIndex };
-
 /** Re-exports of helpers that several route files need together */
 export { branchShareXp, GRADE_ENERGY, GRADE_REQUIREMENTS, HOUSING_COSTS, weeklySalary } from '@itsim/shared';
-
 /**
  * Server-only helpers that used to live in `game.ts` and are reused by
  * `state.ts` and `sprint.ts` (the two routes that render the "first paint"
  * payload).
  */
 export { resetDailyChallenge, sprintView } from './_day.js';
-
 /** Mining summary for the current state (null when no hardware) */
 export function miningSummary(state: StoredState, content: any) {
   const hashrate = hashrateOfItems(state.items, content.items);
   if (hashrate <= 0) return null;
-
   const cfg = content.balance.mining ?? { priceBase: 40, volatility: 0.5, electricityPerHashrate: 0.5 };
   const income = miningDailyIncome(hashrate, state.currentDay, cfg);
   const mult = 1 + perkEffectSum(state, content, 'miningIncomeMult');

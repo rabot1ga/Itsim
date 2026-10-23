@@ -1,3 +1,4 @@
+import { t } from '../../lib/i18n';
 /**
  * Archetype routes (P1.3) — `/api/game/archetype/{choose,claim}`.
  *
@@ -12,7 +13,6 @@ import { loadState, saveState } from '../../services/gameStore.js';
 import { clamp, validateArchetypeClaim } from '@itsim/shared';
 import { calculateRating } from '@itsim/shared';
 import { fmtMoney, respondState, StoredState } from './shared.js';
-
 export async function archetypeRoutes(app: FastifyInstance) {
   /**
    * POST /api/game/archetype/choose — pick the route highlighted on the skill map (P1.3).
@@ -26,23 +26,22 @@ export async function archetypeRoutes(app: FastifyInstance) {
     if (!state) {
       return reply.status(404).send({ error: 'Game not started' });
     }
-
-    const { archetypeId } = (request.body ?? {}) as { archetypeId?: string | null };
+    const { archetypeId } = (request.body ?? {}) as {
+      archetypeId?: string | null;
+    };
     if (!archetypeId) {
       state.archetypeChosen = undefined;
       await saveState(userId, state);
-      return { state: respondState(state, 'Подсветка пути снята') };
+      return { state: respondState(state, t('Подсветка пути снята')) };
     }
-
     const def = (getContent().archetypes?.archetypes ?? []).find((a: any) => a.id === archetypeId);
     if (!def) {
-      return reply.status(400).send({ error: 'Такого пути нет' });
+      return reply.status(400).send({ error: t('Такого пути нет') });
     }
     state.archetypeChosen = archetypeId;
     await saveState(userId, state);
-    return { state: respondState(state, `🧭 Путь «${def.title}» выбран — следуй вехам на карте`) };
+    return { state: respondState(state, t('🧭 Путь «{p0}» выбран — следуй вехам на карте', { p0: def.title })) };
   });
-
   /**
    * POST /api/game/archetype/claim — one-time-per-life bonus for finishing a route (P1.3).
    *
@@ -58,14 +57,14 @@ export async function archetypeRoutes(app: FastifyInstance) {
     if (!state) {
       return reply.status(404).send({ error: 'Game not started' });
     }
-
-    const { archetypeId } = (request.body ?? {}) as { archetypeId?: string };
+    const { archetypeId } = (request.body ?? {}) as {
+      archetypeId?: string;
+    };
     const content = getContent();
     const verdict = validateArchetypeClaim(content.archetypes?.archetypes, archetypeId, state);
     if ('error' in verdict) {
       return reply.status(400).send({ error: verdict.error, state: respondState(state) });
     }
-
     const def = verdict.def;
     const money = def.reward?.money ?? 0;
     const reputation = def.reward?.reputation ?? 0;
@@ -74,12 +73,11 @@ export async function archetypeRoutes(app: FastifyInstance) {
     state.archetypeBonuses = [...(state.archetypeBonuses ?? []), def.id];
     state.ratingScore = calculateRating(state);
     await saveState(userId, state);
-
     const parts: string[] = [];
     if (money > 0) parts.push(`+${fmtMoney(money)}`);
-    if (reputation > 0) parts.push(`+${reputation} репутации`);
+    if (reputation > 0) parts.push(t('+{reputation} репутации', { reputation: reputation }));
     return {
-      state: respondState(state, `🏆 Путь «${def.title}» пройден до конца: ${parts.join(', ')}`),
+      state: respondState(state, t('🏆 Путь «{p0}» пройден до конца: {p1}', { p0: def.title, p1: parts.join(', ') })),
     };
   });
 }

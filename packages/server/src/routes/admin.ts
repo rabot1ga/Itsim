@@ -1,10 +1,9 @@
+import { t } from '../lib/i18n';
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import { timingSafeEqual } from 'crypto';
-
 import { config } from '../config.js';
 import { loadState, saveState, deleteState, scanStates } from '../services/gameStore.js';
 import { purchasesOf } from '../services/entitlements.js';
-
 /**
  * Service endpoints for the Telegram bot process (`packages/bot`).
  *
@@ -13,7 +12,6 @@ import { purchasesOf } from '../services/entitlements.js';
  * here. Authentication is a shared secret (`ADMIN_TOKEN`); when it is not set
  * the whole namespace answers 503 instead of silently running unprotected.
  */
-
 function adminGuard(request: FastifyRequest, reply: FastifyReply): boolean {
   if (!config.adminToken) {
     reply.status(503).send({ error: 'Admin API disabled (ADMIN_TOKEN is not set)' });
@@ -28,12 +26,10 @@ function adminGuard(request: FastifyRequest, reply: FastifyReply): boolean {
   }
   return true;
 }
-
 export async function adminRoutes(app: FastifyInstance) {
   app.addHook('preHandler', async (request, reply) => {
     if (!adminGuard(request, reply)) return reply;
   });
-
   /**
    * POST /api/admin/nudges
    * Players whose offline energy bank is (nearly) full — i.e. players who are
@@ -52,26 +48,22 @@ export async function adminRoutes(app: FastifyInstance) {
       cooldownHours?: number;
       dryRun?: boolean;
     };
-
     const cooldownMs = cooldownHours * 60 * 60 * 1000;
     const now = Date.now();
     const states = await scanStates();
-
     const candidates = states
       .filter(({ state }) => (state.bankedDays ?? 0) >= minBankedDays)
       .filter(({ state }) => now - (state.lastNudgeAt ?? 0) > cooldownMs)
       .filter(({ state }) => !state.careerEnding)
       .sort((a, b) => (b.state.bankedDays ?? 0) - (a.state.bankedDays ?? 0))
       .slice(0, Math.min(limit, 500));
-
     const nudges = candidates.map(({ userId, state }) => ({
       userId,
-      name: state.firstName ?? 'Игрок',
+      name: state.firstName ?? t('Игрок'),
       bankedDays: state.bankedDays ?? 0,
       currentDay: state.currentDay ?? 1,
       grade: state.grade ?? 'unemployed',
     }));
-
     if (!dryRun) {
       for (const { userId } of candidates) {
         const state = await loadState(userId);
@@ -80,21 +72,20 @@ export async function adminRoutes(app: FastifyInstance) {
         await saveState(userId, state);
       }
     }
-
     return { nudges, total: nudges.length, dryRun };
   });
-
   /**
    * GET /api/admin/users/:id/summary — data for the bot's /stats command
    */
   app.get('/users/:id/summary', async (request, reply) => {
-    const { id } = request.params as { id: string };
+    const { id } = request.params as {
+      id: string;
+    };
     const state = await loadState(id);
     if (!state) return reply.status(404).send({ error: 'No save for this user' });
-
     return {
       userId: id,
-      name: state.firstName ?? 'Игрок',
+      name: state.firstName ?? t('Игрок'),
       day: state.currentDay ?? 1,
       grade: state.grade ?? 'unemployed',
       money: state.money ?? 0,
@@ -108,12 +99,13 @@ export async function adminRoutes(app: FastifyInstance) {
       purchases: (await purchasesOf(id)).length,
     };
   });
-
   /**
    * DELETE /api/admin/users/:id — GDPR «/delete_my_data»
    */
   app.delete('/users/:id', async (request) => {
-    const { id } = request.params as { id: string };
+    const { id } = request.params as {
+      id: string;
+    };
     const existed = Boolean(await loadState(id));
     await deleteState(id);
     return { ok: true, deleted: existed };

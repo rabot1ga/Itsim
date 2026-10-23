@@ -12,9 +12,19 @@ import { contentRoutes } from './routes/content.js';
 import { telemetryRoutes } from './routes/telemetry.js';
 import { adminRoutes } from './routes/admin.js';
 import { loadContent } from './services/contentService.js';
+import { runWithLocale, requestLocale } from './lib/i18n.js';
 
 export async function buildServer() {
   const app = Fastify({ logger: { level: process.env.LOG_LEVEL ?? 'info' } });
+
+  // i18n (P2.5): каждый handler работает под локалью запроса — t() из
+  // lib/i18n переводит сообщения ответа; параллельные запросы не смешиваются.
+  app.addHook('onRoute', (route) => {
+    const handler = route.handler as (this: unknown, request: unknown, reply: unknown) => unknown;
+    route.handler = function (this: unknown, request, reply) {
+      return runWithLocale(requestLocale(request as never), () => handler.call(this, request, reply));
+    } as typeof handler;
+  });
 
   // CORS for Telegram Mini App
   await app.register(cors, {

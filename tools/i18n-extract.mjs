@@ -19,6 +19,7 @@ import { join, relative, dirname, extname } from 'node:path';
 const CYRILLIC = /[А-Яа-яЁё]/;
 const args = process.argv.slice(2);
 const write = args.includes('--write');
+const importExt = (args.find((a) => a.startsWith('--import-ext=')) ?? '--import-ext=').split('=')[1] ?? '';
 const root = args.find((a) => !a.startsWith('--'));
 if (!root) {
   console.error('usage: node tools/i18n-extract.mjs <dir> [--write]');
@@ -30,7 +31,7 @@ function walk(dir, out = []) {
     const p = join(dir, name);
     const st = statSync(p);
     if (st.isDirectory()) {
-      if (name === '__tests__' || name === 'node_modules' || name === 'dist') continue;
+      if (name === '__tests__' || name === 'node_modules' || name === 'dist' || name === 'generated') continue;
       walk(p, out);
     } else if (/\.(ts|tsx)$/.test(name) && !/\.test\.tsx?$/.test(name) && name !== 'i18n.ts') {
       out.push(p);
@@ -168,7 +169,7 @@ for (const file of walk(root)) {
       .split('\\')
       .join('/');
     const importPath = rel.startsWith('.') ? rel : './' + rel;
-    printed = `import { t } from '${importPath.replace(/\.ts$/, '')}';\n` + printed;
+    printed = `import { t } from '${importPath.replace(/\.ts$/, '')}${importExt}';\n` + printed;
   }
 
   if (write) writeFileSync(file, printed);
