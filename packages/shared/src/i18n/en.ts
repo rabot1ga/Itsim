@@ -3488,3 +3488,282 @@ Object.assign(en, {
   '📱 Папа просит настроить «этот ваш ватсап»': '📱 Dad asks to set up “that whatsapp of yours”',
   '🗣 Разговор с отцом о карьере': '🗣 A talk with father about the career',
 });
+
+Object.assign(en, {
+  '«Есть разговор», — пишет друг. Обычно это значит либо новость, либо просьба одолжить денег. Либо и то и другое.':
+    '“We need to talk,” writes a friend. Usually that means either news or a request to borrow money. Or both.',
+  'Аллергии нет. Но отмазка сработала. Совесть — не очень.':
+    'You have no allergy. But the excuse worked. The conscience — not so much.',
+  'Баланс: поиграл, поспал, не подвёл команду.': 'Balance: played, slept, did not let the team down.',
+  'Болел громко. Чужая победа — тоже повод для радости.':
+    'Cheered loudly. Someone else’s victory is a reason to rejoice too.',
+  'В баре вечер квизов. Тема — «Технологии и поп-культура». Твоя команда — ты и два случайных энтузиаста.':
+    'Quiz night at the bar. The theme: “Technology and pop culture”. Your team is you and two random enthusiasts.',
+  'В городе проходит митап по твоему стеку. Будут доклады, пицца и люди, которые понимают твои шутки про null.':
+    'A meetup on your stack is happening in the city. There will be talks, pizza and people who understand your jokes about null.',
+  'Все поняли намёк. Токсик — особенно. Офис аплодировал мысленно.':
+    'Everyone got the hint. The toxic one especially. The office applauded mentally.',
+  'Вспомнили универ, посмеялись. Ночь пролетела.': 'We remembered university and laughed. The night flew by.',
+  'Встретились в субботу. Разговор никуда не делся.': 'Met on Saturday. The talk was still there.',
+  'Второе место! Приз — скидка на пиво. Ты всё знал, кроме одного вопроса.':
+    'Second place! The prize — a beer discount. You knew everything except one question.',
+  'Выходные в зале. Стабильно. Скучно, но работает.': 'Weekends at the gym. Steady. Boring, but it works.',
+  'Два часа разговоров. Оказалось, его работа не менее адова.':
+    'Two hours of talk. Turns out his job is no less hellish.',
+  'Дома оказалось скучнее. Квиз без тебя выиграла твоя будущая команда.':
+    'Home turned out to be more boring. The quiz without you was won by your future team.',
+  'Друг напомнил через неделю. Неловко.': 'Your friend reminded you a week later. Awkward.',
+  'Друзья зовут в вечернюю катку. «Все будут!» В трекере — пара незакрытых задач, но друзья убедительнее.':
+    'Friends call you for an evening gaming session. “Everyone will be there!” In the tracker — a couple of open tasks, but friends are more convincing.',
+  'Задачи закрыты. Друзья прислали скриншот победы без тебя.':
+    'The tasks are closed. Friends sent a victory screenshot without you.',
+  'Зайти на полчаса 👋': 'Drop by for half an hour 👋',
+  'Играть до победного 🏆': 'Play until the victory 🏆',
+  'Коллега собирает группу волонтёров в приют для животных: «Погуляем с собаками, покормим котов».':
+    'A colleague is gathering a volunteer group for an animal shelter: “We will walk the dogs, feed the cats”.',
+  'Коллеги потом обсуждали митап неделю. Ты кивал.': 'Colleagues discussed the meetup for a week. You nodded.',
+  'На улице окликнули по имени. Одноклассник! Он — сантехник, ты — программист. Вы оба не понимаете работу друг друга.':
+    'Someone called you by name on the street. A classmate! He is a plumber, you are a programmer. You both do not understand each other’s work.',
+  'Напарник понял. Но страховка на жиме — полезная штука.':
+    'Your spotter understood. But insurance on the bench press is a useful thing.',
+  'Нейтралитет. Кружка с котом ещё никого не злила.': 'Neutrality. A mug with a cat has never angered anyone.',
+  'Обменяться контактами 📱': 'Exchange contacts 📱',
+  'Одногруппники зовут на встречу выпускников. Интересно, кто кем стал. И кто как выглядит после десяти лет дедлайнов.':
+    'Classmates invite you to a reunion. Interesting who became what. And who looks how after ten years of deadlines.',
+  'Оказалось, у друга новость: он запускает свой проект. Разговор вдохновил.':
+    'Turned out your friend has news: he is launching his own project. The talk was inspiring.',
+  'Он всё понял. Неловкость — как в школе.': 'He understood everything. Awkwardness — like at school.',
+  'Он растрогался. Почти извинился. Рождественское чудо.': 'He was moved. Almost apologized. A Christmas miracle.',
+  'Отказаться ради задач 💻': 'Decline for the sake of tasks 💻',
+  'Отказаться: «аллергия» 🤧': 'Decline: “allergy” 🤧',
+  'Отказаться: «дел много» 🙅': 'Decline: “lots to do” 🙅',
+  'Отказаться: «я волк-одиночка» 🐺': 'Decline: “I am a lone wolf” 🐺',
+  'Отмазаться «горящим релизом» 🔥': 'Beg off with “a release on fire” 🔥',
+  'Парень из зала предложил тренироваться вместе. «Вдвоём веселее и безопаснее под тяжёлым весом».':
+    'A guy from the gym offered to train together. “It is more fun and safer together under heavy weights”.',
+  'Перевести деньги приюту 💸': 'Transfer money to the shelter 💸',
+  'Перенести на выходные 📅': 'Move it to the weekend 📅',
+  'Подарить книгу «Как не быть токсиком» 📖': 'Gift the book “How Not to Be Toxic” 📖',
+  'Подарить кружку с котом 🐱': 'Gift a mug with a cat 🐱',
+  'Подарить хороший подарок 🎁': 'Give a good gift 🎁',
+  'Поехать в приют ❤️': 'Go to the shelter ❤️',
+  'Пойти выпить кофе ☕': 'Go for a coffee ☕',
+  'Пойти и просто пообщаться 🍷': 'Go and just hang out 🍷',
+  'Пойти и рассказать про карьеру 🎤': 'Go and talk about your career 🎤',
+  'Пойти на митап 🎫': 'Go to the meetup 🎫',
+  'Пойти с пирогом 🥧': 'Go with a pie 🥧',
+  'Пойти, конечно ☕': 'Go, of course ☕',
+  'Полчаса вежливости. Пирог — попробовал. Вкусный.': 'Half an hour of politeness. Tried the pie. Tasty.',
+  'Помощь деньгами — тоже помощь. Приют прислал фото счастливых хвостов.':
+    'Helping with money is help too. The shelter sent a photo of happy tails.',
+  'Предложить тренировки по выходным 📅': 'Suggest training on weekends 📅',
+  'Пропустить: «не моя тема» 🙅': 'Skip: “not my topic” 🙅',
+  'Просто смотреть и болеть 📣': 'Just watch and cheer 📣',
+  'Сказать «на неделе» и не написать 🙈': 'Say “this week” and never write 🙈',
+  'Смотреть трансляцию дома 📺': 'Watch the stream at home 📺',
+  'Собаки были в восторге. Ты — тоже. Хочешь забрать всех.':
+    'The dogs were thrilled. You too. You want to take them all home.',
+  'Согласиться 💪': 'Agree 💪',
+  'Соседи оказались классными. У них есть кот и настолки.':
+    'The neighbors turned out to be great. They have a cat and board games.',
+  'Соседи по площадке зовут на новоселье. Ты их почти не знаешь, но они испекли пирог и принесли приглашение.':
+    'The neighbors on the landing invite you to a housewarming. You barely know them, but they baked a pie and brought an invitation.',
+  'Соседи поняли. Но в лифте теперь здороваются суше.':
+    'The neighbors understood. But in the elevator the greetings got drier.',
+  'Сыграть пару каток и спать 😴': 'Play a couple of matches and sleep 😴',
+  'Теперь у тебя есть «свой сантехник». Это на вес золота.':
+    'Now you have “your own plumber”. That is worth its weight in gold.',
+  'Трансляция отличная. Пиццу пришлось заказывать самому.':
+    'The stream was great. You had to order the pizza yourself.',
+  'Тренировки вдвоём — это система. Ты стал ходить регулярнее.':
+    'Training together is a system. You started going more regularly.',
+  'Три доклада и двадцать знакомств. Шутка про null зашла.':
+    'Three talks and twenty new contacts. The joke about null landed.',
+  'Три часа игры и победа в последней катке. Сон подождёт.':
+    'Three hours of play and a victory in the last match. Sleep can wait.',
+  'Ты вытянул бумажку с именем. Это токсичный сеньор. Вселенная проверяет твою доброту.':
+    'You drew the slip with a name. It is the toxic senior. The universe is testing your kindness.',
+  'Ты — один из немногих, кто остался в IT. Звучит гордо.': 'You are one of the few who stayed in IT. Sounds proud.',
+  'Уйти до начала: «не моё» 🚪': 'Leave before it starts: “not for me” 🚪',
+  'Участвовать и выложиться 🏆': 'Participate and give it your all 🏆',
+  'Фото со встречи — в общем чате. Без тебя. Классика.':
+    'Photos from the meetup — in the group chat. Without you. A classic.',
+  '☕ Друг зовёт на кофе «поболтать»': '☕ A friend calls for coffee “to chat”',
+  '🎅 Тайный Санта в офисе': '🎅 Secret Santa at the office',
+  '🎒 Встретил одноклассника': '🎒 Met a classmate',
+  '🎓 Встреча выпускников': '🎓 A class reunion',
+  '🎮 Ночной созвон в игре': '🎮 A night gaming call',
+  '🏋️ Напарник в зале': '🏋️ A gym spotter',
+  '🏡 Соседи зовут на новоселье': '🏡 The neighbors invite to a housewarming',
+  '🏢 Митап твоего стека': '🏢 A meetup on your stack',
+  '🐾 Волонтёрство в приюте': '🐾 Volunteering at the shelter',
+  '🧠 Квиз в баре': '🧠 A bar quiz',
+  'Абонемент пылится. Бригадир понимающе кивает.': 'The gym membership gathers dust. The foreman nods understandingly.',
+  'Бригадир сказал: «С такой спиной тебе в зал надо». И протянул гостевой абонемент на месяц.':
+    'The foreman said: “With a back like that you should be going to the gym”. And handed a guest membership for a month.',
+  'Вернуть хозяину ❤️': 'Return it to the owner ❤️',
+  'Взять и сказать спасибо 😊': 'Take it and say thank you 😊',
+  'Вступить в комьюнити 🤝': 'Join the community 🤝',
+  'Всю ночь у ворот сидел пёс. Смотрел на тебя, вилял хвостом, не уходил. Смена вдвоём прошла быстрее.':
+    'All night a dog sat by the gates. It looked at you, wagged its tail, would not leave. The shift went faster as a duo.',
+  'Горячий ужин после переработки — маленькая победа.': 'A hot dinner after overtime — a small victory.',
+  'Гость вытянул эфир. Ты — режиссёр, а не звезда. Пока.':
+    'The guest stretched the stream. You are the director, not the star. For now.',
+  'Дисциплина помогла. Всем, кроме настроения.': 'Discipline helped. Everyone except the mood.',
+  'Друзья назвали пса «вторым охранником».': 'Friends nicknamed the dog “the second guard”.',
+  'Заказать нормальный ужин 🍜': 'Order a proper dinner 🍜',
+  'Клуб без тебя. Уровень — без роста.': 'The club without you. The level — without growth.',
+  'Красиво завершить на пике 🎬': 'Finish beautifully at the peak 🎬',
+  'Куратор курса запустил разговорный клуб: 20 минут живого английского после занятия. Всем страшно, но полезно.':
+    'The course curator launched a speaking club: 20 minutes of live English after class. Everyone is scared, but it helps.',
+  'Маленький праздник. Заслуженный.': 'A small celebration. Well deserved.',
+  'Месяц в зале. Спина сказала спасибо.': 'A month at the gym. The back said thank you.',
+  'Найти подход через примеры из игр 🎮': 'Find an approach through examples from games 🎮',
+  'Начать ходить в зал 💪': 'Start going to the gym 💪',
+  'Новые знакомства, общие интересы. Хобби заиграло.': 'New acquaintances, shared interests. The hobby came alive.',
+  'Оказалось, в городе есть целое комьюнити твоего хобби. Встречи, выставки, свои шутки. Ты — не один.':
+    'Turned out the city has a whole community of your hobby. Meetups, exhibitions, its own jokes. You are not alone.',
+  'Оставить себе 🙈': 'Keep it 🙈',
+  'Остаться в одиночном режиме 🐺': 'Stay in solo mode 🐺',
+  'Отвезти в офис такси 🚕': 'Send them to the office by taxi 🚕',
+  'Отказался. Стало легче. И чуть стыдно.': 'Declined. It got easier. And a little shameful.',
+  'Отказаться от ученика 🚪': 'Turn down the student 🚪',
+  'Отпраздновать с чаем и пирогом 🍰': 'Celebrate with tea and pie 🍰',
+  'Первые фразы дались тяжело. Потом — легче. Работает.': 'The first phrases were hard. Then — easier. It works.',
+  'Передать эфир гостю 🤝': 'Hand the stream to the guest 🤝',
+  'Поблагодарить и отложить 🙈': 'Say thank you and put it aside 🙈',
+  'Показать свои работы на выставке 🖼': 'Show your works at an exhibition 🖼',
+  'Покормить пса 🍖': 'Feed the dog 🍖',
+  'Порадоваться и взять нового ученика 📚': 'Be glad and take on a new student 📚',
+  'После долгой переработки ты обнаружил, что в офисе остались снеки из кухни. И холодильник с газировкой.':
+    'After a long overtime you found snacks left in the office kitchen. And a fridge with soda.',
+  'После смены ты нашёл на заднем сиденье чужой телефон. Экран горит: 14 пропущенных «Мама».':
+    'After the shift you found a stranger’s phone on the back seat. The screen is lit: 14 missed calls from “Mom”.',
+  'Примеры из игр сработали! Ученик заинтересовался.': 'The game examples worked! The student got interested.',
+  'Прогнать: «территория охраняемая» 🚫': 'Shoo it away: “this is a guarded area” 🚫',
+  'Пропускать клуб 🙈': 'Skip the club 🙈',
+  'Пёс стал приходить каждую смену. У тебя появился напарник.':
+    'The dog started coming to every shift. You got a partner.',
+  'Пёс ушёл. Ночь стала длиннее.': 'The dog left. The night got longer.',
+  'Разделил. Коллеги — в восторге. Командный дух — крепче.': 'Shared. The colleagues loved it. Team spirit — stronger.',
+  'Разделить с коллегами 🤝': 'Share with the colleagues 🤝',
+  'Сарафанное радио сработало: новый ученик уже нашёлся.': 'Word of mouth worked: a new student is already found.',
+  'Сдал в бюро находок. Совесть чиста.': 'Handed it to the lost and found. The conscience is clean.',
+  'Сделать чай и уйти спать 🍵': 'Make tea and go to bed 🍵',
+  'Семь часов эфира. Голос сел, донаты — нет.': 'Seven hours on air. The voice is gone, the donations are not.',
+  'Скромно: «это его заслуга» 🙇': 'Modestly: “it was his doing” 🙇',
+  'Скромность оценили. Особенно родители ученика.': 'The modesty was appreciated. Especially by the student’s parents.',
+  'Слушать — тоже практика. Но говорить всё же надо.': 'Listening is practice too. But you do need to speak.',
+  'Слушать, но молчать 👂': 'Listen, but stay silent 👂',
+  'Снеки — топливо героев. Ночных и голодных.': 'Snacks are the fuel of heroes. Night and hungry ones.',
+  'Соло — тоже ок. Хобби — только твоё.': 'Solo is okay too. The hobby is only yours.',
+  'Стримить до последнего зрителя 🎥': 'Stream until the last viewer 🎥',
+  'Сфоткать и отправить друзьям 📸': 'Snap it and send to friends 📸',
+  'Съесть снеки с чистой совестью 🍫': 'Eat the snacks with a clear conscience 🍫',
+  'Твои работы увидели люди. Отзывы — тёплые.': 'People saw your works. The reviews are warm.',
+  'Телефон заблокирован и бесполезен. Карма — тоже.': 'The phone is locked and useless. So is the karma.',
+  'Тот самый завсегдатай, «как обычно», оставил в банке купюру. «За лучший капучино в городе».':
+    'That regular, “as usual”, left a banknote in the jar. “For the best cappuccino in town”.',
+  'Ужесточить дисциплину 📋': 'Tighten the discipline 📋',
+  'Участвовать в speaking-клубе 🎤': 'Take part in the speaking club 🎤',
+  'Ученик не делает домашку, смотрит в окно и на вопрос «что непонятно» отвечает «всё». Классика репетиторства.':
+    'The student does not do the homework, looks out the window and answers “everything” to “what is unclear”. A tutoring classic.',
+  'Ученик, которого ты готовил, написал: «Сдал на отлично! Спасибо, это всё ты».':
+    'A student you prepared wrote: “Passed with an excellent! Thank you, it is all you”.',
+  'Ушёл на пике. Зрители просят «ещё». Это успех.': 'Left at the peak. The viewers ask for “more”. That is success.',
+  'Хозяин нашёлся и заплатил за доставку. Мир восстановлен.':
+    'The owner was found and paid for the delivery. The world is restored.',
+  'Чаевые греют. Особенно в утреннюю смену.': 'Tips warm the heart. Especially on the morning shift.',
+  'Чай, сон, восстановление. Мудрый выбор.': 'Tea, sleep, recovery. A wise choice.',
+  'Чат скинулся и запустил субатон: стрим продлевается с каждой подпиской. Ты уже 4 часа в эфире.':
+    'The chat chipped in and started a subathon: the stream extends with every subscription. You are 4 hours on air already.',
+  '⏱ Зрители запустили субатон': '⏱ The viewers started a subathon',
+  '🌙 Ночной перекус после переработки': '🌙 A night snack after overtime',
+  '🎓 Твой ученик сдал экзамен': '🎓 Your student passed the exam',
+  '🎨 Твоё хобби нашло комьюнити': '🎨 Your hobby found a community',
+  '🏋️ Бригадир подарил абонемент в зал': '🏋️ The foreman gifted a gym membership',
+  '🐕 Бродячий пёс у ворот': '🐕 A stray dog by the gates',
+  '💰 Постоянник оставил щедрые чаевые': '💰 A regular left a generous tip',
+  '📱 Пассажир забыл телефон': '📱 A passenger forgot their phone',
+  '🗣 В группе курса появился speaking-клуб': '🗣 A speaking club appeared in the course group',
+  '😤 Трудный ученик': '😤 A difficult student',
+  '«Попей витамин D, зимой всем надо», — пишет друг. Ты гуглишь «симптомы нехватки витамина D» и находишь у себя все.':
+    '“Take some vitamin D, everyone needs it in winter,” writes a friend. You google “vitamin D deficiency symptoms” and find all of them in yourself.',
+  'Восстановить режим за неделю ⏰': 'Restore the sleep schedule in a week ⏰',
+  'Всё цветёт, а ты чихаешь. Пыльца наступает по всем фронтам. Антигистаминные — твой новый лучший друг.':
+    'Everything is blooming and you are sneezing. Pollen attacks on all fronts. Antihistamines are your new best friend.',
+  'Выписали очки для работы. Мир снова резкий.': 'You were prescribed glasses for work. The world is sharp again.',
+  'Глаза мстят. Буквы двоятся всё чаще.': 'The eyes take revenge. The letters double more and more often.',
+  'Две пломбы и лекция о гигиене. Зато больше не болит.':
+    'Two fillings and a lecture on hygiene. But it does not hurt anymore.',
+  'Десять минут тишины в день. Голова — яснее, нервы — крепче.':
+    'Ten minutes of silence a day. The head — clearer, the nerves — stronger.',
+  'Есть больше овощей 🥦': 'Eat more vegetables 🥦',
+  'Забить: «я и так здоров» 💪': 'Blow it off: “I am healthy as is” 💪',
+  'Заменить медитацию прогулками 🚶': 'Replace meditation with walks 🚶',
+  'Записаться к стоматологу 🦷': 'Book a dentist 🦷',
+  'Зарядка и капли помогают. Дисциплина — через раз.': 'The exercises and drops help. Discipline — every other time.',
+  'Здоровье пока держится. На чистом упрямстве.': 'The health holds so far. On pure stubbornness.',
+  'Игнорировать: «у всех так» 🙈': 'Ignore: “everyone has it” 🙈',
+  'К вечеру экран плывёт, буквы двоятся. Окулист в детстве говорил «береги зрение». Ты не послушал.':
+    'By evening the screen swims, the letters double. The eye doctor in childhood said “take care of your sight”. You did not listen.',
+  'Клуб бегает без тебя. По выходным. Ты спишь.': 'The running club runs without you. On weekends. You sleep.',
+  'Купить витамины и пропить курс 💊': 'Buy vitamins and take a course 💊',
+  'Купить капли и делать зарядку для глаз 💧': 'Buy drops and do eye exercises 💧',
+  'Купить ортопедическую подушку 🛏': 'Buy an orthopedic pillow 🛏',
+  'Купить хорошие таблетки 💊': 'Buy good pills 💊',
+  'Лучшие времена не наступили. Спина запомнила.': 'The best times never came. The back remembers.',
+  'Медитировать неделю 🧘': 'Meditate for a week 🧘',
+  'Месяц приёма. Энергии прибавилось. Плацебо или нет — работает.':
+    'A month of taking them. There is more energy. Placebo or not — it works.',
+  'Морской воздух вылечил всё. И настроение, и нос.': 'The sea air cured everything. Both the mood and the nose.',
+  'Народные средства: полоскание содой 🧂': 'Folk remedies: gargle with soda 🧂',
+  'Неделю терпел. Потом всё равно к врачу, но дороже.':
+    'Endured for a week. Then went to the doctor anyway, but more expensive.',
+  'Ночью кодится отлично. Днём ты — миф.': 'Coding at night is great. By day you are a myth.',
+  'Овощи вместо витаминов. Дольше, но вкуснее.': 'Vegetables instead of vitamins. Longer, but tastier.',
+  'Отказаться: «бег — не моё» 🙅': 'Decline: “running is not my thing” 🙅',
+  'Перетерпеть сезон 🤧': 'Wait out the season 🤧',
+  'Пешком — тоже движение. Клуб оценил честность.': 'Walking is movement too. The club appreciated the honesty.',
+  'Подушка — инвестиция. Спина одобрила.': 'The pillow is an investment. The back approved.',
+  'Пойти на пробежку 🏃': 'Go for a run 🏃',
+  'Посмеяться и удалить приложение 😄': 'Laugh and delete the app 😄',
+  'Прийти, но идти пешком 🚶': 'Come, but on foot 🚶',
+  'Приложение предлагает «10 минут спокойствия в день». Ты скептичен, но выгорание уже на горизонте.':
+    'The app offers “10 minutes of calm a day”. You are skeptical, but burnout is already on the horizon.',
+  'Принять ночной образ жизни 🦉': 'Accept the night lifestyle 🦉',
+  'Пробежал три километра. Гордость — на десять.': 'Ran three kilometers. Pride — for ten.',
+  'Прогулки работают как медитация. Только с шагами.': 'Walks work like meditation. Just with steps.',
+  'Пятнадцать минут — и отпустило. Спина прощает быстро.':
+    'Fifteen minutes — and the tension let go. The back forgives fast.',
+  'Сделать зарядку для спины 🧘': 'Do back exercises 🧘',
+  'Семь дней дисциплины. Утро снова существует.': 'Seven days of discipline. The morning exists again.',
+  'Сода не помогла. Но вера в народную медицину — окрепла.':
+    'The soda did not help. But the belief in folk medicine grew stronger.',
+  'Спать, когда получится 😴': 'Sleep whenever you can 😴',
+  'Сходить к окулисту 👓': 'Go to the eye doctor 👓',
+  'Таблетки работают. Жизнь налаживается. Нос дышит.':
+    'The pills work. Life is getting back on track. The nose breathes.',
+  'Твоя спина провела в кресле 8 часов и теперь бастует. Знакомое нытьё в пояснице.':
+    'Your back spent 8 hours in the chair and is now on strike. The familiar ache in the lower back.',
+  'Терпеть до лучших времён 🙈': 'Wait for better times 🙈',
+  'Терпеть и пить обезболивающее 💊': 'Endure and take painkillers 💊',
+  'Тот самый зуб, который «сам пройдёт», решил напомнить о себе в три часа ночи. Прошло. Не прошло.':
+    'That very tooth that “will pass on its own” decided to remind you of itself at three a.m. It passed. It did not pass.',
+  'Три недели чихания. Продуктивность — пыльца.': 'Three weeks of sneezing. Productivity — pollen.',
+  'Ты ложишься в четыре утра и встаёшь к обеду. Дни и ночи поменялись местами, как в легаси-коде.':
+    'You go to bed at four a.m. and get up by lunch. Days and nights swapped places, like in legacy code.',
+  'У парка собирается беговой клуб. «Приходи, у нас дружелюбно!» Ты последний раз бегал за автобусом.':
+    'A running club gathers by the park. “Come, we are friendly!” You last ran for a bus.',
+  'Удалил. Но иногда дышишь глубоко. На автомате.': 'Deleted it. But sometimes you breathe deeply. On autopilot.',
+  'Уехать на пару дней к морю 🌊': 'Go to the sea for a couple of days 🌊',
+  'Хаос, но творческий. Пока без последствий.': 'Chaos, but creative. No consequences so far.',
+  '🌙 Режим сна сбился': '🌙 The sleep schedule broke',
+  '🏃 Беговой клуб зовёт на пробежку': '🏃 The running club calls for a run',
+  '👀 Глаза устали от монитора': '👀 The eyes are tired of the monitor',
+  '💊 Друг советует витамины': '💊 A friend recommends vitamins',
+  '🤧 Сезонная аллергия': '🤧 Seasonal allergy',
+  '🦷 Зуб разболелся': '🦷 A tooth started aching',
+  '🧘 Попробовать медитацию': '🧘 Try meditation',
+  '🪑 Спина требует справедливости': '🪑 The back demands justice',
+});
