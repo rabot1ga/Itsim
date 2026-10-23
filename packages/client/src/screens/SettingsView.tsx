@@ -1,4 +1,4 @@
-import { t, LOCALES, currentLocale, setLocale, type Locale } from '../lib/i18n';
+import { t, LOCALES, LOCALE_NAMES, currentLocale, type Locale } from '../lib/i18n';
 import React, { useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { ScreenTitle, SectionTitle, Toggle } from '../components/ui';
@@ -30,13 +30,10 @@ function writePref(key: string, value: boolean): void {
     /* preferences are optional */
   }
 }
-const LOCALE_NAMES: Record<Locale, string> = {
-  ru: 'Русский',
-  en: 'English (beta)',
-};
 
 export const SettingsView: React.FC = () => {
   const startNewLife = useGameStore((s) => s.startNewLife);
+  const setLanguage = useGameStore((s) => s.setLanguage);
   const [notifications, setNotifications] = useState(() => readPref(KEYS.notifications, true));
   const [sound, setSound] = useState(() => readPref(KEYS.sound, false));
   const [haptics, setHaptics] = useState(() => readPref(KEYS.haptics, true));
@@ -113,7 +110,7 @@ export const SettingsView: React.FC = () => {
                 aria-pressed={currentLocale() === l}
                 onClick={() => {
                   haptic('selection');
-                  setLocale(l);
+                  void setLanguage(l); // выбор живёт в профиле (P2.5)
                 }}
               >
                 {LOCALE_NAMES[l]}

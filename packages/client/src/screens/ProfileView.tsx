@@ -1,6 +1,7 @@
-import { t } from '../lib/i18n';
+import { t, LOCALES, LOCALE_NAMES, currentLocale, type Locale } from '../lib/i18n';
 import React from 'react';
 import { useGameStore } from '../store/gameStore';
+import { haptic } from '../lib/telegram';
 import { ScreenTitle, SectionTitle, StatBar } from '../components/ui';
 import { xpToNext } from '@itsim/shared';
 import { gradeLabel, skillName } from '../lib/playerLabels';
@@ -26,6 +27,7 @@ const LINKS: Array<{
 export const ProfileView: React.FC = () => {
   const player = useGameStore((s) => s.player);
   const setView = useGameStore((s) => s.setView);
+  const setLanguage = useGameStore((s) => s.setLanguage);
   if (!player) return null;
   const mood = profileMoodOf(player);
   const moodMeta = PROFILE_MOOD_META[mood];
@@ -111,6 +113,35 @@ export const ProfileView: React.FC = () => {
             </div>
           ))}
         </dl>
+      </section>
+
+      {/* Поле языка профиля (P2.5, этап 3): выбор живёт в сейве — новый девайс
+          подхватывает его, запросы по-прежнему несут X-Locale. */}
+      <section className="card">
+        <SectionTitle>{t('Язык')}</SectionTitle>
+        <div className="settings-row">
+          <span className="emoji" aria-hidden="true">
+            🌍
+          </span>
+          <span className="settings-row-label">{t('Язык интерфейса')}</span>
+          <div className="settings-row-value" role="group" aria-label={t('Язык интерфейса')}>
+            {LOCALES.map((l: Locale) => (
+              <button
+                key={l}
+                type="button"
+                className={currentLocale() === l ? 'btn btn-primary' : 'btn btn-ghost'}
+                aria-pressed={currentLocale() === l}
+                onClick={() => {
+                  haptic('selection');
+                  void setLanguage(l);
+                }}
+              >
+                {LOCALE_NAMES[l]}
+              </button>
+            ))}
+          </div>
+        </div>
+        <p className="story-footnote">{t('Выбор сохраняется в профиле и подхватывается на других устройствах.')}</p>
       </section>
 
       <div className="profile-links">

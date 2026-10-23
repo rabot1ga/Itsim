@@ -10,6 +10,7 @@ import {
   t as translate,
   getStoredLocale,
   setStoredLocale,
+  hasStoredLocale,
   setDisplayLocale,
   isLocale,
   LOCALES,
@@ -17,7 +18,13 @@ import {
 } from '@itsim/shared';
 
 export type { Locale };
-export { LOCALES, isLocale };
+export { LOCALES, isLocale, hasStoredLocale };
+
+/** Имена языков — эндонимы (каждый на своём), не переводятся. */
+export const LOCALE_NAMES: Record<Locale, string> = {
+  ru: 'Русский',
+  en: 'English (beta)',
+};
 
 const locale: Locale = getStoredLocale(); // смена языка = перезагрузка модулей
 // Движок (shared) вычисляет display-тексты через dt() — сообщаем свою локаль.

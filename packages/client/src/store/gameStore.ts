@@ -1,4 +1,4 @@
-import { t, currentLocale } from '../lib/i18n';
+import { t, currentLocale, setLocale, isLocale, hasStoredLocale, type Locale } from '../lib/i18n';
 import { create } from 'zustand';
 import { haptic } from '../lib/telegram';
 export type Screen = 'menu' | 'game' | 'loading';
@@ -126,6 +126,11 @@ interface GameState {
   advanceDay: () => Promise<void>;
   /** prestige reset (P1.1): fresh career, meta ledger + achievements survive */
   startNewLife: () => Promise<boolean>;
+  /**
+   * Язык интерфейса в профиле (P2.5): сохраняет выбор в сейв, затем
+   * перезагружает приложение (см. setLocale).
+   */
+  setLanguage: (language: Locale) => Promise<void>;
   chooseEvent: (eventId: string, choiceIndex: number) => Promise<void>;
   applyToCompany: (companyId: string) => Promise<boolean>;
   acceptOffer: (companyId: string) => Promise<boolean>;
@@ -184,6 +189,13 @@ export const useGameStore = create<GameState>((set, get) => ({
         sprint: stateRes.data.sprint ?? null,
         screen: 'game',
       });
+      // Язык в профиле (P2.5): на свежем устройстве без локального выбора
+      // подхватываем сохранённый в сейве; после setLocale — перезагрузка.
+      const savedLang = stateRes.data.state?.language;
+      if (!hasStoredLocale() && isLocale(savedLang) && savedLang !== currentLocale()) {
+        setLocale(savedLang);
+        return;
+      }
     } catch (err: any) {
       console.error('Init error:', err);
       // Existing demo fallback: open the home screen even when API initialization fails.
@@ -326,6 +338,16 @@ export const useGameStore = create<GameState>((set, get) => ({
       set({ error: t('Сервер недоступен') });
       return false;
     }
+  },
+  setLanguage: async (language) => {
+    if (language === currentLocale() && language === get().player?.language) return;
+    try {
+      // Поле профиля: сейв помнит выбор, новый девайс его подхватывает.
+      await api('/game/language', { method: 'POST', body: JSON.stringify({ language }) });
+    } catch {
+      /* без сейва (игра не начата / офлайн) выбор остаётся локальным */
+    }
+    setLocale(language); // localStorage + перезагрузка
   },
   claimSprint: async () => {
     try {

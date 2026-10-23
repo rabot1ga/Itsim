@@ -4061,3 +4061,9 @@ Object.assign(en, {
   'Шапка-бини': 'Beanie',
   'Широкая ухмылка': 'Wide grin',
 });
+
+Object.assign(en, {
+  'Язык не поддерживается': 'Language not supported',
+  'Выбор сохраняется в профиле и подхватывается на других устройствах.':
+    'The choice is saved in your profile and picked up on your other devices.',
+});

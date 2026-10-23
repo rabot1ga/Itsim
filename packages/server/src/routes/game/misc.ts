@@ -3,6 +3,7 @@ import { t } from '../../lib/i18n';
  * One-off routes that don't fit a clear domain:
  *   - `/unlock-perk`  — gates perks behind their content-driven requirements
  *   - `/main-skill`   — sets the skill that study/work actions train
+ *   - `/language`     — profile language preference (P2.5)
  *   - `/new-life`     — prestige reset (P1.1)
  *   - `/reset`        — start over (dev convenience)
  */
@@ -16,6 +17,7 @@ import {
   calculateRating,
   canStartNewLife,
   createNewPlayer,
+  isLocale,
   metaXpMult,
 } from '@itsim/shared';
 import { recalcMaxEnergy, respondState, resetDailyChallenge, StoredState } from './shared.js';
@@ -112,6 +114,27 @@ export async function miscRoutes(app: FastifyInstance) {
     state.mainSkillId = skill.id;
     await saveState(userId, state);
     return { state: respondState(state, t('🎯 Основной навык: {p0}', { p0: skill.name })) };
+  });
+
+  /**
+   * POST /api/game/language — язык интерфейса в профиле (P2.5, этап 3).
+   *
+   * Язык не влияет на правила игры — это поле профиля: клиент продолжает
+   * слать X-Locale на каждом запросе, а сохранённый выбор подхватывается на
+   * новом устройстве (см. docs/PROPOSALS-2026-10-23-i18n.md).
+   */
+  app.post('/language', async (request, reply) => {
+    const user = (request as any).telegramUser;
+    const userId = String(user.id);
+    const { language } = request.body as {
+      language?: string;
+    };
+    if (!isLocale(language)) return reply.status(400).send({ error: t('Язык не поддерживается') });
+    const state = (await loadState(userId)) as StoredState | null;
+    if (!state) return reply.status(404).send({ error: t('Game not started') });
+    state.language = language;
+    await saveState(userId, state);
+    return { state: respondState(state) };
   });
   /**
    * POST /api/game/new-life — prestige reset (P1.1).

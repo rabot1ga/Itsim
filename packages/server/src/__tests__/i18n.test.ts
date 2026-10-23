@@ -120,3 +120,40 @@ describe('HTTP: сообщения ответа под языком запрос
     expect(res.json().state.firstName).toBe('Игрок');
   });
 });
+
+describe('POST /api/game/language: выбор языка в профиле (P2.5, этап 3)', () => {
+  it('сохраняет язык в сейв, валидирует мусор, без игры — 404', async () => {
+    const headers = { authorization: tma({ id: 80, first_name: '' }) };
+    const reset = await app.inject({ method: 'POST', url: '/api/game/reset', headers });
+    expect(reset.statusCode).toBe(200);
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/game/language',
+      headers,
+      payload: { language: 'en' },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().state.language).toBe('en');
+
+    // выбор переживает следующую загрузку сейва
+    const stateRes = await app.inject({ method: 'GET', url: '/api/game/state', headers });
+    expect(stateRes.json().state.language).toBe('en');
+
+    const bad = await app.inject({
+      method: 'POST',
+      url: '/api/game/language',
+      headers,
+      payload: { language: 'de' },
+    });
+    expect(bad.statusCode).toBe(400);
+
+    const noGame = await app.inject({
+      method: 'POST',
+      url: '/api/game/language',
+      headers: { authorization: tma({ id: 81, first_name: '' }) },
+      payload: { language: 'en' },
+    });
+    expect(noGame.statusCode).toBe(404);
+  });
+});

@@ -8,6 +8,7 @@ import {
   DEFAULT_LOCALE,
   getStoredLocale,
   setStoredLocale,
+  hasStoredLocale,
   coverage,
 } from '../index';
 
@@ -70,6 +71,19 @@ describe('i18n core', () => {
       expect(getStoredLocale()).toBe('en');
       setStoredLocale('ru');
       expect(store.get(STORAGE_KEY)).toBe('ru');
+    });
+
+    it('hasStoredLocale отличает «выбор не делали» от явного ru', () => {
+      const store = new Map<string, string>();
+      vi.stubGlobal('localStorage', {
+        getItem: (k: string) => store.get(k) ?? null,
+        setItem: (k: string, v: string) => void store.set(k, v),
+      });
+      expect(hasStoredLocale()).toBe(false); // свежее устройство — выбора нет
+      setStoredLocale('ru'); // явный выбор ru — это уже выбор
+      expect(hasStoredLocale()).toBe(true);
+      setStoredLocale('en');
+      expect(hasStoredLocale()).toBe(true);
     });
   });
 });

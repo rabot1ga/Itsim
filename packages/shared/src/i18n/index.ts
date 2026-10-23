@@ -77,6 +77,11 @@ export function setStoredLocale(locale: Locale): void {
   storage()?.setItem(STORAGE_KEY, locale);
 }
 
+/** Был ли на этом устройстве явный выбор языка (для подхвата из профиля). */
+export function hasStoredLocale(): boolean {
+  return storage()?.getItem(STORAGE_KEY) != null;
+}
+
 /**
  * Доля переведённых ключей для словаря — отчёт `i18n:coverage`. Для `ru`
  * покрытие полное по построению: ключи и есть русский текст.

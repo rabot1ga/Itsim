@@ -122,6 +122,14 @@ export interface PlayerState {
    */
   mentoredJuniors?: number;
 
+  /**
+   * Язык интерфейса, выбранный игроком (P2.5, этап 3): поле профиля хранится
+   * в сейве и подхватывается на новом устройстве; запросы по-прежнему несут
+   * X-Locale (клиент шлёт выбор). Строкой, а не Locale, чтобы типы не тянули
+   * i18n; границы валидируют через `isLocale`.
+   */
+  language?: string;
+
   // Skills
   skills: Record<SkillId, SkillLevel>;
   perks: PerkId[];
