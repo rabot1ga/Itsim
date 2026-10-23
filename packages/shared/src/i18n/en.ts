@@ -3146,3 +3146,345 @@ Object.assign(en, {
   '🥪 Внутренний доклад на обеде': '🥪 An internal talk at lunch',
   '🧹 Неделя рефакторинга': '🧹 Refactoring week',
 });
+
+Object.assign(en, {
+  '«Починишь кран и покрасишь стену — минус 20% к аренде». Твои руки, его квартира.':
+    '“Fix the tap and paint the wall — 20% off the rent”. Your hands, his apartment.',
+  '«У нас уникальное предложение только для вас!» Ты в десятый раз объясняешь, что тебе не нужна страховка от падения астероида.':
+    '“We have a unique offer just for you!” You explain for the tenth time that you do not need insurance against an asteroid strike.',
+  'Апелляцию отклонили. Штраф вырос. Справедливость — понятие растяжимое.':
+    'The appeal was rejected. The fine grew. Justice is a stretchy concept.',
+  'Арендодатель пожал плечами. Цена не изменилась.': 'The landlord shrugged. The price did not change.',
+  'Банк начислил кэшбек за месяц. Сумма небольшая, но приятная, как найденная купюра в зимней куртке.':
+    'The bank credited a month of cashback. The sum is small but pleasant, like finding a banknote in a winter jacket.',
+  'Без боя, но стабильно. На следующий год подготовишься лучше.':
+    'Without a fight, but steadily. Next year you will prepare better.',
+  'Вежливо отказать 💼': 'Decline politely 💼',
+  'Все чаты кричат «всё пропало». Твой друг-криптан уже продал всё на дне. Ты смотришь на график задумчиво.':
+    'All the chats scream “it is all over”. Your crypto buddy already sold everything at the bottom. You look at the chart thoughtfully.',
+  'Дать скидку 10% 🤝': 'Give a 10% discount 🤝',
+  'Дисциплина победила распродажу. Впервые.': 'Discipline beat the sale. For the first time.',
+  'Докупить на панике 🐋': 'Buy more in a panic 🐋',
+  'Друг растрогался. Теперь у вас общий долг — пройти курс.':
+    'Your friend was moved. Now you share a debt — to take the course.',
+  'Запас есть. Курс, как назло, стабилизировался.': 'There is a stash. The rate, of all things, stabilized.',
+  'Игнорировать 🙈': 'Ignore 🙈',
+  'Капля в море, но море из таких капель.': 'A drop in the sea, but the sea is made of such drops.',
+  'Клиент доволен и обещает «поток заказов». Поток — это река, которая ждёт.':
+    'The client is happy and promises “a flow of orders”. A flow is a river that waits.',
+  'Клиент офигел, но заплатил. Ты понял цену своей работе.':
+    'The client was floored but paid. You learned the price of your work.',
+  'Клиент согласился на старую цену. Уважение выросло.': 'The client agreed to the old price. The respect grew.',
+  'Клиент, с которым ты работаешь полгода, просит «скидку для своих». Работа та же, денег меньше.':
+    'A client you have worked with for half a year asks for “a discount for friends”. Same work, less money.',
+  'Компания закрыла квартал с ростом, и всем выписали премию. Твоя — заметная. Можно выдохнуть и... потратить.':
+    'The company closed the quarter with growth and everyone got a bonus. Yours is noticeable. You can exhale and… spend it.',
+  'Конверт с гербом. Внутри — «уточните ваши доходы за прошлый год». Сердце ёкнуло.':
+    'An envelope with the state crest. Inside — “clarify your income for last year”. The heart skipped a beat.',
+  'Консультант всё уладил. Дорого, зато спокойно.': 'The consultant smoothed it all over. Expensive, but peaceful.',
+  'Кран починен, стена покрашена. Экономия — в кармане.':
+    'The tap is fixed, the wall is painted. The savings are in your pocket.',
+  'Купил на дне. Рынок отскочил. Ты — случайный гений.':
+    'Bought at the bottom. The market bounced. You are an accidental genius.',
+  'Купить валюту про запас 💵': 'Buy currency as a reserve 💵',
+  'Купить курс для друга в подарок 🎁': 'Buy the course as a gift for a friend 🎁',
+  'Купить курс по новой теме 🧠': 'Buy a course on a new topic 🧠',
+  'Курс куплен. Пройден на 12%. Как обычно.': 'The course is bought. Completed to 12%. As usual.',
+  'Кэшбек испарился за кофе. Оно того стоило.': 'The cashback evaporated into coffee. It was worth it.',
+  'Мастер сделал быстро. Скидка и мастер вышли в ноль.':
+    'The master was quick. The discount and the master came out even.',
+  'Мечта подождёт. Курс — тоже. Иногда.': 'The dream can wait. The course too. Sometimes.',
+  'На стекле — бумажка. Ты припарковался «на пять минут» три дня назад. Камера всё видела.':
+    'A paper slip on the windshield. You parked “for five minutes” three days ago. The camera saw it all.',
+  'Нанять консультанта 💼': 'Hire a consultant 💼',
+  'Нанять мастера 🤝': 'Hire a master 🤝',
+  'Настал день ежегодного ревью зарплаты. Тимлид спрашивает: «какие у тебя ожидания?» Момент истины.':
+    'The day of the annual salary review has come. The team lead asks: “what are your expectations?” The moment of truth.',
+  'Не открывать приложение месяц 🙈': 'Not open the app for a month 🙈',
+  'Не следить за курсом 🙈': 'Not follow the rate 🙈',
+  'Нежданный бюджет. Ты уже мысленно потратил его дважды.':
+    'An unexpected budget. You have already spent it twice in your head.',
+  'Незнание — сила. До первой покупки за доллары.': 'Ignorance is strength. Until the first purchase in dollars.',
+  'Новое кресло. Спина сказала спасибо на человеческом языке.':
+    'A new chair. The back said thank you in a human language.',
+  'Обжаловать штраф 📄': 'Appeal the fine 📄',
+  'Обновить рабочее место 🪑': 'Upgrade the workspace 🪑',
+  'Одобрили +15% и «остальное в следующем квартале». Почти победа.':
+    'Approved +15% and “the rest next quarter”. Almost a victory.',
+  'Оказалось, мелочь — неучтённый кэшбек. Заплатил и забыл.':
+    'Turned out the small stuff was unaccounted cashback. Paid and forgot.',
+  'Оператор рассмеялся и пообещал «спецтариф». Ты почти уговорил.':
+    'The operator laughed and promised a “special rate”. You almost talked him into it.',
+  'Оплатить сразу со скидкой 💳': 'Pay at once with a discount 💳',
+  'Оставить на счету 🏦': 'Leave it on the account 🏦',
+  'Отдать часть на благотворительность ❤️': 'Give part to charity ❤️',
+  'Отказаться: «моё дело — код» 💻': 'Decline: “my business is code” 💻',
+  'Отложить «на чёрный день» 🏦': 'Put it away “for a rainy day” 🏦',
+  'Отложить покупку техники ⏳': 'Postpone the tech purchase ⏳',
+  'Отложить половину 💰': 'Put half aside 💰',
+  'Паника не помогла, но письмо само рассосалось. Почти.':
+    'The panic did not help, but the letter resolved itself. Almost.',
+  'Паниковать неделю 😰': 'Panic for a week 😰',
+  'Платформа объявила распродажу: курсы по цене чашки кофе. Твоя вкладка «отложенное» ожила.':
+    'The platform announced a sale: courses for the price of a cup of coffee. Your “saved for later” tab came alive.',
+  'Поблагодарить и порадоваться 🎉': 'Say thank you and be glad 🎉',
+  'Повесить трубку 🙅': 'Hang up 🙅',
+  'Поднять цену в ответ 😎': 'Raise the price in response 😎',
+  'Подушка стала толще. Спится лучше.': 'The cushion got thicker. Sleep is better.',
+  'Половина в копилку, половина — на радость. Баланс.': 'Half to the piggy bank, half for joy. Balance.',
+  'Помог приюту. Внутри тепло. Кошелёк — тоже не пуст.':
+    'Helped the shelter. It is warm inside. The wallet is not empty either.',
+  'Попросить скидку как постоянному 😄': 'Ask for a discount as a regular 😄',
+  'Послушать ради интереса 🎧': 'Listen out of curiosity 🎧',
+  'Потратить на кофе и пирожное ☕': 'Spend it on coffee and a pastry ☕',
+  'Праздник удался. Воспоминания остались, премия — частично.':
+    'The party worked out. The memories stayed, the bonus — partially.',
+  'Предложение оказалось... забавным. Астероиды, правда, реальны.':
+    'The offer turned out to be… amusing. Asteroids, though, are real.',
+  'Продал на дне. Классика. Рынок сразу пошёл вверх.': 'Sold at the bottom. A classic. The market went up right away.',
+  'Продать, как все 😱': 'Sell, like everyone 😱',
+  'Промолчать: «мне и так нормально» 🙈': 'Keep quiet: “I am fine as is” 🙈',
+  'Просить +20% и обосновать 📊': 'Ask for +20% and make the case 📊',
+  'Разобраться спокойно 🧾': 'Sort it out calmly 🧾',
+  'Рубль лихорадит. Твоя зарплата в рублях, а техника, о которой ты мечтаешь, — в долларах.':
+    'The ruble is feverish. Your salary is in rubles, and the tech you dream of is in dollars.',
+  'Сделать ремонт самому 🔨': 'Do the repairs yourself 🔧',
+  'Сдержаться: «у меня уже 14 непройденных» 🙅': 'Hold back: “I already have 14 unfinished” 🙅',
+  'Скидка 50% за быструю оплату. Быстро, но обидно.': 'A 50% discount for quick payment. Quick, but insulting.',
+  'Согласиться на предложенное 🤝': 'Agree to what is offered 🤝',
+  'Тимлид удивился. Ты сам — тоже. Упущенная выгода.': 'The team lead was surprised. You too. Missed profit.',
+  'Тишина. Лучшее, что можно купить бесплатно.': 'Silence. The best thing you can get for free.',
+  'Ты уже и забыл, а тут перевод: «прости, что так долго». Приятно, когда деньги возвращаются сами.':
+    'You had forgotten, and here is a transfer: “sorry it took so long”. Nice when money returns on its own.',
+  'Устроить праздник 🎉': 'Throw a celebration 🎉',
+  'Через месяц курс восстановился. Дзен сработал.': 'In a month the rate recovered. Zen worked.',
+  'Через месяц пришло напоминание с пенями. Игнорировать дальше — дороже.':
+    'In a month a reminder with penalties arrived. Ignoring further is more expensive.',
+  '🎓 Распродажа курсов': '🎓 A course sale',
+  '🏦 Квартальная премия': '🏦 The quarterly bonus',
+  '💱 Курс валют скакнул': '💱 The currency rate jumped',
+  '💳 Кэшбек за месяц капнул': '💳 A month of cashback dripped in',
+  '💵 Друг вернул старый долг': '💵 A friend repaid an old debt',
+  '📈 Пересмотр зарплаты': '📈 The salary review',
+  '📉 Крипта просела на 30%': '📉 Crypto dropped 30%',
+  '📞 Звонят со страховкой': '📞 An insurance sales call',
+  '📬 Письмо из налоговой': '📬 A letter from the tax office',
+  '🔧 Арендодатель предложил скидку за ремонт': '🔧 The landlord offered a discount for repairs',
+  '🚗 Штраф за парковку': '🚗 A parking fine',
+  '🤝 Постоянный клиент просит скидку': '🤝 A regular client asks for a discount',
+  '23:45. Ты понимаешь, что завтра дедлайн, а фича не готова. В офисе тихо, только шум серверной.':
+    '23:45. You realize the deadline is tomorrow and the feature is not ready. The office is quiet, only the server room hums.',
+  '30 тысяч на счету. Приятно.': '30 thousand on the account. Nice.',
+  '5 минут растяжки — и мир не кажется таким серым.':
+    'Five minutes of stretching — and the world does not seem so grey.',
+  'PR закрыт. Задача висит. Тимлид заметил.': 'The PR is closed. The task hangs. The team lead noticed.',
+  'Steam Sale. Ты не смог устоять. Но счастье есть.': 'Steam Sale. You could not resist. But there is happiness.',
+  'Баг остался. Через полгода он упадёт на прод в пятницу вечером.':
+    'The bug stayed. In half a year it will fall on prod on a Friday evening.',
+  'Баг пофикшен. Ты герой. Никто не узнает.': 'The bug is fixed. You are a hero. Nobody will know.',
+  'Банка Adrenalin Rush. Сердце биться быстрее, код пишется сам.':
+    'A can of Adrenalin Rush. The heart beats faster, the code writes itself.',
+  'Будильник прозвенел 3 раза. За окном дождь. Вчера был тяжёлый день. Твои действия?':
+    'The alarm rang 3 times. Rain outside. Yesterday was a hard day. What do you do?',
+  'Взять перерыв на пару дней 🧘': 'Take a break for a couple of days 🧘',
+  'Врач выписал витамины и сказал меньше сидеть. Ты посмеялся.':
+    'The doctor prescribed vitamins and said to sit less. You laughed.',
+  'Всего 10 минут — и вот уже час. Классика.': 'Just 10 minutes — and it is already an hour. A classic.',
+  'Встать и сделать зарядку 💪': 'Get up and do some exercise 💪',
+  'Вы разобрались за час. Командная работа — магия.': 'You figured it out in an hour. Teamwork is magic.',
+  'Гулял в парке. Оказывается, мир существует вне экрана.':
+    'Walked in the park. Turns out the world exists outside the screen.',
+  'Документацию ты не читал с универа. Как оказалось — зря.':
+    'You had not read documentation since university. Turns out — for nothing.',
+  'Закрыть PR и забыть 🏃': 'Close the PR and forget 🏃',
+  'Записаться к врачу — здоровье важнее 🏥': 'Book a doctor — health matters more 🏥',
+  'Исправить и забыть 🛠️': 'Fix it and forget 🛠️',
+  'Коворкинг полон таких же. Атмосфера общего страдания.':
+    'The coworking is full of the same. An atmosphere of shared suffering.',
+  'Купил новый курс на Stepik. Прокрастинация отменяется.':
+    'Bought a new course on Stepik. Procrastination is cancelled.',
+  'Купить витамины в аптеке 💊': 'Buy vitamins at the pharmacy 💊',
+  'Купить что-то для работы/учебы 📚': 'Buy something for work/study 📚',
+  'Латте с розовой солью. Ты чувствуешь себя IT-блогером.': 'A latte with pink salt. You feel like an IT blogger.',
+  'Магний В6. Третий месяц. Вроде помогает.': 'Magnesium B6. Third month. Seems to help.',
+  'Мозг перезагрузился. Через два дня всё заходит на ура.':
+    'The brain rebooted. Two days later everything lands with a bang.',
+  'Написать в чат «успеваем завтра утром» 📝': 'Write in the chat “we will make it by tomorrow morning” 📝',
+  'Написать пост в корпоративном чате 📢': 'Write a post in the corporate chat 📢',
+  'Начальник вызывает на созвон. «Слушай, мы тут посмотрели твой вклад в проект… Держи премию.»':
+    'The boss calls you to a call. “Listen, we looked at your contribution to the project… Here is a bonus.”',
+  'Не прошло. Стало только хуже. Но ты терпишь.': 'It did not pass. It only got worse. But you endure.',
+  'Новое — это хорошо забытое старое. Но другое.': 'The new is the well-forgotten old. But different.',
+  'Объяснить, почему текущее решение оптимально 📋': 'Explain why the current solution is optimal 📋',
+  'Оставить как есть — работало же 3 года 🙈': 'Leave it as is — it worked for 3 years 🙈',
+  'Остаться и допилить — надо ⚡': 'Stay and finish the job — it must be done ⚡',
+  'Отключить будильник и доспать 😴': 'Turn off the alarm and sleep in 😴',
+  'Отложить на чёрный день 🏦': 'Put it away for a rainy day 🏦',
+  'Пойти в Specialty Coffee за 300₽': 'Go to Specialty Coffee for 300₽',
+  'Пойти в коворкинг 🏢': 'Go to the coworking 🏢',
+  'Пойти — нужно проветриться 🍻': 'Go — you need some air 🍻',
+  'Пойти, но пить чай 🍵': 'Go, but drink tea 🍵',
+  'Полистать телефон в кровати 📱': 'Scroll the phone in bed 📱',
+  'Попросить помощи у коллеги 🤝': 'Ask a colleague for help 🤝',
+  'Посидели от души. Саня рассказал про свой стартап. Опять.':
+    'We had a proper time. Sanya told about his startup. Again.',
+  'Посреди рабочего дня интернет просто… исчез. Провайдер «авария на линии». Сколько ждать — неизвестно.':
+    'In the middle of the workday the internet just… disappeared. The provider reports “a line accident”. How long to wait — unknown.',
+  'Потратить на развлечения 🎮': 'Spend it on entertainment 🎮',
+  'Продавить через силу 📖': 'Push it through by force 📖',
+  'Проспал. Опоздал. Шеф заметил.': 'Overslept. Was late. The boss noticed.',
+  'Работать офлайн — читать документацию 📚': 'Work offline — read the documentation 📚',
+  'Растворимый, но бодрит.': 'Instant, but it perks you up.',
+  'Само пройдёт 🙃': 'It will pass by itself 🙃',
+  'Сварить дома — дёшево и сердито': 'Brew it at home — cheap and cheerful',
+  'Середина дня. Глаза слипаются. Нужен кофе.': 'Midday. The eyes stick together. Need coffee.',
+  'Сказать, что занят работой 💼': 'Say you are busy with work 💼',
+  'Сменить подход — попробовать новый язык 🆕': 'Change the approach — try a new language 🆕',
+  'Согласиться — наверное, он прав 🤷': 'Agree — he is probably right 🤷',
+  'Старый друг из универа пишет: «Вечером идём в бар. Ты как?»':
+    'An old friend from university writes: “We are going to a bar tonight. You in?”',
+  'Твой PR висит уже 3 дня. Наконец пришёл ревьювер. Сообщение: «Давай переделаем архитектуру?»':
+    'Your PR has been hanging for 3 days. The reviewer finally came. The message: “Shall we redo the architecture?”',
+  'Тимлид поставил реакцию 🔥. Сеньоры вдумчиво кивают.':
+    'The team lead left a 🔥 reaction. The seniors nod thoughtfully.',
+  'Ты аргументированно объяснил. Ревьювер согласился. Победа!':
+    'You made a well-reasoned case. The reviewer agreed. Victory!',
+  'Ты за рулём. Ну, как за рулём — за ноутбуком.':
+    'You are behind the wheel. Well, like behind the wheel — behind the laptop.',
+  'Ты нашёл баг, который никто не замечал 3 года. 200 строк легаси-кода, и одна лишняя запятая.':
+    'You found a bug nobody noticed for 3 years. 200 lines of legacy code, and one extra comma.',
+  'Ты остался дома. Но что-то грызёт…': 'You stayed home. But something gnaws…',
+  'Ты переписал 500 строк. Стало лучше. Но осадочек остался.':
+    'You rewrote 500 lines. It got better. But an aftertaste stayed.',
+  'Ты прочитал 50 страниц и ничего не запомнил. Зря.': 'You read 50 pages and remembered nothing. A waste.',
+  'Ты ушёл в 3 ночи. Зато фича работает. Гордость и усталость.':
+    'You left at 3 a.m. But the feature works. Pride and fatigue.',
+  'Ты чувствуешь, что перестал расти. Книги читаются, но ничего не откладывается. Знакомое чувство.':
+    'You feel you stopped growing. Books are read, but nothing sticks. A familiar feeling.',
+  'Уже месяц болит спина. И голова. И вообще. Может, пора?':
+    'Your back has ached for a month. And the head. And in general. Maybe it is time?',
+  'Устроить выходной 🏖️': 'Take a day off 🏖️',
+  'Утром тебя ждало 47 сообщений. Тимлид грустит.': 'In the morning 47 messages waited for you. The team lead is sad.',
+  'Энергетик — быстрый и грязный': 'An energy drink — fast and dirty',
+  '☀️ Утро начинается не с кофе': '☀️ The morning does not start with coffee',
+  '☕ Кофе-брейк': '☕ Coffee break',
+  '🌐 Интернет пропал': '🌐 The internet is gone',
+  '🌙 Ночная смена': '🌙 Night shift',
+  '🍺 Саня зовёт в бар': '🍺 Sanya calls to the bar',
+  '🎉 Неожиданная премия': '🎉 An unexpected bonus',
+  '🏥 Пора к врачу': '🏥 Time to see a doctor',
+  '🐛 Неожиданный баг': '🐛 An unexpected bug',
+  '📉 Плато в обучении': '📉 A learning plateau',
+  '🔍 Код-ревью': '🔍 Code review',
+  '«А правда, что ты в компьютере работаешь? А почему тогда дома сидишь?» — бабушка всегда задаёт лучшие вопросы.':
+    '“Is it true that you work in a computer? Then why do you sit at home?” — grandma always asks the best questions.',
+  '«Буду в пятницу!» — сообщила мама. Квартира выглядит как серверная после релиза. Времени — два дня.':
+    '“I will be there on Friday!” mom announced. The apartment looks like a server room after a release. Two days to go.',
+  '«Интернет барахлит», — соврал ты. Стыдно, но работалось спокойно.':
+    '“The internet is acting up,” you lied. It is shameful, but work went peacefully.',
+  '«Мама снова сделала мой месяц». Подписчики завидуют.': '“Mom made my month again”. The followers are jealous.',
+  '«Тут какая-то кнопка всё сломала», — папа показывает телефон, где открыто 47 вкладок и 12 антивирусов.':
+    '“Some button here broke everything,” dad shows a phone with 47 tabs and 12 antiviruses open.',
+  '«Хочу как ты! С чего начать?» — брат смотрит с надеждой. Ты вспоминаешь свой путь: YouTube, ошибки, снова YouTube.':
+    '“I want to be like you! Where do I start?” — the brother looks with hope. You remember your path: YouTube, mistakes, YouTube again.',
+  'Бабушка не обиделась. А ты — самую малость.': 'Grandma was not offended. You — just a tiny bit.',
+  'Бабушка поняла по-своему: «значит, начальник тебе доверяет».':
+    'Grandma understood it her own way: “so your boss trusts you”.',
+  'Борщ, разговоры, тишина без созвонов. Перезагрузка.': 'Borscht, talks, silence without calls. A reboot.',
+  'Брат всё равно записался на курсы. Игнорирует предупреждения.':
+    'The brother signed up for the courses anyway. Ignores the warnings.',
+  'Видеопоздравление приняли тепло. Подарок дошёл в целости.':
+    'The video greeting was received warmly. The gift arrived safe and sound.',
+  'Все собираются у родителей. Обещают твой любимый борщ. Разговоры — про жизнь, не про работу.':
+    'Everyone gathers at the parents’. They promise your favorite borscht. The talk is about life, not about work.',
+  'Вся семья в одном видеозвонке: кто с дачи, кто с кухни, кто уже за столом. Шумно, тепло, по-домашнему.':
+    'The whole family in one video call: someone from the dacha, someone from the kitchen, someone already at the table. Noisy, warm, homelike.',
+  'Дать «те самые» ссылки 🔗': 'Give “the very” links 🔗',
+  'Заказать клининг 💼': 'Order a cleaning service 💼',
+  'Инструкция на 20 скриншотов. Папа сказал «понятнее не стало».':
+    'An instruction of 20 screenshots. Dad said “it did not get any clearer”.',
+  'Квартира сияет. Мама сказала «наконец-то». Это комплимент.':
+    'The apartment shines. Mom said “finally”. That is a compliment.',
+  'Клинеры сделали чудо. Мама подозрительно щурилась, но поверила.':
+    'The cleaners worked a miracle. Mom squinted suspiciously, but believed.',
+  'Курьер принёс коробку. Внутри — банки с вареньем, носки и записка «ты мало ешь». Ты улыбаешься как дурак.':
+    'The courier brought a box. Inside — jars of jam, socks and a note “you eat too little”. You smile like a fool.',
+  'Мама вздохнула и... прибралась сама. Ты чувствуешь стыд и уют.':
+    'Mom sighed and… tidied up herself. You feel shame and coziness.',
+  'Мама растрогалась. Носки оказались в точку.': 'Mom was moved. The socks hit the spot.',
+  'Мем собрал «ахахах» от всех. Даже дедушка поставил 👍.':
+    'The meme gathered “ahahaha” from everyone. Even grandpa left a 👍.',
+  'Настроить всё терпеливо ❤️': 'Set it all up patiently ❤️',
+  'Ноутбук открыл дважды. Мама покачала головой. Борщ всё простил.':
+    'Opened the laptop twice. Mom shook her head. The borscht forgave everything.',
+  'Объяснить, что такое удалёнка 🎓': 'Explain what remote work is 🎓',
+  'Ответил мемом. Тётя переслала его в другой чат. Ты — семейный мемолог.':
+    'Replied with a meme. The aunt forwarded it to another chat. You are the family memelord.',
+  'Отговорить: «это боль» 😅': 'Talk them out of it: “it is pain” 😅',
+  'Отец кивнул. Но, кажется, ждал другого ответа.': 'Father nodded. But, it seems, he expected another answer.',
+  'Отец рассказал про свои развилки. Его опыт — неожиданно полезен.':
+    'Father told about his own crossroads. His experience is unexpectedly useful.',
+  'Отец редко говорит о работе. Но сегодня спросил: «Ты доволен тем, куда идёшь?» Вопрос повис в воздухе.':
+    'Father rarely talks about work. But today he asked: “Are you happy with where you are going?” The question hung in the air.',
+  'Отказаться: «дел по горло» 🙈': 'Decline: “up to my ears in work” 🙈',
+  'Отправил маме массажёр. Она сказала «лучше бы приехал». Справедливо.':
+    'Sent mom a massager. She said “you should have come instead”. Fair enough.',
+  'Отправить мем про дедлайны 🐸': 'Send a meme about deadlines 🐸',
+  'Отправить подарок и поздравить по видео 📦': 'Send a gift and congratulate by video 📦',
+  'Отправить что-то в ответ 🎁': 'Send something back 🎁',
+  'Отшутиться: «деньги капают, жить можно» 😅': 'Joke it off: “money drips in, life is okay” 😅',
+  'Папа нажал не туда. Теперь там 48 вкладок.': 'Dad clicked the wrong thing. Now there are 48 tabs.',
+  'План на полгода. Брат в восторге. Ты — почти ментор.':
+    'A plan for half a year. The brother is thrilled. You are almost a mentor.',
+  'Поговорить откровенно ❤️': 'Talk heart to heart ❤️',
+  'Поговорить подольше ❤️': 'Talk a bit longer ❤️',
+  'Подвести итоги года вслух 🎤': 'Sum up the year out loud 🎤',
+  'Поехать на свадьбу 🚄': 'Go to the wedding 🚄',
+  'Позвонить и поблагодарить ❤️': 'Call and say thank you ❤️',
+  'Поздравить всех поимённо ❤️': 'Congratulate everyone by name ❤️',
+  'Полтора часа видеосвязи. Ватсап работает. Папа счастлив.':
+    'An hour and a half of video. WhatsApp works. Dad is happy.',
+  'Полчаса разговора о жизни. Бабушка передала рецепт пирога.':
+    'Half an hour of talk about life. Grandma passed on the pie recipe.',
+  'Посмеяться и ответить 😄': 'Laugh and reply 😄',
+  'Приглашение в другом городе. Вся родня будет. Тебе — ехать пять часов и взять выходной.':
+    'An invitation in another city. The whole family will be there. For you — a five-hour ride and a day off.',
+  'Приехать и отдохнуть ❤️': 'Come and rest ❤️',
+  'Приехать с ноутбуком «на всякий» 💻': 'Come with a laptop “just in case” 💻',
+  'Принять как есть: «я айтишник» 🤷': 'Accept it as is: “I am an IT person” 🤷',
+  'Проект выжил. Родня — запомнила. Особенно тётя Люда.':
+    'The project survived. The family remembered. Especially aunt Lyuda.',
+  'Пропустить: «проект горит» 🔥': 'Skip it: “the project is on fire” 🔥',
+  'Работа подождала бы. Борщ — нет. В следующий раз обязательно.':
+    'The work could have waited. The borscht — not. Next time for sure.',
+  'Разговор на два часа. Отец сказал: «Я горжусь, что ты сам выбираешь».':
+    'A two-hour talk. Father said: “I am proud that you choose for yourself”.',
+  'Рассказал о достижениях. Семья хлопала. Ты — горд.':
+    'You told about the achievements. The family clapped. You are proud.',
+  'Свадьба была душевной. Ты даже танцевал. Почти.': 'The wedding was heartfelt. You even danced. Almost.',
+  'Свернуть звонок пораньше 🙈': 'Cut the call short 🙈',
+  'Сделать скриншоты-инструкцию 📸': 'Make screenshot instructions 📸',
+  'Сказать «просто нажми сюда» 🙃': 'Say “just click here” 🙃',
+  'Сказать, что занят 🙈': 'Say you are busy 🙈',
+  'Скрыть чат до вечера 🔕': 'Mute the chat until evening 🔕',
+  'Составить план обучения 🗺': 'Put together a learning plan 🗺',
+  'Спросить совета у него 💬': 'Ask him for advice 💬',
+  'Ссылки отправлены. Через неделю брат спросит «а что дальше».':
+    'The links are sent. In a week the brother will ask “what next”.',
+  'Сфоткать содержимое для сторис 📸': 'Snap the contents for stories 📸',
+  'Тишина до вечера. Потом — 147 непрочитанных. Классика.': 'Silence until the evening. Then — 147 unread. A classic.',
+  'Тёплый созвон на час. Новый год начался правильно.': 'A warm hour-long call. The new year started right.',
+  'Тётя прислала «доброе утро» с лебедями, дедушка — голосовое на 5 минут, а сестра — мем, который все обсуждают.':
+    'The aunt sent “good morning” with swans, grandpa — a 5-minute voice message, and the sister — a meme everyone discusses.',
+  'Устроить генеральную уборку 🧹': 'Do a general cleaning 🧹',
+  '🍲 Семейный ужин': '🍲 Family dinner',
+  '🎄 Новогодний семейный созвон': '🎄 A New Year family video call',
+  '🏠 Мама приезжает в гости': '🏠 Mom comes to visit',
+  '👦 Брат спрашивает, как стать программистом': '👦 The brother asks how to become a programmer',
+  '💍 Свадьба двоюродного брата': '💍 The cousin’s wedding',
+  '💬 Семейный чат взорвался мемами': '💬 The family chat exploded with memes',
+  '📞 Звонит бабушка': '📞 Grandma calls',
+  '📦 Посылка от мамы': '📦 A package from mom',
+  '📱 Папа просит настроить «этот ваш ватсап»': '📱 Dad asks to set up “that whatsapp of yours”',
+  '🗣 Разговор с отцом о карьере': '🗣 A talk with father about the career',
+});
