@@ -8,7 +8,9 @@
  */
 import { AsyncLocalStorage } from 'node:async_hooks';
 import type { FastifyRequest } from 'fastify';
-import { t as translate, isLocale, type Locale } from '@itsim/shared';
+import { t as translate, isLocale, translateDeep, type Locale } from '@itsim/shared';
+
+export { translateDeep };
 
 const localeStorage = new AsyncLocalStorage<Locale>();
 

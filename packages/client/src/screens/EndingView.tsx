@@ -92,16 +92,16 @@ export const EndingView: React.FC = () => {
             <article
               key={e.id}
               className={`card ${e.available ? 'panel-note panel-note-gold' : 'panel-note panel-note-sky'}`}
-              aria-label={e.title}
+              aria-label={t(e.title)}
             >
               <div className="flex items-start gap-2 mb-1.5">
                 <span className="text-base leading-none" aria-hidden="true">
                   {ENDING_EMOJI[e.id] ?? (e.available ? '⭐' : '🔒')}
                 </span>
-                <h3 className="text-sm font-semibold text-ink-100 leading-tight flex-1">{e.title}</h3>
+                <h3 className="text-sm font-semibold text-ink-100 leading-tight flex-1">{t(e.title)}</h3>
                 {seen && <span className="chip chip-gold shrink-0">{t('пройдено')}</span>}
               </div>
-              <p className="text-sm text-ink-300 leading-relaxed mb-2">{e.description}</p>
+              <p className="text-sm text-ink-300 leading-relaxed mb-2">{t(e.description)}</p>
               {e.id === 'cto' && sittingCto && !seen && (
                 <div className="mb-2">
                   <div className="flex justify-between text-2xs text-ink-400 mb-1">

@@ -1,3 +1,4 @@
+import { dt } from '../i18n';
 import { InterviewInput } from '../types';
 import { clamp } from './utils';
 
@@ -79,20 +80,20 @@ export function preScreenResult(match: number): { passed: boolean; msg: string; 
   if (match < 0.5) {
     return {
       passed: false,
-      msg: 'Ваше резюме не прошло первичный отбор. Даже не открыли.',
+      msg: dt('Ваше резюме не прошло первичный отбор. Даже не открыли.'),
       answerScoreBonus: 0,
     };
   }
   if (match < 0.8) {
     return {
       passed: true,
-      msg: 'Собеседование назначено. Шансы средние — готовьтесь.',
+      msg: dt('Собеседование назначено. Шансы средние — готовьтесь.'),
       answerScoreBonus: 0,
     };
   }
   return {
     passed: true,
-    msg: 'Ты явно сильнее позиции — интервьюер расслаблен.',
+    msg: dt('Ты явно сильнее позиции — интервьюер расслаблен.'),
     answerScoreBonus: 0.1,
   };
 }

@@ -71,6 +71,22 @@ describe('requestLocale', () => {
   });
 });
 
+describe('HTTP: контент-бандл переводится на границе API (onSend)', () => {
+  it('X-Locale: en → названия контента в ответе переведены', async () => {
+    const res = await app.inject({ method: 'GET', url: '/api/content/achievements', headers: { 'X-Locale': 'en' } });
+    expect(res.statusCode).toBe(200);
+    const body = JSON.stringify(res.json());
+    expect(body).toContain('A hundred days in IT');
+    expect(body).not.toContain('Сто дней в IT');
+  });
+
+  it('без заголовка контент остаётся русским', async () => {
+    const res = await app.inject({ method: 'GET', url: '/api/content/achievements' });
+    expect(res.statusCode).toBe(200);
+    expect(JSON.stringify(res.json())).toContain('Сто дней в IT');
+  });
+});
+
 describe('HTTP: сообщения ответа под языком запроса', () => {
   it('X-Locale: en → английское сообщение (свежая игра)', async () => {
     const res = await app.inject({

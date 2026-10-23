@@ -13,6 +13,7 @@ import { telemetryRoutes } from './routes/telemetry.js';
 import { adminRoutes } from './routes/admin.js';
 import { loadContent } from './services/contentService.js';
 import { runWithLocale, requestLocale } from './lib/i18n.js';
+import { translateDeep } from './lib/i18n.js';
 
 export async function buildServer() {
   const app = Fastify({ logger: { level: process.env.LOG_LEVEL ?? 'info' } });
@@ -24,6 +25,22 @@ export async function buildServer() {
     route.handler = function (this: unknown, request, reply) {
       return runWithLocale(requestLocale(request as never), () => handler.call(this, request, reply));
     } as typeof handler;
+  });
+
+  // Контент-граница (P2.5, этап 3): всё, что уходит в JSON (контент-бандл,
+  // сейв, ответы действий), переводится словарём под язык запроса. Строки без
+  // перевода остаются исходными (fallback = ключ).
+  app.addHook('onSend', (request, reply, payload, done) => {
+    // onSend выполняется вне ALS-контекста хендлера — локаль берём из запроса.
+    const locale = requestLocale(request);
+    if (locale === 'ru') return done(null, payload);
+    const contentType = String(reply.getHeader('content-type') ?? '');
+    if (!contentType.includes('json') || typeof payload !== 'string') return done(null, payload);
+    try {
+      done(null, JSON.stringify(translateDeep(JSON.parse(payload), locale)));
+    } catch {
+      done(null, payload);
+    }
   });
 
   // CORS for Telegram Mini App

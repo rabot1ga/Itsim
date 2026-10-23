@@ -38,16 +38,46 @@ for (const file of files) {
   }
 }
 
+// Контент-ключи (P2.5, этап 3): значения контент-JSON. pixel/ — служебные
+// метки пиксель-инструментов (не игроку), из отчёта исключены.
+function collectStrings(node, out) {
+  if (typeof node === 'string') {
+    if (CYRILLIC.test(node)) out.add(node);
+  } else if (Array.isArray(node)) {
+    for (const v of node) collectStrings(v, out);
+  } else if (node && typeof node === 'object') {
+    for (const v of Object.values(node)) collectStrings(v, out);
+  }
+}
+function walkJson(dir, out = []) {
+  for (const name of readdirSync(dir)) {
+    const p = join(dir, name);
+    const st = statSync(p);
+    if (st.isDirectory()) {
+      if (name === 'i18n' || name === 'node_modules' || name === 'pixel') continue;
+      walkJson(p, out);
+    } else if (name.endsWith('.json')) out.push(p);
+  }
+  return out;
+}
+const contentKeys = new Set();
+for (const file of walkJson('packages/content')) {
+  collectStrings(JSON.parse(readFileSync(file, 'utf-8')), contentKeys);
+}
+
 const dicts = { en };
 const lines = [];
 let thresholdFailed = false;
 for (const [name, dict] of Object.entries(dicts)) {
   const translated = [...keys].filter((k) => dict[k] !== undefined).length;
   const pct = keys.size ? (translated / keys.size) * 100 : 100;
-  lines.push(`${name}: ${translated}/${keys.size} (${pct.toFixed(1)}%)`);
+  lines.push(`${name} (код): ${translated}/${keys.size} (${pct.toFixed(1)}%)`);
+  const ct = [...contentKeys].filter((k) => dict[k] !== undefined).length;
+  const cpct = contentKeys.size ? (ct / contentKeys.size) * 100 : 100;
+  lines.push(`${name} (контент): ${ct}/${contentKeys.size} (${cpct.toFixed(1)}%)`);
   if (pct < min) thresholdFailed = true;
 }
-console.log(`ключей клиента+сервера: ${keys.size}`);
+console.log(`ключей кода (клиент+сервер): ${keys.size}; ключей контента: ${contentKeys.size}`);
 for (const l of lines) console.log(l);
 if (thresholdFailed) {
   console.error(`покрытие ниже порога ${min}%`);

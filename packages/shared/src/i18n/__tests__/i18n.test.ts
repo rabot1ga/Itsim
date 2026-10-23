@@ -1,5 +1,15 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { t, LOCALES, DEFAULT_LOCALE, getStoredLocale, setStoredLocale, coverage } from '../index';
+import {
+  t,
+  dt,
+  translateDeep,
+  setDisplayLocale,
+  LOCALES,
+  DEFAULT_LOCALE,
+  getStoredLocale,
+  setStoredLocale,
+  coverage,
+} from '../index';
 
 const STORAGE_KEY = 'itsim.locale';
 
@@ -61,5 +71,30 @@ describe('i18n core', () => {
       setStoredLocale('ru');
       expect(store.get(STORAGE_KEY)).toBe('ru');
     });
+  });
+});
+
+describe('i18n params + display + deep translate', () => {
+  it('строковые параметры с кириллицей переводятся тем же словарём', () => {
+    // имена контента внутри сообщений локализуются без ручных обёрток
+    expect(t('en', '🛒 Куплено: {p0}', { p0: 'Кофемашина' })).toBe('🛒 Bought: Coffee machine');
+    expect(t('ru', '🛒 Куплено: {p0}', { p0: 'Кофемашина' })).toBe('🛒 Куплено: Кофемашина');
+  });
+
+  it('dt() следует display-локали', () => {
+    setDisplayLocale('en');
+    expect(dt('Магазин')).toBe('Shop');
+    setDisplayLocale('ru');
+    expect(dt('Магазин')).toBe('Магазин');
+  });
+
+  it('translateDeep переводит строки в объектах и массивах, ru — идентичность', () => {
+    const payload = { items: [{ name: 'Кофемашина', id: 'coffee' }], note: 'Все', raw: 'ASCII' };
+    const en = translateDeep(payload, 'en');
+    expect(en.items[0].name).toBe('Coffee machine');
+    expect(en.items[0].id).toBe('coffee');
+    expect(en.note).toBe('All');
+    expect(en.raw).toBe('ASCII');
+    expect(translateDeep(payload, 'ru')).toEqual(payload);
   });
 });

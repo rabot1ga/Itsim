@@ -30,15 +30,34 @@ export function isLocale(value: unknown): value is Locale {
  * Перевод строки-ключа с параметрами. Неизвестный ключ и отсутствующий
  * параметр не роняют вывод: ключ возвращается как есть, `{name}` остаётся.
  */
+const CYRILLIC = /[А-Яа-яЁё]/;
+
 export function t(locale: Locale, key: string, params?: Record<string, unknown>): string {
   const dict = DICTIONARIES[locale] ?? {};
   let out = dict[key] ?? key;
   if (params) {
     for (const [name, value] of Object.entries(params)) {
-      out = out.split(`{${name}}`).join(String(value)); // как в шаблонных строках: undefined → 'undefined'
+      // Строковые параметры с кириллицей переводятся тем же словарём:
+      // имена контента внутри сообщений локализуются без ручных обёрток.
+      let v = value;
+      if (typeof v === 'string' && CYRILLIC.test(v)) v = dict[v] ?? v;
+      out = out.split(`{${name}}`).join(String(v)); // как в шаблонных строках: undefined → 'undefined'
     }
   }
   return out;
+}
+
+/**
+ * «Display»-перевод для текстов, которые вычисляет движок (не API-путь):
+ * клиент ставит свою локаль при старте (`setDisplayLocale`). Вызов — только из
+ * функций (не из const-инициализаторов: модульные константы замёрзнут).
+ */
+let displayLocale: Locale = DEFAULT_LOCALE;
+export function setDisplayLocale(locale: Locale): void {
+  displayLocale = locale;
+}
+export function dt(key: string, params?: Record<string, unknown>): string {
+  return t(displayLocale, key, params);
 }
 
 function storage(): Storage | null {
@@ -67,4 +86,25 @@ export function coverage(keys: string[], locale: Locale): { total: number; trans
   const dict = DICTIONARIES[locale] ?? {};
   const missing = keys.filter((k) => !(k in dict));
   return { total: keys.length, translated: keys.length - missing.length, missing };
+}
+
+/**
+ * Глубокий перевод JSON-значений (контент-бандл, сейв, ответы действий).
+ * Строки с кириллицей ищутся в словаре; без перевода остаются как есть.
+ * Ключи объектов и строки без кириллицы не трогаются.
+ */
+export function translateDeep<T>(value: T, locale: Locale): T {
+  if (locale === DEFAULT_LOCALE) return value;
+  const dict = DICTIONARIES[locale] ?? {};
+  const walk = (v: unknown): unknown => {
+    if (typeof v === 'string') return CYRILLIC.test(v) ? (dict[v] ?? v) : v;
+    if (Array.isArray(v)) return v.map(walk);
+    if (v && typeof v === 'object') {
+      const out: Record<string, unknown> = {};
+      for (const [k, item] of Object.entries(v as Record<string, unknown>)) out[k] = walk(item);
+      return out;
+    }
+    return v;
+  };
+  return walk(value) as T;
 }

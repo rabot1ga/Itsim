@@ -6,12 +6,22 @@
  * один раз при загрузке; смена языка перезагружает приложение (см. дизайн —
  * модульные константы вычисляются при импорте).
  */
-import { t as translate, getStoredLocale, setStoredLocale, isLocale, LOCALES, type Locale } from '@itsim/shared';
+import {
+  t as translate,
+  getStoredLocale,
+  setStoredLocale,
+  setDisplayLocale,
+  isLocale,
+  LOCALES,
+  type Locale,
+} from '@itsim/shared';
 
 export type { Locale };
 export { LOCALES, isLocale };
 
 const locale: Locale = getStoredLocale(); // смена языка = перезагрузка модулей
+// Движок (shared) вычисляет display-тексты через dt() — сообщаем свою локаль.
+setDisplayLocale(locale);
 
 export function currentLocale(): Locale {
   return locale;
