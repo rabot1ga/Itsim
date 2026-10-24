@@ -63,3 +63,32 @@ export function marketplaceListings(
   }
   return out;
 }
+
+// ---------------------------------------------------------------------------
+// P2P-витрина (эскроу-лайт): игроки продают питомцев друг другу.
+// Антифрод v1 — ценовой коридор, лимит объявлений и запрет самопокупки;
+// всё остальное (репутация продавца, история сделок) — следующие стадии.
+// ---------------------------------------------------------------------------
+
+/** Жизнь объявления: два реальных дня, потом питомец возвращается продавцу. */
+export const OFFER_TTL_MS = 48 * 60 * 60 * 1000;
+/** Сколько активных объявлений может держать один игрок. */
+export const MAX_ACTIVE_OFFERS = 2;
+
+/**
+ * Ценовой коридор объявления (антифрод против отмывания через завышенную
+ * цену): 50–300% базовой цены предмета, шаг 100 ₽. Вне коридора — отказ.
+ */
+export function offerPriceBounds(basePrice: number): { min: number; max: number } {
+  const base = Math.max(0, Math.round(basePrice));
+  return {
+    min: Math.max(100, Math.round((base * 0.5) / 100) * 100),
+    max: Math.max(200, Math.round((base * 3) / 100) * 100),
+  };
+}
+
+export function isOfferPriceAllowed(basePrice: number, price: number): boolean {
+  if (!Number.isFinite(price) || price <= 0) return false;
+  const { min, max } = offerPriceBounds(basePrice);
+  return price >= min && price <= max && price === Math.round(price);
+}

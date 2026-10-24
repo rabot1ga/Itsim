@@ -50,19 +50,44 @@ beforeEach(async () => {
 });
 
 describe('pg-mem: миграции SQL', () => {
-  it('создаёт players/purchases и учитывает версию', async () => {
+  it('создаёт players/purchases/market_offers и учитывает версии', async () => {
     const tables = await ctx.query("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
     const names = tables.rows.map((r) => r.table_name);
     expect(names).toContain('players');
     expect(names).toContain('purchases');
+    expect(names).toContain('market_offers');
     expect(names).toContain('schema_migrations');
-    const ver = await ctx.query('SELECT id FROM schema_migrations');
-    expect(ver.rows).toHaveLength(1);
-    expect(String(ver.rows[0].id)).toBe('001_init.sql');
+    const ver = await ctx.query('SELECT id FROM schema_migrations ORDER BY id');
+    expect(ver.rows.map((r) => r.id)).toEqual(['001_init.sql', '002_market_offers.sql']);
   });
 
   it('повторный запуск не падает', async () => {
     await ctx.backend.migrate();
+  });
+});
+
+describe('pg-mem: P2P-объявления (raw SQL)', () => {
+  it('roundtrip записи объявления', async () => {
+    const offers = ctx.backend.offers;
+    const rec = {
+      id: 'off-1',
+      sellerId: '1',
+      itemId: 'pet_fox',
+      price: 95000,
+      createdAt: 1_700_000_000_000,
+      expiresAt: 1_700_172_800_000,
+      status: 'active' as const,
+    };
+    await offers.put(rec);
+    expect(await offers.get('off-1')).toEqual(rec);
+    expect(await offers.listActive()).toEqual([rec]);
+    expect(await offers.bySeller('1')).toEqual([rec]);
+    rec.status = 'sold_escrow';
+    await offers.put({ ...rec, buyerId: '2', soldAt: 1_700_000_100_000 });
+    const sold = await offers.get('off-1');
+    expect(sold?.status).toBe('sold_escrow');
+    expect(sold?.buyerId).toBe('2');
+    expect(await offers.listActive()).toEqual([]);
   });
 });
 

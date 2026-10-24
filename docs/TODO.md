@@ -682,4 +682,25 @@ Stars); `applyGrantsToState` кладёт косметику в `items`∪`entit
 Проверки: 453 юнит-тестов (shared 200 · server 112 · bot 22 · client 119),
 `tsc`, eslint, i18n-coverage 854/854 + 2377/2377, симулятор `--check`,
 `build`, **e2e 28/28**.
-Дальше: P2P-торговля площадки (эскроу/антифрод).
+
+**P2P-торговля площадки v1 (24.10.2026, эскроу-лайт):** объявления игроков
+о продаже питомцев (`OfferRecord`/`OfferBackend` в storeTypes; JSON —
+`offers.json` (NON_STATE_FILES), PG — raw SQL через executor + миграция
+`002_market_offers.sql`, model `MarketOffer` в schema.prisma как документация;
+generated Prisma-клиент не пересобирался). Жизненный цикл объявления:
+`active → sold_escrow → paid_out` (или `cancelled`/`expired`). Эскроу-лок:
+при листинге питомец вычитается из сейва продавца, при покупке деньги
+покупателя сидят в записи объявления до кнопки «Забрать» (payout); снятие
+или истечение (48 ч, ленивый свип на запросах) возвращает питомца.
+Антифрод v1: ценовой коридор 50–300% базы (шаг 100 ₽, `offerPriceBounds`),
+максимум 2 активных объявления, запрет самопокупки, гранты Stars (price 0)
+не продаются; попытки мимо правил пишутся в журнал аномалий
+(`offer_price_out_of_corridor`, `offer_self_trade`), мутации — под
+`MUTATION_RATE_LIMIT`. Клиент: «Объявления игроков» (buy) + «Мои объявления»
+(payout/cancel со статусами эскроу) + форма продажи с подсказкой коридора
+(в `MarketplacePanel`). Роуты: `GET/POST marketplace/offers|sell|buy|payout|cancel`.
+
+Проверки: 460 юнит-тестов (shared 202 · server 117 · bot 22 · client 119),
+`tsc`, eslint, i18n-coverage 878/878 + 2377/2377, симулятор `--check`,
+`build`, **e2e 28/28**.
+Дальше: P2P-итерация (репутация продавца, история сделок, поиск/фильтры).

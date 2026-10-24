@@ -43,3 +43,22 @@ model Purchase {
   @@index([userId])
   @@map("purchases")
 }
+
+/// Объявления P2P-витрины (эскроу-лайт). Документация: DDL — в
+/// src/db/migrations/002_market_offers.sql; бэкенд ходит сырым SQL
+/// (rawSqlOfferBackend), generated-клиент не пересобирается.
+model MarketOffer {
+  id        String  @id @map("id")
+  sellerId  String  @map("seller_id")
+  itemId    String  @map("item_id")
+  price     Int     @map("price")
+  createdAt BigInt  @map("created_at")
+  expiresAt BigInt  @map("expires_at")
+  status    String
+  buyerId   String? @map("buyer_id")
+  soldAt    BigInt? @map("sold_at")
+
+  @@index([status])
+  @@index([sellerId])
+  @@map("market_offers")
+}

@@ -16,8 +16,13 @@
  */
 import { migrateState, CURRENT_STATE_VERSION, clampStateAnomalies, detectDeltaAnomalies } from '@itsim/shared';
 import { config } from '../config.js';
-import type { PlayerBackend, PurchaseBackend } from './storeTypes.js';
-import { createJsonPlayerBackend, createJsonPurchaseBackend, isStateFile } from './jsonStore.js';
+import type { PlayerBackend, PurchaseBackend, OfferBackend } from './storeTypes.js';
+import {
+  createJsonPlayerBackend,
+  createJsonPurchaseBackend,
+  createJsonOfferBackend,
+  isStateFile,
+} from './jsonStore.js';
 import { logAnomaly } from './anomalyLog.js';
 
 export type { PurchaseRecord } from './storeTypes.js';
@@ -34,6 +39,7 @@ const cache = new Map<string, any>();
 
 let players: PlayerBackend = createJsonPlayerBackend(config.dataDir);
 let purchases: PurchaseBackend = createJsonPurchaseBackend(config.dataDir);
+let offers: OfferBackend = createJsonOfferBackend(config.dataDir);
 
 /**
  * Инициализация хранилища при старте процесса. Для PostgreSQL — создать пул,
@@ -75,6 +81,7 @@ export async function initStorage(log: (msg: string) => void = console.log): Pro
   await backend.migrate();
   players = backend.players;
   purchases = backend.purchases;
+  offers = backend.offers;
   pgBackends.push(backend);
   log('storage: PostgreSQL (Prisma)');
 }
@@ -89,15 +96,25 @@ export async function shutdownStorage(): Promise<void> {
 }
 
 /** Тестовый хелпер: подменить бэкенд (pg-mem-интеграция) и сбросить кэш. */
-export function __setBackendsForTests(playerBackend: PlayerBackend, purchaseBackend: PurchaseBackend): void {
+export function __setBackendsForTests(
+  playerBackend: PlayerBackend,
+  purchaseBackend: PurchaseBackend,
+  offerBackend?: OfferBackend
+): void {
   players = playerBackend;
   purchases = purchaseBackend;
+  if (offerBackend) offers = offerBackend;
   cache.clear();
 }
 
 /** Тестовый хелпер: доступ к бэкенду покупок (entitlements тоже его держит). */
 export function __purchaseBackend(): PurchaseBackend {
   return purchases;
+}
+
+/** Доступ к реестру P2P-объявлений (marketplace P2P). */
+export function __offerBackend(): OfferBackend {
+  return offers;
 }
 
 /**

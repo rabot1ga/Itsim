@@ -7,11 +7,11 @@
 import { mkdirSync, readFileSync, writeFileSync, renameSync, existsSync, unlinkSync } from 'fs';
 import { readdir, readFile, stat } from 'fs/promises';
 import { join } from 'path';
-import type { PlayerBackend, PurchaseBackend } from './storeTypes.js';
+import type { PlayerBackend, PurchaseBackend, OfferBackend, OfferRecord } from './storeTypes.js';
 import type { PurchaseRecord } from './storeTypes.js';
 
 /** Файлы в DATA_DIR, которые не являются сейвами игроков. */
-const NON_STATE_FILES = new Set(['entitlements.json']);
+const NON_STATE_FILES = new Set(['entitlements.json', 'offers.json']);
 
 export function isStateFile(name: string): boolean {
   return name.endsWith('.json') && !name.endsWith('.tmp') && !NON_STATE_FILES.has(name);
@@ -135,6 +135,64 @@ export function createJsonPurchaseBackend(dataDir: string): PurchaseBackend {
       persist();
     },
     /** Тестовый хелпер: сброс ин-мемори реестра. */
+    reset() {
+      registry = null;
+    },
+  };
+}
+
+interface OfferRegistry {
+  version: number;
+  offers: Record<string, OfferRecord>;
+}
+
+/**
+ * Реестр P2P-объявлений `offers.json` (тот же приём, что `entitlements.json`):
+ * один файл-реестр поверх atomicWrite. Питомцы «живут» в записях на время
+ * активного объявления — это и есть эскроу-лок.
+ */
+export function createJsonOfferBackend(dataDir: string): OfferBackend {
+  mkdirSync(dataDir, { recursive: true });
+  const file = join(dataDir, 'offers.json');
+  let registry: OfferRegistry | null = null;
+
+  const load = (): OfferRegistry => {
+    if (registry) return registry;
+    if (existsSync(file)) {
+      try {
+        registry = JSON.parse(readFileSync(file, 'utf-8')) as OfferRegistry;
+        if (!registry.offers) registry.offers = {};
+        return registry;
+      } catch (err) {
+        console.error('offers.json is corrupt — starting a fresh registry', err);
+      }
+    }
+    registry = { version: 1, offers: {} };
+    return registry;
+  };
+
+  const persist = (): void => {
+    atomicWrite(file, JSON.stringify(load(), null, 2), (err) => console.error('Failed to persist offers:', err));
+  };
+
+  return {
+    async get(id) {
+      return load().offers[id] ?? null;
+    },
+    async put(record) {
+      load().offers[record.id] = record;
+      persist();
+    },
+    async listActive() {
+      return Object.values(load().offers)
+        .filter((o) => o.status === 'active')
+        .sort((a, b) => b.createdAt - a.createdAt);
+    },
+    async bySeller(sellerId) {
+      return Object.values(load().offers)
+        .filter((o) => o.sellerId === sellerId)
+        .sort((a, b) => b.createdAt - a.createdAt);
+    },
     reset() {
       registry = null;
     },

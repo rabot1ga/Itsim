@@ -157,3 +157,198 @@ describe('Stars-эксклюзивы (мерч v2): не покупаются з
     expect(ids).toContain('pet_bow');
   });
 });
+
+describe('P2P: sell/buy/payout/cancel (эскроу-лайт)', () => {
+  it('sell: питомец уходит в эскроу-лок, объявление активно', async () => {
+    await reset(710);
+    await patch(710, { money: 500_000, items: ['pet_fox', 'pet_owl'] });
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/game/marketplace/sell',
+      headers: { authorization: tma(710) },
+      payload: { itemId: 'pet_fox', price: 95000 },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().state._lastEvent).toContain('выставлен на продажу');
+    // эскроу-лок: питомец вычтен из сейва
+    expect(res.json().state.items).toEqual(['pet_owl']);
+
+    const board = await app.inject({
+      method: 'GET',
+      url: '/api/game/marketplace/offers',
+      headers: { authorization: tma(711) },
+    });
+    expect(board.statusCode).toBe(200);
+    const found = (board.json().offers as any[]).find((o) => o.itemId === 'pet_fox' && !o.own);
+    expect(found).toBeTruthy();
+    expect(found.price).toBe(95000);
+  });
+
+  it('sell: отказы — нет питомца, Stars-эксклюзив, цена вне коридора, лимит объявлений', async () => {
+    await reset(712);
+    await patch(712, { money: 500_000, items: ['pet_owl', 'pet_halo', 'pet_turtle', 'pet_parrot'] });
+
+    const noPet = await app.inject({
+      method: 'POST',
+      url: '/api/game/marketplace/sell',
+      headers: { authorization: tma(712) },
+      payload: { itemId: 'pet_dragon', price: 800000 },
+    });
+    expect(noPet.statusCode).toBe(400);
+
+    const stars = await app.inject({
+      method: 'POST',
+      url: '/api/game/marketplace/sell',
+      headers: { authorization: tma(712) },
+      payload: { itemId: 'pet_halo', price: 150 },
+    });
+    expect(stars.statusCode).toBe(400);
+    expect(stars.json().error).toContain('Stars');
+
+    const corridor = await app.inject({
+      method: 'POST',
+      url: '/api/game/marketplace/sell',
+      headers: { authorization: tma(712) },
+      payload: { itemId: 'pet_owl', price: 1000 },
+    });
+    expect(corridor.statusCode).toBe(400);
+    expect(corridor.json().error).toContain('коридора');
+
+    // лимит: 2 активных объявления, третье — отказ
+    for (const [itemId, price] of [
+      ['pet_owl', 120000],
+      ['pet_turtle', 80000],
+    ] as const) {
+      const ok = await app.inject({
+        method: 'POST',
+        url: '/api/game/marketplace/sell',
+        headers: { authorization: tma(712) },
+        payload: { itemId, price },
+      });
+      expect(ok.statusCode).toBe(200);
+    }
+    const third = await app.inject({
+      method: 'POST',
+      url: '/api/game/marketplace/sell',
+      headers: { authorization: tma(712) },
+      payload: { itemId: 'pet_parrot', price: 22000 },
+    });
+    expect(third.statusCode).toBe(400);
+    expect(third.json().error).toContain('максимум');
+  });
+
+  it('buy: деньги в эскроу, самопокупка запрещена; payout — деньги продавцу', async () => {
+    await reset(713);
+    await reset(714);
+    await patch(713, { money: 200_000, items: ['pet_fox'] });
+    await patch(714, { money: 200_000, items: [] });
+
+    const sell = await app.inject({
+      method: 'POST',
+      url: '/api/game/marketplace/sell',
+      headers: { authorization: tma(713) },
+      payload: { itemId: 'pet_fox', price: 95000 },
+    });
+    expect(sell.statusCode).toBe(200);
+
+    const board = await app.inject({
+      method: 'GET',
+      url: '/api/game/marketplace/offers',
+      headers: { authorization: tma(714) },
+    });
+    const offer = (board.json().offers as any[]).find((o) => o.itemId === 'pet_fox');
+    expect(offer).toBeTruthy();
+
+    const self = await app.inject({
+      method: 'POST',
+      url: `/api/game/marketplace/offers/${offer.id}/buy`,
+      headers: { authorization: tma(713) },
+    });
+    expect(self.statusCode).toBe(400);
+    expect(self.json().error).toContain('себя');
+
+    const buy = await app.inject({
+      method: 'POST',
+      url: `/api/game/marketplace/offers/${offer.id}/buy`,
+      headers: { authorization: tma(714) },
+    });
+    expect(buy.statusCode).toBe(200);
+    expect(buy.json().state.money).toBe(200_000 - 95000);
+    expect(buy.json().state.items).toContain('pet_fox');
+
+    // продавцу деньги ещё не пришли — они в эскроу
+    const mid = (await loadState('713')) as any;
+    expect(mid.money).toBe(200_000);
+
+    const payout = await app.inject({
+      method: 'POST',
+      url: `/api/game/marketplace/offers/${offer.id}/payout`,
+      headers: { authorization: tma(713) },
+    });
+    expect(payout.statusCode).toBe(200);
+    expect(payout.json().state.money).toBe(200_000 + 95000);
+    expect(payout.json().state._lastEvent).toContain('95');
+
+    // повторный payout — отказ
+    const again = await app.inject({
+      method: 'POST',
+      url: `/api/game/marketplace/offers/${offer.id}/payout`,
+      headers: { authorization: tma(713) },
+    });
+    expect(again.statusCode).toBe(400);
+  });
+
+  it('cancel: питомец возвращается продавцу; истёкшие объявления закрываются лениво', async () => {
+    await reset(715);
+    await patch(715, { money: 100_000, items: ['pet_turtle'] });
+
+    const sell = await app.inject({
+      method: 'POST',
+      url: '/api/game/marketplace/sell',
+      headers: { authorization: tma(715) },
+      payload: { itemId: 'pet_turtle', price: 80000 },
+    });
+    const offerId = /Объявление|выставлен/.test(sell.json().state._lastEvent) ? true : false;
+    expect(offerId).toBe(true);
+
+    const mine = await app.inject({
+      method: 'GET',
+      url: '/api/game/marketplace/offers',
+      headers: { authorization: tma(715) },
+    });
+    const active = (mine.json().mine as any[]).find((o) => o.status === 'active');
+    expect(active).toBeTruthy();
+
+    const cancel = await app.inject({
+      method: 'POST',
+      url: `/api/game/marketplace/offers/${active.id}/cancel`,
+      headers: { authorization: tma(715) },
+    });
+    expect(cancel.statusCode).toBe(200);
+    expect(cancel.json().state.items).toContain('pet_turtle');
+
+    // истечение: объявление с прошедшим expiresAt возвращает питомца
+    await patch(715, { items: [] });
+    const store = await import('../services/gameStore.js');
+    const backend = store.__offerBackend();
+    await backend.put({
+      id: 'exp-1',
+      sellerId: '715',
+      itemId: 'pet_owl',
+      price: 120000,
+      createdAt: Date.now() - 100_000,
+      expiresAt: Date.now() - 1000,
+      status: 'active',
+    });
+    const swept = await app.inject({
+      method: 'GET',
+      url: '/api/game/marketplace/offers',
+      headers: { authorization: tma(715) },
+    });
+    expect(swept.statusCode).toBe(200);
+    const expired = (swept.json().mine as any[]).find((o) => o.id === 'exp-1');
+    expect(expired.status).toBe('expired');
+    expect(((await loadState('715')) as any).items).toContain('pet_owl');
+  });
+});

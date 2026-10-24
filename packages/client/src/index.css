@@ -2313,6 +2313,27 @@ select {
   color: var(--text-muted);
   margin-top: 2px;
 }
+.market-sub {
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.market-sell {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.market-input {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 13px;
+  padding: 8px 10px;
+  min-width: 0;
+  flex: 1 1 120px;
+}
 
 /* Питомец в комнате: оверлей-эмоудзи на сцене + контролы скинов/позиций */
 .room-pet-stage {
