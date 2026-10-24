@@ -1,6 +1,6 @@
+import { t, fmtNumber } from '../lib/i18n';
 import React, { useState } from 'react';
 import { useGameStore } from '../store/gameStore';
-
 /**
  * Weekly season sprint card (P1.2).
  *
@@ -13,34 +13,28 @@ import { useGameStore } from '../store/gameStore';
  * count, progress, done}], allDone, claimed, reward{money,motivation,
  * reputation}, endsAtMs, daysLeft }.
  */
-
 function fmtMoney(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)} млн`;
-  if (n >= 10_000) return `${Math.round(n / 1000)} тыс`;
-  return n.toLocaleString('ru-RU');
+  if (n >= 1000000) return t('{p0} млн', { p0: (n / 1000000).toFixed(1) });
+  if (n >= 10000) return t('{p0} тыс', { p0: Math.round(n / 1000) });
+  return fmtNumber(n);
 }
-
 export const SprintCard: React.FC = () => {
   const sprint = useGameStore((s) => s.sprint);
   const claimSprint = useGameStore((s) => s.claimSprint);
   const [busy, setBusy] = useState(false);
-
   if (!sprint) return null;
-
   const { reward } = sprint;
   const rewardParts: string[] = [];
   if (reward?.money) rewardParts.push(`+${fmtMoney(reward.money)} ₽`);
-  if (reward?.motivation) rewardParts.push(`+${reward.motivation} настроения`);
-  if (reward?.reputation) rewardParts.push(`+${reward.reputation} репутации`);
+  if (reward?.motivation) rewardParts.push(t('+{p0} настроения', { p0: reward.motivation }));
+  if (reward?.reputation) rewardParts.push(t('+{p0} репутации', { p0: reward.reputation }));
   const rewardLabel = rewardParts.join(' · ');
-
   const timeLeft =
     sprint.daysLeft > 1
-      ? `осталось ${sprint.daysLeft} дн.`
+      ? t('осталось {p0} дн.', { p0: sprint.daysLeft })
       : sprint.daysLeft === 1
-        ? 'остался 1 день'
-        : 'последний день';
-
+        ? t('остался 1 день')
+        : t('последний день');
   const handleClaim = async () => {
     if (busy) return;
     setBusy(true);
@@ -50,7 +44,6 @@ export const SprintCard: React.FC = () => {
       // claimSprint already surfaced the server error in the store banner
     }
   };
-
   return (
     <section className="card space-y-2.5">
       <div className="flex items-start gap-2">
@@ -60,7 +53,7 @@ export const SprintCard: React.FC = () => {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className="text-sm font-semibold text-ink-100">{sprint.title}</span>
-            <span className="chip !py-0 text-2xs !text-ink-500" title={`Неделя с ${sprint.week}`}>
+            <span className="chip !py-0 text-2xs !text-ink-500" title={t('Неделя с {p0}', { p0: sprint.week })}>
               {timeLeft}
             </span>
           </div>
@@ -77,7 +70,7 @@ export const SprintCard: React.FC = () => {
             <div key={g.id}>
               <div className="flex items-baseline justify-between gap-2 text-xs">
                 <span className={done ? 'text-moss-300' : 'text-ink-200'}>
-                  {g.progress} из {g.count} {g.description}
+                  {g.progress} {t('из')} {g.count} {g.description}
                 </span>
                 {done && (
                   <span className="text-moss-300" aria-hidden="true">
@@ -97,17 +90,18 @@ export const SprintCard: React.FC = () => {
       {sprint.claimed ? (
         <p className="flex items-center gap-1.5 text-xs text-moss-300">
           <span aria-hidden="true">✓</span>
-          Награда недели получена{rewardLabel ? `: ${rewardLabel}` : ''}
+          {t('Награда недели получена')}
+          {rewardLabel ? `: ${rewardLabel}` : ''}
         </p>
       ) : sprint.allDone ? (
         <button onClick={() => void handleClaim()} disabled={busy} className="btn btn-primary w-full">
-          {busy ? 'Забираем…' : `Забрать награду${rewardLabel ? ` · ${rewardLabel}` : ''}`}
+          {busy ? t('Забираем…') : t('Забрать награду{p0}', { p0: rewardLabel ? ` · ${rewardLabel}` : '' })}
         </button>
       ) : (
         rewardLabel && (
           <p className="flex items-center gap-1.5 text-2xs text-ink-500">
             <span aria-hidden="true">🔒</span>
-            Выполни все цели до конца недели — награда {rewardLabel}
+            {t('Выполни все цели до конца недели — награда')} {rewardLabel}
           </p>
         )
       )}

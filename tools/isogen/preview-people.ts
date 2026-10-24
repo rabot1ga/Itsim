@@ -25,7 +25,7 @@ const arg = (flag: string, dflt: number) => {
   const i = process.argv.indexOf(flag);
   return i === -1 ? dflt : Number(process.argv[i + 1]);
 };
-const out = process.argv[2]?.startsWith('--') ? '/tmp/iso/people.png' : process.argv[2] ?? '/tmp/iso/people.png';
+const out = process.argv[2]?.startsWith('--') ? '/tmp/iso/people.png' : (process.argv[2] ?? '/tmp/iso/people.png');
 const COUNT = arg('--count', 48);
 const SCALE = arg('--scale', 3);
 const COLS = arg('--cols', 12);

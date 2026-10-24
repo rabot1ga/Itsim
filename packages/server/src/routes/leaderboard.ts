@@ -1,8 +1,8 @@
+import { t } from '../lib/i18n';
 import { FastifyInstance } from 'fastify';
 import { RATING_METRICS } from '@itsim/shared';
 import { telegramAuthHook } from '../middleware/telegramAuth.js';
 import { getLeaderboard, isRatingMetric } from '../services/leaderboardIndex.js';
-
 /**
  * Leaderboard — computed from real persisted player states via the cached
  * index (`services/leaderboardIndex.js`), so a request never touches the disk.
@@ -18,20 +18,22 @@ import { getLeaderboard, isRatingMetric } from '../services/leaderboardIndex.js'
  * пересортировывает на «рейтинг»: подпись на экране и порядок строк обязаны
  * совпадать.
  */
-
 export async function leaderboardRoutes(app: FastifyInstance) {
   app.addHook('preHandler', telegramAuthHook);
-
   const handler = (honestOnly: boolean) => async (request: any, reply: any) => {
     const user = (request as any).telegramUser;
     const userId = user ? String(user.id) : null;
-    const { limit, offset, metric } = request.query as { limit?: string; offset?: string; metric?: string };
-
+    const { limit, offset, metric } = request.query as {
+      limit?: string;
+      offset?: string;
+      metric?: string;
+    };
     if (metric !== undefined && !isRatingMetric(metric)) {
       reply.code(400);
-      return { error: `неизвестная метрика «${metric}», доступны: ${RATING_METRICS.join(', ')}` };
+      return {
+        error: t('неизвестная метрика «{metric}», доступны: {p0}', { metric: metric, p0: RATING_METRICS.join(', ') }),
+      };
     }
-
     const page = await getLeaderboard({
       limit: limit ? parseInt(limit, 10) : 20,
       offset: offset ? parseInt(offset, 10) : 0,
@@ -39,7 +41,6 @@ export async function leaderboardRoutes(app: FastifyInstance) {
       honestOnly,
       metric,
     });
-
     return {
       leaderboard: page.rows.map(({ userId: _userId, parts: _parts, ...row }) => row),
       you: page.you ? (({ userId: _u, parts: _p, ...rest }) => rest)(page.you) : null,
@@ -48,13 +49,11 @@ export async function leaderboardRoutes(app: FastifyInstance) {
       updatedAt: page.updatedAt,
     };
   };
-
   /**
    * GET /api/leaderboard/friends?limit=20&offset=0&metric=rating
    * Global board by `metric` (top-N + your own rank).
    */
   app.get('/friends', handler(false));
-
   /**
    * GET /api/leaderboard/honest
    * Same board without booster-item owners.

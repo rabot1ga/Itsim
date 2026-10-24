@@ -10,9 +10,13 @@ cp ci/github-actions-ci.yml .github/workflows/ci.yml
 git add .github/workflows/ci.yml && git commit -m "CI: enable GitHub Actions"
 ```
 
-> Файл лежит здесь, а не в `.github/workflows/`, потому что GitHub-приложение,
-> которым коммитил агент, не имеет права `workflows` и push с изменением
-> workflow-файла отклоняется на стороне GitHub.
+> **Включено 23.10.2026:** файл скопирован в `.github/workflows/ci.yml` —
+> GitHub-приложение агента получило право `workflows`, push проходит. Текст
+> ниже — историческая справка, почему этого не было с 23.09.2026.
+>
+> Файл лежал здесь, а не в `.github/workflows/`, потому что GitHub-приложение,
+> которым коммитил агент, не имело права `workflows` и push с изменением
+> workflow-файла отклонялся на стороне GitHub.
 >
 > Проверено 23.09.2026 на живом push: GitHub отвечает
 > `refusing to allow a GitHub App to create or update workflow

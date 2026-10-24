@@ -1,3 +1,4 @@
+import { t, fmtNumber } from '../lib/i18n';
 export interface ShopItem {
   id: string;
   name: string;
@@ -8,7 +9,6 @@ export interface ShopItem {
   layerId?: string;
   nft?: boolean;
 }
-
 /**
  * Shop tab as authored in `balance.shop.categories[]` (3.7).
  *
@@ -24,25 +24,26 @@ export interface ShopCategoryDef {
   matchIds?: string[];
   matchPrefixes?: string[];
 }
-
 /** UI shape is the same — a tab strip with a label per id. */
-export const SHOP_CATEGORIES: ReadonlyArray<{ id: string; label: string }> = [
-  { id: 'all', label: 'Все' },
-  { id: 'equipment', label: 'Техника' },
-  { id: 'home', label: 'Для дома' },
-  { id: 'pets', label: 'Питомцы' },
-  { id: 'courses', label: 'Курсы' },
+export const SHOP_CATEGORIES: ReadonlyArray<{
+  id: string;
+  label: string;
+}> = [
+  { id: 'all', label: t('Все') },
+  { id: 'equipment', label: t('Техника') },
+  { id: 'home', label: t('Для дома') },
+  { id: 'pets', label: t('Питомцы') },
+  { id: 'courses', label: t('Курсы') },
 ] as const;
 export type ShopCategory = string;
-
 /** Map balance.shop.categories to the local shape (label, no extra fields). */
-export function shopCategoriesFromBalance(
-  list: ReadonlyArray<ShopCategoryDef> | undefined
-): ReadonlyArray<{ id: string; label: string }> {
+export function shopCategoriesFromBalance(list: ReadonlyArray<ShopCategoryDef> | undefined): ReadonlyArray<{
+  id: string;
+  label: string;
+}> {
   if (!list || list.length === 0) return SHOP_CATEGORIES;
   return list.map((c) => ({ id: c.id, label: c.label }));
 }
-
 /** Does an item belong to a category? The first matching tab wins. */
 export function itemInCategory(
   item: ShopItem,
@@ -62,7 +63,6 @@ export function itemInCategory(
   if (Array.isArray(def.match) && def.match.includes(item.type)) return true;
   return false;
 }
-
 /** Internal fallback used when balance hasn't loaded yet. */
 function itemCategoryLocal(item: ShopItem): string {
   if (item.type === 'pet') return 'pets';
@@ -76,16 +76,14 @@ function itemCategoryLocal(item: ShopItem): string {
   }
   return 'home';
 }
-
 const EFFECT_LABELS: Record<string, [string, boolean]> = {
-  xpBonus: ['опыт', true],
-  energyBonus: ['энергия', false],
-  motivationBonus: ['настроение', false],
-  healthBonus: ['здоровье', false],
+  xpBonus: [t('опыт'), true],
+  energyBonus: [t('энергия'), false],
+  motivationBonus: [t('настроение'), false],
+  healthBonus: [t('здоровье'), false],
   hashrate: ['MH/s', false],
-  electricitySave: ['экономия электричества', true],
+  electricitySave: [t('экономия электричества'), true],
 };
-
 /** Numbers come from content, never from a reference mockup. */
 export function itemEffects(item: ShopItem): string {
   const labels = Object.entries(item.effects ?? {}).flatMap(([key, value]) => {
@@ -94,7 +92,6 @@ export function itemEffects(item: ShopItem): string {
     const n = spec[1] ? Math.round(value * 100) : value;
     return [`${n > 0 ? '+' : ''}${n}${spec[1] ? '%' : ''} ${spec[0]}`];
   });
-  return labels.join(' · ') || 'Без пассивного бонуса';
+  return labels.join(' · ') || t('Без пассивного бонуса');
 }
-
-export const shopMoney = (amount: number): string => `${amount.toLocaleString('ru-RU')} ₽`;
+export const shopMoney = (amount: number): string => `${fmtNumber(amount)} ₽`;

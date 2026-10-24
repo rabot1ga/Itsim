@@ -62,7 +62,11 @@ export class TelegramClient {
     return Boolean(this.token);
   }
 
-  async call<T = any>(method: string, payload: Record<string, any> = {}, timeoutMs = 65_000): Promise<TelegramResponse<T>> {
+  async call<T = any>(
+    method: string,
+    payload: Record<string, any> = {},
+    timeoutMs = 65_000
+  ): Promise<TelegramResponse<T>> {
     if (!this.token) return { ok: false, mock: true, description: 'BOT_TOKEN not set (mock mode)' };
 
     const controller = new AbortController();

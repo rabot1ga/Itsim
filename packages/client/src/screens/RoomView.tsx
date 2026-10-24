@@ -1,286 +1,203 @@
-import React, { useEffect, useState } from 'react';
+import { t } from '../lib/i18n';
+import React, { useState } from 'react';
 import { useGameStore } from '../store/gameStore';
-import { RoomRenderer } from '../components/room/RoomRenderer';
-import { RoomEditor, entryName } from '../components/room/RoomEditor';
-import { useRoomScene } from '../components/room/useRoomScene';
-import { EmptyState, ScreenTitle, SectionTitle } from '../components/ui';
-import { Wardrobe } from '../components/room/Wardrobe';
-import { ShareCard } from '../components/room/ShareCard';
-import { haptic } from '../lib/telegram';
-import { buildAvatarData, fetchPixelPack, PixelAvatarData } from '../components/room/pixelAvatar';
-import { PixelIdentity } from '../components/room/PixelIdentity';
-
+import { ScreenTitle, SectionTitle } from '../components/ui';
+import { ACTIONS } from './actionCatalogue';
+import {
+  ROOM_TIER_META,
+  PET_ROOM_META,
+  DEFAULT_PET_POSITION,
+  housingTitle,
+  roomArtwork,
+  roomTierOf,
+} from '../lib/roomArt';
+import { PET_SKIN_EMOJI, petEmoji, petBadges, petAnimState } from '../lib/petSkins';
+import type { PetRoomPosition } from '@itsim/shared';
 /**
- * «Дом» — procedural room (DESIGN.md), NFT inventory (mock Solana),
- * cross-collection synergies and the share card.
+ * «Дом» — комната как карточка события (решение 22.10.2026, вариант B):
+ * сцена-баннер текущего тира + строки-зоны поверх общего каталога действий.
+ * Конструктора комнаты и пиксельной идентичности здесь больше нет: сцена
+ * одна на тир, протагонист в ней постоянный, кастомизации нет вовсе.
  */
+interface Zone {
+  id: string;
+  emoji: string;
+  label: string;
+  action: string;
+  chip?: string;
+  needsJob?: boolean;
+  needsPet?: boolean;
+}
+const ZONES: Zone[] = [
+  { id: 'bed', emoji: '🛏️', label: t('Проспать до утра'), action: 'rest_sleep', chip: t('день завершится') },
+  { id: 'window', emoji: '🚶', label: t('Прогулка вокруг дома'), action: 'rest_walk' },
+  { id: 'rug', emoji: '🎲', label: t('Хобби на коврике'), action: 'rest_hobby' },
+  { id: 'desk', emoji: '💻', label: t('Рабочая задача за своим столом'), action: 'work_task', needsJob: true },
+  { id: 'shelf', emoji: '📚', label: t('Книга с полки'), action: 'study_book' },
+  { id: 'kitchen', emoji: '🍲', label: t('Нормально поесть'), action: 'rest_lunch' },
+  { id: 'cat', emoji: '🐈', label: t('Покормить кота'), action: 'feed_pet', needsPet: true },
+];
+function zoneChips(zone: Zone): string[] {
+  if (zone.chip) return [zone.chip];
+  const def = ACTIONS.find((a) => a.id === zone.action);
+  const chips: string[] = [];
+  if (def?.energy) chips.push(`−${def.energy}⚡`);
+  if (def?.cost) chips.push(`−${def.cost} ₽`);
+  return chips;
+}
 export const RoomView: React.FC = () => {
   const player = useGameStore((s) => s.player);
-  const bindWallet = useGameStore((s) => s.bindWallet);
-  const setMockCollections = useGameStore((s) => s.setMockCollections);
-  const inventory = useGameStore((s) => s.inventory);
-  const heldCollections = useGameStore((s) => s.heldCollections);
-
-  const [pixelPack, setPixelPack] = useState<Awaited<ReturnType<typeof fetchPixelPack>>>(null);
-  const [walletInput, setWalletInput] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [editorOpen, setEditorOpen] = useState(false);
-  const [wardrobeOpen, setWardrobeOpen] = useState(false);
-
-  // Манифесты, композиция комнаты и фигуры — общим хуком: «Главная» и
-  // шаринг-карточка берут ровно его же, поэтому показать другое они уже не могут.
-  const scene = useRoomScene();
-  const { crossCollections } = scene;
-
-  useEffect(() => {
-    fetchPixelPack()
-      .then(setPixelPack)
-      .catch(() => setError('Не удалось загрузить контент'));
-  }, []);
-
+  const performAction = useGameStore((s) => s.performAction);
+  const setPetRoom = useGameStore((s) => s.setPetRoom);
+  const [busy, setBusy] = useState<string | null>(null);
   if (!player) return null;
-
-  const pixelAvatarData: PixelAvatarData | null =
-    pixelPack && player.genetics ? buildAvatarData(pixelPack, player.genetics, player.avatar) : null;
-
-  const traits = player.genetics;
-
-  const handleBind = async () => {
-    const ok = await bindWallet(walletInput.trim());
-    setError(ok ? null : 'Не удалось привязать кошелёк (проверь формат base58)');
+  // Дом растёт с жильём (24.10.2026): переезд меняет сцену комнаты.
+  const tier = roomTierOf(player.housingLevel ?? 0);
+  const meta = ROOM_TIER_META[tier];
+  const items = player.items ?? [];
+  // Скины и позиции питомца (роадмап): вид — эмоудзи по виду питомца,
+  // аксессуары — бейджем; позиция — якорь на сцене комнаты. Старые сейвы
+  // могли получить косметику только в entitlements — читаем объединение.
+  const owned = [...new Set<string>([...items, ...((player.entitlements as string[] | undefined) ?? [])])];
+  const ownedSkins = owned.filter((i: string) => i in PET_SKIN_EMOJI);
+  const hasPet = ownedSkins.length > 0;
+  const zones = ZONES.filter((z) => !z.needsPet || hasPet);
+  const look = player.petRoom ?? {};
+  const skin = look.skin === null ? null : (look.skin ?? ownedSkins[0] ?? null);
+  const position: PetRoomPosition = look.position ?? DEFAULT_PET_POSITION;
+  const anchor = PET_ROOM_META[position];
+  const skinEmo = petEmoji(skin);
+  const badges = petBadges(owned);
+  // Анимации питомца (роадмап): idle/sleep/happy — из состояния дня.
+  const anim = petAnimState(player);
+  const runZone = async (zone: Zone) => {
+    setBusy(zone.id);
+    await performAction(zone.action);
+    setBusy(null);
   };
-
   return (
     <div className="space-y-4 animate-fade-in">
-      <ScreenTitle
-        emoji="🏠"
-        meta={
-          traits ? (
-            <span className="num truncate max-w-[120px]" title={traits.seed}>
-              seed {traits.seed.slice(0, 8)}…
-            </span>
-          ) : undefined
-        }
-      >
-        Дом
+      <ScreenTitle emoji="🏠" meta={<span className="num">{meta.tagline}</span>}>
+        {t('Дом')}
       </ScreenTitle>
 
-      {/* Комната — плоский слоистый рендер (design.md §13.2): те же слои, что и
-          в редакторе, и полнофигурный персонаж из 500×760 webp-набора. Iso-вид
-          остался только там, где он и задуман: HUD-портрет, карточки, офис. */}
-      {scene.ready && (
-        <RoomRenderer
-          roomManifest={scene.roomManifest}
-          avatarManifest={scene.avatarManifest}
-          traits={scene.traits}
-          geneticsConfig={scene.geneticsConfig}
-          housingLevel={scene.housingLevel}
-          composition={scene.roomComposition}
-          avatarCustom={scene.avatarCustom}
-          petWear={scene.petWear}
-          petFed={scene.petFed}
-        />
-      )}
-
-      {/* Pet status */}
-      {scene.ready && scene.roomComposition.pet && scene.roomComposition.pet !== 'pet_none' && (
-        <div className="card card-sm flex items-center gap-2.5">
-          <span className="text-lg" aria-hidden="true">
-            🐾
-          </span>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-ink-100 truncate">{entryName(scene.roomComposition.pet)}</p>
-            <p className={`text-xs ${player.petFedToday ? 'text-moss-300' : 'text-ochre-300'}`}>
-              {player.petFedToday ? 'сыт и счастлив до завтра' : 'голоден — покорми во вкладке «День»'}
-            </p>
-          </div>
+      <section className="story-card" aria-label={t('Твоя комната')}>
+        <div className="story-card-kicker">
+          {t('твой дом ·')} {housingTitle(player.housingLevel ?? 0)}
         </div>
-      )}
-
-      {/* Room editor */}
-      {scene.ready && (
-        <div className="card">
-          <button
-            onClick={() => {
-              haptic('selection');
-              setEditorOpen((v) => !v);
+        <div className="room-pet-stage">
+          <img
+            className="story-card-art"
+            src={roomArtwork(tier)}
+            alt=""
+            width={512}
+            height={384}
+            onError={(ev) => {
+              // Сцена — украшение и настроение, а не контракт: нет файла —
+              // карточка остаётся текстовой (тот же приём, что у финалов).
+              ev.currentTarget.style.display = 'none';
             }}
-            aria-expanded={editorOpen}
-            className="w-full flex items-center justify-between touch-target"
-          >
-            <span className="flex items-center gap-2 text-sm font-semibold text-ink-100">
-              <span aria-hidden="true">🛋</span>
-              Настроить комнату
-            </span>
-            <span aria-hidden="true" className={`accordion-chevron ${editorOpen ? 'is-open' : ''}`}>
-              ▾
-            </span>
-          </button>
-          <div className={`accordion-body ${editorOpen ? 'open' : ''}`}>
-            <div className="accordion-inner">
-              <div className="pt-3">
-                <RoomEditor
-                  roomManifest={scene.roomManifest}
-                  geneticsConfig={scene.geneticsConfig}
-                  traits={scene.traits}
-                  player={player}
-                  heldCollections={heldCollections ?? []}
-                  composition={scene.roomComposition}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Wardrobe */}
-      {scene.ready && (
-        <div className="card">
-          <button
-            onClick={() => {
-              haptic('selection');
-              setWardrobeOpen((v) => !v);
-            }}
-            aria-expanded={wardrobeOpen}
-            className="w-full flex items-center justify-between touch-target"
-          >
-            <span className="flex items-center gap-2 text-sm font-semibold text-ink-100">
-              <span aria-hidden="true">👕</span>
-              Гардероб
-            </span>
-            <span aria-hidden="true" className={`accordion-chevron ${wardrobeOpen ? 'is-open' : ''}`}>
-              ▾
-            </span>
-          </button>
-          <div className={`accordion-body ${wardrobeOpen ? 'open' : ''}`}>
-            <div className="accordion-inner">
-              <div className="pt-3">
-                <Wardrobe
-                  avatarManifest={scene.avatarManifest}
-                  geneticsConfig={scene.geneticsConfig}
-                  traits={traits}
-                  player={player}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {pixelAvatarData && pixelPack && <PixelIdentity pack={pixelPack} data={pixelAvatarData} />}
-
-      {error && (
-        <div role="alert" className="card card-sm">
-          <p className="text-sm text-clay-300">⚠ {error}</p>
-        </div>
-      )}
-
-      {/* Wallet */}
-      <div className="card">
-        <SectionTitle className="mb-3">Кошелёк Solana</SectionTitle>
-        {player.walletAddress ? (
-          <p className="num text-xs text-moss-300 break-all">{player.walletAddress}</p>
-        ) : (
-          <div className="flex gap-2">
-            <input
-              value={walletInput}
-              onChange={(e) => setWalletInput(e.target.value)}
-              placeholder="Base58 адрес…"
-              className="input flex-1 min-w-0"
-              inputMode="text"
-              autoComplete="off"
-              autoCapitalize="none"
-              autoCorrect="off"
-              spellCheck={false}
-              enterKeyHint="done"
-            />
-            <button onClick={handleBind} disabled={walletInput.trim().length < 32} className="btn btn-primary shrink-0">
-              Привязать
-            </button>
-          </div>
-        )}
-        <p className="subtle mt-3">
-          Генетика персонажа детерминированно привязана к кошельку (DESIGN.md 3.1). В проде — через Solana Wallet
-          Adapter.
-        </p>
-      </div>
-
-      {/* NFT inventory */}
-      <div className="card">
-        <SectionTitle className="mb-3">NFT-предметы (мок)</SectionTitle>
-        {(inventory ?? []).length === 0 ? (
-          <EmptyState
-            bare
-            emoji="📦"
-            title="NFT пока нет"
-            hint="Загляни в магазин (Herman Miller, MacBook…) — покупка смонтится в кошелёк."
           />
-        ) : (
-          <div className="space-y-1.5">
-            {(inventory ?? []).map((nft: any) => (
-              <div key={nft.name} className="well flex items-center justify-between">
-                <div className="min-w-0">
-                  <p className="text-sm text-ink-100">{nft.name}</p>
-                  <p className="num text-2xs text-ink-500 truncate">
-                    {nft.attributes?.map((a: any) => `${a.trait_type}:${a.value}`).join(' · ')}
-                  </p>
-                </div>
-                <span className="num text-2xs text-sky-300">{nft.symbol}</span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Cross-collection synergies */}
-      <div className="card">
-        <SectionTitle className="mb-3">Cross-collection (мок-детект)</SectionTitle>
-        <div className="space-y-2">
-          {crossCollections.map((c: any) => {
-            const held = (heldCollections ?? []).includes(c.collectionId);
-            const bonuses = (c.bonuses ?? []).map((b: any) => `${b.type}=${b.value}`).join(', ');
-            return (
-              <button
-                key={c.collectionId}
-                onClick={() =>
-                  setMockCollections(
-                    held
-                      ? (heldCollections ?? []).filter((x: string) => x !== c.collectionId)
-                      : [...(heldCollections ?? []), c.collectionId]
-                  )
-                }
-                className={`tile w-full flex items-center justify-between gap-2 text-left ${held ? 'is-chosen' : ''}`}
-              >
-                <div className="min-w-0">
-                  <p className="text-sm text-ink-100">{c.collectionName}</p>
-                  <p className="text-2xs text-ink-500 truncate">
-                    {c.nftType} → {c.layerId}
-                    {bonuses ? ` · ${bonuses}` : ''}
-                  </p>
-                </div>
-                <span aria-hidden="true" className={held ? 'text-moss-300' : 'text-ink-500'}>
-                  {held ? '✓' : '+'}
+          {skinEmo && (
+            <div
+              className={`room-pet room-pet--${anim}`}
+              style={{ left: `${anchor.x}%`, top: `${anchor.y}%` }}
+              role="img"
+              aria-label={anim === 'sleep' ? t('Питомец спит') : t('Питомец в комнате')}
+            >
+              <span className="room-pet-emoji">{skinEmo}</span>
+              {badges.length > 0 && (
+                <span className="room-pet-badges" aria-hidden="true">
+                  {badges.join('')}
                 </span>
-              </button>
+              )}
+              {anim === 'sleep' && (
+                <span className="room-pet-zzz" aria-hidden="true">
+                  💤
+                </span>
+              )}
+              {anim === 'happy' && (
+                <span className="room-pet-spark" aria-hidden="true">
+                  ✨
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+        <div className="story-card-copy">
+          <h2>{meta.title}</h2>
+          <p>{meta.description}</p>
+        </div>
+        <div className="story-choices">
+          {zones.map((zone) => {
+            const missing = zone.needsJob && !player.job ? [t('нужна работа')] : [];
+            return (
+              <div className="story-choice-group" key={zone.id}>
+                <button
+                  className="story-choice story-choice-green"
+                  disabled={busy !== null || missing.length > 0}
+                  onClick={() => runZone(zone)}
+                >
+                  <span>
+                    <span aria-hidden="true">{zone.emoji}</span> {busy === zone.id ? t('Делаем…') : zone.label}
+                  </span>
+                  <span className="story-choice-effects">
+                    {zoneChips(zone).map((c) => (
+                      <span key={c} className="res-chip num">
+                        {c}
+                      </span>
+                    ))}
+                  </span>
+                </button>
+                {missing.length > 0 && <p className="story-requirements">{missing.join(' · ')}</p>}
+              </div>
             );
           })}
         </div>
-        <p className="subtle mt-3">
-          В проде владение коллекциями читается on-chain (Helius RPC). Здесь — мок для теста бонусов.
-        </p>
-      </div>
+        <p className="story-footnote">{t('Комната растёт вместе с грейдом: старт → обжитая → офис → студия мечты.')}</p>
+      </section>
 
-      {/* Share card */}
-      {scene.ready && (
-        <ShareCard
-          traits={scene.traits}
-          player={player}
-          roomManifest={scene.roomManifest}
-          avatarManifest={scene.avatarManifest}
-          geneticsConfig={scene.geneticsConfig}
-          roomComposition={scene.roomComposition}
-          avatarComposition={scene.figureComposition}
-        />
+      {/* Скины и позиции питомца в комнате (роадмап): косметика сейва */}
+      {ownedSkins.length > 0 && (
+        <section className="card">
+          <SectionTitle>{t('Питомец в комнате')}</SectionTitle>
+          <p className="pet-room-label">{t('Кто в комнате')}</p>
+          <div className="pet-room-row" role="group" aria-label={t('Кто в комнате')}>
+            {ownedSkins.map((id: string) => (
+              <button
+                key={id}
+                type="button"
+                className={skin === id ? 'btn btn-primary' : 'btn btn-ghost'}
+                aria-pressed={skin === id}
+                onClick={() => void setPetRoom({ skin: id })}
+              >
+                <span aria-hidden="true">{PET_SKIN_EMOJI[id]}</span>
+              </button>
+            ))}
+            <button
+              type="button"
+              className={skin === null ? 'btn btn-primary' : 'btn btn-ghost'}
+              aria-pressed={skin === null}
+              onClick={() => void setPetRoom({ skin: null })}
+            >
+              {t('Убрать питомца')}
+            </button>
+          </div>
+          <p className="pet-room-label">{t('Где отдыхает питомец')}</p>
+          <div className="pet-room-row" role="group" aria-label={t('Где отдыхает питомец')}>
+            {(Object.keys(PET_ROOM_META) as PetRoomPosition[]).map((p) => (
+              <button
+                key={p}
+                type="button"
+                className={position === p ? 'btn btn-primary' : 'btn btn-ghost'}
+                aria-pressed={position === p}
+                onClick={() => void setPetRoom({ position: p })}
+              >
+                {PET_ROOM_META[p].label}
+              </button>
+            ))}
+          </div>
+        </section>
       )}
     </div>
   );

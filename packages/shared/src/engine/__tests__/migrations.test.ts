@@ -1,11 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  migrateState,
-  normalizeState,
-  needsMigration,
-  createNewPlayer,
-  CURRENT_STATE_VERSION,
-} from '../../index';
+import { migrateState, normalizeState, needsMigration, createNewPlayer, CURRENT_STATE_VERSION } from '../../index';
 
 /**
  * Save migrations (engine/migrations.ts).
@@ -31,7 +25,15 @@ function legacySave(): any {
     skills: { javascript: { level: 12, xp: 40 }, react: { level: 7, xp: 10 } },
     perks: ['night_owl'],
     softSkills: { communication: { level: 9, xp: 3 } },
-    job: { companyId: 'startup', position: 'Junior', grade: 'junior', salary: 90000, energyPerDay: 4, daysWorked: 20, daysSinceLastPromotion: 5 },
+    job: {
+      companyId: 'startup',
+      position: 'Junior',
+      grade: 'junior',
+      salary: 90000,
+      energyPerDay: 4,
+      daysWorked: 20,
+      daysSinceLastPromotion: 5,
+    },
     jobWarnings: 0,
     pendingOffers: [],
     currentApplication: null,
@@ -238,5 +240,109 @@ describe('normalizeState', () => {
     const once = JSON.stringify(state);
     normalizeState(state);
     expect(JSON.stringify(state)).toBe(once);
+  });
+});
+
+describe('v5_identity_removal (снятие пиксельной идентичности)', () => {
+  /** Сейв v4 с полным набором полей идентичности. */
+  function identitySave(): any {
+    return {
+      version: 4,
+      telegramId: 7,
+      currentDay: 40,
+      money: 1000,
+      energy: 10,
+      maxEnergy: 16,
+      motivation: 60,
+      skills: {},
+      walletAddress: '4X1...',
+      genetics: { seed: 'x', skinTone: 'skin_2', hairStyle: 'hair_short' },
+      avatar: { top: 'top_jacket', hairColor: '#2b2320' },
+      crossBonuses: [{ type: 'energy', value: 1 }],
+      room: { slots: {}, wallColor: 'wall_3' },
+    };
+  }
+
+  it('дропает поля идентичности и помечает сейв изменённым', () => {
+    const { state, applied, changed } = migrateState(identitySave());
+    expect(applied).toContain('v5_identity_removal');
+    expect(changed).toBe(true);
+    expect(state.version).toBe(CURRENT_STATE_VERSION);
+    expect(state.genetics).toBeUndefined();
+    expect(state.avatar).toBeUndefined();
+    expect(state.walletAddress).toBeUndefined();
+    expect(state.crossBonuses).toBeUndefined();
+    expect(state.room).toBeUndefined();
+  });
+
+  it('идемпотентна: второй прогон ничего не меняет', () => {
+    const once = migrateState(identitySave());
+    const twice = migrateState(once.state);
+    expect(twice.changed).toBe(false);
+    expect(twice.applied).toEqual([]);
+  });
+
+  it('сейв без полей идентичности миграция не трогает', () => {
+    const save = identitySave();
+    delete save.genetics;
+    delete save.avatar;
+    delete save.walletAddress;
+    delete save.crossBonuses;
+    delete save.room;
+    const { state, applied } = migrateState(save);
+    expect(applied).toEqual(['v5_identity_removal', 'v6_rng_salt', 'v7_stars_cosmetics_revival', 'v8_hungry_days']);
+    // нормализация достаивает дефолты, поэтому сверяем суть: поля идентичности
+    // не появились, остальной сейв доехал нетронутым
+    for (const key of ['genetics', 'avatar', 'walletAddress', 'crossBonuses', 'room']) {
+      expect((state as any)[key]).toBeUndefined();
+    }
+    // P2.4: миграция v6 добавляет серверную соль RNG
+    expect(state.rngSalt).toMatch(/^[0-9a-f]{32}$/);
+    expect(state.rngSeq).toBe(0);
+    expect(state.money).toBe(1000);
+    expect(state.currentDay).toBe(40);
+  });
+});
+
+describe('v7_stars_cosmetics_revival (мерч v2: живая косметика)', () => {
+  /** Сейв с мёртвыми id косметики из старых Stars-наборов. */
+  function merchSave(): any {
+    return {
+      ...legacySave(),
+      version: 6,
+      items: ['pet_cat', 'acc_vr_headset', 'top_hoodie_corp', 'pet_cat'],
+      entitlements: ['decor_neon', 'desk_rgb', 'pet_cat_shadow'],
+    };
+  }
+
+  it('обменивает мёртвые id на эксклюзивы Stars и дедуплицирует', () => {
+    const { state, applied } = migrateState<any>(merchSave());
+    expect(applied).toEqual(['v7_stars_cosmetics_revival', 'v8_hungry_days']);
+    expect(state.items).toEqual(['pet_cat', 'pet_halo', 'pet_wings']);
+    expect(state.entitlements).toEqual(['pet_visor', 'pet_scarf', 'pet_cat_shadow']);
+    expect(state.hungryDays).toBe(0);
+  });
+
+  it('идемпотентно: повторный прогон ничего не меняет', () => {
+    const first = migrateState<any>(merchSave());
+    const second = migrateState<any>(first.state);
+    expect(second.changed).toBe(false);
+    expect(second.applied).toEqual([]);
+    expect(second.state).toEqual(first.state);
+  });
+});
+
+describe('v8_hungry_days (еда — потребность)', () => {
+  it('добавляет счётчик голодных дней любому сейву v7 и ниже', () => {
+    const save = { ...legacySave(), version: 7, hungryDays: undefined };
+    const { state, applied } = migrateState<any>(save);
+    expect(applied).toEqual(['v8_hungry_days']);
+    expect(state.hungryDays).toBe(0);
+  });
+
+  it('накопленный счётчик не трогает', () => {
+    const save = { ...legacySave(), version: 7, hungryDays: 4 };
+    const { state } = migrateState<any>(save);
+    expect(state.hungryDays).toBe(4);
   });
 });

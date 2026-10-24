@@ -1,5 +1,5 @@
 import { PlayerState } from '../types';
-import { clamp } from './utils';
+import { clamp, makeRngSalt } from './utils';
 
 /**
  * Save-state migrations.
@@ -20,7 +20,7 @@ import { clamp } from './utils';
  *     and reported, so an accidental server downgrade cannot corrupt it.
  */
 
-export const CURRENT_STATE_VERSION = 4;
+export const CURRENT_STATE_VERSION = 8;
 
 export interface MigrationResult<T = PlayerState> {
   state: T;
@@ -124,6 +124,74 @@ const MIGRATIONS: Migration[] = [
       if (sitting && state.careerEnding === 'corporate_god') delete state.careerEnding;
     },
   },
+  {
+    to: 5,
+    name: 'v5_identity_removal',
+    /**
+     * v4 → v5: пиксельная идентичность снята целиком (решение 22.10.2026,
+     * docs/PROPOSALS-2026-10-22-room-redesign.md). Генетика, гардероб, кошелёк
+     * и кросс-коллекционные бонусы больше не влияют ни на один экран: внешний
+     * вид протагониста фиксирован артом, покупки не монтируются в NFT.
+     * Поля удаляются из сейва, а не обнуляются — восстановить их всё равно
+     * нечем: манифесты, генетика и NFT-мок удалены из контента и сервера.
+     */
+    up(state: any) {
+      delete state.genetics;
+      delete state.avatar;
+      delete state.walletAddress;
+      delete state.crossBonuses;
+      delete state.room;
+    },
+  },
+  {
+    to: 6,
+    name: 'v6_rng_salt',
+    /**
+     * v5 → v6: серверный RNG (P2.4, docs/PROPOSALS-2026-10-23-rng.md).
+     * `rngSalt` — секретная соль бросков баланса (клиенту не отдаётся),
+     * `rngSeq` — монотонный счётчик бросков (повтор запроса не даёт
+     * «перебросить»). Поля добавляются к любому сейву; формулы и шансы
+     * не меняются.
+     */
+    up(state: any) {
+      if (typeof state.rngSalt !== 'string' || !state.rngSalt) state.rngSalt = makeRngSalt();
+      if (typeof state.rngSeq !== 'number' || !Number.isFinite(state.rngSeq)) state.rngSeq = 0;
+    },
+  },
+  {
+    to: 7,
+    name: 'v7_stars_cosmetics_revival',
+    /**
+     * v6 → v7: Stars-мерч выдавал мёртвые id косметики (гардероб и конструктор
+     * комнаты удалены редизайном v5/v6). Обмениваем их на живые эксклюзивные
+     * аксессуары питомца; списки `items` и `entitlements` дедуплицируются.
+     * Идемпотентно: новые id в таблице не участвуют.
+     */
+    up(state: any) {
+      const SWAP: Record<string, string> = {
+        acc_vr_headset: 'pet_halo',
+        top_hoodie_corp: 'pet_wings',
+        decor_neon: 'pet_visor',
+        desk_rgb: 'pet_scarf',
+      };
+      for (const key of ['items', 'entitlements'] as const) {
+        if (!Array.isArray(state[key])) continue;
+        state[key] = [...new Set<string>((state[key] as string[]).map((id) => SWAP[id] ?? id))];
+      }
+    },
+  },
+  {
+    to: 8,
+    name: 'v8_hungry_days',
+    /**
+     * v7 → v8: «еда» стала настоящей потребностью (голодный день бьёт по
+     * здоровью, а оно ограничивает мотивацию). Счётчик голодных дней подряд
+     * добавляется любому сейву; формулы расходов не меняются.
+     */
+    up(state: any) {
+      if (typeof state.hungryDays !== 'number' || !Number.isFinite(state.hungryDays)) state.hungryDays = 0;
+    },
+  },
 ];
 
 const SOFT_SKILL_DEFAULTS: Record<string, { level: number; xp: number }> = {
@@ -137,6 +205,8 @@ const SOFT_SKILL_DEFAULTS: Record<string, { level: number; xp: number }> = {
  * required collections, resource clamps, no NaN. Idempotent by construction.
  */
 export function normalizeState(state: any): void {
+  if (typeof state.rngSalt !== 'string' || !state.rngSalt) state.rngSalt = makeRngSalt();
+  if (typeof state.rngSeq !== 'number' || !Number.isFinite(state.rngSeq)) state.rngSeq = 0;
   for (const key of ['skills', 'softSkills', 'eventHistory', 'relationships'] as const) {
     if (!state[key] || typeof state[key] !== 'object' || Array.isArray(state[key])) state[key] = {};
   }

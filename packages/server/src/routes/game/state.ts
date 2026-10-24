@@ -1,3 +1,4 @@
+import { t } from '../../lib/i18n';
 /**
  * GET /api/game/state — current state + offline energy banking.
  *
@@ -18,11 +19,9 @@ import {
   rollSprint,
   type GameEvent,
 } from '@itsim/shared';
-import { getNftProvider } from '../../services/nftProvider.js';
 import {
   careerOutlook,
   costOfDay,
-  deriveGenetics,
   miningSummary,
   recalcMaxEnergy,
   resetDailyChallenge,
@@ -31,13 +30,11 @@ import {
   StoredState,
 } from './shared.js';
 import { calculateRating } from '@itsim/shared';
-
 export async function stateRoutes(app: FastifyInstance) {
   app.get('/state', async (request) => {
     const user = (request as any).telegramUser;
     const userId = String(user.id);
-
-    let state = loadState(userId) as StoredState | null;
+    let state = (await loadState(userId)) as StoredState | null;
     const isNew = !state;
     if (!state) {
       state = {
@@ -51,34 +48,29 @@ export async function stateRoutes(app: FastifyInstance) {
         lastFreelanceDay: 0,
         sideJobDoneToday: false,
         petFedToday: false,
-        firstName: user.first_name || 'Игрок',
+        firstName: user.first_name || t('Игрок'),
         mainSkillId: 'javascript',
       } as StoredState;
-      deriveGenetics(state);
       resetDailyChallenge(state, getContent());
     }
-
-    // Refresh cross-collection bonuses (DESIGN.md 3.3)
-    state.crossBonuses = [];
-    for (const col of await getNftProvider().getActiveBonuses(state.walletAddress ?? `local:${userId}`)) {
-      state.crossBonuses.push(...col.bonuses);
-    }
-
     // Offline energy banking (1 game day / 3.5 real hours, max 7 in bank)
     const banked = calculateOfflineBankedDays(state.lastTickAt, Date.now());
     if (banked > 0) {
       state.bankedDays = Math.min(7, state.bankedDays + banked);
       state.lastTickAt = advanceLastTick(state.lastTickAt, banked);
     }
-
     state.maxEnergy = recalcMaxEnergy(state, getContent());
     state.ratingScore = calculateRating(state);
-
     // Daily check-in (retention hook): once per real game-day, a money bonus
     // that grows with the streak. Applied server-side on state read, so the
     // reward lands the moment the player opens the app.
     const checkInNow = applyCheckIn(state, Date.now());
-    let checkIn: { claimed: boolean; streak: number; money: number; nextMoney: number };
+    let checkIn: {
+      claimed: boolean;
+      streak: number;
+      money: number;
+      nextMoney: number;
+    };
     if (checkInNow.claimed) {
       state.dailyStreak = checkInNow.streak;
       state.lastCheckInDate = gameDate(Date.now());
@@ -93,11 +85,9 @@ export async function stateRoutes(app: FastifyInstance) {
       const streak = Math.max(1, state.dailyStreak ?? 1);
       checkIn = { claimed: false, streak, money: 0, nextMoney: checkInReward(streak + 1).money };
     }
-
     // Weekly sprint (P1.2): roll the real-time week so the banner is current
     const sprintRolled = rollSprint(state.sprint, getContent().sprints?.themes, Date.now());
     if (sprintRolled) state.sprint = sprintRolled;
-
     // Surface pending chain events even if the user missed the day roll
     let activeEvent: GameEvent | null = null;
     if (state.activeEventId) {
@@ -112,11 +102,9 @@ export async function stateRoutes(app: FastifyInstance) {
         }
       }
     }
-
-    saveState(userId, state);
-
+    await saveState(userId, state);
     return {
-      state: respondState(state, isNew ? 'Добро пожаловать в IT Life Simulator! 💻' : undefined),
+      state: respondState(state, isNew ? t('Добро пожаловать в IT Life Simulator! 💻') : undefined),
       isNew,
       offlineDaysEarned: banked,
       checkIn,

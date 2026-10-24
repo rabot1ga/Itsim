@@ -113,14 +113,12 @@ describe('meta layer: buildNewLife', () => {
         lastCheckInDate: '2026-09-08',
         entitlements: ['ent_room_neon'],
         badges: ['supporter'],
-        walletAddress: '4X1...',
       })
     );
     expect(next.dailyStreak).toBe(4);
     expect(next.lastCheckInDate).toBe('2026-09-08');
     expect(next.entitlements).toEqual(['ent_room_neon']);
     expect(next.badges).toEqual(['supporter']);
-    expect(next.walletAddress).toBe('4X1...');
   });
 
   it('bestGrade / deepestDay keep the all-time best across worse later lives', () => {

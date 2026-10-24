@@ -1,7 +1,7 @@
+import { t } from '../lib/i18n';
 import { FastifyInstance } from 'fastify';
 import { timingSafeEqual } from 'crypto';
 import { randomUUID } from 'crypto';
-
 import { config } from '../config.js';
 import { telegramAuthHook } from '../middleware/telegramAuth.js';
 import { getContent } from '../services/contentService.js';
@@ -11,13 +11,7 @@ import {
   sendMessage,
   isBotConfigured,
 } from '../services/telegramApi.js';
-import {
-  grantPurchase,
-  hasProduct,
-  purchasesOf,
-  purchasesToday,
-} from '../services/entitlements.js';
-
+import { grantPurchase, hasProduct, purchasesOf, purchasesToday } from '../services/entitlements.js';
 /**
  * Telegram Stars monetization.
  *
@@ -30,43 +24,38 @@ import {
  * the caller, pre-checkout is answered (without it Telegram cancels the
  * payment), and granting is idempotent per `telegram_payment_charge_id`.
  */
-
 const PAYLOAD_PREFIX = 'itsim:v1';
-
 export function buildPayload(userId: string, productId: string): string {
   return `${PAYLOAD_PREFIX}:${userId}:${productId}:${randomUUID().slice(0, 8)}`;
 }
-
-export function parsePayload(payload: string): { userId: string; productId: string } | null {
+export function parsePayload(payload: string): {
+  userId: string;
+  productId: string;
+} | null {
   const parts = String(payload ?? '').split(':');
   if (parts.length < 4 || `${parts[0]}:${parts[1]}` !== PAYLOAD_PREFIX) return null;
   return { userId: parts[2], productId: parts[3] };
 }
-
 function safeEqual(a: string, b: string): boolean {
   const bufA = Buffer.from(a);
   const bufB = Buffer.from(b);
   if (bufA.length !== bufB.length) return false;
   return timingSafeEqual(bufA, bufB);
 }
-
 function products(): any[] {
   return getContent().monetization?.products ?? [];
 }
-
 function findProduct(id: string): any | null {
   return products().find((p) => p.id === id) ?? null;
 }
-
 /** Why this user cannot buy this product right now (null = they can). */
-export function purchaseBlocker(userId: string, product: any): string | null {
-  if (!product.repeatable && hasProduct(userId, product.id)) return 'Уже куплено';
-  if (product.dailyLimit && purchasesToday(userId, product.id) >= product.dailyLimit) {
-    return `Лимит на сегодня: ${product.dailyLimit}`;
+export async function purchaseBlocker(userId: string, product: any): Promise<string | null> {
+  if (!product.repeatable && (await hasProduct(userId, product.id))) return t('Уже куплено');
+  if (product.dailyLimit && (await purchasesToday(userId, product.id)) >= product.dailyLimit) {
+    return t('Лимит на сегодня: {p0}', { p0: product.dailyLimit });
   }
   return null;
 }
-
 export async function paymentRoutes(app: FastifyInstance) {
   /**
    * GET /api/payments/products — catalogue + what the caller already owns
@@ -74,35 +63,33 @@ export async function paymentRoutes(app: FastifyInstance) {
   app.get('/products', { preHandler: telegramAuthHook }, async (request) => {
     const userId = String((request as any).telegramUser.id);
     const monetization = getContent().monetization ?? { currency: 'XTR', products: [] };
-
     return {
       currency: monetization.currency ?? 'XTR',
       policy: monetization.policy ?? null,
       mock: !isBotConfigured(),
-      products: products().map((product) => ({
-        ...product,
-        owned: hasProduct(userId, product.id),
-        blocked: purchaseBlocker(userId, product),
-      })),
-      purchases: purchasesOf(userId),
+      products: await Promise.all(
+        products().map(async (product) => ({
+          ...product,
+          owned: await hasProduct(userId, product.id),
+          blocked: await purchaseBlocker(userId, product),
+        }))
+      ),
+      purchases: await purchasesOf(userId),
     };
   });
-
   /**
    * POST /api/payments/stars — create a Telegram Stars invoice link
    */
   app.post('/stars', { preHandler: telegramAuthHook }, async (request, reply) => {
     const userId = String((request as any).telegramUser.id);
-    const { productId } = (request.body ?? {}) as { productId?: string };
-
+    const { productId } = (request.body ?? {}) as {
+      productId?: string;
+    };
     const product = productId ? findProduct(productId) : null;
     if (!product) return reply.status(400).send({ error: 'Unknown productId' });
-
-    const blocker = purchaseBlocker(userId, product);
+    const blocker = await purchaseBlocker(userId, product);
     if (blocker) return reply.status(409).send({ error: blocker });
-
     const payload = buildPayload(userId, product.id);
-
     if (!isBotConfigured()) {
       // Dev/mock mode: no Bot API available. Return a link the client can show
       // and (if enabled) a token for /dev-complete to simulate the purchase.
@@ -113,21 +100,17 @@ export async function paymentRoutes(app: FastifyInstance) {
         devComplete: config.allowMockPayments ? '/api/payments/dev-complete' : null,
       };
     }
-
     const result = await createStarsInvoiceLink({
       title: product.title,
       description: product.description,
       payload,
       stars: product.stars,
     });
-
     if (!result.ok || !result.result) {
       return reply.status(502).send({ error: result.description ?? 'Telegram declined the invoice' });
     }
-
     return { mock: false, invoiceLink: result.result, payload };
   });
-
   /**
    * POST /api/payments/webhook — Telegram update endpoint for payments.
    *
@@ -143,60 +126,49 @@ export async function paymentRoutes(app: FastifyInstance) {
       request.log.warn('Rejected payment webhook with a bad secret token');
       return reply.status(401).send({ error: 'Invalid secret token' });
     }
-
     const update = (request.body ?? {}) as any;
-
     // 1. Pre-checkout: Telegram gives us ~10 seconds to approve the charge.
     if (update.pre_checkout_query) {
       const query = update.pre_checkout_query;
       const parsed = parsePayload(query.invoice_payload);
       const product = parsed ? findProduct(parsed.productId) : null;
       const buyerId = String(query.from?.id ?? '');
-
       let error: string | null = null;
-      if (!parsed || !product) error = 'Товар недоступен';
-      else if (parsed.userId !== buyerId) error = 'Счёт выписан другому игроку';
-      else error = purchaseBlocker(buyerId, product);
-
+      if (!parsed || !product) error = t('Товар недоступен');
+      else if (parsed.userId !== buyerId) error = t('Счёт выписан другому игроку');
+      else error = await purchaseBlocker(buyerId, product);
       await answerPreCheckoutQuery(query.id, !error, error ?? undefined);
       return { ok: true, approved: !error };
     }
-
     // 2. Successful payment: grant once per charge id.
     const payment = update.message?.successful_payment;
     if (payment) {
       const parsed = parsePayload(payment.invoice_payload);
       const product = parsed ? findProduct(parsed.productId) : null;
       const buyerId = String(update.message.from?.id ?? parsed?.userId ?? '');
-
       if (!parsed || !product || !buyerId) {
         request.log.error({ payload: payment.invoice_payload }, 'Unrecognised successful_payment');
         return { ok: true, granted: false };
       }
-
-      const result = grantPurchase({
+      const result = await grantPurchase({
         chargeId: payment.telegram_payment_charge_id,
         userId: buyerId,
         product,
       });
-
       if (result.granted) {
-        request.log.info(
-          { userId: buyerId, product: product.id, stars: product.stars },
-          'Stars purchase granted'
-        );
+        request.log.info({ userId: buyerId, product: product.id, stars: product.stars }, 'Stars purchase granted');
         await sendMessage(
           buyerId,
-          `✅ Спасибо! Покупка «${product.title}» активирована.\n${result.applied.join('\n') || 'Загляни в игру.'}`
+          t('✅ Спасибо! Покупка «{p0}» активирована.\n{p1}', {
+            p0: product.title,
+            p1: result.applied.join('\n') || 'Загляни в игру.',
+          })
         );
       }
-
       return { ok: true, granted: result.granted, duplicate: result.duplicate };
     }
-
     return { ok: true, ignored: true };
   });
-
   /**
    * POST /api/payments/dev-complete — simulate a purchase locally.
    * Only available when ALLOW_MOCK_PAYMENTS is on (default: no BOT_TOKEN).
@@ -206,20 +178,19 @@ export async function paymentRoutes(app: FastifyInstance) {
       return reply.status(403).send({ error: 'Mock payments are disabled' });
     }
     const userId = String((request as any).telegramUser.id);
-    const { productId } = (request.body ?? {}) as { productId?: string };
+    const { productId } = (request.body ?? {}) as {
+      productId?: string;
+    };
     const product = productId ? findProduct(productId) : null;
     if (!product) return reply.status(400).send({ error: 'Unknown productId' });
-
-    const blocker = purchaseBlocker(userId, product);
+    const blocker = await purchaseBlocker(userId, product);
     if (blocker) return reply.status(409).send({ error: blocker });
-
-    const result = grantPurchase({
+    const result = await grantPurchase({
       chargeId: `mock_${randomUUID()}`,
       userId,
       product,
       mock: true,
     });
-
     return { ok: true, granted: result.granted, applied: result.applied, record: result.record };
   });
 }

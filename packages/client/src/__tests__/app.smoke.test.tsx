@@ -12,17 +12,8 @@ import App from '../App';
  * so a broken renderer cannot ship unnoticed.
  */
 
-const manifest = {
-  tile: { w: 32, h: 16, wallH: 72 },
-  sprites: {
-    char_a00: { file: '/iso/char_a00.png', w: 25, h: 46, kind: 'char', roles: { top: ['#111111'] } },
-    bed: { file: '/iso/bed.png', w: 60, h: 50, kind: 'floor', tiles: [2, 3] },
-    window: { file: '/iso/window.png', w: 60, h: 60, kind: 'wall', tilesW: 3 },
-  },
-};
-
 const player = {
-  version: 2,
+  version: 5,
   telegramId: 1,
   currentDay: 3,
   money: 5000,
@@ -34,18 +25,11 @@ const player = {
   skills: {},
   achievements: [],
   relationships: {},
-  genetics: { seed: 'test-seed', hairStyle: 'hair_short', top: 'top_hoodie_gray' },
-  avatar: {},
-  room: { slots: {} },
 };
 
 function jsonRoute(url: string): unknown {
-  if (url.includes('/iso/manifest.json')) return manifest;
   if (url.includes('/api/auth')) return { token: 'test-token', player };
   if (url.includes('/api/game/state')) return { state: player, player, events: [] };
-  if (url.includes('/api/content/layers')) return { avatar: { slots: [] }, room: { slots: [] }, office: { slots: [] } };
-  if (url.includes('/api/content/genetics')) return { genetics: { wallPalette: [] } };
-  if (url.includes('/api/content/pixel')) return { pack: null };
   if (url.includes('/api/content/npcs')) return { npcs: [] };
   if (url.includes('/api/content/companies')) return { companies: [] };
   if (url.includes('/api/content/items')) return { items: [] };
@@ -66,7 +50,7 @@ describe('App', () => {
         text: async () => JSON.stringify(jsonRoute(url)),
       } as Response;
     }) as unknown as typeof fetch;
-    // canvas is not implemented in jsdom; the recolour engine must survive that
+    // canvas is not implemented in jsdom — гасим, чтобы будущие canvas-фичи не роняли smoke
     HTMLCanvasElement.prototype.getContext = (() => null) as never;
   });
 
@@ -89,7 +73,6 @@ describe('App', () => {
       'Топ',
       'Офис',
       'Майнинг',
-      'Кошелёк',
       'Финалы',
       'Настройки',
     ];

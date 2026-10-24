@@ -28,18 +28,13 @@ import {
   ItemsFileSchema,
   AchievementsFileSchema,
   BalanceSchema,
-  GeneticsConfigSchema,
-  LayerManifestSchema,
-  CrossCollectionsSchema,
   DailyChallengesFileSchema,
   InterviewQuestionsFileSchema,
   SprintsFileSchema,
   ProjectsFileSchema,
   ArchetypesFileSchema,
+  MarketplaceSchema,
   MonetizationSchema,
-  PixelArtFileSchema,
-  PixelGeneratorConfigSchema,
-  validatePixelArtFile,
   GRADE_ORDER,
 } from '@itsim/shared';
 
@@ -66,11 +61,6 @@ export interface ContentBundle {
   items: any[];
   achievements: any[];
   balance: any;
-  genetics: any;
-  avatarLayers: any;
-  roomLayers: any;
-  officeLayers: any;
-  crossCollections: any;
   challenges: any[];
   interviewQuestions: any[];
   /** Telegram Stars catalogue */
@@ -81,9 +71,9 @@ export interface ContentBundle {
   sprints: any;
   /** archetype builds (P1.3) — { archetypes: [...] } */
   archetypes: any;
+  /** Торговая площадка редких питомцев — { listingsPerDay, pool: [{itemId, weight}] } */
+  marketplace: any;
   /** Pixel-art avatar pack (docs/pixel-art.md). null = not generated yet. */
-  pixelArt: any | null;
-  pixelGeneratorConfig: any | null;
 }
 
 export interface ContentLoadResult {
@@ -102,8 +92,6 @@ export class ContentValidationError extends Error {
     this.name = 'ContentValidationError';
   }
 }
-
-const EMPTY_MANIFEST = { slots: [] as any[] };
 
 /**
  * Read + validate every content file. Pure with respect to the process: no
@@ -147,28 +135,6 @@ export function loadContentBundle(dir: string = CONTENT_DIR): ContentLoadResult 
     items: validate('items.json', ItemsFileSchema, read('items.json'), []),
     achievements: validate('achievements.json', AchievementsFileSchema, read('achievements.json'), []),
     balance: validate('balance.json', BalanceSchema, read('balance.json'), {} as any),
-    genetics: validate('genetics.json', GeneticsConfigSchema, read('genetics.json'), {} as any),
-    avatarLayers: validate(
-      'layers/avatar_manifest.json',
-      LayerManifestSchema,
-      read('layers/avatar_manifest.json'),
-      EMPTY_MANIFEST
-    ),
-    roomLayers: validate(
-      'layers/room_manifest.json',
-      LayerManifestSchema,
-      read('layers/room_manifest.json'),
-      EMPTY_MANIFEST
-    ),
-    officeLayers: validate(
-      'layers/office_manifest.json',
-      LayerManifestSchema,
-      read('layers/office_manifest.json'),
-      EMPTY_MANIFEST
-    ),
-    crossCollections: validate('cross_collections.json', CrossCollectionsSchema, read('cross_collections.json'), {
-      collections: [],
-    }),
     challenges: validate('challenges.json', DailyChallengesFileSchema, read('challenges.json'), []),
     interviewQuestions: validate(
       'interview_questions.json',
@@ -183,7 +149,10 @@ export function loadContentBundle(dir: string = CONTENT_DIR): ContentLoadResult 
     projects: validate('projects.json', ProjectsFileSchema, read('projects.json'), { projects: [] }),
     sprints: validate('sprints.json', SprintsFileSchema, read('sprints.json'), { themes: [] }),
     archetypes: validate('archetypes.json', ArchetypesFileSchema, read('archetypes.json'), { archetypes: [] }),
-    ...loadPixelArt(dir, issues),
+    marketplace: validate('marketplace.json', MarketplaceSchema, read('marketplace.json'), {
+      listingsPerDay: 0,
+      pool: [],
+    }),
   };
 
   crossValidate(bundle, issues);
@@ -203,7 +172,7 @@ export function loadContentBundle(dir: string = CONTENT_DIR): ContentLoadResult 
     sprintThemes: bundle.sprints?.themes?.length ?? 0,
     projects: bundle.projects?.projects?.length ?? 0,
     archetypes: bundle.archetypes?.archetypes?.length ?? 0,
-    pixelComponents: Object.keys(bundle.pixelArt?.components ?? {}).length,
+    marketOffers: bundle.marketplace?.pool?.length ?? 0,
   };
 
   return { bundle, issues, stats };
@@ -251,66 +220,6 @@ function readEventFiles(dir: string, issues: ContentIssue[]): any[] {
  * missing pack must not brick the server — but a *present* pack must validate,
  * because the client renders from it verbatim.
  */
-function loadPixelArt(dir: string, issues: ContentIssue[]): Pick<ContentBundle, 'pixelArt' | 'pixelGeneratorConfig'> {
-  const pixelDir = join(dir, 'pixel');
-  const componentsPath = join(pixelDir, 'components.json');
-  if (!existsSync(componentsPath)) {
-    issues.push({
-      level: 'warning',
-      where: 'pixel/components.json',
-      message: 'pixel pack not found (run: npm run pixelgen:compile) — avatar falls back to SVG layers',
-    });
-    return { pixelArt: null, pixelGeneratorConfig: null };
-  }
-
-  let raw: any;
-  try {
-    raw = JSON.parse(readFileSync(componentsPath, 'utf-8'));
-  } catch (err) {
-    issues.push({ level: 'error', where: 'pixel/components.json', message: `invalid JSON: ${(err as Error).message}` });
-    return { pixelArt: null, pixelGeneratorConfig: null };
-  }
-
-  const parsed = PixelArtFileSchema.safeParse(raw);
-  if (!parsed.success) {
-    for (const issue of parsed.error.issues) {
-      issues.push({
-        level: 'error',
-        where: 'pixel/components.json',
-        message: `${issue.path.join('.')}: ${issue.message}`,
-      });
-    }
-    return { pixelArt: null, pixelGeneratorConfig: null };
-  }
-
-  let config: any = null;
-  const configPath = join(pixelDir, 'generator_config.json');
-  if (existsSync(configPath)) {
-    const parsedCfg = PixelGeneratorConfigSchema.safeParse(JSON.parse(readFileSync(configPath, 'utf-8')));
-    if (!parsedCfg.success) {
-      for (const issue of parsedCfg.error.issues) {
-        issues.push({
-          level: 'error',
-          where: 'pixel/generator_config.json',
-          message: `${issue.path.join('.')}: ${issue.message}`,
-        });
-      }
-    } else {
-      config = parsedCfg.data;
-    }
-  }
-
-  const validation = validatePixelArtFile(parsed.data, config);
-  for (const issue of validation.issues) {
-    issues.push({
-      level: issue.level === 'error' ? 'error' : 'warning',
-      where: `pixel/${issue.path}`,
-      message: issue.message,
-    });
-  }
-
-  return { pixelArt: parsed.data, pixelGeneratorConfig: config };
-}
 
 /**
  * Cross-file references. Historically these were silent `console.warn`s that
@@ -380,23 +289,6 @@ function crossValidate(bundle: ContentBundle, issues: ContentIssue[]) {
     }
   }
 
-  // --- layer ids across all manifests --------------------------------------
-  const layerIds = new Set<string>();
-  const avatarEntryIds = new Set<string>();
-  const roomEntryIds = new Set<string>();
-  for (const [manifest, sink] of [
-    [bundle.avatarLayers, avatarEntryIds],
-    [bundle.roomLayers, roomEntryIds],
-    [bundle.officeLayers, new Set<string>()],
-  ] as Array<[any, Set<string>]>) {
-    for (const slot of manifest?.slots ?? []) {
-      for (const entry of slot.entries ?? []) {
-        layerIds.add(entry.id);
-        sink.add(entry.id);
-      }
-    }
-  }
-
   // --- events ---------------------------------------------------------------
   for (const event of bundle.events) {
     for (const choice of event.choices ?? []) {
@@ -428,35 +320,6 @@ function crossValidate(bundle: ContentBundle, issues: ContentIssue[]) {
   for (const skill of bundle.skills) {
     if (skill.parent && !skillIds.has(skill.parent)) {
       err('skills.json', `skill "${skill.id}" has unknown parent "${skill.parent}"`);
-    }
-  }
-
-  // --- items / cross-collections / genetics ---------------------------------
-  for (const item of bundle.items) {
-    if (item.layerId && !layerIds.has(item.layerId)) {
-      err('items.json', `item "${item.id}": layerId "${item.layerId}" not found in layer manifests`);
-    }
-  }
-  for (const col of bundle.crossCollections?.collections ?? []) {
-    if (!layerIds.has(col.layerId)) {
-      err(
-        'cross_collections.json',
-        `collection "${col.collectionId}": layerId "${col.layerId}" not found in layer manifests`
-      );
-    }
-  }
-  const geneticsCheck: Array<[string, any[] | undefined, Set<string>]> = [
-    ['eyes', bundle.genetics?.eyes, avatarEntryIds],
-    ['hairstyles', bundle.genetics?.hairstyles, avatarEntryIds],
-    ['beards', bundle.genetics?.beards, avatarEntryIds],
-    ['tops', bundle.genetics?.tops, avatarEntryIds],
-    ['accessories', bundle.genetics?.accessories, avatarEntryIds],
-    ['windows', bundle.genetics?.windows, roomEntryIds],
-    ['decorOptions', bundle.genetics?.decorOptions, roomEntryIds],
-  ];
-  for (const [group, options, ids] of geneticsCheck) {
-    for (const opt of options ?? []) {
-      if (!ids.has(opt.id)) err('genetics.json', `${group}: option "${opt.id}" not found in layer manifests`);
     }
   }
 
@@ -519,21 +382,18 @@ function crossValidate(bundle: ContentBundle, issues: ContentIssue[]) {
     }
     // One task per day is the fastest honest pace; a deadline below that is a trap.
     if (project.deadlineDays < project.tasks.length) {
-      err('projects.json', `project "${project.id}": deadline ${project.deadlineDays} d is shorter than ${project.tasks.length} tasks`);
+      err(
+        'projects.json',
+        `project "${project.id}": deadline ${project.deadlineDays} d is shorter than ${project.tasks.length} tasks`
+      );
     }
   }
 
   // --- monetization ---------------------------------------------------------
-  const cosmeticIds = new Set<string>(layerIds);
   const productIds = new Set<string>();
   for (const product of bundle.monetization?.products ?? []) {
     if (productIds.has(product.id)) err('monetization.json', `duplicate product id "${product.id}"`);
     productIds.add(product.id);
-    for (const layer of product.grants?.cosmetics ?? []) {
-      if (!cosmeticIds.has(layer)) {
-        err('monetization.json', `product "${product.id}" grants unknown layer "${layer}"`);
-      }
-    }
     if (!product.repeatable && product.dailyLimit) {
       warn('monetization.json', `product "${product.id}": dailyLimit is meaningless for a one-off product`);
     }
@@ -544,6 +404,29 @@ function crossValidate(bundle: ContentBundle, issues: ContentIssue[]) {
         err('monetization.json', `product "${product.id}" grants "${key}" — pay-to-win is not allowed (see policy)`);
       }
     }
+  }
+
+  // --- marketplace (торговая площадка редких питомцев) -----------------------
+  const itemById = new Map(bundle.items.map((i: any) => [i.id, i]));
+  const marketIds = new Set<string>();
+  for (const offer of bundle.marketplace?.pool ?? []) {
+    if (marketIds.has(offer.itemId)) err('marketplace.json', `duplicate pool itemId "${offer.itemId}"`);
+    marketIds.add(offer.itemId);
+    const item: any = itemById.get(offer.itemId);
+    if (!item) {
+      err('marketplace.json', `pool itemId "${offer.itemId}" is not in items.json`);
+      continue;
+    }
+    if (item.type !== 'pet' || !item.layerId) {
+      err('marketplace.json', `pool itemId "${offer.itemId}" must be a real pet (type 'pet' with layerId)`);
+    }
+    if (!['rare', 'legendary'].includes(item.rarity ?? '')) {
+      err(
+        'marketplace.json',
+        `pool itemId "${offer.itemId}" must be rare/legendary — площадка продаёт редких питомцев`
+      );
+    }
+    if (!(item.price > 0)) err('marketplace.json', `pool itemId "${offer.itemId}" must cost more than 0`);
   }
 
   // --- perks ----------------------------------------------------------------

@@ -376,9 +376,9 @@ export const BalanceSchema = z.object({
           minMoney: z.number().int().min(0).default(100_000_000),
           minGrade: z.enum(['senior', 'teamlead', 'architect', 'cto']).default('senior'),
           title: z.string().default('🚀 Экзит · Стартап-единорог'),
-          description: z.string().default(
-            'Ты ушёл в свой проект, и его оценили в 100 млн. Жизнь на своих условиях — самый дорогой приз.'
-          ),
+          description: z
+            .string()
+            .default('Ты ушёл в свой проект, и его оценили в 100 млн. Жизнь на своих условиях — самый дорогой приз.'),
         })
         .default({}),
       free_artist: z
@@ -387,9 +387,7 @@ export const BalanceSchema = z.object({
           maxMoney: z.number().int().min(0).default(1_000_000),
           minGrade: z.enum(['middle', 'senior', 'teamlead', 'architect', 'cto']).default('senior'),
           title: z.string().default('💻 Свободный художник'),
-          description: z.string().default(
-            'Никакого офиса. Только ты, клиенты и код. Меньше денег — больше свободы.'
-          ),
+          description: z.string().default('Никакого офиса. Только ты, клиенты и код. Меньше денег — больше свободы.'),
         })
         .default({}),
       teacher: z
@@ -405,9 +403,9 @@ export const BalanceSchema = z.object({
           minLeadership: z.number().int().min(0).default(24),
           minSkillLevel: z.number().int().min(0).default(62),
           title: z.string().default('🎓 Учитель'),
-          description: z.string().default(
-            'Джуны, которых ты вёл, выросли в сеньоров и архитекторов. Их успехи — твои.'
-          ),
+          description: z
+            .string()
+            .default('Джуны, которых ты вёл, выросли в сеньоров и архитекторов. Их успехи — твои.'),
         })
         .default({}),
       cto: z
@@ -427,17 +425,19 @@ export const BalanceSchema = z.object({
       burnout: z
         .object({
           title: z.string().default('🔥 Выгорание'),
-          description: z.string().default(
-            'Здоровье и мотивация в нуле. Тело и психика сказали «стоп». Следующая жизнь — с +15% XP.'
-          ),
+          description: z
+            .string()
+            .default('Здоровье и мотивация в нуле. Тело и психика сказали «стоп». Следующая жизнь — с +15% XP.'),
         })
         .default({}),
       left_it: z
         .object({
           title: z.string().default('💀 Ушёл из IT'),
-          description: z.string().default(
-            'Денег нет, перспектив тоже. Ты закрыл редактор и пошёл учиться на повара. Следующая жизнь — с чистого листа.'
-          ),
+          description: z
+            .string()
+            .default(
+              'Денег нет, перспектив тоже. Ты закрыл редактор и пошёл учиться на повара. Следующая жизнь — с чистого листа.'
+            ),
         })
         .default({}),
     })
@@ -452,11 +452,12 @@ export const BalanceSchema = z.object({
       categories: z
         .array(
           z.object({
-            id: z.string().min(1).regex(/^[a-z0-9_]+$/),
+            id: z
+              .string()
+              .min(1)
+              .regex(/^[a-z0-9_]+$/),
             label: z.string().min(1),
-            match: z
-              .union([z.literal('all'), z.array(z.string())])
-              .default([]),
+            match: z.union([z.literal('all'), z.array(z.string())]).default([]),
             matchIds: z.array(z.string()).default([]),
             matchPrefixes: z.array(z.string()).default([]),
           })
@@ -492,100 +493,6 @@ export const ContentManifestSchema = z.object({
   actions: z.string(),
   balance: z.string(),
 });
-// ---- Procedural generation & Solana (DESIGN.md) ----
-
-export const TraitOptionSchema = z.object({
-  id: z.string().regex(/^[a-z0-9_]+$/),
-  name: z.string().min(1),
-  weight: z.number().positive(),
-  rarity: z.enum(['common', 'rare', 'legendary']).optional(),
-});
-
-export const TintPaletteEntrySchema = z.object({
-  id: z.string().regex(/^[a-z0-9_]+$/),
-  name: z.string().min(1),
-  hue: z.number().min(0).max(360),
-  sat: z.number().min(0).max(10).optional(),
-  light: z.number().min(0).max(3).optional(),
-  weight: z.number().positive().optional(),
-});
-
-export const GeneticsConfigSchema = z.object({
-  version: z.string().default('1.0'),
-  eyes: z.array(TraitOptionSchema).min(1),
-  hairstyles: z.array(TraitOptionSchema).min(1),
-  hairPalette: z.array(TintPaletteEntrySchema).min(1),
-  skinTones: z.array(TintPaletteEntrySchema).min(1),
-  beards: z.array(TraitOptionSchema).min(1),
-  tops: z.array(TraitOptionSchema).min(1),
-  accessories: z.array(TraitOptionSchema).min(1),
-  windows: z.array(TraitOptionSchema).min(1),
-  wallPalette: z.array(TintPaletteEntrySchema).min(1),
-  decorOptions: z.array(TraitOptionSchema).min(1),
-});
-
-export const LayerEntrySchema = z.object({
-  id: z.string().regex(/^[a-z0-9_]+$/),
-  file: z.string().nullable(),
-  weight: z.number().positive().optional(),
-  rarity: z.enum(['common', 'rare', 'legendary']).optional(),
-  excludeWith: z.array(z.string()).optional(),
-});
-
-export const LayerSlotSchema = z.object({
-  id: z.string().regex(/^[a-z0-9_]+$/),
-  zOrder: z.number().int(),
-  required: z.boolean().default(false),
-  tintSlot: z.string().optional(),
-  entries: z.array(LayerEntrySchema),
-});
-
-export const LayerManifestSchema = z.object({
-  collection: z.enum(['avatar', 'room', 'office']),
-  version: z.number().int().positive(),
-  resolution: z.object({ width: z.number().int().positive(), height: z.number().int().positive() }),
-  slots: z.array(LayerSlotSchema).min(1),
-});
-
-export const ActiveCrossBonusSchema = z.object({
-  type: z.enum(['freelance_mult', 'energy', 'motivation']),
-  value: z.number(),
-});
-
-export const CrossCollectionBonusSchema = z.object({
-  collectionId: z.string().regex(/^[a-z0-9_]+$/),
-  collectionName: z.string().min(1),
-  nftType: z.enum(['skin', 'decor', 'pet']),
-  layerId: z.string().regex(/^[a-z0-9_]+$/),
-  bonuses: z.array(ActiveCrossBonusSchema),
-});
-
-export const CrossCollectionsSchema = z.object({
-  version: z.string().default('1.0'),
-  collections: z.array(CrossCollectionBonusSchema),
-});
-
-export const NftAttributeSchema = z.object({
-  trait_type: z.string().min(1),
-  value: z.union([z.string(), z.number()]),
-});
-
-export const NftMetadataSchema = z.object({
-  name: z.string().min(1),
-  symbol: z.string().min(1),
-  description: z.string(),
-  image: z.string(),
-  attributes: z.array(NftAttributeSchema),
-  properties: z.object({
-    files: z.array(z.object({ uri: z.string(), type: z.string() })),
-  }),
-});
-
-/** Solana base58 public key */
-export const WalletAddressSchema = z
-  .string()
-  .regex(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/, 'Некорректный адрес кошелька Solana (base58)');
-
 // ---- Daily challenges ----
 
 export const DailyChallengeRewardSchema = z.object({
@@ -696,89 +603,6 @@ export const InterviewQuestionSchema = z.object({
 
 export const InterviewQuestionsFileSchema = z.array(InterviewQuestionSchema).min(3);
 
-// ---- Pixel-art avatar (docs/pixel-art.md) ----
-
-const PixelCategorySchema = z.enum(['face', 'eyes', 'mouth', 'hair', 'hat', 'clothing', 'accessory']);
-const HexColor = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'must be #rrggbb');
-
-export const PixelDefSchema = z.object({
-  x: z.number().int(),
-  y: z.number().int(),
-  /** "palette#index", "palette#role" or "#rrggbb" — resolvability is checked by the validator */
-  c: z.string().min(1),
-});
-
-export const PixelComponentSchema = z.object({
-  category: PixelCategorySchema,
-  label: z.string().min(1),
-  anchor: z.object({ x: z.number().int(), y: z.number().int() }).default({ x: 0, y: 0 }),
-  mirror: z.boolean().optional(),
-  excludes: z.array(PixelCategorySchema).optional(),
-  pixels: z.array(PixelDefSchema).default([]),
-  tags: z.array(z.string()).optional(),
-  extended: z.boolean().optional(),
-});
-
-export const PixelArtFileSchema = z.object({
-  format: z.number().int().default(1),
-  $schema: z.string().optional(),
-  sourceChecksum: z
-    .string()
-    .regex(/^[0-9a-f]{64}$/)
-    .optional(),
-  canvas: z.object({ width: z.number().int().positive(), height: z.number().int().positive() }),
-  layout: z.object({
-    eyes_y: z.number().int().min(0),
-    mouth_y: z.number().int().min(0),
-    symmetry_axis_x: z.number(),
-    head: z.object({ x: z.number(), y: z.number(), w: z.number(), h: z.number() }).optional(),
-  }),
-  palettes: z.record(z.string(), z.array(HexColor)),
-  layer_order: z.array(PixelCategorySchema),
-  components: z.record(z.string(), PixelComponentSchema),
-});
-
-/** Authored form: components may use the `rows` shorthand instead of pixels */
-export const PixelArtSourceFileSchema = PixelArtFileSchema.extend({
-  components: z.record(
-    z.string(),
-    PixelComponentSchema.partial({ pixels: true }).extend({
-      rows: z.array(z.string()).optional(),
-      palettes: z.array(z.string()).optional(),
-    })
-  ),
-});
-
-export const PixelColorSchemeSchema = z.object({
-  id: z.string().min(1),
-  name: z.string().optional(),
-  palettes: z.record(z.string(), z.array(HexColor)),
-  tags: z.array(z.string()).optional(),
-  /** which genetic traits should get this recolor in-game */
-  match: z
-    .object({
-      hairColor: z.array(z.string()).optional(),
-      skinTone: z.array(z.string()).optional(),
-    })
-    .optional(),
-});
-
-export const PixelGeneratorConfigSchema = z.object({
-  format: z.number().int().default(1),
-  categories: z.array(
-    z.object({
-      category: PixelCategorySchema,
-      required: z.boolean().default(false),
-      noneId: z.string().optional(),
-      variants: z.array(z.string().min(1)),
-      weights: z.record(z.string(), z.number().min(0)).optional(),
-    })
-  ),
-  colorSchemes: z.array(PixelColorSchemeSchema).default([]),
-});
-
-export type PixelArtFileInput = z.input<typeof PixelArtFileSchema>;
-
 // ---- Monetization (Telegram Stars) ----
 
 /**
@@ -816,3 +640,21 @@ export const MonetizationSchema = z.object({
 export type Product = z.infer<typeof ProductSchema>;
 export type ProductGrants = z.infer<typeof ProductGrantsSchema>;
 export type MonetizationConfig = z.infer<typeof MonetizationSchema>;
+
+// ---- Торговая площадка редких питомцев (роадмап «Деньги и рост») ----
+
+export const MarketplaceOfferSchema = z.object({
+  /** id предмета из items.json (type:'pet', rarity rare/legendary) */
+  itemId: z.string().regex(/^[a-z0-9_]+$/),
+  /** вес выпадения в ежедневной подборке */
+  weight: z.number().int().positive(),
+});
+
+export const MarketplaceSchema = z.object({
+  /** сколько листингов показывать в подборке дня */
+  listingsPerDay: z.number().int().min(1).max(10),
+  pool: z.array(MarketplaceOfferSchema).min(1),
+});
+
+export type MarketplaceOffer = z.infer<typeof MarketplaceOfferSchema>;
+export type MarketplaceConfig = z.infer<typeof MarketplaceSchema>;

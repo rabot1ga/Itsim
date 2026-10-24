@@ -11,7 +11,14 @@ const ORIGINAL = { ...process.env };
 
 async function loadConfig(env: Record<string, string | undefined>) {
   vi.resetModules();
-  for (const key of ['NODE_ENV', 'BOT_TOKEN', 'JWT_SECRET', 'TELEGRAM_WEBHOOK_SECRET', 'ADMIN_TOKEN', 'ALLOW_MOCK_PAYMENTS']) {
+  for (const key of [
+    'NODE_ENV',
+    'BOT_TOKEN',
+    'JWT_SECRET',
+    'TELEGRAM_WEBHOOK_SECRET',
+    'ADMIN_TOKEN',
+    'ALLOW_MOCK_PAYMENTS',
+  ]) {
     delete process.env[key];
   }
   Object.assign(process.env, env);

@@ -59,7 +59,9 @@ describe('projects with deadlines', () => {
 
   it('blocks a second project and an underqualified player, with a real reason', () => {
     expect(projectBlockedReason(def, { activeProject: null, skillLevel: 3 })).toBeNull();
-    expect(projectBlockedReason(def, { activeProject: taken(), skillLevel: 30 })).toBe('Сначала закончи текущий проект');
+    expect(projectBlockedReason(def, { activeProject: taken(), skillLevel: 30 })).toBe(
+      'Сначала закончи текущий проект'
+    );
     expect(projectBlockedReason(def, { activeProject: null, skillLevel: 2 })).toContain('уровень основного навыка 3');
   });
 

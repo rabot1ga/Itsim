@@ -16,6 +16,8 @@ export default tseslint.config(
   {
     ignores: [
       '**/dist/**',
+      // Prisma-generated client (committed on purpose — offline builds)
+      'packages/server/src/generated/**',
       '**/node_modules/**',
       '**/artifacts/**',
       'packages/server/data/**',
@@ -103,7 +105,16 @@ export default tseslint.config(
   {
     files: ['**/__tests__/**/*.ts', '**/*.test.ts'],
     languageOptions: {
-      globals: { describe: 'readonly', it: 'readonly', expect: 'readonly', vi: 'readonly', beforeEach: 'readonly', afterEach: 'readonly', beforeAll: 'readonly', afterAll: 'readonly' },
+      globals: {
+        describe: 'readonly',
+        it: 'readonly',
+        expect: 'readonly',
+        vi: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+      },
     },
   }
 );

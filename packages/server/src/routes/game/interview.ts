@@ -1,3 +1,4 @@
+import { t } from '../../lib/i18n';
 /**
  * Interview routes — `/api/game/interview/{start,answer,finish}`.
  *
@@ -22,8 +23,15 @@ import {
   seededRng,
   type Offer,
 } from '@itsim/shared';
-import { fmtMoney, recalcMaxEnergy, respondState, sanitizeInterviewQuestion, softOpts, StoredState } from './shared.js';
-
+import {
+  balanceRng,
+  fmtMoney,
+  recalcMaxEnergy,
+  respondState,
+  sanitizeInterviewQuestion,
+  softOpts,
+  StoredState,
+} from './shared.js';
 export async function interviewRoutes(app: FastifyInstance) {
   /**
    * POST /api/game/interview/start
@@ -33,22 +41,20 @@ export async function interviewRoutes(app: FastifyInstance) {
   app.post('/interview/start', async (request, reply) => {
     const user = (request as any).telegramUser;
     const userId = String(user.id);
-
-    const state = loadState(userId) as StoredState | null;
+    const state = (await loadState(userId)) as StoredState | null;
     if (!state) return reply.status(404).send({ error: 'Game not started' });
-
     const app = state.currentApplication;
     if (!app || app.status !== 'interview_scheduled') {
-      return reply.status(400).send({ error: 'Собеседование не назначено' });
+      return reply.status(400).send({ error: t('Собеседование не назначено') });
     }
     if (state.currentDay < app.interviewDay) {
       return reply.status(400).send({
-        error: `Собеседование назначено на день ${app.interviewDay}. Приходи вовремя — а пока подтяни скиллы`,
+        error: t('Собеседование назначено на день {p0}. Приходи вовремя — а пока подтяни скиллы', {
+          p0: app.interviewDay,
+        }),
       });
     }
-
     const content = getContent();
-
     // Resume an existing session
     if (state.interviewSession && state.interviewSession.companyId === app.companyId) {
       const questions = state.interviewSession.questions
@@ -62,8 +68,8 @@ export async function interviewRoutes(app: FastifyInstance) {
         state: respondState(state),
       };
     }
-
-    const rng = seededRng(`${userId}:interview:${app.companyId}:${app.interviewDay}`);
+    // Соль серверного RNG (P2.4): вопросы не пересчитать офлайн.
+    const rng = seededRng(`${userId}:${state.rngSalt}:interview:${app.companyId}:${app.interviewDay}`);
     const questions = pickInterviewQuestions(content.interviewQuestions, {
       mainSkillId: state.mainSkillId,
       grade: app.grade,
@@ -71,26 +77,25 @@ export async function interviewRoutes(app: FastifyInstance) {
       rng,
     });
     if (questions.length < 3) {
-      return reply.status(400).send({ error: 'Недостаточно вопросов для собеседования' });
+      return reply.status(400).send({ error: t('Недостаточно вопросов для собеседования') });
     }
-
     state.interviewSession = {
       companyId: app.companyId,
       questions: questions.map((q) => ({ id: q.id, chosen: null, correct: null })),
     };
-    saveState(userId, state);
-
+    await saveState(userId, state);
     return {
       questions: questions.map(sanitizeInterviewQuestion),
       answers: [],
       total: questions.length,
       state: respondState(
         state,
-        `🎤 Собеседование в «${(content.companies as any[]).find((c) => c.id === app.companyId)?.name ?? 'компании'}» началось!`
+        t('🎤 Собеседование в «{p0}» началось!', {
+          p0: (content.companies as any[]).find((c) => c.id === app.companyId)?.name ?? 'компании',
+        })
       ),
     };
   });
-
   /**
    * POST /api/game/interview/answer
    * Answer one question; the server checks correctness and returns
@@ -99,22 +104,21 @@ export async function interviewRoutes(app: FastifyInstance) {
   app.post('/interview/answer', async (request, reply) => {
     const user = (request as any).telegramUser;
     const userId = String(user.id);
-    const { questionId, choiceIndex } = request.body as { questionId?: string; choiceIndex?: number };
-
-    const state = loadState(userId) as StoredState | null;
+    const { questionId, choiceIndex } = request.body as {
+      questionId?: string;
+      choiceIndex?: number;
+    };
+    const state = (await loadState(userId)) as StoredState | null;
     if (!state) return reply.status(404).send({ error: 'Game not started' });
-
     const session = state.interviewSession;
-    if (!session) return reply.status(400).send({ error: 'Собеседование не начато' });
-
+    if (!session) return reply.status(400).send({ error: t('Собеседование не начато') });
     const content = getContent();
     const slot = session.questions.find((q) => q.id === questionId);
     const def = (content.interviewQuestions as any[]).find((q) => q.id === questionId);
-    if (!slot || !def) return reply.status(404).send({ error: 'Вопрос не найден' });
+    if (!slot || !def) return reply.status(404).send({ error: t('Вопрос не найден') });
     if (choiceIndex === undefined || choiceIndex < 0 || choiceIndex >= def.options.length) {
-      return reply.status(400).send({ error: 'Некорректный вариант ответа' });
+      return reply.status(400).send({ error: t('Некорректный вариант ответа') });
     }
-
     if (slot.chosen !== null) {
       // Idempotent: return the stored result again
       return {
@@ -124,20 +128,20 @@ export async function interviewRoutes(app: FastifyInstance) {
         state: respondState(state),
       };
     }
-
     const correct = choiceIndex === def.correctIndex;
     slot.chosen = choiceIndex;
     slot.correct = correct;
-    saveState(userId, state);
-
+    await saveState(userId, state);
     return {
       correct,
       correctIndex: def.correctIndex,
       explanation: def.explanation,
-      state: respondState(state, correct ? '✅ Верно! Интервьюер кивает.' : '❌ Мимо. Зато теперь точно запомнишь.'),
+      state: respondState(
+        state,
+        correct ? t('✅ Верно! Интервьюер кивает.') : t('❌ Мимо. Зато теперь точно запомнишь.')
+      ),
     };
   });
-
   /**
    * POST /api/game/interview/finish
    * Grade the quiz, award learning XP, feed the REAL interviewChance
@@ -146,29 +150,23 @@ export async function interviewRoutes(app: FastifyInstance) {
   app.post('/interview/finish', async (request, reply) => {
     const user = (request as any).telegramUser;
     const userId = String(user.id);
-
-    const state = loadState(userId) as StoredState | null;
+    const state = (await loadState(userId)) as StoredState | null;
     if (!state) return reply.status(404).send({ error: 'Game not started' });
-
     const session = state.interviewSession;
-    if (!session) return reply.status(400).send({ error: 'Собеседование не начато' });
-
+    if (!session) return reply.status(400).send({ error: t('Собеседование не начато') });
     const content = getContent();
     if (session.questions.some((q) => q.chosen === null)) {
-      return reply.status(400).send({ error: 'Ответь на все вопросы, чтобы завершить собеседование' });
+      return reply.status(400).send({ error: t('Ответь на все вопросы, чтобы завершить собеседование') });
     }
-
     const app = state.currentApplication;
     if (!app || app.companyId !== session.companyId) {
       state.interviewSession = undefined;
-      saveState(userId, state);
-      return reply.status(400).send({ error: 'Заявка не найдена или устарела' });
+      await saveState(userId, state);
+      return reply.status(400).send({ error: t('Заявка не найдена или устарела') });
     }
-
     const total = session.questions.length;
     const correct = session.questions.filter((q) => q.correct).length;
     const answerScore = interviewAnswerScore(correct, total);
-
     // Gamified learning: XP for every question (right or wrong)
     const xpGains: string[] = [];
     for (const slot of session.questions) {
@@ -185,7 +183,6 @@ export async function interviewRoutes(app: FastifyInstance) {
         xpGains.push(`${def.skillId} +${gain}`);
       }
     }
-
     // Real interview resolution with the player's actual performance
     const company = (content.companies as any[]).find((c) => c.id === app.companyId);
     const skillLevels = Object.fromEntries(Object.entries(state.skills).map(([k, v]) => [k, v.level]));
@@ -197,8 +194,7 @@ export async function interviewRoutes(app: FastifyInstance) {
       companyBar: company?.interviewBar ?? 1,
       answerScore,
     });
-    const passed = rollInterview(chance, Math.random);
-
+    const passed = rollInterview(chance, balanceRng(state));
     let resultMessage: string;
     if (passed) {
       const salary = Math.round((GRADE_SALARIES[app.grade] * (company?.salaryMult ?? 1)) / 1000) * 1000;
@@ -215,18 +211,22 @@ export async function interviewRoutes(app: FastifyInstance) {
       state.pendingOffers = [...state.pendingOffers, offer];
       app.status = 'accepted';
       app.result = 'accepted';
-      resultMessage = `🎉 Собеседование пройдено (${correct}/${total})! Оффер: ${app.position}, ${fmtMoney(salary)}/мес — прими его в «Карьере»`;
+      resultMessage = t(
+        '🎉 Собеседование пройдено ({correct}/{total})! Оффер: {p0}, {p1}/мес — прими его в «Карьере»',
+        { correct: correct, total: total, p0: app.position, p1: fmtMoney(salary) }
+      );
     } else {
       app.status = 'rejected';
       app.result = 'rejected';
-      resultMessage = `😔 Собеседование (${correct}/${total}): «мы впечатлены, но решили двигаться с другим кандидатом». Подтяни навыки и пробуй снова!`;
+      resultMessage = t(
+        '😔 Собеседование ({correct}/{total}): «мы впечатлены, но решили двигаться с другим кандидатом». Подтяни навыки и пробуй снова!',
+        { correct: correct, total: total }
+      );
     }
-
     state.interviewSession = undefined;
     state.maxEnergy = recalcMaxEnergy(state, content);
     state.ratingScore = calculateRating(state);
-    saveState(userId, state);
-
+    await saveState(userId, state);
     return {
       result: passed ? 'offer' : 'rejected',
       correct,

@@ -1,13 +1,12 @@
+import { t } from '../lib/i18n';
 import React, { useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { haptic } from '../lib/telegram';
-
 /**
  * Interview mini-game — gamified learning (quiz with explanations).
  * The player answers 3 questions for their skill branch and grade;
  * performance feeds the real offer chance.
  */
-
 interface Question {
   id: string;
   skillId: string;
@@ -15,13 +14,11 @@ interface Question {
   text: string;
   options: string[];
 }
-
 interface AnswerResult {
   correct: boolean;
   correctIndex: number;
   explanation: string;
 }
-
 interface FinishResult {
   result: 'offer' | 'rejected';
   correct: number;
@@ -29,16 +26,12 @@ interface FinishResult {
   chance: number;
   xp: string[];
 }
-
 type Phase = 'idle' | 'playing' | 'summary' | 'result';
-
 const TIER_LABELS: Record<string, string> = { junior: 'Junior', middle: 'Middle', senior: 'Senior' };
-
 export const InterviewPanel: React.FC = () => {
   const startInterview = useGameStore((s) => s.startInterview);
   const answerInterview = useGameStore((s) => s.answerInterview);
   const finishInterview = useGameStore((s) => s.finishInterview);
-
   const [phase, setPhase] = useState<Phase>('idle');
   const [questions, setQuestions] = useState<Question[]>([]);
   const [answers, setAnswers] = useState<Record<string, AnswerResult>>({});
@@ -47,7 +40,6 @@ export const InterviewPanel: React.FC = () => {
   const [finish, setFinish] = useState<FinishResult | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
   const start = async () => {
     setBusy(true);
     setError(null);
@@ -64,10 +56,9 @@ export const InterviewPanel: React.FC = () => {
       setPhase('playing');
     } else {
       haptic('error');
-      setError('Не удалось начать собеседование. Проверь связь и попробуй ещё раз.');
+      setError(t('Не удалось начать собеседование. Проверь связь и попробуй ещё раз.'));
     }
   };
-
   const choose = async (optionIndex: number) => {
     if (busy || chosen[questions[idx].id] !== undefined) return;
     setBusy(true);
@@ -86,10 +77,9 @@ export const InterviewPanel: React.FC = () => {
       }));
     } else {
       haptic('error');
-      setError('Ответ не отправился — попробуй ещё раз.');
+      setError(t('Ответ не отправился — попробуй ещё раз.'));
     }
   };
-
   const next = () => {
     haptic('selection');
     if (idx + 1 < questions.length) {
@@ -98,7 +88,6 @@ export const InterviewPanel: React.FC = () => {
       setPhase('summary');
     }
   };
-
   const complete = async () => {
     setBusy(true);
     const data = await finishInterview();
@@ -109,13 +98,11 @@ export const InterviewPanel: React.FC = () => {
       setPhase('result');
     } else {
       haptic('error');
-      setError('Не удалось завершить собеседование — результат не сохранён.');
+      setError(t('Не удалось завершить собеседование — результат не сохранён.'));
     }
   };
-
   const correctCount = Object.values(answers).filter((a) => a.correct).length;
   const q = questions[idx];
-
   // Network/server failures used to be swallowed: the state existed but was
   // never rendered, so a failed request looked like a frozen button.
   const errorNote = error ? (
@@ -127,26 +114,25 @@ export const InterviewPanel: React.FC = () => {
       {error}
     </div>
   ) : null;
-
   if (phase === 'idle') {
     return (
       <div className="card panel-note panel-note-sky animate-pop-in">
         {errorNote}
         <h3 className="flex items-center gap-1.5 text-sm font-semibold text-white mb-1">
           <span aria-hidden="true">💬</span>
-          Собеседование-квиз
+          {t('Собеседование-квиз')}
         </h3>
         <p className="text-xs text-ink-400 mb-3 leading-relaxed">
-          Ответь на 3 вопроса по своей специализации. Каждый ответ даёт XP — правильный больше, неправильный меньше (но
-          тоже даёт: учишься на ошибках). Результат влияет на шанс оффера.
+          {t(
+            'Ответь на 3 вопроса по своей специализации. Каждый ответ даёт XP — правильный больше, неправильный меньше (но тоже даёт: учишься на ошибках). Результат влияет на шанс оффера.'
+          )}
         </p>
         <button onClick={start} disabled={busy} className="btn btn-primary w-full">
-          {busy ? 'Готовим вопросы…' : 'Начать собеседование'}
+          {busy ? t('Готовим вопросы…') : t('Начать собеседование')}
         </button>
       </div>
     );
   }
-
   if (phase === 'playing' && q) {
     const picked = chosen[q.id];
     const result = answers[q.id];
@@ -155,7 +141,7 @@ export const InterviewPanel: React.FC = () => {
         {errorNote}
         <div className="flex items-center justify-between mb-2">
           <span className="num text-xs text-ink-400">
-            Вопрос {idx + 1} из {questions.length}
+            {t('Вопрос')} {idx + 1} {t('из')} {questions.length}
           </span>
           <span className="chip">{TIER_LABELS[q.tier] ?? q.tier}</span>
         </div>
@@ -168,14 +154,12 @@ export const InterviewPanel: React.FC = () => {
             const isPicked = picked === i;
             const isCorrectOption = result !== undefined && i === result.correctIndex;
             const isWrongPick = isPicked && result !== undefined && !result.correct;
-
             let cls = '';
             if (result !== undefined) {
               if (isCorrectOption) cls = '!border-moss-500 !bg-moss-900/30';
               else if (isWrongPick) cls = '!border-clay-500 !bg-clay-900/30';
               else cls = 'opacity-50';
             }
-
             return (
               <button
                 key={i}
@@ -208,44 +192,42 @@ export const InterviewPanel: React.FC = () => {
                   : 'bg-ochre-900/30 border-ochre-500/50 text-ochre-200'
               }`}
             >
-              <span className="font-semibold">{result.correct ? 'Верно. ' : 'Не совсем. '}</span>
+              <span className="font-semibold">{result.correct ? t('Верно. ') : t('Не совсем. ')}</span>
               {result.explanation}
             </div>
             <button onClick={next} className="btn btn-primary w-full mt-2">
-              {idx + 1 < questions.length ? 'Следующий вопрос' : 'К итогам'}
+              {idx + 1 < questions.length ? t('Следующий вопрос') : t('К итогам')}
             </button>
           </div>
         )}
       </div>
     );
   }
-
   if (phase === 'summary') {
     return (
       <div className="card panel-note panel-note-sky animate-fade-in">
-        <h3 className="eyebrow mb-2">Итоги собеседования</h3>
+        <h3 className="eyebrow mb-2">{t('Итоги собеседования')}</h3>
         <div className="text-center py-3">
           <p className="text-3xl leading-none mb-2" aria-hidden="true">
             {correctCount === questions.length ? '🏆' : '🎯'}
           </p>
           <p className="num text-xl font-semibold text-white">
-            {correctCount} из {questions.length}
+            {correctCount} {t('из')} {questions.length}
           </p>
           <p className="text-xs text-ink-400 mt-1 leading-relaxed">
             {correctCount === questions.length
-              ? 'Идеально! Интервьюер уже готовит оффер.'
+              ? t('Идеально! Интервьюер уже готовит оффер.')
               : correctCount > 0
-                ? 'Неплохо! Каждый ответ — это опыт.'
-                : 'Тяжеловато, но за каждый вопрос ты получил XP — знания растут.'}
+                ? t('Неплохо! Каждый ответ — это опыт.')
+                : t('Тяжеловато, но за каждый вопрос ты получил XP — знания растут.')}
           </p>
         </div>
         <button onClick={complete} disabled={busy} className="btn btn-primary w-full">
-          {busy ? 'Интервьюер совещается…' : 'Узнать решение'}
+          {busy ? t('Интервьюер совещается…') : t('Узнать решение')}
         </button>
       </div>
     );
   }
-
   if (phase === 'result' && finish) {
     const isOffer = finish.result === 'offer';
     return (
@@ -255,23 +237,24 @@ export const InterviewPanel: React.FC = () => {
             {isOffer ? '🎉' : '💔'}
           </p>
           <h3 className={`text-base font-semibold ${isOffer ? 'text-moss-300' : 'text-clay-300'}`}>
-            {isOffer ? 'Оффер получен' : 'Отказ'}
+            {isOffer ? t('Оффер получен') : t('Отказ')}
           </h3>
           <p className="num text-xs text-ink-300 mt-1">
-            Верно: {finish.correct}/{finish.total} · шанс был {finish.chance}%
+            {t('Верно:')} {finish.correct}/{finish.total} {t('· шанс был')} {finish.chance}%
           </p>
           {finish.xp?.length > 0 && (
-            <p className="num text-xs text-sky-300 mt-2">Обучение: {finish.xp.join(', ')} XP</p>
+            <p className="num text-xs text-sky-300 mt-2">
+              {t('Обучение:')} {finish.xp.join(', ')} XP
+            </p>
           )}
           <p className="text-xs text-ink-400 mt-2 leading-relaxed">
             {isOffer
-              ? 'Загляни в блок «Офферы» выше и прими его!'
-              : 'Не расстраивайся — подтяни навыки и откликайся снова. Опыт остался с тобой.'}
+              ? t('Загляни в блок «Офферы» выше и прими его!')
+              : t('Не расстраивайся — подтяни навыки и откликайся снова. Опыт остался с тобой.')}
           </p>
         </div>
       </div>
     );
   }
-
   return null;
 };

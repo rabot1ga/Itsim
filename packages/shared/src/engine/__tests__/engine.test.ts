@@ -374,184 +374,28 @@ describe('player', () => {
   });
 });
 
-// ---- Procedural genetics (DESIGN.md) ----
+// ---- Deterministic RNG (utils, ex-genetics) ----
 
-import {
-  generatePlayerSeed,
-  seededRng,
-  seededWeightedPick,
-  getGeneticTraits,
-  tintFilter,
-  traitTint,
-  tintFromHex,
-  lookTintOverrides,
-  type GeneticsConfig,
-} from '../../index';
+import { seededRng, seededWeightedPick } from '../../index';
 
-const GENETICS_CONFIG: GeneticsConfig = {
-  eyes: [
-    { id: 'eye_normal', name: 'Обычные', weight: 50 },
-    { id: 'eye_tired', name: 'Уставшие', weight: 25 },
-    { id: 'eye_legendary', name: 'Глаза Сеньора', weight: 5, rarity: 'legendary' },
-  ],
-  hairstyles: [
-    { id: 'hair_bald', name: 'Лысый', weight: 10 },
-    { id: 'hair_messy', name: 'Взъерошенные', weight: 40 },
-    { id: 'hair_manbun', name: 'Пучок', weight: 15 },
-  ],
-  hairPalette: [
-    { id: 'hair_black', name: 'Чёрный', hue: 20, sat: 0.6, light: 0.55 },
-    { id: 'hair_blond', name: 'Блонд', hue: 48, sat: 2.0, light: 1.25 },
-  ],
-  skinTones: [
-    { id: 'skin_pale', name: 'Бледный', hue: 25, sat: 1.4, light: 1.1 },
-    { id: 'skin_dark', name: 'Тёмный', hue: 15, sat: 2.2, light: 0.6 },
-  ],
-  beards: [
-    { id: 'beard_none', name: 'Без бороды', weight: 45 },
-    { id: 'beard_full', name: 'Борода', weight: 20 },
-  ],
-  tops: [
-    { id: 'top_hoddie', name: 'Худи', weight: 50 },
-    { id: 'top_tshirt', name: 'Футболка', weight: 30 },
-  ],
-  accessories: [
-    { id: 'acc_none', name: 'Без аксессуаров', weight: 40 },
-    { id: 'acc_headphones', name: 'Наушники', weight: 20 },
-  ],
-  windows: [
-    { id: 'window_square', name: 'Квадратное', weight: 40 },
-    { id: 'window_round', name: 'Круглое', weight: 10 },
-  ],
-  wallPalette: [
-    { id: 'wall_gray', name: 'Серый', hue: 0, sat: 0.2, light: 0.9 },
-    { id: 'wall_blue', name: 'Синий', hue: 210, sat: 1.6, light: 0.95 },
-  ],
-  decorOptions: [
-    { id: 'decor_poster_js', name: 'Постер JS', weight: 30 },
-    { id: 'decor_neon', name: 'Неон', weight: 10 },
-  ],
-};
-
-describe('genetics', () => {
-  it('generates a 64-hex-char sha256 seed', () => {
-    const seed = generatePlayerSeed('wallet123', 'game-1');
-    expect(seed).toMatch(/^[0-9a-f]{64}$/);
-  });
-
-  it('different wallets produce different seeds', () => {
-    expect(generatePlayerSeed('walletA')).not.toBe(generatePlayerSeed('walletB'));
-  });
-
+describe('rng', () => {
   it('seededRng is deterministic for the same seed', () => {
     const r1 = seededRng('seed-1');
     const r2 = seededRng('seed-1');
-    for (let i = 0; i < 20; i++) {
-      expect(r1()).toBe(r2());
-    }
+    expect([r1(), r1(), r1()]).toEqual([r2(), r2(), r2()]);
   });
 
   it('seededWeightedPick respects weights (deterministic)', () => {
     const items = [
-      { id: 'a', weight: 1 },
-      { id: 'b', weight: 99 },
+      { id: 'a', weight: 9 },
+      { id: 'b', weight: 1 },
     ];
     let picks = 0;
-    for (const s of ['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8']) {
-      if (seededWeightedPick(items, s, 'x').id === 'b') picks++;
+    for (let i = 0; i < 200; i++) {
+      if (seededWeightedPick(items, `s${i}`, 'x').id === 'b') picks++;
     }
-    expect(picks).toBeGreaterThan(5); // statistical sanity, deterministic
-  });
-
-  it('getGeneticTraits is deterministic for a fixed seed', () => {
-    const seed = generatePlayerSeed('wallet-determinism');
-    const t1 = getGeneticTraits(seed, GENETICS_CONFIG);
-    const t2 = getGeneticTraits(seed, GENETICS_CONFIG);
-    expect(t1).toEqual(t2);
-    expect(t1.seed).toBe(seed);
-  });
-
-  it('traits always reference existing options', () => {
-    const seed = generatePlayerSeed('wallet-validity');
-    const t = getGeneticTraits(seed, GENETICS_CONFIG);
-    const ids = (opts: { id: string }[]) => new Set(opts.map((o) => o.id));
-    expect(ids(GENETICS_CONFIG.eyes).has(t.eyeShape)).toBe(true);
-    expect(ids(GENETICS_CONFIG.hairstyles).has(t.hairStyle)).toBe(true);
-    expect(ids(GENETICS_CONFIG.hairPalette).has(t.hairColor)).toBe(true);
-    expect(ids(GENETICS_CONFIG.skinTones).has(t.skinTone)).toBe(true);
-    expect(ids(GENETICS_CONFIG.windows).has(t.windowShape)).toBe(true);
-    expect(ids(GENETICS_CONFIG.wallPalette).has(t.wallColor)).toBe(true);
-    expect(ids(GENETICS_CONFIG.decorOptions).has(t.decor)).toBe(true);
-  });
-
-  it('tintFilter produces a CSS filter string with the hue', () => {
-    const filter = tintFilter({ id: 'x', name: 'x', hue: 210, sat: 1.5, light: 1.2 });
-    expect(filter).toContain('hue-rotate(210deg)');
-    expect(filter).toContain('saturate(1.5)');
-    expect(filter).toContain('brightness(1.2)');
-  });
-
-  it('traitTint resolves palettes per slot', () => {
-    const seed = generatePlayerSeed('wallet-tint');
-    const t = getGeneticTraits(seed, GENETICS_CONFIG);
-    expect(traitTint('skinTone', t, GENETICS_CONFIG)?.id).toBe(t.skinTone);
-    expect(traitTint('wallColor', t, GENETICS_CONFIG)?.id).toBe(t.wallColor);
-    expect(traitTint('unknownSlot', t, GENETICS_CONFIG)).toBeNull();
-  });
-});
-
-// ---- Ручные цвета гардероба → тонировка плоских мастеров ----
-
-describe('tintFromHex', () => {
-  it('детерминирована и не зависит от записи хекса', () => {
-    expect(tintFilter(tintFromHex('#f00')!)).toBe(tintFilter(tintFromHex('#FF0000')!));
-    expect(tintFilter(tintFromHex('#ff0000')!)).toBe(tintFilter(tintFromHex('#ff0000')!));
-  });
-
-  it('всё, что не хекс, остаётся на совести генетики', () => {
-    expect(tintFromHex('hair_black')).toBeNull();
-    expect(tintFromHex('#ff00')).toBeNull();
-    expect(tintFromHex('')).toBeNull();
-    expect(tintFromHex(null)).toBeNull();
-    expect(tintFromHex(undefined)).toBeNull();
-  });
-
-  it('монотонна: темнее — меньше brightness, насыщеннее — больше saturate', () => {
-    const dark = tintFromHex('#2b2320')!;
-    const blond = tintFromHex('#d7a94b')!;
-    expect(dark.light!).toBeLessThan(blond.light!);
-    expect(tintFromHex('#808080')!.sat!).toBeLessThan(tintFromHex('#ff2020')!.sat!);
-  });
-
-  it('нейтральный серый почти не добавляет насыщенности', () => {
-    expect(tintFromHex('#808080')!.sat).toBeCloseTo(0.1, 6);
-  });
-
-  it('тон считается как поворот от сепиевой базы, поэтому красный и синий расходятся', () => {
-    const red = tintFromHex('#ff2020')!.hue;
-    const blue = tintFromHex('#2020ff')!.hue;
-    expect(Math.abs(red - blue)).toBeGreaterThan(90);
-  });
-});
-
-describe('lookTintOverrides', () => {
-  it('плоскому стеку отдаются только те ряды, у мастеров которых есть tintSlot', () => {
-    expect(
-      lookTintOverrides({
-        skin: '#e8b088',
-        hairColor: '#2b2320',
-        topColor: '#123456',
-        bottomColor: '#000000',
-        shoeColor: '#ffffff',
-      })
-    ).toEqual({ skinTone: '#e8b088', hairColor: '#2b2320' });
-  });
-
-  it('мусор и «Авто» (null) не пробрасываются', () => {
-    expect(lookTintOverrides({ hairColor: 'blond', skin: null })).toEqual({});
-    expect(lookTintOverrides({})).toEqual({});
-    expect(lookTintOverrides(null)).toEqual({});
-    expect(lookTintOverrides(undefined)).toEqual({});
+    expect(picks).toBeGreaterThan(5);
+    expect(picks).toBeLessThan(60);
   });
 });
 

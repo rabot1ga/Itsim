@@ -1,3 +1,6 @@
+// i18n
+export * from './i18n/index';
+
 // Types
 export * from './types/index';
 
@@ -25,19 +28,10 @@ export {
   ActionSchema,
   ActionsFileSchema,
   ContentManifestSchema,
-  GeneticsConfigSchema,
-  LayerManifestSchema,
-  CrossCollectionsSchema,
-  NftMetadataSchema,
-  WalletAddressSchema,
   DailyChallengeSchema,
   DailyChallengesFileSchema,
   InterviewQuestionSchema,
   InterviewQuestionsFileSchema,
-  PixelArtFileSchema,
-  PixelArtSourceFileSchema,
-  PixelGeneratorConfigSchema,
-  PixelColorSchemeSchema,
   ProductSchema,
   ProductGrantsSchema,
   MonetizationSchema,
@@ -50,5 +44,14 @@ export {
   ArchetypeStepSchema,
   ArchetypeSchema,
   ArchetypesFileSchema,
+  MarketplaceOfferSchema,
+  MarketplaceSchema,
 } from './schemas/index';
-export type { BalanceConfig, Product, ProductGrants, MonetizationConfig } from './schemas/index';
+export type {
+  BalanceConfig,
+  Product,
+  ProductGrants,
+  MonetizationConfig,
+  MarketplaceOffer,
+  MarketplaceConfig,
+} from './schemas/index';

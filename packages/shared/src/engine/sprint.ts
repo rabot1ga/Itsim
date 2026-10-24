@@ -42,7 +42,7 @@ function utc3Weekday(nowMs: number): number {
  */
 export function sprintWeekStartMs(nowMs: number): number {
   const dayStart = utc3DayNumber(nowMs) * SPRINT_DAY_MS - SPRINT_TZ_MS;
-  return dayStart - (utc3Weekday(nowMs) + 6) % 7 * SPRINT_DAY_MS;
+  return dayStart - ((utc3Weekday(nowMs) + 6) % 7) * SPRINT_DAY_MS;
 }
 
 /** Moment the sprint window closes: next Monday 00:00:00.000 UTC+3 */

@@ -1,3 +1,4 @@
+import { dt } from '../i18n';
 import { FreelanceBid, PlayerProject, ProjectDef, ProjectTaskDef } from '../types';
 
 /**
@@ -45,14 +46,17 @@ export function projectBlockedReason(
     pendingBid?: FreelanceBid | null;
   }
 ): string | null {
-  if (opts.activeProject) return 'Сначала закончи текущий проект';
+  if (opts.activeProject) return dt('Сначала закончи текущий проект');
   if (opts.pendingBid) {
     return opts.pendingBid.projectId === def.id
-      ? 'Отклик отправлен — ответ утром'
-      : 'Уже ждёшь ответа по другому заказу';
+      ? dt('Отклик отправлен — ответ утром')
+      : dt('Уже ждёшь ответа по другому заказу');
   }
   if (opts.skillLevel < def.minSkillLevel) {
-    return `Нужен уровень основного навыка ${def.minSkillLevel} (сейчас ${opts.skillLevel})`;
+    return dt('Нужен уровень основного навыка {need} (сейчас {now})', {
+      need: def.minSkillLevel,
+      now: opts.skillLevel,
+    });
   }
   return null;
 }

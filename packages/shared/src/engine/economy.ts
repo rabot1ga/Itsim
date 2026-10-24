@@ -6,43 +6,50 @@ import { PlayerState, Grade } from '../types';
 
 // Grade salary table (section 5.4)
 export const GRADE_SALARIES: Record<Grade, number> = {
-  'unemployed': 0,
-  'intern': 35000,
-  'junior': 90000,
-  'middle': 220000,
-  'senior': 400000,
-  'teamlead': 520000,
-  'architect': 680000,
-  'cto': 1000000,
+  unemployed: 0,
+  intern: 35000,
+  junior: 90000,
+  middle: 220000,
+  senior: 400000,
+  teamlead: 520000,
+  architect: 680000,
+  cto: 1000000,
 };
 
 // Grade energy per day
 export const GRADE_ENERGY: Record<Grade, number> = {
-  'unemployed': 0,
-  'intern': 3,
-  'junior': 4,
-  'middle': 4,
-  'senior': 5,
-  'teamlead': 5,
-  'architect': 5,
-  'cto': 5,
+  unemployed: 0,
+  intern: 3,
+  junior: 4,
+  middle: 4,
+  senior: 5,
+  teamlead: 5,
+  architect: 5,
+  cto: 5,
 };
 
 // Grade requirements (skill, communication, reputation)
 export const GRADE_REQUIREMENTS: Record<Grade, { skill: number; comm: number; rep: number }> = {
-  'unemployed': { skill: 0, comm: 0, rep: 0 },
-  'intern': { skill: 18, comm: 8, rep: 0 },
-  'junior': { skill: 32, comm: 14, rep: 5 },
-  'middle': { skill: 55, comm: 26, rep: 15 },
-  'senior': { skill: 76, comm: 42, rep: 30 },
-  'teamlead': { skill: 80, comm: 55, rep: 42 },
-  'architect': { skill: 90, comm: 68, rep: 58 },
-  'cto': { skill: 95, comm: 80, rep: 70 },
+  unemployed: { skill: 0, comm: 0, rep: 0 },
+  intern: { skill: 18, comm: 8, rep: 0 },
+  junior: { skill: 32, comm: 14, rep: 5 },
+  middle: { skill: 55, comm: 26, rep: 15 },
+  senior: { skill: 76, comm: 42, rep: 30 },
+  teamlead: { skill: 80, comm: 55, rep: 42 },
+  architect: { skill: 90, comm: 68, rep: 58 },
+  cto: { skill: 95, comm: 80, rep: 70 },
 };
 
 // Grade ordering for comparison
 export const GRADE_ORDER: Grade[] = [
-  'unemployed', 'intern', 'junior', 'middle', 'senior', 'teamlead', 'architect', 'cto'
+  'unemployed',
+  'intern',
+  'junior',
+  'middle',
+  'senior',
+  'teamlead',
+  'architect',
+  'cto',
 ];
 
 /**
@@ -70,11 +77,20 @@ export const FOOD_DELIVERY = 1100;
  * Housing costs per 30 days (section 5.6)
  */
 export const HOUSING_COSTS: Record<number, number> = {
-  0: 5000,    // dorm
-  1: 25000,   // outskirts
-  2: 50000,   // center
-  3: 40000,   // own mortgage
-  4: 150000,  // penthouse
+  0: 5000, // dorm
+  1: 25000, // outskirts
+  2: 50000, // center
+  3: 40000, // own mortgage
+  4: 150000, // penthouse
+};
+
+/** Названия уровней жилья (ключи i18n: RU-строки, как весь словарь). */
+export const HOUSING_NAMES: Record<number, string> = {
+  0: 'Общага',
+  1: 'Однушка на окраине',
+  2: 'Квартира в центре',
+  3: 'Своя квартира',
+  4: 'Пентхаус',
 };
 
 /**
@@ -110,12 +126,8 @@ export const MONTHLY_COSTS = {
 /**
  * Calculate freelance payment (section 6.5)
  */
-export function freelancePayment(
-  skill: number,
-  reputation: number,
-  difficulty: 'easy' | 'medium' | 'hard'
-): number {
-  const diffMult = { 'easy': 1, 'medium': 1.6, 'hard': 2.4 }[difficulty];
+export function freelancePayment(skill: number, reputation: number, difficulty: 'easy' | 'medium' | 'hard'): number {
+  const diffMult = { easy: 1, medium: 1.6, hard: 2.4 }[difficulty];
   const base = 3000 + skill * 380;
   const repMult = 1 + reputation / 60; // up to 2.67 at rep 100
   return Math.round(base * repMult * diffMult);
@@ -174,11 +186,7 @@ export function applyMotivationDrift(
 /**
  * Apply health drift from work
  */
-export function applyHealthDrift(
-  health: number,
-  jobHealthPerDay: number,
-  foodType: 'cook' | 'delivery'
-): number {
+export function applyHealthDrift(health: number, jobHealthPerDay: number, foodType: 'cook' | 'delivery'): number {
   let newHealth = health + jobHealthPerDay;
 
   if (foodType === 'cook') {

@@ -90,6 +90,8 @@ export default defineConfig({
         PORT: String(API_PORT),
         HOST: '127.0.0.1',
         BOT_TOKEN: '',
+        // Пин RNG-соли: игровые броски воспроизводимы, e2e не флакает (P2.5).
+        ITSIM_RNG_SALT: 'itsim-e2e-fixed-salt',
         DATA_DIR: mkdtempSync(join(tmpdir(), 'itsim-e2e-')),
       },
       stdout: 'pipe',

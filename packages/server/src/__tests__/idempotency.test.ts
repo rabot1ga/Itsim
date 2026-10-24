@@ -54,5 +54,12 @@ describe('action idempotency', () => {
     const response = stripInternal(state);
     expect(response).not.toHaveProperty('_idem');
     expect(response).toHaveProperty('money', 100);
+    // P2.4: соль серверного RNG тоже секретна
+    (state as any).rngSalt = 'secret-salt';
+    (state as any).rngSeq = 7;
+    const stripped = stripInternal(state);
+    expect(stripped).not.toHaveProperty('rngSalt');
+    expect(stripped).not.toHaveProperty('rngSeq');
+    expect(stripped).toHaveProperty('money', 100);
   });
 });

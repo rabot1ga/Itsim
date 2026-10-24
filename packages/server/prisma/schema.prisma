@@ -1,0 +1,66 @@
+// PostgreSQL + Prisma: SPEC §12 «JSONB для игрового состояния».
+// Клиент собирается engine-less (engineType = "client" + queryCompiler/
+// driverAdapters) — рантайму не нужны Rust-движки, только наш SQL-адаптер
+// (src/db/adapter.ts) поверх pg или pg-mem (тесты).
+//
+// DDL живёт в src/db/migrations/*.sql (раннер при старте сервера):
+// `prisma migrate` тянет schema-engine с binaries.prisma.sh и не работает
+// офлайн; SQL-файлы в репозитории — источник правды для структуры, схема ниже
+// их документирует и даёт типы клиента.
+generator client {
+  provider   = "prisma-client"
+  output     = "../src/generated/prisma"
+  engineType = "client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Игровой сейв: одна строка на игрока, состояние целиком в JSONB.
+/// Миграции сейва (v4→v5→…) остаются на уровне движка (engine/migrations.ts).
+model Player {
+  userId    String   @id @map("user_id")
+  state     Json
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("players")
+}
+
+/// Реестр покупок Telegram Stars (services/entitlements.ts).
+/// charge_id — PK: вебхуки Telegram ретраятся, грант обязан быть идемпотентным.
+/// При GDPR-удалении игрока сохраняется (retention платёжных документов).
+model Purchase {
+  chargeId   String    @id @map("charge_id")
+  userId     String    @map("user_id")
+  productId  String    @map("product_id")
+  stars      Int
+  at         DateTime
+  mock       Boolean   @default(false)
+  refundedAt DateTime? @map("refunded_at")
+
+  @@index([userId])
+  @@map("purchases")
+}
+
+/// Объявления P2P-витрины (эскроу-лайт). Документация: DDL — в
+/// src/db/migrations/002_market_offers.sql; бэкенд ходит сырым SQL
+/// (rawSqlOfferBackend), generated-клиент не пересобирается.
+model MarketOffer {
+  id        String  @id @map("id")
+  sellerId  String  @map("seller_id")
+  itemId    String  @map("item_id")
+  price     Int     @map("price")
+  createdAt BigInt  @map("created_at")
+  expiresAt BigInt  @map("expires_at")
+  status    String
+  buyerId   String? @map("buyer_id")
+  soldAt    BigInt? @map("sold_at")
+  /// Оценка продавца покупателем (1–5), одна на сделку (миграция 003).
+  buyerRating Int? @map("buyer_rating")
+
+  @@index([status])
+  @@index([sellerId])
+  @@map("market_offers")
+}

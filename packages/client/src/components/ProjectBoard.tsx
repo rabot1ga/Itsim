@@ -1,3 +1,4 @@
+import { t, fmtNumber } from '../lib/i18n';
 import React, { useEffect, useState } from 'react';
 import {
   ProjectDef,
@@ -10,7 +11,6 @@ import {
 } from '@itsim/shared';
 import { useGameStore } from '../store/gameStore';
 import { Spinner } from './ui';
-
 /**
  * Биржа заказов — the «Работа» screen of reference 1.png.
  *
@@ -20,18 +20,15 @@ import { Spinner } from './ui';
  * else. That is why the freelance action and the board are one thing now
  * instead of two doors to the same money.
  */
-
 function fmtMoney(amount: number): string {
-  return `${amount.toLocaleString('ru-RU')} ₽`;
+  return `${fmtNumber(amount)} ₽`;
 }
-
 function deadlineLabel(daysLeft: number): string {
-  if (daysLeft < 0) return 'просрочен';
-  if (daysLeft === 0) return 'сегодня';
-  if (daysLeft === 1) return '1 день';
-  return `${daysLeft} дн.`;
+  if (daysLeft < 0) return t('просрочен');
+  if (daysLeft === 0) return t('сегодня');
+  if (daysLeft === 1) return t('1 день');
+  return t('{daysLeft} дн.', { daysLeft: daysLeft });
 }
-
 /** Content ships pixel-icon names; the chrome speaks emoji. */
 const PROJECT_EMOJI: Record<string, string> = {
   screen: '🖥',
@@ -44,10 +41,8 @@ const PROJECT_EMOJI: Record<string, string> = {
   mug: '☕',
 };
 const projectEmoji = (icon?: string) => PROJECT_EMOJI[icon ?? ''] ?? '📁';
-
 /** Energy the server charges for a bid (`EXTRA_ENERGY_COSTS.freelance`). */
 const BID_ENERGY = 3;
-
 export const ProjectBoard: React.FC = () => {
   const player = useGameStore((s) => s.player);
   const performAction = useGameStore((s) => s.performAction);
@@ -55,7 +50,6 @@ export const ProjectBoard: React.FC = () => {
   const [failed, setFailed] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const [busy, setBusy] = useState(false);
-
   useEffect(() => {
     const controller = new AbortController();
     setFailed(false);
@@ -67,9 +61,7 @@ export const ProjectBoard: React.FC = () => {
       });
     return () => controller.abort();
   }, [attempt]);
-
   if (!player) return null;
-
   const act = async (actionId: string, params?: Record<string, unknown>) => {
     if (busy) return;
     setBusy(true);
@@ -79,44 +71,44 @@ export const ProjectBoard: React.FC = () => {
       setBusy(false);
     }
   };
-
   const active = player.activeProject ?? null;
   const bid = player.freelanceBid ?? null;
   const bidDef = bid ? ((projects ?? []).find((p) => p.id === bid.projectId) ?? null) : null;
   const activeDef = active ? ((projects ?? []).find((p) => p.id === active.id) ?? null) : null;
   const skillLevel = player.skills?.[player.mainSkillId ?? '']?.level ?? 0;
   const done = new Set(player.projectsDone ?? []);
-
   return (
-    <section className="project-board" aria-label="Заказы">
-      <h3 className="section-title">Биржа заказов</h3>
+    <section className="project-board" aria-label={t('Заказы')}>
+      <h3 className="section-title">{t('Биржа заказов')}</h3>
 
       {failed && (
         <div role="alert" className="well text-xs text-clay-300">
-          Не удалось загрузить проекты.
+          {t('Не удалось загрузить проекты.')}
           <button className="btn btn-secondary mt-2" onClick={() => setAttempt((n) => n + 1)}>
-            Повторить загрузку
+            {t('Повторить загрузку')}
           </button>
         </div>
       )}
-      {!projects && !failed && <Spinner label="Загрузка проектов…" />}
+      {!projects && !failed && <Spinner label={t('Загрузка проектов…')} />}
 
       {bid && (
-        <article className="card card-sm panel-note panel-note-sky" aria-label="Отклик отправлен">
+        <article className="card card-sm panel-note panel-note-sky" aria-label={t('Отклик отправлен')}>
           <img className="project-art" src="/art/story-v1/freelance.webp" alt="" width={384} height={230} />
           <p className="text-sm text-ink-100">
             <span aria-hidden="true">📨 </span>
-            Отклик на «{bidDef?.title ?? 'заказ'}» отправлен
+            {t('Отклик на «')}
+            {bidDef?.title ?? t('заказ')}
+            {t('» отправлен')}
           </p>
           <p className="text-xs text-ink-400 mt-1 leading-relaxed">
-            Заказчик ответит утром: шанс <span className="num">{Math.round(bid.chance * 100)}%</span>. Не выгорит —
-            останется оплаченное тестовое.
+            {t('Заказчик ответит утром: шанс')} <span className="num">{Math.round(bid.chance * 100)}%</span>
+            {t('. Не выгорит — останется оплаченное тестовое.')}
           </p>
         </article>
       )}
 
       {active && activeDef && (
-        <article className="project-active" aria-label={`Активный проект: ${activeDef.title}`}>
+        <article className="project-active" aria-label={t('Активный проект: {p0}', { p0: activeDef.title })}>
           <img className="project-art" src="/art/story-v1/contract.webp" alt="" width={384} height={230} />
           <div className="project-active-head">
             <span className="text-lg leading-none" aria-hidden="true">
@@ -131,7 +123,7 @@ export const ProjectBoard: React.FC = () => {
           <div
             className="meter"
             role="progressbar"
-            aria-label={`Прогресс проекта ${activeDef.title}`}
+            aria-label={t('Прогресс проекта {p0}', { p0: activeDef.title })}
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={projectProgress(activeDef, active)}
@@ -139,10 +131,10 @@ export const ProjectBoard: React.FC = () => {
             <span style={{ width: `${projectProgress(activeDef, active)}%`, background: 'var(--green)' }} />
           </div>
           <p className={`project-deadline ${projectDaysLeft(active, player.currentDay) < 0 ? 'is-late' : ''}`}>
-            Дедлайн: день {active.deadlineDay} · {deadlineLabel(projectDaysLeft(active, player.currentDay))}
+            {t('Дедлайн: день')} {active.deadlineDay} · {deadlineLabel(projectDaysLeft(active, player.currentDay))}
           </p>
 
-          <h4 className="project-tasks-title">Активные задачи</h4>
+          <h4 className="project-tasks-title">{t('Активные задачи')}</h4>
           <ul className="project-tasks">
             {activeDef.tasks.map((task) => {
               const isDone = active.tasksDone.includes(task.id);
@@ -151,7 +143,7 @@ export const ProjectBoard: React.FC = () => {
                 <li key={task.id} className={isDone ? 'is-done' : ''}>
                   <span className="project-task-title">{task.title}</span>
                   {isDone ? (
-                    <span className="project-task-done">✓ готово</span>
+                    <span className="project-task-done">{t('✓ готово')}</span>
                   ) : (
                     <button
                       disabled={busy || !affordable}
@@ -171,10 +163,12 @@ export const ProjectBoard: React.FC = () => {
               disabled={busy || !projectComplete(activeDef, active)}
               onClick={() => act('deliver_project')}
             >
-              {projectComplete(activeDef, active) ? `Сдать за ${fmtMoney(activeDef.payment)}` : 'Сдать проект'}
+              {projectComplete(activeDef, active)
+                ? t('Сдать за {p0}', { p0: fmtMoney(activeDef.payment) })
+                : t('Сдать проект')}
             </button>
             <button className="btn btn-sm btn-ghost" disabled={busy} onClick={() => act('drop_project')}>
-              Отказаться
+              {t('Отказаться')}
             </button>
           </div>
         </article>
@@ -182,13 +176,13 @@ export const ProjectBoard: React.FC = () => {
 
       {active && !activeDef && projects && (
         <p className="well text-xs text-ink-400">
-          Взятый проект больше не входит в каталог. Он закроется при смене дня.
+          {t('Взятый проект больше не входит в каталог. Он закроется при смене дня.')}
         </p>
       )}
 
       {projects && projects.length > 0 && (
         <>
-          <h4 className="project-tasks-title">Открытые заказы</h4>
+          <h4 className="project-tasks-title">{t('Открытые заказы')}</h4>
           <div className="space-y-2">
             {projects.map((def) => {
               const blocked = projectBlockedReason(def, { activeProject: active, skillLevel, pendingBid: bid });
@@ -203,24 +197,25 @@ export const ProjectBoard: React.FC = () => {
                     <p className="project-title">{def.title}</p>
                     <p className="project-subtitle">{def.subtitle}</p>
                     <p className="project-terms num">
-                      Оплата: {fmtMoney(def.payment)} · дедлайн {def.deadlineDays} дн. · {def.tasks.length} задач
+                      {t('Оплата:')} {fmtMoney(def.payment)} {t('· дедлайн')} {def.deadlineDays} {t('дн. ·')}{' '}
+                      {def.tasks.length} {t('задач')}
                     </p>
                     {!blocked && (
                       <p className="project-terms">
-                        Шанс получить: <span className="num">{Math.round(chance * 100)}%</span> · мимо —{' '}
-                        <span className="num">{fmtMoney(consolationPayment(def))}</span> за тестовое
+                        {t('Шанс получить:')} <span className="num">{Math.round(chance * 100)}%</span> {t('· мимо —')}{' '}
+                        <span className="num">{fmtMoney(consolationPayment(def))}</span> {t('за тестовое')}
                       </p>
                     )}
-                    {done.has(def.id) && <p className="project-terms">Уже сдавался в этой жизни</p>}
+                    {done.has(def.id) && <p className="project-terms">{t('Уже сдавался в этой жизни')}</p>}
                     {blocked && <p className="project-blocked">{blocked}</p>}
                   </div>
                   <button
                     className="btn btn-sm btn-primary project-take"
                     disabled={busy || blocked !== null || tired}
-                    title={tired ? `Нужно ${BID_ENERGY} ⚡` : 'Ответ придёт утром'}
+                    title={tired ? t('Нужно {BID_ENERGY} ⚡', { BID_ENERGY: BID_ENERGY }) : t('Ответ придёт утром')}
                     onClick={() => act('freelance', { projectId: def.id })}
                   >
-                    Откликнуться
+                    {t('Откликнуться')}
                   </button>
                 </article>
               );
@@ -229,10 +224,11 @@ export const ProjectBoard: React.FC = () => {
         </>
       )}
       {projects && projects.length === 0 && !failed && (
-        <p className="text-xs text-ink-400">Заказчики пока молчат — заказов нет.</p>
+        <p className="text-xs text-ink-400">{t('Заказчики пока молчат — заказов нет.')}</p>
       )}
       <p className="text-2xs text-ink-600">
-        Один отклик в день, −{BID_ENERGY} ⚡. Заказчик отвечает утром: контракт, оплаченное тестовое или отказ.
+        {t('Один отклик в день, −')}
+        {BID_ENERGY} {t('⚡. Заказчик отвечает утром: контракт, оплаченное тестовое или отказ.')}
       </p>
     </section>
   );

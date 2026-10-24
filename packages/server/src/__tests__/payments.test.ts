@@ -30,11 +30,11 @@ const PRODUCTS = [
   },
   {
     id: 'wardrobe_premium',
-    title: 'Премиум-гардероб',
+    title: 'Ангельский прикид',
     description: 'Косметика',
     stars: 150,
     repeatable: false,
-    grants: { cosmetics: ['acc_vr_headset'], badge: 'fashionista' },
+    grants: { cosmetics: ['pet_halo'], badge: 'fashionista' },
   },
 ];
 
@@ -51,7 +51,7 @@ async function buildApp() {
   const entitlements = await import('../services/entitlements');
 
   store.clearCache();
-  entitlements.resetEntitlements();
+  await entitlements.resetEntitlements();
 
   contentService.setContent({
     monetization: { currency: 'XTR', policy: 'no pay-to-win', products: PRODUCTS },
@@ -62,7 +62,7 @@ async function buildApp() {
   await app.ready();
 
   // A save must exist for grants to land somewhere.
-  store.saveState('1', {
+  await store.saveState('1', {
     version: 2,
     telegramId: '1',
     firstName: 'Dev',
@@ -125,7 +125,11 @@ describe('payments: catalogue and invoices', () => {
     const { app } = await buildApp();
     await app.inject({ method: 'POST', url: '/api/payments/dev-complete', payload: { productId: 'wardrobe_premium' } });
 
-    const res = await app.inject({ method: 'POST', url: '/api/payments/stars', payload: { productId: 'wardrobe_premium' } });
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/payments/stars',
+      payload: { productId: 'wardrobe_premium' },
+    });
     expect(res.statusCode).toBe(409);
     expect(res.json().error).toMatch(/куплено/i);
   });
@@ -133,10 +137,18 @@ describe('payments: catalogue and invoices', () => {
   it('enforces the daily limit of a repeatable product', async () => {
     const { app } = await buildApp();
     for (let i = 0; i < 2; i++) {
-      const ok = await app.inject({ method: 'POST', url: '/api/payments/dev-complete', payload: { productId: 'banked_day' } });
+      const ok = await app.inject({
+        method: 'POST',
+        url: '/api/payments/dev-complete',
+        payload: { productId: 'banked_day' },
+      });
       expect(ok.statusCode).toBe(200);
     }
-    const third = await app.inject({ method: 'POST', url: '/api/payments/dev-complete', payload: { productId: 'banked_day' } });
+    const third = await app.inject({
+      method: 'POST',
+      url: '/api/payments/dev-complete',
+      payload: { productId: 'banked_day' },
+    });
     expect(third.statusCode).toBe(409);
   });
 });
@@ -190,8 +202,10 @@ describe('payments: granting', () => {
       payload: successfulPayment('charge_a', 'itsim:v1:1:wardrobe_premium:abcd'),
     });
 
-    const state = store.loadState('1');
-    expect(state.entitlements).toContain('acc_vr_headset');
+    const state = await store.loadState('1');
+    expect(state.entitlements).toContain('pet_halo');
+    // Косметика видима: грант кладёт её и в items (питомец читает items).
+    expect(state.items).toContain('pet_halo');
     expect(state.badges).toContain('fashionista');
   });
 
@@ -211,7 +225,7 @@ describe('payments: granting', () => {
     expect(first.json().granted).toBe(true);
     expect(second.json().granted).toBe(false);
     expect(second.json().duplicate).toBe(true);
-    expect(store.loadState('1').bankedDays).toBe(1);
+    expect((await store.loadState('1')).bankedDays).toBe(1);
   });
 
   it('ignores a payment whose payload does not parse', async () => {

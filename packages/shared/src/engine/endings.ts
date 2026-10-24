@@ -1,3 +1,4 @@
+import { dt } from '../i18n';
 import type { PlayerState, Grade } from '../types';
 import type { BalanceConfig } from '../schemas';
 import { mainSkillLevel } from './skills';
@@ -162,11 +163,19 @@ export function checkEndings(player: PlayerState, balance: BalanceConfig | undef
     action: 'claim',
     available: ctoMet && grade === 'cto',
     missing: !ctoStatsMet
-      ? `Нужно: репутация ${cto.minReputation}+, лидерство ${cto.minLeadership}+ (сейчас ${rep}/${leadership})`
+      ? dt('Нужно: репутация {rep}+, лидерство {lead}+ (сейчас {repNow}/{leadNow})', {
+          rep: cto.minReputation,
+          lead: cto.minLeadership,
+          repNow: rep,
+          leadNow: leadership,
+        })
       : grade !== 'cto'
-        ? 'Сначала стань CTO'
+        ? dt('Сначала стань CTO')
         : tenure < cto.minDaysAsCto
-          ? `Продержись в кресле ${cto.minDaysAsCto} дн. (сейчас ${tenure}) — финал открывается отчётом перед бордом, а не в день выборов`
+          ? dt(
+              'Продержись в кресле {days} дн. (сейчас {tenure}) — финал открывается отчётом перед бордом, а не в день выборов',
+              { days: cto.minDaysAsCto, tenure }
+            )
           : undefined,
     title: cto.title,
     description: cto.description,
@@ -180,7 +189,14 @@ export function checkEndings(player: PlayerState, balance: BalanceConfig | undef
     action: 'claim',
     available: exitMet,
     missing: !exitMet
-      ? `Нужно: репутация ${exit.minReputation}+, деньги ${formatMoneyShort(exit.minMoney)}+, грейд ${gradeLabel(exit.minGrade)}+ (сейчас ${rep}/${formatMoneyShort(money)}/${gradeLabel(grade)})`
+      ? dt('Нужно: репутация {rep}+, деньги {money}+, грейд {grade}+ (сейчас {repNow}/{moneyNow}/{gradeNow})', {
+          rep: exit.minReputation,
+          money: formatMoneyShort(exit.minMoney),
+          grade: gradeLabel(exit.minGrade),
+          repNow: rep,
+          moneyNow: formatMoneyShort(money),
+          gradeNow: gradeLabel(grade),
+        })
       : undefined,
     title: exit.title,
     description: exit.description,
@@ -194,7 +210,14 @@ export function checkEndings(player: PlayerState, balance: BalanceConfig | undef
     action: 'claim',
     available: freeMet,
     missing: !freeMet
-      ? `Нужно: репутация ${free.minReputation}+, деньги ≤ ${formatMoneyShort(free.maxMoney)}, грейд ${gradeLabel(free.minGrade)}+ (сейчас ${rep}/${formatMoneyShort(money)}/${gradeLabel(grade)})`
+      ? dt('Нужно: репутация {rep}+, деньги ≤ {money}, грейд {grade}+ (сейчас {repNow}/{moneyNow}/{gradeNow})', {
+          rep: free.minReputation,
+          money: formatMoneyShort(free.maxMoney),
+          grade: gradeLabel(free.minGrade),
+          repNow: rep,
+          moneyNow: formatMoneyShort(money),
+          gradeNow: gradeLabel(grade),
+        })
       : undefined,
     title: free.title,
     description: free.description,
@@ -209,7 +232,17 @@ export function checkEndings(player: PlayerState, balance: BalanceConfig | undef
     action: 'claim',
     available: teacherMet,
     missing: !teacherMet
-      ? `Нужно: репутация ${teacher.minReputation}+, лидерство ${teacher.minLeadership}+, основной навык ${teacher.minSkillLevel}+ (сейчас ${rep}/${leadership}/${mainSkill})`
+      ? dt(
+          'Нужно: репутация {rep}+, лидерство {lead}+, основной навык {skill}+ (сейчас {repNow}/{leadNow}/{skillNow})',
+          {
+            rep: teacher.minReputation,
+            lead: teacher.minLeadership,
+            skill: teacher.minSkillLevel,
+            repNow: rep,
+            leadNow: leadership,
+            skillNow: mainSkill,
+          }
+        )
       : undefined,
     title: teacher.title,
     description: teacher.description,
@@ -245,9 +278,9 @@ export function firstAvailableEnding(player: PlayerState, balance: BalanceConfig
 }
 
 function formatMoneyShort(amount: number): string {
-  if (amount >= 1_000_000) return `${(amount / 1_000_000).toFixed(0)} млн ₽`;
-  if (amount >= 1_000) return `${Math.round(amount / 1000)} тыс ₽`;
-  return `${amount} ₽`;
+  if (amount >= 1_000_000) return dt('{p0} млн ₽', { p0: (amount / 1_000_000).toFixed(0) });
+  if (amount >= 1_000) return dt('{p0} тыс ₽', { p0: Math.round(amount / 1000) });
+  return dt('{p0} ₽', { p0: amount });
 }
 
 function gradeLabel(g: Grade): string {
@@ -261,5 +294,5 @@ function gradeLabel(g: Grade): string {
     architect: 'архитектор',
     cto: 'CTO',
   };
-  return map[g] ?? g;
+  return dt(map[g] ?? String(g));
 }

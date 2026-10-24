@@ -1,41 +1,41 @@
+import { t } from '../lib/i18n';
 import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { HomeRoomCard } from '../components/HomeRoomCard';
 import { CareerPressureCard } from '../components/CareerPressureCard';
 import { SprintCard } from '../components/SprintCard';
-import { SectionTitle } from '../components/ui';
+import { SectionTitle, accordionBodyRef } from '../components/ui';
 import { formatMoney } from './actionCatalogue';
 import { tipForDay } from './dayTips';
-
 /** The four places a day is spent — the home screen only points at them. */
 const DESTINATIONS = [
-  { view: 'career', emoji: '💼', label: 'Работа', hint: 'задачи, проекты, подработки' },
-  { view: 'skills', emoji: '📚', label: 'Обучение', hint: 'направления и учебные действия' },
-  { view: 'rest', emoji: '🌿', label: 'Отдых', hint: 'сон, спорт, люди' },
-  { view: 'shop', emoji: '🛍', label: 'Магазин', hint: 'техника, еда, апгрейды' },
+  { view: 'career', emoji: '💼', label: t('Работа'), hint: t('задачи, проекты, подработки') },
+  { view: 'skills', emoji: '📚', label: t('Обучение'), hint: t('направления и учебные действия') },
+  { view: 'rest', emoji: '🌿', label: t('Отдых'), hint: t('сон, спорт, люди') },
+  { view: 'shop', emoji: '🛍', label: t('Магазин'), hint: t('техника, еда, апгрейды') },
 ] as const;
-
 const CHALLENGE_TEXT: Record<string, string> = {
-  ch_study_3: 'Выполни 3 учебных действия',
-  ch_work_3: 'Закрой 3 рабочие задачи',
-  ch_freelance_1: 'Откликнись на заказ на бирже',
-  ch_networking_1: 'Сходи на нетворкинг',
-  ch_rest_2: 'Отдохни 2 раза',
-  ch_sidejob_1: 'Возьми любую подработку',
-  ch_petproject_1: 'Поработай над пет-проектом',
-  ch_english_1: 'Позанимайся английским',
-  ch_bar_1: 'Сходи в бар',
-  ch_shop_1: 'Купи что-нибудь в магазине',
-  ch_gym_1: 'Сходи в зал',
-  ch_walk_2: 'Погуляй 2 раза',
-  ch_feed_pet_1: 'Покорми питомца',
+  ch_study_3: t('Выполни 3 учебных действия'),
+  ch_work_3: t('Закрой 3 рабочие задачи'),
+  ch_freelance_1: t('Откликнись на заказ на бирже'),
+  ch_networking_1: t('Сходи на нетворкинг'),
+  ch_rest_2: t('Отдохни 2 раза'),
+  ch_sidejob_1: t('Возьми любую подработку'),
+  ch_petproject_1: t('Поработай над пет-проектом'),
+  ch_english_1: t('Позанимайся английским'),
+  ch_bar_1: t('Сходи в бар'),
+  ch_shop_1: t('Купи что-нибудь в магазине'),
+  ch_gym_1: t('Сходи в зал'),
+  ch_walk_2: t('Погуляй 2 раза'),
+  ch_feed_pet_1: t('Покорми питомца'),
 };
-
 /**
  * Yesterday's narration is context, not a decision — so it is one quiet line
  * that opens on tap instead of a tall panel pushing today's choices down.
  */
-const YesterdayLog: React.FC<{ text: string }> = ({ text }) => {
+const YesterdayLog: React.FC<{
+  text: string;
+}> = ({ text }) => {
   const [open, setOpen] = useState(false);
   return (
     <section className="card">
@@ -47,13 +47,13 @@ const YesterdayLog: React.FC<{ text: string }> = ({ text }) => {
         <span className="shrink-0" aria-hidden="true">
           🕘
         </span>
-        <span className="text-xs font-bold uppercase tracking-[0.06em] text-ink-500 shrink-0">Вчера</span>
+        <span className="text-xs font-bold uppercase tracking-[0.06em] text-ink-500 shrink-0">{t('Вчера')}</span>
         {!open && <span className="flex-1 min-w-0 truncate text-xs text-ink-400">{text.replace(/\n/g, ' · ')}</span>}
         <span aria-hidden="true" className={`accordion-chevron shrink-0 ${open ? 'is-open' : ''}`}>
           ▾
         </span>
       </button>
-      <div className={`accordion-body ${open ? 'open' : ''}`}>
+      <div className={`accordion-body ${open ? 'open' : ''}`} ref={accordionBodyRef(open)}>
         <div className="accordion-inner">
           <p className="text-sm text-ink-300 leading-relaxed whitespace-pre-line pt-1">{text}</p>
         </div>
@@ -61,12 +61,12 @@ const YesterdayLog: React.FC<{ text: string }> = ({ text }) => {
     </section>
   );
 };
-
 /** localStorage key: the last day whose tip the player dismissed */
 const ONBOARD_DISMISS_KEY = 'itsim_tip_dismissed_day';
-
 /** First-week coaching card — one tip per day, dismissible until next day. */
-const OnboardingTip: React.FC<{ day: number }> = ({ day }) => {
+const OnboardingTip: React.FC<{
+  day: number;
+}> = ({ day }) => {
   const [dismissed, setDismissed] = useState(() => {
     try {
       return localStorage.getItem(ONBOARD_DISMISS_KEY) === String(day);
@@ -76,7 +76,6 @@ const OnboardingTip: React.FC<{ day: number }> = ({ day }) => {
   });
   const tip = tipForDay(day);
   if (!tip || dismissed) return null;
-
   const hide = () => {
     setDismissed(true);
     try {
@@ -85,7 +84,6 @@ const OnboardingTip: React.FC<{ day: number }> = ({ day }) => {
       /* storage unavailable — fine, tip re-shows next visit */
     }
   };
-
   return (
     <section className="card panel-note panel-note-sky animate-pop-in">
       <div className="flex items-start gap-2">
@@ -98,7 +96,7 @@ const OnboardingTip: React.FC<{ day: number }> = ({ day }) => {
         </div>
         <button
           onClick={hide}
-          aria-label="Скрыть совет"
+          aria-label={t('Скрыть совет')}
           className="text-2xs text-ink-600 hover:text-ink-300 transition-colors shrink-0 flex items-center justify-center !min-w-[36px] touch-target px-1"
         >
           ✕
@@ -107,13 +105,12 @@ const OnboardingTip: React.FC<{ day: number }> = ({ day }) => {
     </section>
   );
 };
-
 const CHECKIN_SEEN_KEY = 'itsim_checkin_seen';
-
 /** Once per real day: «заходишь N дней подряд — +X ₽» after the server check-in. */
-const CheckInBanner: React.FC<{ checkIn: any }> = ({ checkIn }) => {
+const CheckInBanner: React.FC<{
+  checkIn: any;
+}> = ({ checkIn }) => {
   const [visible, setVisible] = useState(false);
-
   useEffect(() => {
     if (!checkIn?.claimed) return;
     try {
@@ -125,7 +122,6 @@ const CheckInBanner: React.FC<{ checkIn: any }> = ({ checkIn }) => {
       setVisible(true);
     }
   }, [checkIn]);
-
   if (!visible || !checkIn?.claimed) return null;
   const { streak, money, nextMoney } = checkIn;
   return (
@@ -136,13 +132,18 @@ const CheckInBanner: React.FC<{ checkIn: any }> = ({ checkIn }) => {
         </span>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-white leading-tight">
-            Стрик: {streak} {streak === 1 ? 'день' : streak < 5 ? 'дня' : 'дней'} подряд
-            {money > 0 && <span className="num text-moss-300"> · +{money} ₽ за вход</span>}
+            {t('Стрик:')} {streak} {streak === 1 ? t('день') : streak < 5 ? t('дня') : t('дней')} {t('подряд')}
+            {money > 0 && (
+              <span className="num text-moss-300">
+                {' '}
+                · +{money} {t('₽ за вход')}
+              </span>
+            )}
           </p>
           {nextMoney > 0 && (
             <p className="text-xs text-ink-400 leading-relaxed mt-0.5">
-              Возвращайся завтра — получишь <span className="num text-ink-200">{nextMoney} ₽</span>. Пропустишь день —
-              стрик сгорит.
+              {t('Возвращайся завтра — получишь')} <span className="num text-ink-200">{nextMoney} ₽</span>
+              {t('. Пропустишь день — стрик сгорит.')}
             </p>
           )}
         </div>
@@ -150,7 +151,6 @@ const CheckInBanner: React.FC<{ checkIn: any }> = ({ checkIn }) => {
     </section>
   );
 };
-
 export const DayView: React.FC = () => {
   const player = useGameStore((s) => s.player);
   const error = useGameStore((s) => s.error);
@@ -160,9 +160,7 @@ export const DayView: React.FC = () => {
   const checkIn = useGameStore((s) => s.checkIn);
   const mining = useGameStore((s) => s.mining);
   const currentDay = player?.currentDay ?? 1;
-
   if (!player) return null;
-
   return (
     <div className="space-y-4 animate-fade-in">
       <HomeRoomCard />
@@ -176,7 +174,7 @@ export const DayView: React.FC = () => {
             <span aria-hidden="true">⚠️</span>
             <span>{error}</span>
           </p>
-          <p className="text-2xs text-ink-500 mt-1 pl-5">Нажми, чтобы скрыть</p>
+          <p className="text-2xs text-ink-500 mt-1 pl-5">{t('Нажми, чтобы скрыть')}</p>
         </button>
       )}
 
@@ -186,18 +184,18 @@ export const DayView: React.FC = () => {
       {player._lastEvent && <YesterdayLog text={player._lastEvent} />}
 
       {/* Goal of the day — a target above the toolbox reads as direction,
-          a target buried under it reads as homework */}
+            a target buried under it reads as homework */}
       {player.dailyChallenge && (
         <section className={`card panel-note ${player.dailyChallenge.done ? 'panel-note-moss' : 'panel-note-sky'}`}>
           <div className="flex items-center justify-between gap-2 mb-1">
             <span className="flex items-center gap-1.5 text-2xs font-bold uppercase tracking-[0.09em] text-ink-400">
               <span aria-hidden="true">🎯</span>
-              Задание дня
+              {t('Задание дня')}
             </span>
             {player.dailyChallenge.done ? (
               <span className="flex items-center gap-1 text-2xs font-bold text-moss-300 uppercase tracking-[0.06em]">
                 <span aria-hidden="true">✅</span>
-                выполнено
+                {t('выполнено')}
               </span>
             ) : (
               <span className="num text-2xs text-ink-500">
@@ -205,15 +203,12 @@ export const DayView: React.FC = () => {
               </span>
             )}
           </div>
-          <p className="text-sm text-ink-200">{CHALLENGE_TEXT[player.dailyChallenge.id] ?? 'Выполни задание'}</p>
+          <p className="text-sm text-ink-200">{CHALLENGE_TEXT[player.dailyChallenge.id] ?? t('Выполни задание')}</p>
           {!player.dailyChallenge.done && (
             <div className="meter mt-2">
               <span
                 style={{
-                  width: `${Math.min(
-                    100,
-                    (player.dailyChallenge.progress / Math.max(1, player.dailyChallenge.count)) * 100
-                  )}%`,
+                  width: `${Math.min(100, (player.dailyChallenge.progress / Math.max(1, player.dailyChallenge.count)) * 100)}%`,
                   background: 'var(--sky)',
                 }}
               />
@@ -223,8 +218,8 @@ export const DayView: React.FC = () => {
       )}
 
       {/* Where the day is actually spent — each module now lives in its tab */}
-      <section aria-label="Чем займёшься">
-        <SectionTitle className="mb-2">Чем займёшься</SectionTitle>
+      <section aria-label={t('Чем займёшься')}>
+        <SectionTitle className="mb-2">{t('Чем займёшься')}</SectionTitle>
         <div className="action-grid">
           {DESTINATIONS.map((d) => (
             <button key={d.view} onClick={() => setView(d.view)} className="tile tile-action" aria-label={d.label}>
@@ -246,7 +241,7 @@ export const DayView: React.FC = () => {
             <span className="shrink-0" aria-hidden="true">
               ⚡
             </span>
-            Энергия на исходе. «Поспать» на вкладке «Отдых» вернёт её — сон доступен даже при нуле.
+            {t('Энергия на исходе. «Поспать» на вкладке «Отдых» вернёт её — сон доступен даже при нуле.')}
           </p>
         )}
       </section>
@@ -261,26 +256,28 @@ export const DayView: React.FC = () => {
       {mining && (
         <button
           onClick={() => setView('mining')}
-          aria-label="Майнинг-ферма"
+          aria-label={t('Майнинг-ферма')}
           className="card animate-pop-in w-full text-left"
         >
           <div className="flex items-center justify-between mb-1.5">
             <span className="flex items-center gap-1.5 text-sm font-semibold text-ink-100">
               <span aria-hidden="true">⛏</span>
-              Майнинг-ферма
+              {t('Майнинг-ферма')}
             </span>
             <span className="num text-2xs text-ink-500">{mining.hashrate} MH/s</span>
           </div>
           <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs">
             <span className="num text-moss-300">+{formatMoney(mining.gross)} ₽</span>
-            <span className="num text-ink-500">−{formatMoney(mining.electricity)} ₽ свет</span>
+            <span className="num text-ink-500">
+              −{formatMoney(mining.electricity)} {t('₽ свет')}
+            </span>
             <span className="num text-white font-semibold">
               {mining.net >= 0 ? '+' : ''}
-              {formatMoney(mining.net)} ₽/день
+              {formatMoney(mining.net)} {t('₽/день')}
             </span>
           </div>
           <p className="text-2xs text-ink-600 mt-1.5">
-            Курс {mining.price.toFixed(1)} ₽/MH · доход начисляется в конце дня · открыть ферму →
+            {t('Курс')} {mining.price.toFixed(1)} {t('₽/MH · доход начисляется в конце дня · открыть ферму →')}
           </p>
         </button>
       )}
@@ -290,7 +287,7 @@ export const DayView: React.FC = () => {
         <button onClick={() => performAction('use_banked_day')} className="btn btn-secondary w-full text-sm">
           <span aria-hidden="true">🕒</span>
           <span>
-            Банк офлайн-дней: <span className="num">{player.bankedDays}</span> — использовать
+            {t('Банк офлайн-дней:')} <span className="num">{player.bankedDays}</span> {t('— использовать')}
           </span>
         </button>
       )}

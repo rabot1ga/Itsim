@@ -41,8 +41,7 @@ export const PixelText: React.FC<PixelTextProps> = ({ children, scale = 3, class
 
   if (!letters.length) return null;
 
-  const width =
-    letters.reduce((sum, g) => sum + g[0].length, 0) + LETTER_GAP * (letters.length - 1);
+  const width = letters.reduce((sum, g) => sum + g[0].length, 0) + LETTER_GAP * (letters.length - 1);
 
   let cursor = 0;
   const rects: React.ReactElement[] = [];
@@ -56,9 +55,7 @@ export const PixelText: React.FC<PixelTextProps> = ({ children, scale = 3, class
         }
         let w = 1;
         while (row[x + w] === '#') w += 1;
-        rects.push(
-          <rect key={`${gi}-${y}-${x}`} x={cursor + x} y={y} width={w} height={1} />
-        );
+        rects.push(<rect key={`${gi}-${y}-${x}`} x={cursor + x} y={y} width={w} height={1} />);
         x += w;
       }
     });
