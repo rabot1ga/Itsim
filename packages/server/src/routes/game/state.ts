@@ -12,6 +12,7 @@ import { loadState, saveState } from '../../services/gameStore.js';
 import {
   advanceLastTick,
   applyCheckIn,
+  bankCap,
   calculateOfflineBankedDays,
   checkInReward,
   createNewPlayer,
@@ -53,10 +54,10 @@ export async function stateRoutes(app: FastifyInstance) {
       } as StoredState;
       resetDailyChallenge(state, getContent());
     }
-    // Offline energy banking (1 game day / 3.5 real hours, max 7 in bank)
-    const banked = calculateOfflineBankedDays(state.lastTickAt, Date.now());
+    // Offline energy banking (1 game day / 3.5 real hours; capacity 7 + purchased slots)
+    const banked = calculateOfflineBankedDays(state.lastTickAt, Date.now(), bankCap(state.bankSlots));
     if (banked > 0) {
-      state.bankedDays = Math.min(7, state.bankedDays + banked);
+      state.bankedDays = Math.min(bankCap(state.bankSlots), state.bankedDays + banked);
       state.lastTickAt = advanceLastTick(state.lastTickAt, banked);
     }
     state.maxEnergy = recalcMaxEnergy(state, getContent());

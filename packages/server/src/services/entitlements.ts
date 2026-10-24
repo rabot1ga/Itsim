@@ -9,6 +9,7 @@ import { t } from '../lib/i18n';
  *
  * Гранты применяются к сейву игрока (косметика, бейджи, дни в банке).
  */
+import { bankCap, MAX_BANK_SLOTS } from '@itsim/shared';
 import { loadState, saveState, __purchaseBackend } from './gameStore.js';
 import type { PurchaseRecord } from './storeTypes.js';
 export type { PurchaseRecord } from './storeTypes.js';
@@ -71,9 +72,15 @@ export async function applyGrantsToState(userId: string, grants: any): Promise<s
   const state = await loadState(userId);
   if (!state) return [];
   const applied: string[] = [];
+  if (grants.bankSlots) {
+    // «Слоты банка дней»: +1 к ёмкости банка за покупку, всего не больше 3.
+    const before = state.bankSlots ?? 0;
+    state.bankSlots = Math.min(MAX_BANK_SLOTS, before + grants.bankSlots);
+    if (state.bankSlots > before) applied.push(t('+{p0} слот банка дней', { p0: state.bankSlots - before }));
+  }
   if (grants.bankedDays) {
     const before = state.bankedDays ?? 0;
-    state.bankedDays = Math.min(7, before + grants.bankedDays);
+    state.bankedDays = Math.min(bankCap(state.bankSlots), before + grants.bankedDays);
     if (state.bankedDays > before) applied.push(t('+{p0} день в банке', { p0: state.bankedDays - before }));
   }
   if (Array.isArray(grants.cosmetics) && grants.cosmetics.length) {

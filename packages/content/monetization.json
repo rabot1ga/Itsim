@@ -15,12 +15,23 @@
     {
       "id": "banked_day",
       "title": "🗓 Дополнительный день в банке",
-      "description": "+1 день в банк офлайн-энергии (сверх обычного накопления, максимум 7).",
+      "description": "+1 день в банк офлайн-энергии (сверх обычного накопления, в пределах ёмкости банка).",
       "stars": 50,
       "repeatable": true,
       "dailyLimit": 2,
       "grants": {
         "bankedDays": 1
+      }
+    },
+    {
+      "id": "bank_slot",
+      "title": "🪟 Слот банка дней",
+      "description": "+1 к ёмкости банка офлайн-дней навсегда (7 → 10, всего 3 слота).",
+      "stars": 120,
+      "repeatable": true,
+      "totalLimit": 3,
+      "grants": {
+        "bankSlots": 1
       }
     },
     {

@@ -25,6 +25,12 @@ const LINKS: Array<{
  * протагониста с настроением по состоянию + чипы ключевых ресурсов. Слоистой
  * фигуры и гардероба больше нет — внешность не кастомизируется.
  */
+/** Значки Stars-покупок («кофе разработчику» и др.) — обещаны в профиле. */
+const BADGE_LABEL: Record<string, string> = {
+  supporter: 'Спонсор',
+  fashionista: 'Модник',
+  neon: 'Кибер',
+};
 export const ProfileView: React.FC = () => {
   const player = useGameStore((s) => s.player);
   const setView = useGameStore((s) => s.setView);
@@ -86,6 +92,15 @@ export const ProfileView: React.FC = () => {
             </span>
           ))}
         </div>
+        {(player.badges ?? []).length > 0 && (
+          <div className="profile-chips" aria-label={t('Значки')}>
+            {(player.badges ?? []).map((b: string) => (
+              <span key={b} className="res-chip">
+                🏅 {t(BADGE_LABEL[b] ?? b)}
+              </span>
+            ))}
+          </div>
+        )}
         <p className="story-footnote">
           {t('День')} {player.currentDay ?? 1}
           {t('. Настроение зависит от энергии, мотивации и выгорания.')}

@@ -290,7 +290,13 @@ describe('v5_identity_removal (снятие пиксельной идентич�
     delete save.crossBonuses;
     delete save.room;
     const { state, applied } = migrateState(save);
-    expect(applied).toEqual(['v5_identity_removal', 'v6_rng_salt', 'v7_stars_cosmetics_revival', 'v8_hungry_days']);
+    expect(applied).toEqual([
+      'v5_identity_removal',
+      'v6_rng_salt',
+      'v7_stars_cosmetics_revival',
+      'v8_hungry_days',
+      'v9_bank_slots',
+    ]);
     // нормализация достаивает дефолты, поэтому сверяем суть: поля идентичности
     // не появились, остальной сейв доехал нетронутым
     for (const key of ['genetics', 'avatar', 'walletAddress', 'crossBonuses', 'room']) {
@@ -317,7 +323,7 @@ describe('v7_stars_cosmetics_revival (мерч v2: живая косметика
 
   it('обменивает мёртвые id на эксклюзивы Stars и дедуплицирует', () => {
     const { state, applied } = migrateState<any>(merchSave());
-    expect(applied).toEqual(['v7_stars_cosmetics_revival', 'v8_hungry_days']);
+    expect(applied).toEqual(['v7_stars_cosmetics_revival', 'v8_hungry_days', 'v9_bank_slots']);
     expect(state.items).toEqual(['pet_cat', 'pet_halo', 'pet_wings']);
     expect(state.entitlements).toEqual(['pet_visor', 'pet_scarf', 'pet_cat_shadow']);
     expect(state.hungryDays).toBe(0);
@@ -336,7 +342,7 @@ describe('v8_hungry_days (еда — потребность)', () => {
   it('добавляет счётчик голодных дней любому сейву v7 и ниже', () => {
     const save = { ...legacySave(), version: 7, hungryDays: undefined };
     const { state, applied } = migrateState<any>(save);
-    expect(applied).toEqual(['v8_hungry_days']);
+    expect(applied).toEqual(['v8_hungry_days', 'v9_bank_slots']);
     expect(state.hungryDays).toBe(0);
   });
 
@@ -344,5 +350,36 @@ describe('v8_hungry_days (еда — потребность)', () => {
     const save = { ...legacySave(), version: 7, hungryDays: 4 };
     const { state } = migrateState<any>(save);
     expect(state.hungryDays).toBe(4);
+  });
+});
+
+describe('v9_bank_slots (слоты банка дней)', () => {
+  it('добавляет счётчик слотов любому сейву v8 и ниже', () => {
+    const save = { ...legacySave(), version: 8, bankSlots: undefined };
+    const { state, applied } = migrateState<any>(save);
+    expect(applied).toEqual(['v9_bank_slots']);
+    expect(state.bankSlots).toBe(0);
+  });
+
+  it('накопленные слоты не трогает', () => {
+    const save = { ...legacySave(), version: 8, bankSlots: 2 };
+    const { state } = migrateState<any>(save);
+    expect(state.bankSlots).toBe(2);
+  });
+
+  it('клипы: слоты 0–3, ёмкость банка 7 + слоты', () => {
+    const save = { ...legacySave(), version: 8, bankSlots: 99, bankedDays: 400 };
+    const { state } = migrateState<any>(save);
+    expect(state.bankSlots).toBe(3);
+    expect(state.bankedDays).toBe(10);
+
+    const zero = { ...legacySave(), version: 8, bankSlots: -5, bankedDays: 9 };
+    const s0 = migrateState<any>(zero).state;
+    expect(s0.bankSlots).toBe(0);
+    expect(s0.bankedDays).toBe(7);
+
+    const one = { ...legacySave(), version: 8, bankSlots: 1, bankedDays: 8 };
+    const s1 = migrateState<any>(one).state;
+    expect(s1.bankedDays).toBe(8);
   });
 });

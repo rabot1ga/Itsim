@@ -61,6 +61,7 @@ export async function adminRoutes(app: FastifyInstance) {
       userId,
       name: state.firstName ?? t('Игрок'),
       bankedDays: state.bankedDays ?? 0,
+      bankSlots: state.bankSlots ?? 0,
       currentDay: state.currentDay ?? 1,
       grade: state.grade ?? 'unemployed',
     }));
@@ -91,6 +92,7 @@ export async function adminRoutes(app: FastifyInstance) {
       money: state.money ?? 0,
       rating: Math.round(state.ratingScore ?? 0),
       bankedDays: state.bankedDays ?? 0,
+      bankSlots: state.bankSlots ?? 0,
       energy: `${state.energy ?? 0}/${state.maxEnergy ?? 10}`,
       health: state.health ?? 0,
       motivation: state.motivation ?? 0,

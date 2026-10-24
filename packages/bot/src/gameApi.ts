@@ -11,6 +11,8 @@ export interface NudgeCandidate {
   userId: string;
   name: string;
   bankedDays: number;
+  /** купленные слоты банка дней (0–3) — ёмкость банка 7 + слоты */
+  bankSlots?: number;
   currentDay: number;
   grade: string;
 }

@@ -25,6 +25,7 @@ export function createNewPlayer(): PlayerState {
     maxEnergy: 10,
     reputation: 0,
     bankedDays: 0,
+    bankSlots: 0,
 
     skills: {},
     perks: [],

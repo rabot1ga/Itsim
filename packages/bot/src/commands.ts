@@ -13,6 +13,8 @@ export interface PlayerSummary {
   money: number;
   rating: number;
   bankedDays: number;
+  /** купленные слоты банка дней (0–3) — ёмкость банка 7 + слоты */
+  bankSlots?: number;
   energy: string;
   health: number;
   motivation: number;
@@ -175,10 +177,14 @@ export function formatSummary(s: PlayerSummary): string {
   return lines.join('\n');
 }
 
-/** «У тебя 7 дней в банке» — nudge text for the notification job. */
-export function nudgeText(name: string, bankedDays: number): string {
-  if (bankedDays >= 7) {
-    return `⏰ ${escapeHtml(name)}, банк дней переполнен (${bankedDays}/7) — время выше не растёт, ты просто теряешь прогресс. Загляни в игру!`;
+/**
+ * «У тебя 7 дней в банке» — nudge text for the notification job.
+ * `bankSlots` — купленные слоты банка: ёмкость 7 + слоты (0–3).
+ */
+export function nudgeText(name: string, bankedDays: number, bankSlots = 0): string {
+  const cap = 7 + Math.min(Math.max(bankSlots, 0), 3);
+  if (bankedDays >= cap) {
+    return `⏰ ${escapeHtml(name)}, банк дней переполнен (${bankedDays}/${cap}) — время выше не растёт, ты просто теряешь прогресс. Загляни в игру!`;
   }
   return `🗓 ${escapeHtml(name)}, у тебя ${bankedDays} ${plural(bankedDays, 'день', 'дня', 'дней')} в банке. Отличный момент прожить их разом.`;
 }

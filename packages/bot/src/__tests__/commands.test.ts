@@ -153,6 +153,16 @@ describe('formatting helpers', () => {
     expect(nudgeText('Тестер', 6)).toContain('6 дней');
   });
 
+  it('nudge respects purchased bank slots (capacity 7 + slots)', () => {
+    // 8 дней при одном слоте — ещё не переполнен (ёмкость 8)
+    expect(nudgeText('Тестер', 7, 1)).toContain('7 дней');
+    expect(nudgeText('Тестер', 8, 1)).toContain('переполнен (8/8)');
+    // три слота — ёмкость 10
+    expect(nudgeText('Тестер', 10, 3)).toContain('переполнен (10/10)');
+    // мусор в слотах не роняет текст и не завышает кап (99 → 3)
+    expect(nudgeText('Тестер', 10, 99)).toContain('(10/10)');
+  });
+
   it('pluralises Russian day counts', () => {
     expect(plural(1, 'день', 'дня', 'дней')).toBe('день');
     expect(plural(3, 'день', 'дня', 'дней')).toBe('дня');

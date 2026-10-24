@@ -11,7 +11,9 @@ import {
   sendMessage,
   isBotConfigured,
 } from '../services/telegramApi.js';
+import { loadState } from '../services/gameStore.js';
 import { grantPurchase, hasProduct, purchasesOf, purchasesToday } from '../services/entitlements.js';
+import { bankCap, MAX_BANK_SLOTS } from '@itsim/shared';
 /**
  * Telegram Stars monetization.
  *
@@ -51,8 +53,23 @@ function findProduct(id: string): any | null {
 /** Why this user cannot buy this product right now (null = they can). */
 export async function purchaseBlocker(userId: string, product: any): Promise<string | null> {
   if (!product.repeatable && (await hasProduct(userId, product.id))) return t('Уже куплено');
+  const own = await purchasesOf(userId);
   if (product.dailyLimit && (await purchasesToday(userId, product.id)) >= product.dailyLimit) {
     return t('Лимит на сегодня: {p0}', { p0: product.dailyLimit });
+  }
+  if (product.totalLimit && own.filter((p) => p.productId === product.id).length >= product.totalLimit) {
+    return t('Лимит покупок: {p0}', { p0: product.totalLimit });
+  }
+  // Полнота банка/слотов: не даём сжечь Stars впустую (грант бы всё равно зажал кап).
+  const grants = product.grants ?? {};
+  const state = (await loadState(userId)) as { bankedDays?: number; bankSlots?: number } | null;
+  if (state) {
+    if (grants.bankedDays && (state.bankedDays ?? 0) >= bankCap(state.bankSlots)) {
+      return t('Банк дней уже полон');
+    }
+    if (grants.bankSlots && (state.bankSlots ?? 0) >= MAX_BANK_SLOTS) {
+      return t('Все слоты банка уже куплены');
+    }
   }
   return null;
 }

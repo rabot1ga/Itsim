@@ -1,5 +1,6 @@
 import { PlayerState } from '../types';
 import { clamp, makeRngSalt } from './utils';
+import { bankCap, MAX_BANK_SLOTS } from './energy';
 
 /**
  * Save-state migrations.
@@ -20,7 +21,7 @@ import { clamp, makeRngSalt } from './utils';
  *     and reported, so an accidental server downgrade cannot corrupt it.
  */
 
-export const CURRENT_STATE_VERSION = 8;
+export const CURRENT_STATE_VERSION = 9;
 
 export interface MigrationResult<T = PlayerState> {
   state: T;
@@ -192,6 +193,18 @@ const MIGRATIONS: Migration[] = [
       if (typeof state.hungryDays !== 'number' || !Number.isFinite(state.hungryDays)) state.hungryDays = 0;
     },
   },
+  {
+    to: 9,
+    name: 'v9_bank_slots',
+    /**
+     * v8 → v9: «слоты банка дней» (Telegram Stars, по политике монетизации) —
+     * расширение ёмкости банка офлайн-дней сверх базовых 7. Счётчик слотов
+     * добавляется любому сейву; ёмкость = bankCap(bankSlots).
+     */
+    up(state: any) {
+      if (typeof state.bankSlots !== 'number' || !Number.isFinite(state.bankSlots)) state.bankSlots = 0;
+    },
+  },
 ];
 
 const SOFT_SKILL_DEFAULTS: Record<string, { level: number; xp: number }> = {
@@ -239,7 +252,9 @@ export function normalizeState(state: any): void {
   state.reputation = clamp(num(state.reputation, 0), 0, 100);
   state.maxEnergy = clamp(num(state.maxEnergy, 10), 3, 30);
   state.energy = clamp(num(state.energy, state.maxEnergy), 0, state.maxEnergy);
-  state.bankedDays = clamp(num(state.bankedDays, 0), 0, 7);
+  // Слоты банка дней — раньше ёмкости банка, иначе оба клипа спорят о потолке.
+  state.bankSlots = clamp(Math.floor(num(state.bankSlots, 0)), 0, MAX_BANK_SLOTS);
+  state.bankedDays = clamp(num(state.bankedDays, 0), 0, bankCap(state.bankSlots));
   state.housingLevel = clamp(Math.floor(num(state.housingLevel, 0)), 0, 5);
   state.totalActions = Math.max(0, Math.floor(num(state.totalActions, 0)));
   state.daysSinceRegistration = Math.max(1, Math.floor(num(state.daysSinceRegistration, 1)));

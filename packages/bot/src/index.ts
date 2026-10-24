@@ -145,10 +145,14 @@ export async function runNudgeJob(): Promise<number> {
   const candidates = await api.claimNudges(NUDGE_MIN_BANKED_DAYS);
   let sent = 0;
   for (const candidate of candidates) {
-    const result = await tg.sendMessage(candidate.userId, nudgeText(candidate.name, candidate.bankedDays), {
-      reply_markup: playButton(MINI_APP_URL),
-      disable_notification: true,
-    });
+    const result = await tg.sendMessage(
+      candidate.userId,
+      nudgeText(candidate.name, candidate.bankedDays, candidate.bankSlots ?? 0),
+      {
+        reply_markup: playButton(MINI_APP_URL),
+        disable_notification: true,
+      }
+    );
     if (result.ok) sent += 1;
     await sleep(50); // stay well under Telegram's 30 msg/s limit
   }

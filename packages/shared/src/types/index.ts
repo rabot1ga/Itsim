@@ -108,6 +108,8 @@ export interface PlayerState {
   maxEnergy: number;
   reputation: number;
   bankedDays: number;
+  /** Купленные слоты банка дней (Stars): +1 к ёмкости банка каждый, максимум 3. */
+  bankSlots?: number;
 
   // Career (v2.1 balance layer)
   /** skill the player is known for — the depth requirement of career gates applies to it */

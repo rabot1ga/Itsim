@@ -610,8 +610,10 @@ export const InterviewQuestionsFileSchema = z.array(InterviewQuestionSchema).min
  * and badges only — see `content/monetization.json.policy` (no pay-to-win).
  */
 export const ProductGrantsSchema = z.object({
-  /** extra days added to the offline energy bank (still capped at 7) */
+  /** extra days added to the offline energy bank (still capped at bank capacity) */
   bankedDays: z.number().int().min(0).max(7).optional(),
+  /** bank slots purchased: +1 to the bank capacity each (policy: «слоты банка дней») */
+  bankSlots: z.number().int().min(1).max(1).optional(),
   /** avatar/room layer ids unlocked forever */
   cosmetics: z.array(z.string().min(1)).optional(),
   /** profile badge id */
@@ -628,6 +630,8 @@ export const ProductSchema = z.object({
   repeatable: z.boolean().default(false),
   /** per-day purchase cap for repeatable products */
   dailyLimit: z.number().int().min(1).optional(),
+  /** lifetime purchase cap (e.g. at most 3 bank slots ever) */
+  totalLimit: z.number().int().min(1).optional(),
   grants: ProductGrantsSchema,
 });
 

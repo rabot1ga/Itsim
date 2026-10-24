@@ -4256,3 +4256,20 @@ Object.assign(en, {
   'твоя оценка': 'your rating',
   'Оценить продавца': 'Rate the seller',
 });
+
+// Stars-монетизация этап 1: слоты банка дней, полный банк, значки профиля (24.10.2026)
+Object.assign(en, {
+  '+{p0} слот банка дней': '+{p0} bank slot',
+  'Лимит покупок: {p0}': 'Purchase limit: {p0}',
+  'Банк дней уже полон': 'Your day bank is already full',
+  'Все слоты банка уже куплены': 'All bank slots are already purchased',
+  Значки: 'Badges',
+  Спонсор: 'Sponsor',
+  Модник: 'Fashionista',
+  Кибер: 'Cyber',
+  '🪟 Слот банка дней': '🪟 Bank day slot',
+  '+1 к ёмкости банка офлайн-дней навсегда (7 → 10, всего 3 слота).':
+    '+1 to the offline-day bank capacity forever (7 → 10, 3 slots max).',
+  '+1 день в банк офлайн-энергии (сверх обычного накопления, в пределах ёмкости банка).':
+    '+1 day in the offline-energy bank (on top of natural accrual, within the bank capacity).',
+});

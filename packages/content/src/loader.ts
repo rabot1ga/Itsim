@@ -397,10 +397,11 @@ function crossValidate(bundle: ContentBundle, issues: ContentIssue[]) {
     if (!product.repeatable && product.dailyLimit) {
       warn('monetization.json', `product "${product.id}": dailyLimit is meaningless for a one-off product`);
     }
-    // Hard policy check: the schema allows only cosmetics/bankedDays/badges,
-    // but a future field must not sneak past review.
+    // Hard policy check: the schema allows only cosmetics/bankedDays/bankSlots/
+    // badges («косметика, слоты банка дней и поддержка»), but a future field
+    // must not sneak past review.
     for (const key of Object.keys(product.grants ?? {})) {
-      if (!['bankedDays', 'cosmetics', 'badge'].includes(key)) {
+      if (!['bankedDays', 'bankSlots', 'cosmetics', 'badge'].includes(key)) {
         err('monetization.json', `product "${product.id}" grants "${key}" — pay-to-win is not allowed (see policy)`);
       }
     }

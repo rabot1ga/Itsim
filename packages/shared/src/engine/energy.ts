@@ -81,13 +81,22 @@ export function calculateMaxEnergy(
 
 /**
  * Offline energy banking — section 2.4
- * Days accrue at 1 per 3.5 real hours, max 7 in bank
+ * Days accrue at 1 per 3.5 real hours; the bank holds `bankCap` days.
+ * «Слоты банка дней» (Stars, policy-allowed) raise the capacity forever.
  */
-export function calculateOfflineBankedDays(lastTickAt: number, now: number): number {
+export const BASE_BANK_CAP = 7;
+export const MAX_BANK_SLOTS = 3;
+
+/** Ёмкость банка офлайн-дней: базовая 7 + купленные слоты (максимум 10). */
+export function bankCap(bankSlots: number | undefined | null): number {
+  return BASE_BANK_CAP + Math.min(Math.max(Math.floor(bankSlots ?? 0), 0), MAX_BANK_SLOTS);
+}
+
+export function calculateOfflineBankedDays(lastTickAt: number, now: number, cap = BASE_BANK_CAP): number {
   const elapsedMs = now - lastTickAt;
   const threePointFiveHours = 3.5 * 3600 * 1000;
   const earned = Math.floor(elapsedMs / threePointFiveHours);
-  return Math.min(7, earned);
+  return Math.min(cap, earned);
 }
 
 /**
