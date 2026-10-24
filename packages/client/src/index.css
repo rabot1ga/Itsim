@@ -2334,6 +2334,32 @@ select {
   min-width: 0;
   flex: 1 1 120px;
 }
+.market-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 8px 0;
+}
+.market-chips {
+  display: inline-flex;
+  gap: 6px;
+}
+.chip {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-chip);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+}
+.chip-active {
+  background: rgba(var(--rgb-green) / 0.15);
+  border-color: var(--accent);
+  color: var(--accent);
+}
 
 /* Питомец в комнате: оверлей-эмоудзи на сцене + контролы скинов/позиций */
 .room-pet-stage {

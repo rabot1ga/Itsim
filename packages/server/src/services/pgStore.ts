@@ -165,5 +165,11 @@ export function rawSqlOfferBackend(executor: SqlExecutor): OfferBackend {
       ]);
       return res.rows.map(rowToOffer);
     },
+    async byBuyer(buyerId) {
+      const res = await executor.query('SELECT * FROM market_offers WHERE buyer_id = $1 ORDER BY created_at DESC', [
+        buyerId,
+      ]);
+      return res.rows.map(rowToOffer);
+    },
   };
 }

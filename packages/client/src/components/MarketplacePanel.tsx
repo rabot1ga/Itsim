@@ -1,14 +1,17 @@
 import { t, fmtNumber } from '../lib/i18n';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useGameStore, apiRequest } from '../store/gameStore';
 import { haptic } from '../lib/telegram';
 import { SectionTitle } from './ui';
 import { PET_SKIN_EMOJI } from '../lib/petSkins';
+import { filterBoardOffers, dealCountWord, type OfferSort } from '../lib/offerBoard';
 /**
  * Торговая площадка редких питомцев (роадмап «Деньги и рост»):
  * витрина дня — детерминированная подборка редких питомцев (новая каждый
  * день) + P2P-объявления игроков (эскроу-лайт): продажа питомца другому
  * игроку, деньги сидят в эскроу до «Забрать». Покупки — игровые ₽.
+ * Итерация: поиск/фильтры витрины, репутация продавца (число сделок),
+ * история моих сделок.
  */
 interface MarketListing {
   itemId: string;
@@ -23,9 +26,22 @@ interface MarketOffer {
   itemId: string;
   name: string;
   description: string;
+  rarity: string;
   price: number;
+  createdAt: number;
   status: 'active' | 'sold_escrow' | 'paid_out' | 'cancelled' | 'expired';
   own: boolean;
+  /** Сделок продавца (только у объявлений витрины). */
+  rep?: number;
+}
+interface MarketHistoryEntry {
+  id: string;
+  itemId: string;
+  name: string;
+  price: number;
+  role: 'bought' | 'sold';
+  at: number;
+  settled: boolean;
 }
 const RARITY_LABEL: Record<string, string> = {
   rare: 'редкий',
@@ -38,19 +54,32 @@ const OFFER_STATUS: Record<MarketOffer['status'], string> = {
   cancelled: 'снято',
   expired: 'истекло · питомец вернулся',
 };
+const RARITY_FILTERS = ['', 'rare', 'legendary'] as const;
+const SORT_LABEL: Record<OfferSort, string> = {
+  newest: 'новые',
+  price_asc: 'дешевле',
+  price_desc: 'дороже',
+};
+const shortDate = (at: number) => new Date(at).toLocaleDateString(undefined, { day: 'numeric', month: 'numeric' });
 export const MarketplacePanel: React.FC = () => {
   const refreshState = useGameStore((s) => s.refreshState);
   const player = useGameStore((s) => s.player);
   const [listings, setListings] = useState<MarketListing[]>([]);
   const [offers, setOffers] = useState<MarketOffer[]>([]);
   const [mine, setMine] = useState<MarketOffer[]>([]);
+  const [history, setHistory] = useState<MarketHistoryEntry[]>([]);
+  const [myRep, setMyRep] = useState(0);
   const [policy, setPolicy] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [sellItemId, setSellItemId] = useState<string>('');
   const [sellPrice, setSellPrice] = useState<string>('');
+  const [q, setQ] = useState('');
+  const [rarity, setRarity] = useState<string>('');
+  const [sort, setSort] = useState<OfferSort>('newest');
   const ownedPets = (player?.items ?? []).filter((i: string) => i in PET_SKIN_EMOJI);
+  const visibleOffers = useMemo(() => filterBoardOffers(offers, { q, rarity, sort }), [offers, q, rarity, sort]);
   const load = async () => {
     const [view, board] = await Promise.all([apiRequest('/game/marketplace'), apiRequest('/game/marketplace/offers')]);
     if (view.ok) {
@@ -60,6 +89,8 @@ export const MarketplacePanel: React.FC = () => {
     if (board.ok) {
       setOffers(board.data.offers ?? []);
       setMine(board.data.mine ?? []);
+      setHistory(board.data.history ?? []);
+      setMyRep(board.data.myRep ?? 0);
     }
     setLoaded(true);
   };
@@ -156,19 +187,58 @@ export const MarketplacePanel: React.FC = () => {
             ))}
           </div>
 
-          {/* P2P: объявления других игроков */}
+          {/* P2P: объявления других игроков + поиск/фильтры */}
           <h3 className="market-sub">{t('Объявления игроков')}</h3>
-          {offers.length === 0 ? (
+          <div className="market-filters">
+            <input
+              className="market-input"
+              type="search"
+              placeholder={t('Поиск')}
+              aria-label={t('Поиск')}
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+            />
+            <div className="market-chips" role="group" aria-label={t('Редкость')}>
+              {RARITY_FILTERS.map((r) => (
+                <button
+                  key={r || 'all'}
+                  type="button"
+                  className={`chip${rarity === r ? ' chip-active' : ''}`}
+                  onClick={() => setRarity(r)}
+                >
+                  {r ? t(RARITY_LABEL[r] ?? r) : t('все')}
+                </button>
+              ))}
+            </div>
+            <select
+              className="market-input"
+              aria-label={t('Сортировка')}
+              value={sort}
+              onChange={(e) => setSort(e.target.value as OfferSort)}
+            >
+              {(Object.keys(SORT_LABEL) as OfferSort[]).map((s) => (
+                <option key={s} value={s}>
+                  {t(SORT_LABEL[s])}
+                </option>
+              ))}
+            </select>
+          </div>
+          {visibleOffers.length === 0 ? (
             <p className="story-footnote">{t('Сейчас никто не продаёт. Загляни завтра!')}</p>
           ) : (
             <div className="market-list">
-              {offers.map((o) => (
+              {visibleOffers.map((o) => (
                 <div key={o.id} className="market-row">
                   <span className="market-emoji" aria-hidden="true">
                     {PET_SKIN_EMOJI[o.itemId] ?? '🐾'}
                   </span>
                   <div className="market-copy">
-                    <p className="market-name">{o.name}</p>
+                    <p className="market-name">
+                      {o.name}{' '}
+                      {(o.rep ?? 0) > 0 && (
+                        <span className="res-chip">⭐ {t(dealCountWord(o.rep ?? 0), { p0: o.rep })}</span>
+                      )}
+                    </p>
                     <p className="market-desc">{o.description}</p>
                   </div>
                   <button
@@ -220,6 +290,36 @@ export const MarketplacePanel: React.FC = () => {
                         {t('Забрать {p0} ₽', { p0: fmtNumber(o.price) })}
                       </button>
                     )}
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* P2P: история моих сделок + моя репутация */}
+          {history.length > 0 && (
+            <>
+              <h3 className="market-sub">
+                {t('История сделок')}{' '}
+                {myRep > 0 && <span className="res-chip">⭐ {t(dealCountWord(myRep), { p0: myRep })}</span>}
+              </h3>
+              <div className="market-list">
+                {history.map((h) => (
+                  <div key={h.id} className="market-row">
+                    <span className="market-emoji" aria-hidden="true">
+                      {PET_SKIN_EMOJI[h.itemId] ?? '🐾'}
+                    </span>
+                    <div className="market-copy">
+                      <p className="market-name">{h.name}</p>
+                      <p className="market-desc">
+                        {h.role === 'sold' ? t('продано') : t('куплено')} · {shortDate(h.at)}
+                        {h.role === 'sold' && !h.settled ? ` · ${t('деньги в эскроу')}` : ''}
+                      </p>
+                    </div>
+                    <span className="res-chip">
+                      {h.role === 'sold' ? '+' : '−'}
+                      {fmtNumber(h.price)} ₽
+                    </span>
                   </div>
                 ))}
               </div>

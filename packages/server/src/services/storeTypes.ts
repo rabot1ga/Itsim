@@ -56,6 +56,8 @@ export interface OfferBackend {
   listActive(): Promise<OfferRecord[]>;
   /** Все записи продавца (активные и история). */
   bySeller(sellerId: string): Promise<OfferRecord[]>;
+  /** Все записи, где игрок — покупатель (история сделок). */
+  byBuyer(buyerId: string): Promise<OfferRecord[]>;
   /** Тестовый хелпер JSON-бэкенда. */
   reset?(): void;
 }

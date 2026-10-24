@@ -82,12 +82,16 @@ describe('pg-mem: P2P-объявления (raw SQL)', () => {
     expect(await offers.get('off-1')).toEqual(rec);
     expect(await offers.listActive()).toEqual([rec]);
     expect(await offers.bySeller('1')).toEqual([rec]);
+    expect(await offers.byBuyer('2')).toEqual([]);
     rec.status = 'sold_escrow';
     await offers.put({ ...rec, buyerId: '2', soldAt: 1_700_000_100_000 });
     const sold = await offers.get('off-1');
     expect(sold?.status).toBe('sold_escrow');
     expect(sold?.buyerId).toBe('2');
     expect(await offers.listActive()).toEqual([]);
+    const bought = await offers.byBuyer('2');
+    expect(bought).toHaveLength(1);
+    expect(bought[0].id).toBe('off-1');
   });
 });
 

@@ -101,6 +101,7 @@ export async function marketplaceRoutes(app: FastifyInstance) {
       itemId: o.itemId,
       name: item?.name ?? o.itemId,
       description: item?.description ?? '',
+      rarity: item?.rarity ?? 'rare',
       price: o.price,
       createdAt: o.createdAt,
       expiresAt: o.expiresAt,
@@ -108,6 +109,9 @@ export async function marketplaceRoutes(app: FastifyInstance) {
       own: o.sellerId === viewerId,
     };
   };
+
+  /** Сделка состоялась: покупатель забрал питомца (деньги ещё могут ждать выплаты). */
+  const isDeal = (o: OfferRecord) => o.status === 'sold_escrow' || o.status === 'paid_out';
 
   /** Ленивый свип истёкших объявлений: питомец возвращается продавцу. */
   const sweepExpiredOffers = async (): Promise<void> => {
@@ -125,7 +129,7 @@ export async function marketplaceRoutes(app: FastifyInstance) {
     }
   };
 
-  /** GET /api/game/marketplace/offers — объявления игроков + мои (эскроу-статусы). */
+  /** GET /api/game/marketplace/offers — витрина P2P: объявления, мои, история и репутация. */
   app.get('/marketplace/offers', async (request) => {
     const user = (request as any).telegramUser;
     const userId = String(user.id);
@@ -133,11 +137,38 @@ export async function marketplaceRoutes(app: FastifyInstance) {
     const store = __offerBackend();
     const itemById = new Map((getContent().items as any[]).map((i) => [i.id, i]));
     const active = (await store.listActive()).filter((o) => o.sellerId !== userId);
-    const mine = (await store.bySeller(userId)).filter((o) => o.status !== 'active');
-    const myActive = (await store.bySeller(userId)).filter((o) => o.status === 'active');
+    const mineAll = await store.bySeller(userId);
+    const mine = mineAll.filter((o) => o.status !== 'active');
+    const myActive = mineAll.filter((o) => o.status === 'active');
+
+    // Репутация продавца v1 — число состоявшихся сделок (анонимно, без имён).
+    const sellerRep: Record<string, number> = {};
+    for (const sid of new Set(active.map((o) => o.sellerId))) {
+      sellerRep[sid] = (await store.bySeller(sid)).filter(isDeal).length;
+    }
+    const myRep = mineAll.filter(isDeal).length;
+
+    // История моих сделок (куплено/продано), новые сверху.
+    const history = [...mineAll.filter(isDeal), ...(await store.byBuyer(userId)).filter(isDeal)]
+      .sort((a, b) => (b.soldAt ?? b.createdAt) - (a.soldAt ?? a.createdAt))
+      .map((o) => {
+        const item = itemById.get(o.itemId) as any;
+        return {
+          id: o.id,
+          itemId: o.itemId,
+          name: item?.name ?? o.itemId,
+          price: o.price,
+          role: o.sellerId === userId ? 'sold' : 'bought',
+          at: o.soldAt ?? o.createdAt,
+          settled: o.status === 'paid_out',
+        };
+      });
+
     return {
-      offers: active.map((o) => offerView(o, itemById, userId)),
+      offers: active.map((o) => ({ ...offerView(o, itemById, userId), rep: sellerRep[o.sellerId] ?? 0 })),
       mine: [...myActive, ...mine].map((o) => offerView(o, itemById, userId)),
+      history,
+      myRep,
     };
   });
 

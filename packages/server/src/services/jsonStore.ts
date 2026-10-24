@@ -193,6 +193,11 @@ export function createJsonOfferBackend(dataDir: string): OfferBackend {
         .filter((o) => o.sellerId === sellerId)
         .sort((a, b) => b.createdAt - a.createdAt);
     },
+    async byBuyer(buyerId) {
+      return Object.values(load().offers)
+        .filter((o) => o.buyerId === buyerId)
+        .sort((a, b) => b.createdAt - a.createdAt);
+    },
     reset() {
       registry = null;
     },

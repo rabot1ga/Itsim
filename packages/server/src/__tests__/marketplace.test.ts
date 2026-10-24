@@ -352,3 +352,122 @@ describe('P2P: sell/buy/payout/cancel (эскроу-лайт)', () => {
     expect(((await loadState('715')) as any).items).toContain('pet_owl');
   });
 });
+
+describe('P2P: репутация продавца и история сделок', () => {
+  it('GET /offers несёт rep, history и myRep; сделка видна с обеих сторон', async () => {
+    await reset(720);
+    await reset(721);
+    await patch(720, { money: 300_000, items: ['pet_dragon'] });
+    await patch(721, { money: 900_000, items: [] });
+
+    const sell = await app.inject({
+      method: 'POST',
+      url: '/api/game/marketplace/sell',
+      headers: { authorization: tma(720) },
+      payload: { itemId: 'pet_dragon', price: 800000 },
+    });
+    expect(sell.statusCode).toBe(200);
+
+    // репутация новичка — 0 сделок, но объявление уже на витрине
+    const board0 = await app.inject({
+      method: 'GET',
+      url: '/api/game/marketplace/offers',
+      headers: { authorization: tma(721) },
+    });
+    const offer = (board0.json().offers as any[]).find((o) => o.itemId === 'pet_dragon');
+    expect(offer.rep).toBe(0);
+
+    const buy = await app.inject({
+      method: 'POST',
+      url: `/api/game/marketplace/offers/${offer.id}/buy`,
+      headers: { authorization: tma(721) },
+    });
+    expect(buy.statusCode).toBe(200);
+
+    // продавец: history «продано», деньги ещё в эскроу, myRep=1
+    const sellerView = await app.inject({
+      method: 'GET',
+      url: '/api/game/marketplace/offers',
+      headers: { authorization: tma(720) },
+    });
+    expect(sellerView.json().myRep).toBe(1);
+    const sold = (sellerView.json().history as any[]).find((h) => h.itemId === 'pet_dragon');
+    expect(sold.role).toBe('sold');
+    expect(sold.price).toBe(800000);
+    expect(sold.settled).toBe(false);
+
+    // покупатель: history «куплено»
+    const buyerView = await app.inject({
+      method: 'GET',
+      url: '/api/game/marketplace/offers',
+      headers: { authorization: tma(721) },
+    });
+    const bought = (buyerView.json().history as any[]).find((h) => h.itemId === 'pet_dragon');
+    expect(bought.role).toBe('bought');
+    expect(bought.settled).toBe(false);
+
+    // payout: сделка закрыта, settled=true
+    const payout = await app.inject({
+      method: 'POST',
+      url: `/api/game/marketplace/offers/${offer.id}/payout`,
+      headers: { authorization: tma(720) },
+    });
+    expect(payout.statusCode).toBe(200);
+    const afterPayout = await app.inject({
+      method: 'GET',
+      url: '/api/game/marketplace/offers',
+      headers: { authorization: tma(720) },
+    });
+    const settled = (afterPayout.json().history as any[]).find((h) => h.itemId === 'pet_dragon');
+    expect(settled.settled).toBe(true);
+    expect(afterPayout.json().myRep).toBe(1);
+
+    // новый покупатель видит репутацию продавца на витрине (создадим ещё объявление)
+    await patch(720, { items: ['pet_owl'] });
+    const sell2 = await app.inject({
+      method: 'POST',
+      url: '/api/game/marketplace/sell',
+      headers: { authorization: tma(720) },
+      payload: { itemId: 'pet_owl', price: 120000 },
+    });
+    expect(sell2.statusCode).toBe(200);
+    const board2 = await app.inject({
+      method: 'GET',
+      url: '/api/game/marketplace/offers',
+      headers: { authorization: tma(721) },
+    });
+    const owl = (board2.json().offers as any[]).find((o) => o.itemId === 'pet_owl');
+    expect(owl.rep).toBe(1);
+  });
+
+  it('снятые и истёкшие объявления не попадают в историю сделок', async () => {
+    await reset(722);
+    await patch(722, { money: 100_000, items: ['pet_turtle'] });
+    const sell = await app.inject({
+      method: 'POST',
+      url: '/api/game/marketplace/sell',
+      headers: { authorization: tma(722) },
+      payload: { itemId: 'pet_turtle', price: 80000 },
+    });
+    expect(sell.statusCode).toBe(200);
+    const mine = await app.inject({
+      method: 'GET',
+      url: '/api/game/marketplace/offers',
+      headers: { authorization: tma(722) },
+    });
+    const active = (mine.json().mine as any[]).find((o) => o.status === 'active');
+    const cancel = await app.inject({
+      method: 'POST',
+      url: `/api/game/marketplace/offers/${active.id}/cancel`,
+      headers: { authorization: tma(722) },
+    });
+    expect(cancel.statusCode).toBe(200);
+    const after = await app.inject({
+      method: 'GET',
+      url: '/api/game/marketplace/offers',
+      headers: { authorization: tma(722) },
+    });
+    expect(after.json().history).toEqual([]);
+    expect(after.json().myRep).toBe(0);
+  });
+});

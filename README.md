@@ -774,6 +774,9 @@ CI — GitHub Actions (`.github/workflows/ci.yml`, источник —
       самопокупки, Stars-эксклюзивы не продаются; объявление живёт 48 часов;
       `offers.json` / SQL-миграция `002_market_offers.sql` +
       `GET/POST /api/game/marketplace/offers|sell|buy|payout|cancel`
+- [x] P2P-итерация v1.5 (24.10.2026): репутация продавца (число сделок, ⭐-чип
+      на витрине), история моих сделок (куплено/продано, эскроу-статусы),
+      поиск/фильтр по редкости/сортировка витрины (`lib/offerBoard.ts`)
 
 **Контент и визуал**
 
