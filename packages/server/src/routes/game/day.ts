@@ -196,12 +196,17 @@ export function advanceDay(state: StoredState, content: any, messages: string[])
         t('🔥 Выгорание. Ты ушёл в отпуск длиной в жизнь: ноутбук в ящик, тикеты чужие. Финал: «Пчеловод»')
       );
     } else {
-      if (state.money <= 0) state.brokeDays = (state.brokeDays ?? 0) + 1;
+      // «15 дней без денег и без работы»: цепочка растёт только пока держатся
+      // оба условия; любая работа или деньги обрывают её. Раньше счётчик шёл и
+      // с работой — финал вспыхивал в день увольнения, а сообщение врало.
+      if (state.money <= 0 && !state.job) state.brokeDays = (state.brokeDays ?? 0) + 1;
       else state.brokeDays = 0;
       if ((state.brokeDays ?? 0) >= (endings.brokeDaysToQuit ?? 15) && !state.job) {
         state.careerEnding = 'left_it';
         messages.push(
-          t('💀 15 дней без денег и без работы. Ты ушёл из IT — в деревню, за теплицы. Финал: «Ушёл из IT»')
+          t('💀 {p0} дней без денег и без работы. Ты ушёл из IT — в деревню, за теплицы. Финал: «Ушёл из IT»', {
+            p0: endings.brokeDaysToQuit ?? 15,
+          })
         );
       }
     }

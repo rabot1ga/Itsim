@@ -903,8 +903,8 @@ Object.assign(en, {
     '🏦 Wealth and lifestyle tax: −{p0}. Money under the mattress loses value — reinvest it',
   '👔 Борд проголосовал за тебя (шанс был {p0}%). Ты CTO — отныне ты отвечаешь за чужие карьеры и за свой сон. Финал «Корпоративный бог» откроется, когда продержишься в кресле {hold} дн. (сейчас 0)':
     '👔 The board voted for you (the chance was {p0}%). You are the CTO — from now on you answer for other careers and your own sleep. The «Corporate god» ending opens after you hold the chair for {hold} days (0 now)',
-  '💀 15 дней без денег и без работы. Ты ушёл из IT — в деревню, за теплицы. Финал: «Ушёл из IT»':
-    '💀 15 days with no money and no job. You left IT — to the village, to the greenhouses. Ending: «Left IT»',
+  '💀 {p0} дней без денег и без работы. Ты ушёл из IT — в деревню, за теплицы. Финал: «Ушёл из IT»':
+    '💀 {p0} days with no money and no job. You left IT — to the village, to the greenhouses. Ending: «Left IT»',
   '💀 Три предупреждения — тебя уволили из {p0}. Свобода!': '💀 Three warnings — you were fired from {p0}. Freedom!',
   '💰 Зарплата: +{p0}': '💰 Salary: +{p0}',
   '💼 Задачи + разбор чужого кода. Растёшь не только ты':

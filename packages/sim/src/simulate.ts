@@ -425,7 +425,8 @@ function simulate(random: () => number, days: number = DAYS): Agent {
         agent.hasJob = false;
         recordMilestone(agent.milestones, 'ending_burnout', day);
       }
-      if (p.money <= 0) agent.brokeStreak++;
+      // Как в day.ts: цепочка «без денег И без работы» — оба условия вместе.
+      if (p.money <= 0 && !agent.hasJob) agent.brokeStreak++;
       else agent.brokeStreak = 0;
       if (!agent.ending && agent.brokeStreak >= (ENDINGS.brokeDaysToQuit ?? 15) && !agent.hasJob) {
         agent.ending = 'left_it';

@@ -13,7 +13,7 @@ import { mainSkillLevel } from './skills';
  *   - `free_artist`: фриланс (senior+ при деньгах < 1 млн)
  *   - `teacher`    : репутация наставника + лидерство + глубина основного навыка
  *   - `burnout`    : терминальное — здоровье/мотивация в нуле N дней подряд
- *   - `left_it`    : терминальное — без денег N дней подряд
+ *   - `left_it`    : терминальное — без денег и без работы N дней подряд
  *
  * Проверка чистая, без побочных эффектов: тот же движок на сервере (state
  * mutation) и в UI (подсветка «доступен ли финал уже сейчас»).
@@ -258,12 +258,12 @@ export function checkEndings(player: PlayerState, balance: BalanceConfig | undef
     description: burnout.description,
   });
 
-  // ── Terminal: left_it
+  // ── Terminal: left_it (цепочка «без денег и без работы» — см. day.ts)
   const leftIt = { ...DEFAULTS.left_it, ...endings.left_it };
   out.push({
     id: 'left_it',
     action: 'restart',
-    available: brokeDays >= endings.brokeDaysToQuit,
+    available: brokeDays >= endings.brokeDaysToQuit && !player.job,
     title: leftIt.title,
     description: leftIt.description,
   });

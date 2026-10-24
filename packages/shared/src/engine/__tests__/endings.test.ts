@@ -264,3 +264,19 @@ describe('endings', () => {
     expect(id).toBe('exit');
   });
 });
+
+describe('left_it: «без денег и без работы»', () => {
+  it('сработает только без работы: с job при том же brokeDays финал закрыт', () => {
+    const withJob = player({
+      brokeDays: 15,
+      job: { company: 'X', position: 'Junior', salary: 10000, grade: 'junior' } as any,
+    });
+    expect(checkEndings(withJob, BALANCE).find((e) => e.id === 'left_it')!.available).toBe(false);
+
+    const jobless = player({ brokeDays: 15, job: null });
+    expect(checkEndings(jobless, BALANCE).find((e) => e.id === 'left_it')!.available).toBe(true);
+
+    const under = player({ brokeDays: 14, job: null });
+    expect(checkEndings(under, BALANCE).find((e) => e.id === 'left_it')!.available).toBe(false);
+  });
+});
