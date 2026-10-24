@@ -2325,7 +2325,6 @@ select {
   font-size: 28px;
   line-height: 1;
   filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.45));
-  animation: pet-bob 3.2s ease-in-out infinite;
 }
 .room-pet-emoji {
   display: inline-block;
@@ -2335,13 +2334,69 @@ select {
   margin-left: 2px;
   vertical-align: super;
 }
+/* Анимации питомца: idle — покачивание, happy — подпрыгивание, sleep — дыхание */
+.room-pet--idle .room-pet-emoji {
+  animation: pet-bob 3.2s ease-in-out infinite;
+}
+.room-pet--happy .room-pet-emoji {
+  animation: pet-hop 1.1s ease-in-out infinite;
+}
+.room-pet--sleep .room-pet-emoji {
+  animation: pet-breathe 4s ease-in-out infinite;
+}
+.room-pet-zzz {
+  font-size: 13px;
+  position: absolute;
+  top: -10px;
+  right: -12px;
+  animation: pet-zzz 2.4s ease-in-out infinite;
+}
+.room-pet-spark {
+  font-size: 13px;
+  position: absolute;
+  top: -10px;
+  right: -12px;
+  animation: pet-zzz 1.6s ease-in-out infinite;
+}
 @keyframes pet-bob {
   0%,
   100% {
-    transform: translate(-50%, -100%);
+    transform: translateY(0);
   }
   50% {
-    transform: translate(-50%, calc(-100% - 3px));
+    transform: translateY(-3px);
+  }
+}
+@keyframes pet-hop {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-7px) rotate(-4deg);
+  }
+  60% {
+    transform: translateY(-2px) rotate(3deg);
+  }
+}
+@keyframes pet-breathe {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(0.94);
+  }
+}
+@keyframes pet-zzz {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-4px);
   }
 }
 .pet-room-label {
@@ -2404,7 +2459,12 @@ select {
   .hud-xp > i {
     transition: none;
   }
-  .room-pet {
+  .room-pet,
+  .room-pet--idle .room-pet-emoji,
+  .room-pet--happy .room-pet-emoji,
+  .room-pet--sleep .room-pet-emoji,
+  .room-pet-zzz,
+  .room-pet-spark {
     animation: none;
   }
 }

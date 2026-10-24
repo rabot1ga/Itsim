@@ -40,3 +40,15 @@ export function petBadges(owned: readonly string[]): string[] {
     .filter(([id]) => owned.includes(id))
     .map(([, badge]) => badge);
 }
+
+/**
+ * Анимация питомца в комнате (роадмап «Анимации питомца idle/sleep/happy»):
+ * состояние выводится из игрового — энергии (спит на нуле) и кормления
+ * (сытый — счастливый), иначе спокойное покачивание.
+ */
+export type PetAnim = 'idle' | 'happy' | 'sleep';
+export function petAnimState(player: { energy?: number; petFedToday?: boolean }): PetAnim {
+  if ((player.energy ?? 1) <= 0) return 'sleep';
+  if (player.petFedToday) return 'happy';
+  return 'idle';
+}

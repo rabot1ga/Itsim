@@ -4,7 +4,7 @@ import { useGameStore } from '../store/gameStore';
 import { ScreenTitle, SectionTitle } from '../components/ui';
 import { ACTIONS } from './actionCatalogue';
 import { ROOM_TIER_META, PET_ROOM_META, DEFAULT_PET_POSITION, roomArtwork, roomTierOf } from '../lib/roomArt';
-import { PET_SKIN_EMOJI, petEmoji, petBadges } from '../lib/petSkins';
+import { PET_SKIN_EMOJI, petEmoji, petBadges, petAnimState } from '../lib/petSkins';
 import type { PetRoomPosition } from '@itsim/shared';
 /**
  * «Дом» — комната как карточка события (решение 22.10.2026, вариант B):
@@ -57,6 +57,8 @@ export const RoomView: React.FC = () => {
   const anchor = PET_ROOM_META[position];
   const skinEmo = petEmoji(skin);
   const badges = petBadges(items);
+  // Анимации питомца (роадмап): idle/sleep/happy — из состояния дня.
+  const anim = petAnimState(player);
   const runZone = async (zone: Zone) => {
     setBusy(zone.id);
     await performAction(zone.action);
@@ -87,15 +89,25 @@ export const RoomView: React.FC = () => {
           />
           {skinEmo && (
             <div
-              className="room-pet"
+              className={`room-pet room-pet--${anim}`}
               style={{ left: `${anchor.x}%`, top: `${anchor.y}%` }}
               role="img"
-              aria-label={t('Питомец в комнате')}
+              aria-label={anim === 'sleep' ? t('Питомец спит') : t('Питомец в комнате')}
             >
               <span className="room-pet-emoji">{skinEmo}</span>
               {badges.length > 0 && (
                 <span className="room-pet-badges" aria-hidden="true">
                   {badges.join('')}
+                </span>
+              )}
+              {anim === 'sleep' && (
+                <span className="room-pet-zzz" aria-hidden="true">
+                  💤
+                </span>
+              )}
+              {anim === 'happy' && (
+                <span className="room-pet-spark" aria-hidden="true">
+                  ✨
                 </span>
               )}
             </div>

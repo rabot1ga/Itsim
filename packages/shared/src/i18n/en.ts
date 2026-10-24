@@ -4143,3 +4143,8 @@ Object.assign(en, {
   'Согревает серверную и грозит сжечь техдолг. +4 мотивации и +2 здоровья в день.':
     'Warms the server room and threatens to burn the tech debt. +4 motivation and +2 health a day.',
 });
+
+// Анимации питомца (роадмап)
+Object.assign(en, {
+  'Питомец спит': 'The pet is sleeping',
+});
