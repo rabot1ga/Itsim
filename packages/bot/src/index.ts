@@ -20,6 +20,7 @@ import { createServer, IncomingMessage, ServerResponse } from 'http';
 
 import { TelegramClient, type TelegramUpdate } from './telegramApi.js';
 import { GameApiClient } from './gameApi.js';
+import { forwardPaymentUpdate, isPaymentUpdate } from './paymentForward.js';
 import { BOT_COMMANDS, handleCommand, parseCommand, nudgeText, playButton, type BotReply } from './commands.js';
 
 const BOT_TOKEN = process.env.BOT_TOKEN || '';
@@ -53,6 +54,9 @@ interface PlannedReply {
   chatId: number;
   reply: BotReply;
 }
+
+/** Платёжные апдейты форвардим на игровой сервер (грант + pre-checkout). */
+const paymentTarget = () => ({ apiUrl: API_URL, secret: WEBHOOK_SECRET });
 
 /**
  * Turn an update into the message(s) we want to send. Pure — the transport
@@ -95,6 +99,10 @@ export async function planReply(update: TelegramUpdate): Promise<PlannedReply | 
 }
 
 async function deliver(planned: PlannedReply): Promise<void> {
+  if (planned.reply.invoice) {
+    await tg.sendInvoice(planned.chatId, planned.reply.invoice);
+    if (!planned.reply.text) return;
+  }
   await tg.sendMessage(planned.chatId, planned.reply.text, {
     ...(planned.reply.replyMarkup ? { reply_markup: planned.reply.replyMarkup } : {}),
   });
@@ -123,6 +131,8 @@ async function pollLoop(): Promise<void> {
     for (const update of updates.result) {
       offset = update.update_id + 1;
       try {
+        // Платежи: сервер грантит и отвечает на pre-checkout; бот — доставка.
+        if (isPaymentUpdate(update) && (await forwardPaymentUpdate(update, paymentTarget()))) continue;
         const planned = await planReply(update);
         if (planned) await deliver(planned);
       } catch (err) {
@@ -198,6 +208,13 @@ const server = createServer(async (req: IncomingMessage, res: ServerResponse) =>
     } catch {
       res.writeHead(400, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: 'invalid JSON' }));
+      return;
+    }
+
+    // Платежи: форвард на игровой сервер (грант + pre-checkout); успех — готово.
+    if (isPaymentUpdate(update) && (await forwardPaymentUpdate(update, paymentTarget()))) {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: true, forwarded: true }));
       return;
     }
 

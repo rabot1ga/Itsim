@@ -4,6 +4,7 @@ import { timingSafeEqual } from 'crypto';
 import { config } from '../config.js';
 import { loadState, saveState, deleteState, scanStates } from '../services/gameStore.js';
 import { purchasesOf } from '../services/entitlements.js';
+import { getContent } from '../services/contentService.js';
 /**
  * Service endpoints for the Telegram bot process (`packages/bot`).
  *
@@ -29,6 +30,21 @@ function adminGuard(request: FastifyRequest, reply: FastifyReply): boolean {
 export async function adminRoutes(app: FastifyInstance) {
   app.addHook('preHandler', async (request, reply) => {
     if (!adminGuard(request, reply)) return reply;
+  });
+  /**
+   * GET /api/admin/products — Stars-каталог для бота (sendInvoice из чата):
+   * только то, что нужно для инвойса, без внутренних полей грантов.
+   */
+  app.get('/products', async () => {
+    const products = getContent().monetization?.products ?? [];
+    return {
+      products: products.map((p: any) => ({
+        id: p.id,
+        title: p.title,
+        description: p.description,
+        stars: p.stars,
+      })),
+    };
   });
   /**
    * POST /api/admin/nudges

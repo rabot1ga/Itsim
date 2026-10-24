@@ -5,6 +5,8 @@
  * A handler receives the parsed command and a `GameApi` port; it returns the
  * reply to send. Nothing here talks to Telegram directly.
  */
+import { randomUUID } from 'node:crypto';
+import { buildPaymentPayload } from '@itsim/shared';
 
 export interface PlayerSummary {
   name: string;
@@ -28,6 +30,8 @@ export interface GameApi {
   getSummary(userId: string): Promise<PlayerSummary | null>;
   /** DELETE /api/admin/users/:id */
   deleteUser(userId: string): Promise<boolean>;
+  /** GET /api/admin/products — Stars-каталог для инвойсов */
+  listProducts(): Promise<Array<{ id: string; title: string; description: string; stars: number }> | null>;
   /** whether the admin API is usable at all */
   readonly available: boolean;
 }
@@ -35,6 +39,14 @@ export interface GameApi {
 export interface BotReply {
   text: string;
   replyMarkup?: Record<string, any>;
+  /** Инвойс Telegram Stars: deliver() отправит sendInvoice вместо текста (текст — фолбэк). */
+  invoice?: {
+    title: string;
+    description: string;
+    /** payload формата shared buildPaymentPayload (itsim:v1:userId:productId:nonce) */
+    payload: string;
+    stars: number;
+  };
 }
 
 export interface CommandContext {
@@ -61,6 +73,7 @@ export const BOT_COMMANDS = [
   { command: 'start', description: 'Начать игру' },
   { command: 'play', description: 'Открыть Mini App' },
   { command: 'stats', description: 'Мой прогресс' },
+  { command: 'buy', description: 'Магазин Stars' },
   { command: 'help', description: 'Как играть' },
   { command: 'delete_my_data', description: 'Удалить все мои данные' },
 ];
@@ -86,14 +99,14 @@ export function parseCommand(text: string | undefined): { command: string; arg?:
 const HELP = [
   '📖 <b>Как играть</b>',
   '',
-  '1 игровой день = 3.5 реальных часа. Пока тебя нет, дни копятся в банке (максимум 7) — заходи хотя бы раз в сутки, иначе банк переполнится и прогресс встанет.',
+  '1 игровой день = 3.5 реальных часа. Пока тебя нет, дни копятся в банке (базовый максимум 7, расширяется слотами из /buy) — заходи хотя бы раз в сутки, иначе банк переполнится и прогресс встанет.',
   '',
   '• Учись, работай, отдыхай и ходи на собеседования — всё тратит энергию.',
   '• Выбери <b>основной навык</b>: именно его глубину проверяют на повышении.',
   '• Следи за деньгами: день стоит денег даже когда ты просто спишь.',
   '• Выгорание и «ушёл из IT» — настоящие финалы, а не декорация.',
   '',
-  'Команды: /play, /stats, /delete_my_data',
+  'Команды: /play, /stats, /buy, /delete_my_data',
 ].join('\n');
 
 export async function handleCommand(ctx: CommandContext, command: string): Promise<BotReply> {
@@ -116,6 +129,55 @@ export async function handleCommand(ctx: CommandContext, command: string): Promi
 
     case 'play':
       return { text: '🎮 Погнали!', replyMarkup: playButton(ctx.miniAppUrl) };
+
+    case 'buy': {
+      if (!ctx.api.available) {
+        return { text: '⚠️ Магазин временно недоступен (сервер игры не отвечает).' };
+      }
+      const products = (await ctx.api.listProducts()) ?? [];
+      if (!products.length) {
+        return { text: '🪙 Каталог пуст — загляни позже.' };
+      }
+      const wanted = ctx.arg?.trim().toLowerCase();
+      const product = wanted ? products.find((p) => p.id.toLowerCase() === wanted) : undefined;
+      if (wanted && !product) {
+        return {
+          text: [
+            `🤔 Товар «${escapeHtml(wanted)}» не найден. Вот что есть:`,
+            '',
+            ...products.map((p) => `• <code>${p.id}</code> — ${escapeHtml(p.title)} · ${p.stars}⭐`),
+            '',
+            'Купить: <code>/buy &lt;id&gt;</code>',
+          ].join('\n'),
+        };
+      }
+      if (product) {
+        // payload обязан разбираться серверным parsePaymentPayload (формат shared).
+        const payload = buildPaymentPayload(String(ctx.userId), product.id, randomUUID().slice(0, 8));
+        return {
+          text: `🛒 <b>${escapeHtml(product.title)}</b> — ${product.stars}⭐\n${escapeHtml(product.description)}`,
+          invoice: {
+            title: product.title,
+            description: product.description,
+            payload,
+            stars: product.stars,
+          },
+          replyMarkup: playButton(ctx.miniAppUrl),
+        };
+      }
+      return {
+        text: [
+          '🪙 <b>Магазин Stars</b> — только косметика, слоты банка дней и поддержка. Никакого pay-to-win.',
+          '',
+          ...products.map(
+            (p) => `• <code>${p.id}</code> — ${escapeHtml(p.title)} · ${p.stars}⭐\n  ${escapeHtml(p.description)}`
+          ),
+          '',
+          'Купить: <code>/buy &lt;id&gt;</code>',
+        ].join('\n'),
+        replyMarkup: playButton(ctx.miniAppUrl),
+      };
+    }
 
     case 'help':
       return { text: HELP, replyMarkup: playButton(ctx.miniAppUrl) };

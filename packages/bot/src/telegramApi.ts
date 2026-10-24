@@ -100,10 +100,26 @@ export class TelegramClient {
     });
   }
 
+  /** Инвойс Telegram Stars прямо в чат (XTR: amount = число звёзд). */
+  sendInvoice(
+    chatId: number | string,
+    invoice: { title: string; description: string; payload: string; stars: number }
+  ) {
+    return this.call('sendInvoice', {
+      chat_id: chatId,
+      title: invoice.title,
+      description: invoice.description,
+      payload: invoice.payload,
+      currency: 'XTR',
+      prices: [{ label: invoice.title, amount: invoice.stars }],
+    });
+  }
+
   getUpdates(offset: number, timeoutSeconds = 30) {
     return this.call<TelegramUpdate[]>(
       'getUpdates',
-      { offset, timeout: timeoutSeconds, allowed_updates: ['message', 'callback_query'] },
+      // pre_checkout_query обязателен: без него Telegram отменяет Stars-платежи.
+      { offset, timeout: timeoutSeconds, allowed_updates: ['message', 'callback_query', 'pre_checkout_query'] },
       (timeoutSeconds + 15) * 1000
     );
   }

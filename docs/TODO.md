@@ -755,5 +755,22 @@ clamp в `normalizeState`, грант `bankedDays` в entitlements, нудж б�
 Проверки: 479 юнит-тестов (shared 206 · server 125 · bot 23 · client 125),
 `tsc`, eslint, i18n-coverage 898/898 + 2379/2379, симулятор `--check`,
 `build`, **e2e 28/28**.
-Дальше: Telegram Stars — этап 2 (реальные инвойсы в боте / Stars-баланс,
-расширение каталога) или иной пункт выше.
+
+**Telegram Stars — этап 2: живые покупки из бота (24.10.2026):** дыра в
+платёжном цикле закрыта. В polling-режиме бот сам забирает апдейты
+(`deleteWebhook`), `pre_checkout_query` даже не запрашивался в `allowed_updates`
+— живой инвойс Telegram отменял через ~10 секунд, а `successful_payment` никто
+не грантил. Теперь: (1) бот форвардит платёжные апдейты сырым Telegram-update
+на `/api/payments/webhook` с общим секретом (`bot/src/paymentForward.ts`,
+`allowed_updates` += `pre_checkout_query`); сервер отвечает на pre-checkout и
+грантит покупку, бот — только доставка (фолбэк-ACK при недоступности сервера).
+(2) Команда `/buy` в чате: каталог из нового `GET /api/admin/products` (без
+полей грантов) и `sendInvoice` XTR прямо в чат (`/buy <id>` → инвойс с ценой
+в Stars). (3) Payload инвойса вынесен в shared (`buildPaymentPayload`/
+`parsePaymentPayload`, формат `itsim:v1:userId:productId:nonce`) — бот и сервер
+не могут разойтись. Мок-режим бота (`would_send`) показывает инвойс в JSON.
+
+Проверки: 492 юнит-тестов (shared 209 · server 127 · bot 31 · client 125),
+`tsc`, eslint, i18n-coverage 898/898 + 2379/2379, симулятор `--check`,
+`build`, **e2e 28/28**.
+Дальше: Stars-каталог (новые позиции/сезонные наборы) или иной пункт выше.

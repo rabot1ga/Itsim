@@ -34,6 +34,10 @@ function api(overrides: Partial<GameApi> = {}): GameApi {
     available: true,
     getSummary: async () => SUMMARY,
     deleteUser: async () => true,
+    listProducts: async () => [
+      { id: 'bank_slot', title: '🪟 Слот банка дней', description: '+1 к ёмкости банка', stars: 120 },
+      { id: 'support_coffee', title: '☕ Кофе разработчику', description: 'Поддержать разработку', stars: 25 },
+    ],
     ...overrides,
   } as GameApi;
 }
@@ -179,5 +183,37 @@ describe('formatting helpers', () => {
   it('appends startapp to a URL that already has a query string', () => {
     const markup = playButton('https://itsim.app?v=2', 'ref_1');
     expect(markup.inline_keyboard[0][0].web_app.url).toBe('https://itsim.app?v=2&startapp=ref_1');
+  });
+});
+
+describe('/buy — магазин Stars из чата', () => {
+  it('список без аргумента: id, цены и подсказка покупки', async () => {
+    const reply = await handleCommand(ctx(), 'buy');
+    expect(reply.text).toContain('Магазин Stars');
+    expect(reply.text).toContain('bank_slot');
+    expect(reply.text).toContain('120⭐');
+    expect(reply.text).toContain('/buy');
+    expect(reply.invoice).toBeUndefined();
+  });
+
+  it('/buy <id> — инвойс XTR с payload формата itsim:v1', async () => {
+    const reply = await handleCommand(ctx({ arg: 'bank_slot' }), 'buy');
+    expect(reply.invoice).toBeTruthy();
+    expect(reply.invoice!.title).toContain('Слот');
+    expect(reply.invoice!.stars).toBe(120);
+    // формат обязан разбираться серверным parsePaymentPayload
+    expect(reply.invoice!.payload).toMatch(/^itsim:v1:4242:bank_slot:[0-9a-f-]{1,8}$/);
+  });
+
+  it('неизвестный id — перечисляет каталог', async () => {
+    const reply = await handleCommand(ctx({ arg: 'gold_money' }), 'buy');
+    expect(reply.text).toContain('не найден');
+    expect(reply.text).toContain('support_coffee');
+    expect(reply.invoice).toBeUndefined();
+  });
+
+  it('сервер недоступен — вежливый отказ', async () => {
+    const reply = await handleCommand(ctx({ api: api({ available: false }) }), 'buy');
+    expect(reply.text).toContain('временно недоступен');
   });
 });

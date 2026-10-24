@@ -17,6 +17,14 @@ export interface NudgeCandidate {
   grade: string;
 }
 
+/** Позиция Stars-каталога для инвойса в чате. */
+export interface BotProduct {
+  id: string;
+  title: string;
+  description: string;
+  stars: number;
+}
+
 export class GameApiClient implements GameApi {
   constructor(
     private readonly baseUrl: string,
@@ -69,5 +77,11 @@ export class GameApiClient implements GameApi {
       body: JSON.stringify({ minBankedDays, limit }),
     });
     return result?.nudges ?? [];
+  }
+
+  /** Stars-каталог (GET /api/admin/products) для sendInvoice из чата. */
+  async listProducts(): Promise<BotProduct[] | null> {
+    const result = await this.request<{ products: BotProduct[] }>('/api/admin/products');
+    return result?.products ?? null;
   }
 }

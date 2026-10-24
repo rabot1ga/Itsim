@@ -13,7 +13,7 @@ import {
 } from '../services/telegramApi.js';
 import { loadState } from '../services/gameStore.js';
 import { grantPurchase, hasProduct, purchasesOf, purchasesToday } from '../services/entitlements.js';
-import { bankCap, MAX_BANK_SLOTS } from '@itsim/shared';
+import { bankCap, MAX_BANK_SLOTS, buildPaymentPayload, parsePaymentPayload } from '@itsim/shared';
 /**
  * Telegram Stars monetization.
  *
@@ -26,17 +26,14 @@ import { bankCap, MAX_BANK_SLOTS } from '@itsim/shared';
  * the caller, pre-checkout is answered (without it Telegram cancels the
  * payment), and granting is idempotent per `telegram_payment_charge_id`.
  */
-const PAYLOAD_PREFIX = 'itsim:v1';
 export function buildPayload(userId: string, productId: string): string {
-  return `${PAYLOAD_PREFIX}:${userId}:${productId}:${randomUUID().slice(0, 8)}`;
+  return buildPaymentPayload(userId, productId, randomUUID().slice(0, 8));
 }
 export function parsePayload(payload: string): {
   userId: string;
   productId: string;
 } | null {
-  const parts = String(payload ?? '').split(':');
-  if (parts.length < 4 || `${parts[0]}:${parts[1]}` !== PAYLOAD_PREFIX) return null;
-  return { userId: parts[2], productId: parts[3] };
+  return parsePaymentPayload(payload);
 }
 function safeEqual(a: string, b: string): boolean {
   const bufA = Buffer.from(a);
