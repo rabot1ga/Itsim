@@ -449,6 +449,8 @@ export interface GameEvent {
   chainOnly?: boolean;
   /** Triggered by a player action with a probability (never in the day pool) */
   actionTrigger?: ActionEventTrigger;
+  /** Рабочие теги требуют работы; эти события — исключения (внешние предложения и т.п.) */
+  allowWithoutJob?: boolean;
   choices: EventChoice[];
 }
 

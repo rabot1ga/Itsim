@@ -83,6 +83,9 @@ export const EventSchema = z.object({
   // Action-triggered events never enter the random pool either —
   // they roll after the matching player action
   actionTrigger: ActionEventTriggerSchema.optional(),
+  // Рабочие теги (work/office/sprint/project) требуют работы; исключения
+  // (внешние предложения, импостор-синдром и т.п.) помечаются этим флагом
+  allowWithoutJob: z.boolean().default(false),
   choices: z.array(EventChoiceSchema).min(2).max(4),
 });
 
