@@ -46,11 +46,11 @@ export const RoomView: React.FC = () => {
   const tier = roomTierOf(player.grade);
   const meta = ROOM_TIER_META[tier];
   const items = player.items ?? [];
-  const hasPet = items.some((i: string) => i.startsWith('pet_'));
-  const zones = ZONES.filter((z) => !z.needsPet || hasPet);
   // Скины и позиции питомца (роадмап): вид — эмоудзи по виду питомца,
   // аксессуары — бейджем; позиция — якорь на сцене комнаты.
   const ownedSkins = items.filter((i: string) => i in PET_SKIN_EMOJI);
+  const hasPet = ownedSkins.length > 0;
+  const zones = ZONES.filter((z) => !z.needsPet || hasPet);
   const look = player.petRoom ?? {};
   const skin = look.skin === null ? null : (look.skin ?? ownedSkins[0] ?? null);
   const position: PetRoomPosition = look.position ?? DEFAULT_PET_POSITION;

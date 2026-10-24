@@ -14,6 +14,7 @@ import {
 import { Spinner, EmptyState, ScreenTitle, SectionTitle } from '../components/ui';
 import { NavLinks } from '../components/NavLinks';
 import { StarsShop } from '../components/StarsShop';
+import { MarketplacePanel } from '../components/MarketplacePanel';
 import { IsoIcon, spriteForItem, HOUSING_SPRITE } from '../components/iso/IsoIcon';
 type HousingDef = {
   level: number;
@@ -265,6 +266,11 @@ export const ShopView: React.FC = () => {
         <summary>{t('Telegram Stars · косметика и поддержка')}</summary>
         <StarsShop />
       </details>
+
+      {/* Торговая площадка редких питомцев (роадмап «Деньги и рост») */}
+      <div className="mt-3">
+        <MarketplacePanel />
+      </div>
 
       {/* Housing section */}
       <div className="card mt-3">

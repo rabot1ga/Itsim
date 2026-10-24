@@ -4098,3 +4098,48 @@ Object.assign(en, {
   'Такого питомца у тебя нет': "You don't have that pet",
   'Такой позиции нет': 'No such position',
 });
+
+// Торговая площадка редких питомцев (роадмап «Деньги и рост»)
+Object.assign(en, {
+  'Торговая площадка питомцев': 'Rare pet marketplace',
+  'Редкие питомцы — косметика и настроение. Новая подборка — каждый день.':
+    'Rare pets are cosmetics and mood. New picks every day.',
+  редкий: 'rare',
+  легендарный: 'legendary',
+  'в коллекции': 'in collection',
+  'Купить · {p0} ₽': 'Buy · {p0} ₽',
+  '🐾 Питомец куплен': '🐾 Pet purchased',
+  'Не получилось купить': 'Purchase failed',
+  'Загружаем витрину…': 'Loading the storefront…',
+  'Сегодня такой позиции нет на витрине': "This listing is not on today's storefront",
+  'Уже в твоей коллекции': 'Already in your collection',
+  '🐾 {p0} теперь живёт у тебя дома': '🐾 {p0} now lives with you',
+  шкодит: 'gets into mischief',
+  философствует: 'philosophizes',
+  'роется в файлах': 'rummages through files',
+  'никуда не спешит': 'is in no hurry',
+  'исчезает из виду': 'vanishes from sight',
+  'дышит дымком': 'breathes little puffs of smoke',
+  Лисёнок: 'Fox kit',
+  Сова: 'Owl',
+  Енот: 'Raccoon',
+  Черепаха: 'Turtle',
+  'Теневой кот': 'Shadow cat',
+  Дракончик: 'Little dragon',
+  'Лисёнок Рыжик': 'Fox kit Ginger',
+  'Ночная сова': 'Night owl',
+  'Енот-хакер': 'Hacker raccoon',
+  'Черепаха-долгожитель': 'Turtle the long-lived',
+  'Рыжий гость с барахолки: умный, наглый и очень любопытный. +3 мотивации в день.':
+    'A ginger guest from the flea market: clever, cheeky and endlessly curious. +3 motivation a day.',
+  'Твоя совесть в ночных деплоях: молча смотрит и всё понимает. +3 мотивации в день.':
+    'Your conscience during night deploys: watches silently and understands everything. +3 motivation a day.',
+  'Роется в корзине, но зато чинит баги лапами. +3 мотивации и +1 здоровье в день.':
+    'Digs through the trash bin, but fixes bugs with its paws. +3 motivation and +1 health a day.',
+  'Живёт веками и никуда не спешит — пример для выгоревших. +2 мотивации и +2 здоровья в день.':
+    'Lives for ages and never hurries — a role model for the burned out. +2 motivation and +2 health a day.',
+  'Появляется ниоткуда и знает твой пароль от продакшена. +4 мотивации в день.':
+    'Appears out of nowhere and knows your production password. +4 motivation a day.',
+  'Согревает серверную и грозит сжечь техдолг. +4 мотивации и +2 здоровья в день.':
+    'Warms the server room and threatens to burn the tech debt. +4 motivation and +2 health a day.',
+});

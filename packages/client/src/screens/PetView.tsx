@@ -19,6 +19,12 @@ const REAL_PETS = [
   'pet_parrot',
   'pet_hamster',
   'pet_fish',
+  'pet_fox',
+  'pet_owl',
+  'pet_raccoon',
+  'pet_turtle',
+  'pet_cat_shadow',
+  'pet_dragon',
 ];
 const PET_META: Record<
   string,
@@ -36,6 +42,12 @@ const PET_META: Record<
   pet_parrot: { name: t('Попугай'), mood: t('повторяет за тобой') },
   pet_hamster: { name: t('Хомяк'), mood: t('крутит колесо') },
   pet_fish: { name: t('Рыбка'), mood: t('смотрит из аквариума') },
+  pet_fox: { name: t('Лисёнок'), mood: t('шкодит') },
+  pet_owl: { name: t('Сова'), mood: t('философствует') },
+  pet_raccoon: { name: t('Енот'), mood: t('роется в файлах') },
+  pet_turtle: { name: t('Черепаха'), mood: t('никуда не спешит') },
+  pet_cat_shadow: { name: t('Теневой кот'), mood: t('исчезает из виду') },
+  pet_dragon: { name: t('Дракончик'), mood: t('дышит дымком') },
 };
 const PET_EMOJI: Record<string, string> = {
   pet_cat: '🐱',
@@ -47,6 +59,12 @@ const PET_EMOJI: Record<string, string> = {
   pet_parrot: '🦜',
   pet_hamster: '🐹',
   pet_fish: '🐟',
+  pet_fox: '🦊',
+  pet_owl: '🦉',
+  pet_raccoon: '🦝',
+  pet_turtle: '🐢',
+  pet_cat_shadow: '🐈‍⬛',
+  pet_dragon: '🐲',
 };
 const FEED_COST = 500;
 const FEED_ENERGY = 1;

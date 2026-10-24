@@ -2280,6 +2280,40 @@ select {
   animation: numPop 0.24s ease-out;
 }
 
+/* Торговая площадка питомцев: витрина дня */
+.market-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+.market-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+}
+.market-emoji {
+  font-size: 28px;
+  line-height: 1;
+}
+.market-copy {
+  flex: 1;
+  min-width: 0;
+}
+.market-name {
+  font-size: 14px;
+  color: var(--text-primary);
+}
+.market-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
 /* Питомец в комнате: оверлей-эмоудзи на сцене + контролы скинов/позиций */
 .room-pet-stage {
   position: relative;

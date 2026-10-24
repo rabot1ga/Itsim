@@ -14,6 +14,13 @@ export const PET_SKIN_EMOJI: Record<string, string> = {
   pet_parrot: '🦜',
   pet_hamster: '🐹',
   pet_fish: '🐟',
+  // Редкие с торговой площадки (роадмап «Деньги и рост»)
+  pet_fox: '🦊',
+  pet_owl: '🦉',
+  pet_raccoon: '🦝',
+  pet_turtle: '🐢',
+  pet_cat_shadow: '🐈‍⬛',
+  pet_dragon: '🐲',
 };
 
 /** Аксессуары-украшения: не питомцы, но на сцене видны бейджем. */

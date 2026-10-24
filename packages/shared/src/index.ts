@@ -44,5 +44,14 @@ export {
   ArchetypeStepSchema,
   ArchetypeSchema,
   ArchetypesFileSchema,
+  MarketplaceOfferSchema,
+  MarketplaceSchema,
 } from './schemas/index';
-export type { BalanceConfig, Product, ProductGrants, MonetizationConfig } from './schemas/index';
+export type {
+  BalanceConfig,
+  Product,
+  ProductGrants,
+  MonetizationConfig,
+  MarketplaceOffer,
+  MarketplaceConfig,
+} from './schemas/index';

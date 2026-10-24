@@ -640,3 +640,21 @@ export const MonetizationSchema = z.object({
 export type Product = z.infer<typeof ProductSchema>;
 export type ProductGrants = z.infer<typeof ProductGrantsSchema>;
 export type MonetizationConfig = z.infer<typeof MonetizationSchema>;
+
+// ---- Торговая площадка редких питомцев (роадмап «Деньги и рост») ----
+
+export const MarketplaceOfferSchema = z.object({
+  /** id предмета из items.json (type:'pet', rarity rare/legendary) */
+  itemId: z.string().regex(/^[a-z0-9_]+$/),
+  /** вес выпадения в ежедневной подборке */
+  weight: z.number().int().positive(),
+});
+
+export const MarketplaceSchema = z.object({
+  /** сколько листингов показывать в подборке дня */
+  listingsPerDay: z.number().int().min(1).max(10),
+  pool: z.array(MarketplaceOfferSchema).min(1),
+});
+
+export type MarketplaceOffer = z.infer<typeof MarketplaceOfferSchema>;
+export type MarketplaceConfig = z.infer<typeof MarketplaceSchema>;

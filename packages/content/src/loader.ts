@@ -33,6 +33,7 @@ import {
   SprintsFileSchema,
   ProjectsFileSchema,
   ArchetypesFileSchema,
+  MarketplaceSchema,
   MonetizationSchema,
   GRADE_ORDER,
 } from '@itsim/shared';
@@ -70,6 +71,8 @@ export interface ContentBundle {
   sprints: any;
   /** archetype builds (P1.3) — { archetypes: [...] } */
   archetypes: any;
+  /** Торговая площадка редких питомцев — { listingsPerDay, pool: [{itemId, weight}] } */
+  marketplace: any;
   /** Pixel-art avatar pack (docs/pixel-art.md). null = not generated yet. */
 }
 
@@ -146,6 +149,10 @@ export function loadContentBundle(dir: string = CONTENT_DIR): ContentLoadResult 
     projects: validate('projects.json', ProjectsFileSchema, read('projects.json'), { projects: [] }),
     sprints: validate('sprints.json', SprintsFileSchema, read('sprints.json'), { themes: [] }),
     archetypes: validate('archetypes.json', ArchetypesFileSchema, read('archetypes.json'), { archetypes: [] }),
+    marketplace: validate('marketplace.json', MarketplaceSchema, read('marketplace.json'), {
+      listingsPerDay: 0,
+      pool: [],
+    }),
   };
 
   crossValidate(bundle, issues);
@@ -165,6 +172,7 @@ export function loadContentBundle(dir: string = CONTENT_DIR): ContentLoadResult 
     sprintThemes: bundle.sprints?.themes?.length ?? 0,
     projects: bundle.projects?.projects?.length ?? 0,
     archetypes: bundle.archetypes?.archetypes?.length ?? 0,
+    marketOffers: bundle.marketplace?.pool?.length ?? 0,
   };
 
   return { bundle, issues, stats };
@@ -396,6 +404,29 @@ function crossValidate(bundle: ContentBundle, issues: ContentIssue[]) {
         err('monetization.json', `product "${product.id}" grants "${key}" — pay-to-win is not allowed (see policy)`);
       }
     }
+  }
+
+  // --- marketplace (торговая площадка редких питомцев) -----------------------
+  const itemById = new Map(bundle.items.map((i: any) => [i.id, i]));
+  const marketIds = new Set<string>();
+  for (const offer of bundle.marketplace?.pool ?? []) {
+    if (marketIds.has(offer.itemId)) err('marketplace.json', `duplicate pool itemId "${offer.itemId}"`);
+    marketIds.add(offer.itemId);
+    const item: any = itemById.get(offer.itemId);
+    if (!item) {
+      err('marketplace.json', `pool itemId "${offer.itemId}" is not in items.json`);
+      continue;
+    }
+    if (item.type !== 'pet' || !item.layerId) {
+      err('marketplace.json', `pool itemId "${offer.itemId}" must be a real pet (type 'pet' with layerId)`);
+    }
+    if (!['rare', 'legendary'].includes(item.rarity ?? '')) {
+      err(
+        'marketplace.json',
+        `pool itemId "${offer.itemId}" must be rare/legendary — площадка продаёт редких питомцев`
+      );
+    }
+    if (!(item.price > 0)) err('marketplace.json', `pool itemId "${offer.itemId}" must cost more than 0`);
   }
 
   // --- perks ----------------------------------------------------------------
