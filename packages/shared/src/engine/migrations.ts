@@ -20,7 +20,7 @@ import { clamp, makeRngSalt } from './utils';
  *     and reported, so an accidental server downgrade cannot corrupt it.
  */
 
-export const CURRENT_STATE_VERSION = 7;
+export const CURRENT_STATE_VERSION = 8;
 
 export interface MigrationResult<T = PlayerState> {
   state: T;
@@ -178,6 +178,18 @@ const MIGRATIONS: Migration[] = [
         if (!Array.isArray(state[key])) continue;
         state[key] = [...new Set<string>((state[key] as string[]).map((id) => SWAP[id] ?? id))];
       }
+    },
+  },
+  {
+    to: 8,
+    name: 'v8_hungry_days',
+    /**
+     * v7 → v8: «еда» стала настоящей потребностью (голодный день бьёт по
+     * здоровью, а оно ограничивает мотивацию). Счётчик голодных дней подряд
+     * добавляется любому сейву; формулы расходов не меняются.
+     */
+    up(state: any) {
+      if (typeof state.hungryDays !== 'number' || !Number.isFinite(state.hungryDays)) state.hungryDays = 0;
     },
   },
 ];

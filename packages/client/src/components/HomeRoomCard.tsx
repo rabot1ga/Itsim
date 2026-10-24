@@ -10,7 +10,7 @@ import { ROOM_TIER_META, roomArtwork, roomTierOf } from '../lib/roomArt';
 export const HomeRoomCard: React.FC = () => {
   const player = useGameStore((s) => s.player);
   if (!player) return null;
-  const tier = roomTierOf(player.grade);
+  const tier = roomTierOf(player.housingLevel ?? 0);
   const meta = ROOM_TIER_META[tier];
   return (
     <div className="card card-sm space-y-2">

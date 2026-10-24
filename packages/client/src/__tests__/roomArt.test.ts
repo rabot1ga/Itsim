@@ -9,23 +9,19 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ART_DIR = join(__dirname, '..', '..', 'public', 'art', 'room');
 
 describe('roomTierOf', () => {
-  it('растит комнату вместе с грейдом', () => {
-    // «unemployed» — стартовое состояние свежей игры; регресс: раньше он падал
-    // в default и комната дня 1 показывала «студию мечты» (e2e 320px это поймал)
-    expect(roomTierOf('unemployed')).toBe('start');
-    expect(roomTierOf('intern')).toBe('start');
-    expect(roomTierOf('junior')).toBe('start');
-    expect(roomTierOf('middle')).toBe('cozy');
-    expect(roomTierOf('senior')).toBe('work');
-    expect(roomTierOf('teamlead')).toBe('dream');
-    expect(roomTierOf('architect')).toBe('dream');
-    expect(roomTierOf('cto')).toBe('dream');
+  it('растит комнату вместе с жильём (переезд меняет сцену)', () => {
+    expect(roomTierOf(0)).toBe('start'); // общага
+    expect(roomTierOf(1)).toBe('cozy'); // однушка на окраине
+    expect(roomTierOf(2)).toBe('work'); // квартира в центре
+    expect(roomTierOf(3)).toBe('dream'); // своя квартира (ипотека)
+    expect(roomTierOf(4)).toBe('dream'); // пентхаус
   });
 
-  it('неизвестный грейд (битый сейв, мок без поля) — тоже start, не dream', () => {
-    expect(roomTierOf(undefined as unknown as string)).toBe('start');
-    expect(roomTierOf('')).toBe('start');
-    expect(roomTierOf('principal')).toBe('start');
+  it('неизвестный уровень (битый сейв, мок без поля) — тоже start, не dream', () => {
+    expect(roomTierOf(undefined as unknown as number)).toBe('start');
+    expect(roomTierOf(-1)).toBe('start');
+    expect(roomTierOf(99)).toBe('start');
+    expect(roomTierOf(1.5)).toBe('start');
   });
 });
 

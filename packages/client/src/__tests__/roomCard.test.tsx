@@ -28,7 +28,7 @@ const player = {
   energy: 10,
   maxEnergy: 16,
   motivation: 60,
-  housingLevel: 1,
+  housingLevel: 0,
   items: ['macbook'],
   skills: {},
   achievements: [],
@@ -87,19 +87,19 @@ describe('комната-карточка и профиль-карточка ж�
     expect(labels.some((t) => t.includes('Прогулка вокруг дома'))).toBe(true);
   });
 
-  it('тир комнаты растёт с грейдом: баннер меняется', async () => {
+  it('тир комнаты растёт с жильём: баннер меняется после переезда', async () => {
     render(<App />);
     await openScreen('Дом');
     const banner = () => document.querySelector('[aria-label="Твоя комната"] img.story-card-art');
     await waitFor(() => expect(banner()).toBeTruthy());
 
-    useGameStore.setState({ player: { ...useGameStore.getState().player!, grade: 'junior' } });
+    useGameStore.setState({ player: { ...useGameStore.getState().player!, housingLevel: 0 } });
     await waitFor(() => expect(banner()!.getAttribute('src')).toBe('/art/room/start.webp'));
 
-    useGameStore.setState({ player: { ...useGameStore.getState().player!, grade: 'middle' } });
+    useGameStore.setState({ player: { ...useGameStore.getState().player!, housingLevel: 1 } });
     await waitFor(() => expect(banner()!.getAttribute('src')).toBe('/art/room/cozy.webp'));
 
-    useGameStore.setState({ player: { ...useGameStore.getState().player!, grade: 'cto' } });
+    useGameStore.setState({ player: { ...useGameStore.getState().player!, housingLevel: 4 } });
     await waitFor(() => expect(banner()!.getAttribute('src')).toBe('/art/room/dream.webp'));
   });
 

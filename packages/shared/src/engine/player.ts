@@ -58,6 +58,7 @@ export function createNewPlayer(): PlayerState {
     daysSinceRegistration: 1,
     lastMotivationDrift: 0,
     burnoutDays: 0,
+    hungryDays: 0,
     lastPromotionDay: 0,
     ctoCooldownUntilDay: 0,
   };

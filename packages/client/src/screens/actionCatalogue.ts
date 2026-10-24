@@ -71,6 +71,7 @@ export const ACTIONS: ActionDef[] = [
     hint: t('доступно даже при нуле'),
   },
   { id: 'rest_walk', emoji: '🚶', name: t('Прогулка'), energy: 1, cost: 0, category: 'rest' },
+  { id: 'rest_lunch', emoji: '🍲', name: t('Нормально поесть'), energy: 1, cost: 700, category: 'rest' },
   { id: 'rest_hobby', emoji: '🎲', name: t('Хобби'), energy: 1, cost: 0, category: 'rest' },
   { id: 'rest_gym', emoji: '🏋️', name: t('Качалка'), energy: 2, cost: 3000, category: 'rest' },
   // ── Люди ─────────────────────────────────────────────────────────────────

@@ -3,7 +3,14 @@ import React, { useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { ScreenTitle, SectionTitle } from '../components/ui';
 import { ACTIONS } from './actionCatalogue';
-import { ROOM_TIER_META, PET_ROOM_META, DEFAULT_PET_POSITION, roomArtwork, roomTierOf } from '../lib/roomArt';
+import {
+  ROOM_TIER_META,
+  PET_ROOM_META,
+  DEFAULT_PET_POSITION,
+  housingTitle,
+  roomArtwork,
+  roomTierOf,
+} from '../lib/roomArt';
 import { PET_SKIN_EMOJI, petEmoji, petBadges, petAnimState } from '../lib/petSkins';
 import type { PetRoomPosition } from '@itsim/shared';
 /**
@@ -27,6 +34,7 @@ const ZONES: Zone[] = [
   { id: 'rug', emoji: '🎲', label: t('Хобби на коврике'), action: 'rest_hobby' },
   { id: 'desk', emoji: '💻', label: t('Рабочая задача за своим столом'), action: 'work_task', needsJob: true },
   { id: 'shelf', emoji: '📚', label: t('Книга с полки'), action: 'study_book' },
+  { id: 'kitchen', emoji: '🍲', label: t('Нормально поесть'), action: 'rest_lunch' },
   { id: 'cat', emoji: '🐈', label: t('Покормить кота'), action: 'feed_pet', needsPet: true },
 ];
 function zoneChips(zone: Zone): string[] {
@@ -43,7 +51,8 @@ export const RoomView: React.FC = () => {
   const setPetRoom = useGameStore((s) => s.setPetRoom);
   const [busy, setBusy] = useState<string | null>(null);
   if (!player) return null;
-  const tier = roomTierOf(player.grade);
+  // Дом растёт с жильём (24.10.2026): переезд меняет сцену комнаты.
+  const tier = roomTierOf(player.housingLevel ?? 0);
   const meta = ROOM_TIER_META[tier];
   const items = player.items ?? [];
   // Скины и позиции питомца (роадмап): вид — эмоудзи по виду питомца,
@@ -74,7 +83,7 @@ export const RoomView: React.FC = () => {
 
       <section className="story-card" aria-label={t('Твоя комната')}>
         <div className="story-card-kicker">
-          {t('твоя комната ·')} {tier}
+          {t('твой дом ·')} {housingTitle(player.housingLevel ?? 0)}
         </div>
         <div className="room-pet-stage">
           <img

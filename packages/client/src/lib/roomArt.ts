@@ -1,34 +1,36 @@
 import { t } from './i18n';
-import type { PetRoomPosition } from '@itsim/shared';
+import { HOUSING_NAMES, type PetRoomPosition } from '@itsim/shared';
 /**
  * Комната как карточка события (решение 22.10.2026, вариант B): сцена-баннер
  * из `public/art/room/<тир>.webp` + строки-действия из общего каталога.
  *
- * Четыре тира прогресса переключаются грейдом — комната растёт вместе с
- * карьерой, без нового состояния и миграций:
- *   безработный/intern/junior → start · middle → cozy · senior · work · teamlead+ → dream.
+ * Четыре тира прогресса переключаются **уровнем жилья** (24.10.2026: переезд
+ * должен менять картинку дома — дом растёт с жильём, офис — с карьерой):
+ *   общага → start · однушка → cozy · центр → work · ипотека/пентхаус → dream.
  *
  * Пиксельной идентичности (кастомизации) нет: в сценах один постоянный
  * протагонист story-v1/финалов. Provenance арта — в `public/art/room/README.md`.
  */
 export const ROOM_TIERS = ['start', 'cozy', 'work', 'dream'] as const;
 export type RoomTier = (typeof ROOM_TIERS)[number];
-export function roomTierOf(grade: string): RoomTier {
-  switch (grade) {
-    case 'middle':
+export function roomTierOf(housingLevel: number): RoomTier {
+  switch (housingLevel) {
+    case 1:
       return 'cozy';
-    case 'senior':
+    case 2:
       return 'work';
-    case 'teamlead':
-    case 'architect':
-    case 'cto':
+    case 3:
+    case 4:
       return 'dream';
-    // unemployed/intern/junior и всё неизвестное (битый сейв, мок, новый
-    // грейд из будущего) — стартовый тир: комната растёт только по известным
-    // ступеням, «студия мечты» по умолчанию была багом (e2e 320px, день 1).
+    // Общага (0) и всё неизвестное (битый сейв, мок, новый уровень из будущего)
+    // — стартовый тир: комната растёт только по известным ступеням жилья.
     default:
       return 'start';
   }
+}
+/** Название текущего дома в кикере сцены (ключи i18n — RU-строки из HOUSING_NAMES). */
+export function housingTitle(housingLevel: number): string {
+  return t(HOUSING_NAMES[housingLevel] ?? HOUSING_NAMES[0]);
 }
 export function roomArtwork(tier: RoomTier): string {
   return `/art/room/${tier}.webp`;

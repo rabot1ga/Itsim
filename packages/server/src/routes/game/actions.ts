@@ -45,6 +45,7 @@ import {
   GRADE_POSITIONS,
   GRADE_REQUIREMENTS,
   HOUSING_COSTS,
+  HOUSING_NAMES,
   miningSummary,
   MUTATION_RATE_LIMIT,
   perkEffectSum,
@@ -93,6 +94,8 @@ function getActionMoneyCost(actionId: string, params: any, state: PlayerState, c
       return content.balance.xpSources?.[actionId]?.cost ?? 0;
     case 'rest_bar':
       return 2000;
+    case 'rest_lunch':
+      return 700;
     case 'rest_gym':
       return 3000;
     case 'study_english_course':
@@ -410,6 +413,16 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       delta.health = 3;
       delta.motivation = 2;
       return { message: t('🏋️ Качалка. Мышцы болят, зато деплой не страшен') };
+    case 'rest_lunch': {
+      // Еда — потребность, а не фоновый налог: нормальный обед лечит тело
+      // и обрывает цепочку голодных дней.
+      state.health = clamp(state.health + 5, 0, 100);
+      state.motivation = clamp(state.motivation + 3, 0, 100);
+      state.hungryDays = 0;
+      delta.health = 5;
+      delta.motivation = 3;
+      return { message: t('🍲 Нормально поел: здоровье +5, мотивация +3. Гречка — не приговор') };
+    }
     // ---- Social ----
     case 'networking': {
       const net = {
@@ -631,7 +644,9 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       state.maxEnergy = recalcMaxEnergy(state, content);
       delta.housingLevel = next;
       return {
-        message: t('🏠 Переезд: новый уровень жилья {next}. Запах картонных коробок — запах свободы', { next: next }),
+        message: t('🏠 Переезд! Теперь твой дом — «{p0}». Запах картонных коробок — запах свободы', {
+          p0: t(HOUSING_NAMES[next] ?? ''),
+        }),
       };
     }
     default:

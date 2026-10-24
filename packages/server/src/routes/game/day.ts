@@ -152,11 +152,23 @@ export function advanceDay(state: StoredState, content: any, messages: string[])
     livingToday = lc.amount;
     if (state.money >= lc.amount) {
       state.money -= lc.amount;
+      state.hungryDays = 0;
     } else {
+      // Голодный день (еда — настоящая потребность): тело страдает без еды,
+      // а здоровье ограничивает мотивацию (healthCap = 40 + health*0.6) —
+      // «жить на нуле» перестаёт быть бесплатным.
       state.money = 0;
-      state.motivation = clamp(state.motivation - 2, 0, 100);
-      if (state.currentDay % 10 === 0) {
-        messages.push(t('🍜 На еду не хватило — сегодня на гречке. Расходы: {p0}/день', { p0: fmtMoney(lc.amount) }));
+      state.hungryDays = (state.hungryDays ?? 0) + 1;
+      state.health = clamp(state.health - 3, 0, 100);
+      state.motivation = clamp(state.motivation - 3, 0, 100);
+      messages.push(
+        t('🍜 На еду не хватило (нужно {p0}) — день на гречке: здоровье −3, мотивация −3', {
+          p0: fmtMoney(lc.amount),
+        })
+      );
+      if (state.hungryDays >= 3) {
+        state.health = clamp(state.health - 4, 0, 100);
+        messages.push(t('⚠️ Уже {p0} дн. без нормальной еды: истощение, здоровье ещё −4', { p0: state.hungryDays }));
       }
     }
     state.lastLivingCost = livingToday;

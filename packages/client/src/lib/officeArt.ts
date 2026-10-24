@@ -1,25 +1,30 @@
 import { t } from './i18n';
-import { roomTierOf, type RoomTier } from './roomArt';
 /**
  * Офис как карточка события (фаза 3 редизайна 22.10.2026): сцена-баннер из
  * `public/art/office/<тир>.webp` + строки рабочих действий из общего каталога.
  * Iso-сцена (`components/iso/`) удалена; спрайты `public/iso/` остались
  * только иконками товаров в «Магазине» (`components/iso/IsoIcon.tsx`).
  *
- * Лестница та же, что у комнаты, — дом и офис растут вместе с карьерой:
+ * Офис растёт с **карьерой** (24.10.2026: лестница грейда своя — дом с тех
+ * пор растёт с жильём, см. `roomArt.roomTierOf`):
  *   intern/junior → openspace · middle → cabinet · senior → floor · teamlead+ → tower.
  */
 export const OFFICE_TIERS = ['openspace', 'cabinet', 'floor', 'tower'] as const;
 export type OfficeTier = (typeof OFFICE_TIERS)[number];
-const BY_ROOM_TIER: Record<RoomTier, OfficeTier> = {
-  start: 'openspace',
-  cozy: 'cabinet',
-  work: 'floor',
-  dream: 'tower',
-};
-/** Тир офиса растёт той же лестницей грейда, что и комната (единый источник — `roomTierOf`). */
 export function officeTierOf(grade: string): OfficeTier {
-  return BY_ROOM_TIER[roomTierOf(grade)];
+  switch (grade) {
+    case 'middle':
+      return 'cabinet';
+    case 'senior':
+      return 'floor';
+    case 'teamlead':
+    case 'architect':
+    case 'cto':
+      return 'tower';
+    // unemployed/intern/junior и всё неизвестное — опенспейс.
+    default:
+      return 'openspace';
+  }
 }
 export function officeArtwork(tier: OfficeTier): string {
   return `/art/office/${tier}.webp`;

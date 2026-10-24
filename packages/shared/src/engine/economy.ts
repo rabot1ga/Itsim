@@ -84,6 +84,15 @@ export const HOUSING_COSTS: Record<number, number> = {
   4: 150000, // penthouse
 };
 
+/** Названия уровней жилья (ключи i18n: RU-строки, как весь словарь). */
+export const HOUSING_NAMES: Record<number, string> = {
+  0: 'Общага',
+  1: 'Однушка на окраине',
+  2: 'Квартира в центре',
+  3: 'Своя квартира',
+  4: 'Пентхаус',
+};
+
 /**
  * Housing motivation bonuses
  */

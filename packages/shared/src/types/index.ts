@@ -129,6 +129,8 @@ export interface PlayerState {
   lastLivingCost?: number;
   /** consecutive days with zero money (drives the «ушёл из IT» ending) */
   brokeDays?: number;
+  /** consecutive days when living costs (food) did not fit the wallet — starvation drains health */
+  hungryDays?: number;
   /** last freelance payout — landlord income estimate for players without a job */
   freelanceLastPayment?: number;
   /**

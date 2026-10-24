@@ -290,7 +290,7 @@ describe('v5_identity_removal (снятие пиксельной идентич�
     delete save.crossBonuses;
     delete save.room;
     const { state, applied } = migrateState(save);
-    expect(applied).toEqual(['v5_identity_removal', 'v6_rng_salt', 'v7_stars_cosmetics_revival']);
+    expect(applied).toEqual(['v5_identity_removal', 'v6_rng_salt', 'v7_stars_cosmetics_revival', 'v8_hungry_days']);
     // нормализация достаивает дефолты, поэтому сверяем суть: поля идентичности
     // не появились, остальной сейв доехал нетронутым
     for (const key of ['genetics', 'avatar', 'walletAddress', 'crossBonuses', 'room']) {
@@ -317,9 +317,10 @@ describe('v7_stars_cosmetics_revival (мерч v2: живая косметика
 
   it('обменивает мёртвые id на эксклюзивы Stars и дедуплицирует', () => {
     const { state, applied } = migrateState<any>(merchSave());
-    expect(applied).toEqual(['v7_stars_cosmetics_revival']);
+    expect(applied).toEqual(['v7_stars_cosmetics_revival', 'v8_hungry_days']);
     expect(state.items).toEqual(['pet_cat', 'pet_halo', 'pet_wings']);
     expect(state.entitlements).toEqual(['pet_visor', 'pet_scarf', 'pet_cat_shadow']);
+    expect(state.hungryDays).toBe(0);
   });
 
   it('идемпотентно: повторный прогон ничего не меняет', () => {
@@ -328,5 +329,20 @@ describe('v7_stars_cosmetics_revival (мерч v2: живая косметика
     expect(second.changed).toBe(false);
     expect(second.applied).toEqual([]);
     expect(second.state).toEqual(first.state);
+  });
+});
+
+describe('v8_hungry_days (еда — потребность)', () => {
+  it('добавляет счётчик голодных дней любому сейву v7 и ниже', () => {
+    const save = { ...legacySave(), version: 7, hungryDays: undefined };
+    const { state, applied } = migrateState<any>(save);
+    expect(applied).toEqual(['v8_hungry_days']);
+    expect(state.hungryDays).toBe(0);
+  });
+
+  it('накопленный счётчик не трогает', () => {
+    const save = { ...legacySave(), version: 7, hungryDays: 4 };
+    const { state } = migrateState<any>(save);
+    expect(state.hungryDays).toBe(4);
   });
 });

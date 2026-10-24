@@ -4172,3 +4172,22 @@ Object.assign(en, {
   'Неоновый визор и шарф для питомца — эксклюзив Stars, навсегда. Чистая косметика.':
     'A neon visor and scarf for your pet — a Stars exclusive, forever. Purely cosmetic.',
 });
+
+// Еда как потребность и дом от жилья (24.10.2026)
+Object.assign(en, {
+  '🍜 На еду не хватило (нужно {p0}) — день на гречке: здоровье −3, мотивация −3':
+    '🍜 Not enough for food (need {p0}) — buckwheat day: health −3, motivation −3',
+  '⚠️ Уже {p0} дн. без нормальной еды: истощение, здоровье ещё −4':
+    '⚠️ {p0} days without proper food: exhaustion, health −4 more',
+  'Нормально поесть': 'Have a proper meal',
+  '🍲 Нормально поел: здоровье +5, мотивация +3. Гречка — не приговор':
+    '🍲 A proper meal: health +5, motivation +3. Buckwheat is not a sentence',
+  '🏠 Переезд! Теперь твой дом — «{p0}». Запах картонных коробок — запах свободы':
+    '🏠 Moving day! Your home is now “{p0}”. Cardboard boxes smell like freedom',
+  'твой дом ·': 'your home ·',
+  Общага: 'Dorm',
+  'Однушка на окраине': 'One-bed on the outskirts',
+  'Квартира в центре': 'Apartment downtown',
+  'Своя квартира': 'Your own place',
+  Пентхаус: 'Penthouse',
+});

@@ -83,6 +83,7 @@ export const EXTRA_ENERGY_COSTS: Record<string, number> = {
   freelance: 3,
   rest_sleep: 0,
   rest_walk: 1,
+  rest_lunch: 1,
   rest_bar: 2,
   rest_hobby: 1,
   rest_gym: 2,
@@ -339,7 +340,14 @@ export function xpGain(state: StoredState, content: any, base: number): number {
 /** Soft-XP gain convenience used across the action set */
 export { applySoftXp, hashrateOfItems, careerLevelIndex };
 /** Re-exports of helpers that several route files need together */
-export { branchShareXp, GRADE_ENERGY, GRADE_REQUIREMENTS, HOUSING_COSTS, weeklySalary } from '@itsim/shared';
+export {
+  branchShareXp,
+  GRADE_ENERGY,
+  GRADE_REQUIREMENTS,
+  HOUSING_COSTS,
+  HOUSING_NAMES,
+  weeklySalary,
+} from '@itsim/shared';
 /**
  * Server-only helpers that used to live in `game.ts` and are reused by
  * `state.ts` and `sprint.ts` (the two routes that render the "first paint"
