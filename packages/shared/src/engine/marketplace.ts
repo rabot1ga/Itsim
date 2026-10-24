@@ -92,3 +92,8 @@ export function isOfferPriceAllowed(basePrice: number, price: number): boolean {
   const { min, max } = offerPriceBounds(basePrice);
   return price >= min && price <= max && price === Math.round(price);
 }
+
+/** Оценка продавца покупателем: целые звёзды 1–5, не больше одной на сделку. */
+export function isSellerRating(stars: number): boolean {
+  return Number.isInteger(stars) && stars >= 1 && stars <= 5;
+}

@@ -33,6 +33,8 @@ interface MarketOffer {
   own: boolean;
   /** Сделок продавца (только у объявлений витрины). */
   rep?: number;
+  /** Средний балл продавца (null — оценок ещё нет). */
+  rating?: number | null;
 }
 interface MarketHistoryEntry {
   id: string;
@@ -42,6 +44,7 @@ interface MarketHistoryEntry {
   role: 'bought' | 'sold';
   at: number;
   settled: boolean;
+  rating: number | null;
 }
 const RARITY_LABEL: Record<string, string> = {
   rare: 'редкий',
@@ -69,6 +72,7 @@ export const MarketplacePanel: React.FC = () => {
   const [mine, setMine] = useState<MarketOffer[]>([]);
   const [history, setHistory] = useState<MarketHistoryEntry[]>([]);
   const [myRep, setMyRep] = useState(0);
+  const [myRating, setMyRating] = useState<number | null>(null);
   const [policy, setPolicy] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [note, setNote] = useState<string | null>(null);
@@ -91,6 +95,7 @@ export const MarketplacePanel: React.FC = () => {
       setMine(board.data.mine ?? []);
       setHistory(board.data.history ?? []);
       setMyRep(board.data.myRep ?? 0);
+      setMyRating(board.data.myRating ?? null);
     }
     setLoaded(true);
   };
@@ -143,6 +148,21 @@ export const MarketplacePanel: React.FC = () => {
     const { ok, data } = await apiRequest(`/game/marketplace/offers/${offer.id}/${action}`, { method: 'POST' });
     setBusy(null);
     if (ok) await after(data.state?._lastEvent ?? t('Готово'));
+    else {
+      haptic('error');
+      setNote(data?.error ?? t('Не получилось'));
+    }
+  };
+  const rate = async (entry: MarketHistoryEntry, stars: number) => {
+    setBusy(`rate:${entry.id}`);
+    setNote(null);
+    haptic('tap');
+    const { ok, data } = await apiRequest(`/game/marketplace/offers/${entry.id}/rate`, {
+      method: 'POST',
+      body: JSON.stringify({ stars }),
+    });
+    setBusy(null);
+    if (ok) await after(t('Спасибо за оценку!'));
     else {
       haptic('error');
       setNote(data?.error ?? t('Не получилось'));
@@ -236,7 +256,10 @@ export const MarketplacePanel: React.FC = () => {
                     <p className="market-name">
                       {o.name}{' '}
                       {(o.rep ?? 0) > 0 && (
-                        <span className="res-chip">⭐ {t(dealCountWord(o.rep ?? 0), { p0: o.rep })}</span>
+                        <span className="res-chip">
+                          ⭐ {o.rating != null ? `${fmtNumber(Math.round(o.rating * 10) / 10)} · ` : ''}
+                          {t(dealCountWord(o.rep ?? 0), { p0: o.rep })}
+                        </span>
                       )}
                     </p>
                     <p className="market-desc">{o.description}</p>
@@ -301,7 +324,12 @@ export const MarketplacePanel: React.FC = () => {
             <>
               <h3 className="market-sub">
                 {t('История сделок')}{' '}
-                {myRep > 0 && <span className="res-chip">⭐ {t(dealCountWord(myRep), { p0: myRep })}</span>}
+                {myRep > 0 && (
+                  <span className="res-chip">
+                    ⭐ {myRating != null ? `${fmtNumber(Math.round(myRating * 10) / 10)} · ` : ''}
+                    {t(dealCountWord(myRep), { p0: myRep })}
+                  </span>
+                )}
               </h3>
               <div className="market-list">
                 {history.map((h) => (
@@ -314,7 +342,24 @@ export const MarketplacePanel: React.FC = () => {
                       <p className="market-desc">
                         {h.role === 'sold' ? t('продано') : t('куплено')} · {shortDate(h.at)}
                         {h.role === 'sold' && !h.settled ? ` · ${t('деньги в эскроу')}` : ''}
+                        {h.rating != null &&
+                          ` · ${h.role === 'sold' ? t('оценка покупателя') : t('твоя оценка')} ${'⭐'.repeat(h.rating)}`}
                       </p>
+                      {h.role === 'bought' && h.rating == null && (
+                        <div className="market-chips" role="group" aria-label={t('Оценить продавца')}>
+                          {[1, 2, 3, 4, 5].map((s) => (
+                            <button
+                              key={s}
+                              type="button"
+                              className="chip"
+                              disabled={busy !== null}
+                              onClick={() => void rate(h, s)}
+                            >
+                              {'⭐'.repeat(s)}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
                     <span className="res-chip">
                       {h.role === 'sold' ? '+' : '−'}

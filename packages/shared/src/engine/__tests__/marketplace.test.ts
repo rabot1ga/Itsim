@@ -4,6 +4,7 @@ import {
   marketDay,
   offerPriceBounds,
   isOfferPriceAllowed,
+  isSellerRating,
   type MarketItemDef,
   type MarketPoolItem,
 } from '../marketplace';
@@ -85,5 +86,14 @@ describe('P2P: ценовой коридор (антифрод)', () => {
     expect(isOfferPriceAllowed(90000, 0)).toBe(false);
     expect(isOfferPriceAllowed(90000, -5)).toBe(false);
     expect(isOfferPriceAllowed(90000, Number.NaN)).toBe(false);
+  });
+});
+
+describe('P2P: оценка продавца', () => {
+  it('принимает целые звёзды 1–5', () => {
+    for (const s of [1, 2, 3, 4, 5]) expect(isSellerRating(s)).toBe(true);
+    for (const s of [0, 6, -1, 3.5, Number.NaN, Number.POSITIVE_INFINITY]) {
+      expect(isSellerRating(s)).toBe(false);
+    }
   });
 });

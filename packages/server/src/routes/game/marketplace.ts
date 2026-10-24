@@ -25,6 +25,7 @@ import {
   marketDay,
   offerPriceBounds,
   isOfferPriceAllowed,
+  isSellerRating,
   OFFER_TTL_MS,
   MAX_ACTIVE_OFFERS,
 } from '@itsim/shared';
@@ -113,6 +114,15 @@ export async function marketplaceRoutes(app: FastifyInstance) {
   /** Сделка состоялась: покупатель забрал питомца (деньги ещё могут ждать выплаты). */
   const isDeal = (o: OfferRecord) => o.status === 'sold_escrow' || o.status === 'paid_out';
 
+  /** Репутация продавца: сделки + средний балл оценок (null — оценок ещё нет). */
+  const repOf = (deals: OfferRecord[]): { deals: number; rating: number | null } => {
+    const rated = deals.filter((o) => o.buyerRating != null);
+    return {
+      deals: deals.length,
+      rating: rated.length ? rated.reduce((s, o) => s + (o.buyerRating ?? 0), 0) / rated.length : null,
+    };
+  };
+
   /** Ленивый свип истёкших объявлений: питомец возвращается продавцу. */
   const sweepExpiredOffers = async (): Promise<void> => {
     const store = __offerBackend();
@@ -141,14 +151,15 @@ export async function marketplaceRoutes(app: FastifyInstance) {
     const mine = mineAll.filter((o) => o.status !== 'active');
     const myActive = mineAll.filter((o) => o.status === 'active');
 
-    // Репутация продавца v1 — число состоявшихся сделок (анонимно, без имён).
-    const sellerRep: Record<string, number> = {};
+    // Репутация продавца — сделки + средний балл (анонимно, без имён).
+    const sellerRep: Record<string, { deals: number; rating: number | null }> = {};
     for (const sid of new Set(active.map((o) => o.sellerId))) {
-      sellerRep[sid] = (await store.bySeller(sid)).filter(isDeal).length;
+      sellerRep[sid] = repOf((await store.bySeller(sid)).filter(isDeal));
     }
-    const myRep = mineAll.filter(isDeal).length;
+    const myRep = repOf(mineAll.filter(isDeal));
 
-    // История моих сделок (куплено/продано), новые сверху.
+    // История моих сделок (куплено/продано), новые сверху; rating — моя оценка
+    // продавца (для «куплено») или полученная (для «продано»).
     const history = [...mineAll.filter(isDeal), ...(await store.byBuyer(userId)).filter(isDeal)]
       .sort((a, b) => (b.soldAt ?? b.createdAt) - (a.soldAt ?? a.createdAt))
       .map((o) => {
@@ -161,14 +172,20 @@ export async function marketplaceRoutes(app: FastifyInstance) {
           role: o.sellerId === userId ? 'sold' : 'bought',
           at: o.soldAt ?? o.createdAt,
           settled: o.status === 'paid_out',
+          rating: o.buyerRating ?? null,
         };
       });
 
     return {
-      offers: active.map((o) => ({ ...offerView(o, itemById, userId), rep: sellerRep[o.sellerId] ?? 0 })),
+      offers: active.map((o) => ({
+        ...offerView(o, itemById, userId),
+        rep: sellerRep[o.sellerId]?.deals ?? 0,
+        rating: sellerRep[o.sellerId]?.rating ?? null,
+      })),
       mine: [...myActive, ...mine].map((o) => offerView(o, itemById, userId)),
       history,
-      myRep,
+      myRep: myRep.deals,
+      myRating: myRep.rating,
     };
   });
 
@@ -299,5 +316,28 @@ export async function marketplaceRoutes(app: FastifyInstance) {
     return {
       state: respondState(state, t('↩️ «{p0}» снят с продажи и вернулся к тебе', { p0: item?.name ?? offer.itemId })),
     };
+  });
+
+  /** POST /api/game/marketplace/offers/:id/rate — покупатель оценивает продавца (1–5, один раз). */
+  app.post('/marketplace/offers/:id/rate', { config: { rateLimit: MUTATION_RATE_LIMIT } }, async (request, reply) => {
+    const user = (request as any).telegramUser;
+    const userId = String(user.id);
+    const { id } = request.params as { id: string };
+    const { stars } = request.body as { stars?: number };
+    const store = __offerBackend();
+    const offer = await store.get(id);
+    if (!offer) return reply.status(404).send({ error: t('Такого объявления нет') });
+    if (offer.buyerId !== userId) {
+      logAnomaly(userId, [{ code: 'offer_rating_not_buyer', detail: `offer=${offer.id}` }]);
+      return reply.status(404).send({ error: t('Такого объявления нет') });
+    }
+    if (!isDeal(offer)) return reply.status(400).send({ error: t('Сделка ещё не состоялась') });
+    if (offer.buyerRating != null) return reply.status(400).send({ error: t('Оценка уже стоит') });
+    if (!isSellerRating(stars ?? 0)) {
+      return reply.status(400).send({ error: t('Оценка — целые звёзды от 1 до 5') });
+    }
+    offer.buyerRating = stars;
+    await store.put(offer);
+    return { ok: true, rating: stars };
   });
 }

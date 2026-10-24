@@ -47,6 +47,8 @@ export interface OfferRecord {
   status: 'active' | 'sold_escrow' | 'paid_out' | 'cancelled' | 'expired';
   buyerId?: string;
   soldAt?: number;
+  /** Оценка продавца покупателем (1–5), ставится один раз после сделки. */
+  buyerRating?: number;
 }
 
 export interface OfferBackend {

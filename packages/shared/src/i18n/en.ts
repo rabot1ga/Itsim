@@ -4245,3 +4245,14 @@ Object.assign(en, {
   '{p0} сделки': '{p0} deals',
   '{p0} сделок': '{p0} deals',
 });
+
+// P2P-итерация 2: оценки продавцов (24.10.2026)
+Object.assign(en, {
+  'Сделка ещё не состоялась': 'The deal has not happened yet',
+  'Оценка уже стоит': 'You have already rated this deal',
+  'Оценка — целые звёзды от 1 до 5': 'Rating is whole stars from 1 to 5',
+  'Спасибо за оценку!': 'Thanks for your rating!',
+  'оценка покупателя': 'buyer rating',
+  'твоя оценка': 'your rating',
+  'Оценить продавца': 'Rate the seller',
+});

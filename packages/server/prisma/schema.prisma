@@ -57,6 +57,8 @@ model MarketOffer {
   status    String
   buyerId   String? @map("buyer_id")
   soldAt    BigInt? @map("sold_at")
+  /// Оценка продавца покупателем (1–5), одна на сделку (миграция 003).
+  buyerRating Int? @map("buyer_rating")
 
   @@index([status])
   @@index([sellerId])

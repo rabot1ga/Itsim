@@ -124,6 +124,7 @@ function rowToOffer(row: Record<string, unknown>): OfferRecord {
     status: String(row.status) as OfferRecord['status'],
     ...(row.buyer_id ? { buyerId: String(row.buyer_id) } : {}),
     ...(row.sold_at != null ? { soldAt: Number(row.sold_at) } : {}),
+    ...(row.buyer_rating != null ? { buyerRating: Number(row.buyer_rating) } : {}),
   };
 }
 
@@ -135,10 +136,11 @@ export function rawSqlOfferBackend(executor: SqlExecutor): OfferBackend {
     },
     async put(record) {
       await executor.query(
-        `INSERT INTO market_offers (id, seller_id, item_id, price, created_at, expires_at, status, buyer_id, sold_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        `INSERT INTO market_offers (id, seller_id, item_id, price, created_at, expires_at, status, buyer_id, sold_at, buyer_rating)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
          ON CONFLICT (id) DO UPDATE SET
-           status = EXCLUDED.status, buyer_id = EXCLUDED.buyer_id, sold_at = EXCLUDED.sold_at`,
+           status = EXCLUDED.status, buyer_id = EXCLUDED.buyer_id, sold_at = EXCLUDED.sold_at,
+           buyer_rating = EXCLUDED.buyer_rating`,
         [
           record.id,
           record.sellerId,
@@ -149,6 +151,7 @@ export function rawSqlOfferBackend(executor: SqlExecutor): OfferBackend {
           record.status,
           record.buyerId ?? null,
           record.soldAt ?? null,
+          record.buyerRating ?? null,
         ]
       );
     },

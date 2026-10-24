@@ -471,3 +471,132 @@ describe('P2P: репутация продавца и история сдело�
     expect(after.json().myRep).toBe(0);
   });
 });
+
+describe('P2P: оценки продавцов (rate)', () => {
+  it('покупатель ставит оценку 1–5 один раз; она видна в репутации и истории', async () => {
+    await reset(730);
+    await reset(731);
+    await patch(730, { money: 100_000, items: ['pet_owl'] });
+    await patch(731, { money: 200_000, items: [] });
+
+    const sell = await app.inject({
+      method: 'POST',
+      url: '/api/game/marketplace/sell',
+      headers: { authorization: tma(730) },
+      payload: { itemId: 'pet_owl', price: 120000 },
+    });
+    expect(sell.statusCode).toBe(200);
+    const board = await app.inject({
+      method: 'GET',
+      url: '/api/game/marketplace/offers',
+      headers: { authorization: tma(731) },
+    });
+    const offer = (board.json().offers as any[]).find((o) => o.itemId === 'pet_owl');
+    expect(offer.rating).toBeNull();
+
+    const buy = await app.inject({
+      method: 'POST',
+      url: `/api/game/marketplace/offers/${offer.id}/buy`,
+      headers: { authorization: tma(731) },
+    });
+    expect(buy.statusCode).toBe(200);
+
+    // продавец не может оценить сам себя — 404 + аномалия
+    const bySeller = await app.inject({
+      method: 'POST',
+      url: `/api/game/marketplace/offers/${offer.id}/rate`,
+      headers: { authorization: tma(730) },
+      payload: { stars: 5 },
+    });
+    expect(bySeller.statusCode).toBe(404);
+
+    // мусорные оценки — отказ
+    for (const stars of [0, 6, 3.5, 'x']) {
+      const bad = await app.inject({
+        method: 'POST',
+        url: `/api/game/marketplace/offers/${offer.id}/rate`,
+        headers: { authorization: tma(731) },
+        payload: { stars },
+      });
+      expect(bad.statusCode).toBe(400);
+    }
+
+    const rate = await app.inject({
+      method: 'POST',
+      url: `/api/game/marketplace/offers/${offer.id}/rate`,
+      headers: { authorization: tma(731) },
+      payload: { stars: 4 },
+    });
+    expect(rate.statusCode).toBe(200);
+    expect(rate.json().rating).toBe(4);
+
+    // повторная оценка — отказ
+    const again = await app.inject({
+      method: 'POST',
+      url: `/api/game/marketplace/offers/${offer.id}/rate`,
+      headers: { authorization: tma(731) },
+      payload: { stars: 5 },
+    });
+    expect(again.statusCode).toBe(400);
+    expect(again.json().error).toContain('уже');
+
+    // история покупателя: rating=4; витрина: рейтинг продавца 4 (null → 4)
+    const buyerView = await app.inject({
+      method: 'GET',
+      url: '/api/game/marketplace/offers',
+      headers: { authorization: tma(731) },
+    });
+    const hist = (buyerView.json().history as any[])[0];
+    expect(hist.rating).toBe(4);
+
+    const sellerView = await app.inject({
+      method: 'GET',
+      url: '/api/game/marketplace/offers',
+      headers: { authorization: tma(730) },
+    });
+    expect(sellerView.json().myRating).toBe(4);
+    expect(sellerView.json().myRep).toBe(1);
+
+    await patch(730, { items: ['pet_parrot'] });
+    const sell2 = await app.inject({
+      method: 'POST',
+      url: '/api/game/marketplace/sell',
+      headers: { authorization: tma(730) },
+      payload: { itemId: 'pet_parrot', price: 22000 },
+    });
+    expect(sell2.statusCode).toBe(200);
+    const board2 = await app.inject({
+      method: 'GET',
+      url: '/api/game/marketplace/offers',
+      headers: { authorization: tma(731) },
+    });
+    const parrot = (board2.json().offers as any[]).find((o) => o.itemId === 'pet_parrot');
+    expect(parrot.rep).toBe(1);
+    expect(parrot.rating).toBe(4);
+  });
+
+  it('нельзя оценить до сделки (объявление активно)', async () => {
+    await reset(732);
+    await reset(733);
+    await patch(732, { money: 100_000, items: ['pet_turtle'] });
+    await patch(733, { money: 200_000, items: [] });
+    const sell = await app.inject({
+      method: 'POST',
+      url: '/api/game/marketplace/sell',
+      headers: { authorization: tma(732) },
+      payload: { itemId: 'pet_turtle', price: 80000 },
+    });
+    expect(sell.statusCode).toBe(200);
+    const store = await import('../services/gameStore.js');
+    const backend = store.__offerBackend();
+    const [offer] = await backend.bySeller('732');
+    const rate = await app.inject({
+      method: 'POST',
+      url: `/api/game/marketplace/offers/${offer.id}/rate`,
+      headers: { authorization: tma(733) },
+      payload: { stars: 5 },
+    });
+    // сделки нет — покупатель не определён (анонимус → 404)
+    expect(rate.statusCode).toBe(404);
+  });
+});

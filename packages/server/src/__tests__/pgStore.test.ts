@@ -58,7 +58,7 @@ describe('pg-mem: миграции SQL', () => {
     expect(names).toContain('market_offers');
     expect(names).toContain('schema_migrations');
     const ver = await ctx.query('SELECT id FROM schema_migrations ORDER BY id');
-    expect(ver.rows.map((r) => r.id)).toEqual(['001_init.sql', '002_market_offers.sql']);
+    expect(ver.rows.map((r) => r.id)).toEqual(['001_init.sql', '002_market_offers.sql', '003_market_offer_rating.sql']);
   });
 
   it('повторный запуск не падает', async () => {
@@ -92,6 +92,9 @@ describe('pg-mem: P2P-объявления (raw SQL)', () => {
     const bought = await offers.byBuyer('2');
     expect(bought).toHaveLength(1);
     expect(bought[0].id).toBe('off-1');
+    // оценка поверх проданной записи (upsert обновляет buyer_rating)
+    await offers.put({ ...bought[0], buyerRating: 5 });
+    expect((await offers.get('off-1'))?.buyerRating).toBe(5);
   });
 });
 
