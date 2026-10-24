@@ -751,7 +751,9 @@ CI — GitHub Actions (`.github/workflows/ci.yml`, источник —
       питомцами (rare/legendary), детерминированная по игроку и UTC-дню
       (`shared/engine/marketplace.ts`), покупка за игровые ₽ — `marketplace.json` +
       `GET/POST /api/game/marketplace`; P2P-обмены — отдельной стадией (эскроу + антифрод)
-- [ ] Детекция аномалий (античит сверх rate limit)
+- [x] Детекция аномалий (24.10.2026): инварианты сейва + сигналы день/деньги/XP-бюджет
+      в `saveState` (`shared/engine/anomaly.ts` → журнал `data/anomalies.ndjson`,
+      `anomalyFlags` в админ-сводке), per-user лимит 60/мин на игровые мутации
 - [x] Серверный RNG везде, где влияет на баланс (P2.4: `rngStream`/`balanceRng` на всех
       балансовых путях day/action/interview; генетика удалена редизайном v5; `Math.random`
       остался только в uuid-утилитах и в расчётном фолбэке без сейва)

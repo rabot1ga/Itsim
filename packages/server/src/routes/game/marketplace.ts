@@ -12,7 +12,7 @@ import { FastifyInstance } from 'fastify';
 import { getContent } from '../../services/contentService.js';
 import { loadState, saveState } from '../../services/gameStore.js';
 import { marketplaceListings, marketDay } from '@itsim/shared';
-import { respondState, StoredState } from './shared.js';
+import { respondState, StoredState, MUTATION_RATE_LIMIT } from './shared.js';
 
 function listingsOf(userId: string) {
   const content = getContent();
@@ -51,7 +51,7 @@ export async function marketplaceRoutes(app: FastifyInstance) {
   });
 
   /** POST /api/game/marketplace/buy — купить позицию сегодняшней витрины. */
-  app.post('/marketplace/buy', async (request, reply) => {
+  app.post('/marketplace/buy', { config: { rateLimit: MUTATION_RATE_LIMIT } }, async (request, reply) => {
     const user = (request as any).telegramUser;
     const userId = String(user.id);
     const { itemId } = request.body as { itemId?: string };

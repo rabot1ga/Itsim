@@ -648,5 +648,15 @@ Prettier прогнан по всей базе (80 файлов, отдельн�
 Проверки: 434 юнит-тестов
 (shared 191 · server 103 · bot 22 · client 118), `tsc`, eslint,
 `validate:content --strict`, симулятор `--check`, `build`, **e2e 28/28**.
-PR #14 — зонтик (редизайн + P2.6 + P2.5 + вехи + питомец + этап 4 + площадка).
-Дальше: детекция аномалий (античит сверх rate limit).
+PR #14 — зонтик (редизайн + P2.6 + P2.5 + вехи + питомец + этап 4 + площадка + античит).
+
+**Детекция аномалий (24.10.2026):** `engine/anomaly.ts`
+(clampStateAnomalies — инварианты сейва; detectDeltaAnomalies — сигналы
+день/деньги/XP-бюджет по `theoreticalMaxRatingXp`); гейт в `saveState`
+→ `data/anomalies.ndjson` + `anomalyFlags` (админ-сводка); per-user лимит
+60/мин на `/action`, `/advance-day`, `/event-choice`, `/marketplace/buy`
+(ключ — telegram id, не IP). Ревью — за человеком, наказаний нет.
+Проверки: 442 юнит-тестов (shared 196 · server 106 · bot 22 · client 118),
+`tsc`, eslint, i18n-coverage 850/850 + 2369/2369, симулятор `--check`,
+`build`, **e2e 28/28**.
+Дальше: P2P-торговля площадки (эскроу/антифрод).

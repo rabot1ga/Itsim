@@ -48,6 +48,7 @@ import {
   HOUSING_COSTS,
   miningSummary,
   monthlySubscriptions,
+  MUTATION_RATE_LIMIT,
   perkEffectSum,
   recalcMaxEnergy,
   respondState,
@@ -459,7 +460,7 @@ export async function dayRoutes(app: FastifyInstance) {
   /**
    * POST /api/game/advance-day — end current day, apply daily effects
    */
-  app.post('/advance-day', async (request) => {
+  app.post('/advance-day', { config: { rateLimit: MUTATION_RATE_LIMIT } }, async (request) => {
     const user = (request as any).telegramUser;
     const userId = String(user.id);
     const state = (await loadState(userId)) as StoredState | null;
@@ -496,7 +497,7 @@ export async function dayRoutes(app: FastifyInstance) {
   /**
    * POST /api/game/event-choice — resolve an event choice
    */
-  app.post('/event-choice', async (request, reply) => {
+  app.post('/event-choice', { config: { rateLimit: MUTATION_RATE_LIMIT } }, async (request, reply) => {
     const user = (request as any).telegramUser;
     const userId = String(user.id);
     const { eventId, choiceIndex } = request.body as {

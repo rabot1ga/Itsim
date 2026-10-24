@@ -96,6 +96,7 @@ export async function adminRoutes(app: FastifyInstance) {
       motivation: state.motivation ?? 0,
       achievements: (state.achievements ?? []).length,
       careerEnding: state.careerEnding ?? null,
+      anomalies: state.anomalyFlags ?? 0,
       purchases: (await purchasesOf(id)).length,
     };
   });

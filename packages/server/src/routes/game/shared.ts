@@ -129,6 +129,12 @@ export function __setRngFactoryForTests(factory: RngFactory | null): void {
 export function balanceRng(state: StoredState): () => number {
   return (testRngFactory ?? rngStream)(state);
 }
+/**
+ * Лимит на игровые мутации (античит сверх rate limit): 60/мин на пользователя
+ * — с запасом для живого игрока (энергия и так режет дневной объём), но
+ * жёсткий для скриптов. Срабатывание — 429 от @fastify/rate-limit.
+ */
+export const MUTATION_RATE_LIMIT = { max: 60, timeWindow: '1 minute' } as const;
 /** Format rubles for human-readable output (1 230 ₽ / 12 тыс ₽ / 1.4 млн ₽).
  * Числа — через `Intl.*` под язык запроса (десят/групповые разделители). */
 export function fmtMoney(amount: number): string {

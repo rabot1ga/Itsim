@@ -14,10 +14,11 @@
  * Интерфейс асинхронный с P2.6 (Prisma-клиент асинхронный): вызовы — в async-
  * хендлерах Fastify.
  */
-import { migrateState, CURRENT_STATE_VERSION } from '@itsim/shared';
+import { migrateState, CURRENT_STATE_VERSION, clampStateAnomalies, detectDeltaAnomalies } from '@itsim/shared';
 import { config } from '../config.js';
 import type { PlayerBackend, PurchaseBackend } from './storeTypes.js';
 import { createJsonPlayerBackend, createJsonPurchaseBackend, isStateFile } from './jsonStore.js';
+import { logAnomaly } from './anomalyLog.js';
 
 export type { PurchaseRecord } from './storeTypes.js';
 export { isStateFile };
@@ -143,6 +144,14 @@ export async function loadState(userId: string): Promise<any | null> {
  * Persist user state (cache update + backend write) and notify subscribers.
  */
 export async function saveState(userId: string, state: any): Promise<void> {
+  // Детекция аномалий (античит): жёсткие инварианты выравниваются, подозрительные
+  // скачки между сохранениями попадают в журнал (см. engine/anomaly.ts).
+  const prev = cache.get(userId);
+  const anomalies = [...clampStateAnomalies(state), ...detectDeltaAnomalies(prev, state)];
+  if (anomalies.length > 0) {
+    state.anomalyFlags = (state.anomalyFlags ?? 0) + anomalies.length;
+    logAnomaly(userId, anomalies);
+  }
   cache.set(userId, state);
   try {
     await players.put(userId, state);

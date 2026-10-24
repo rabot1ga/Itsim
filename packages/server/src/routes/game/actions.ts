@@ -46,6 +46,7 @@ import {
   GRADE_REQUIREMENTS,
   HOUSING_COSTS,
   miningSummary,
+  MUTATION_RATE_LIMIT,
   perkEffectSum,
   recalcMaxEnergy,
   respondState,
@@ -637,7 +638,7 @@ export async function actionRoutes(app: FastifyInstance) {
   /**
    * POST /api/game/action — perform a game action (idempotent)
    */
-  app.post('/action', async (request, reply) => {
+  app.post('/action', { config: { rateLimit: MUTATION_RATE_LIMIT } }, async (request, reply) => {
     const user = (request as any).telegramUser;
     const userId = String(user.id);
     const { actionId, params, idempotencyKey } = request.body as {

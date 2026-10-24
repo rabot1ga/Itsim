@@ -20,3 +20,4 @@ export * from './utils';
 export * from './endings';
 export * from './milestones';
 export * from './marketplace';
+export * from './anomaly';

@@ -49,10 +49,13 @@ export async function buildServer() {
     credentials: true,
   });
 
-  // Rate limiting (generous for dev/preview; per-IP)
+  // Rate limiting (generous for dev/preview; per-IP глобально + per-user на мутациях)
   await app.register(rateLimit, {
     max: config.rateLimitMax,
     timeWindow: config.rateLimitWindow,
+    // Игровые запросы идут от Telegram-юзеров за одним IP (прокси/мини-апп):
+    // ключуем по пользователю, чтобы один не задел лимиты других.
+    keyGenerator: (request: any) => String(request.telegramUser?.id ?? request.ip),
   });
 
   // Health check
