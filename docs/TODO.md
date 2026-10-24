@@ -648,7 +648,7 @@ Prettier прогнан по всей базе (80 файлов, отдельн�
 Проверки: 434 юнит-тестов
 (shared 191 · server 103 · bot 22 · client 118), `tsc`, eslint,
 `validate:content --strict`, симулятор `--check`, `build`, **e2e 28/28**.
-PR #14 — зонтик (редизайн + P2.6 + P2.5 + вехи + питомец + этап 4 + площадка + античит).
+PR #14 — зонтик (редизайн + P2.6 + P2.5 + вехи + питомец + этап 4 + площадка + античит + мерч v2).
 
 **Детекция аномалий (24.10.2026):** `engine/anomaly.ts`
 (clampStateAnomalies — инварианты сейва; detectDeltaAnomalies — сигналы
@@ -656,7 +656,16 @@ PR #14 — зонтик (редизайн + P2.6 + P2.5 + вехи + питом�
 → `data/anomalies.ndjson` + `anomalyFlags` (админ-сводка); per-user лимит
 60/мин на `/action`, `/advance-day`, `/event-choice`, `/marketplace/buy`
 (ключ — telegram id, не IP). Ревью — за человеком, наказаний нет.
-Проверки: 442 юнит-тестов (shared 196 · server 106 · bot 22 · client 118),
-`tsc`, eslint, i18n-coverage 850/850 + 2369/2369, симулятор `--check`,
+
+**Мерч v2 — живая косметика за Stars (24.10.2026):** мёртвые награды
+`wardrobe_premium`/`room_neon_pack` (гардероб и конструктор комнаты удалены
+редизайном) заменены на эксклюзивные аксессуары питомца `pet_halo`/`pet_wings`/
+`pet_visor`/`pet_scarf` (price 0: не в витрине, не за ₽ — только грантами
+Stars); `applyGrantsToState` кладёт косметику в `items`∪`entitlements`
+(раньше падала в мёртвый `entitlements`); миграция v7 обменивает старые id.
+Белое пятно «уникальный контент» закрыто.
+
+Проверки: 447 юнит-тестов (shared 198 · server 108 · bot 22 · client 119),
+`tsc`, eslint, i18n-coverage 851/851 + 2377/2377, симулятор `--check`,
 `build`, **e2e 28/28**.
 Дальше: P2P-торговля площадки (эскроу/антифрод).

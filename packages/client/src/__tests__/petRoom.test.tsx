@@ -41,6 +41,13 @@ describe('RoomView: питомец в комнате', () => {
     expect(pet.style.top).toBe('84%');
   });
 
+  it('Stars-эксклюзивы видны и из entitlements (старые гранты)', () => {
+    setPlayer({ items: ['pet_cat'], entitlements: ['pet_halo', 'pet_wings'] });
+    render(<RoomView />);
+    const pet = document.querySelector('.room-pet') as HTMLElement;
+    expect(pet.querySelector('.room-pet-badges')?.textContent).toBe('😇🪽');
+  });
+
   it('контролы переключают позицию и скин, «Убрать» прячет питомца', async () => {
     setPlayer({ items: ['pet_cat', 'pet_dog', 'pet_bow'] });
     render(<RoomView />);

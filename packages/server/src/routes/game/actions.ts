@@ -576,6 +576,10 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
     case 'buy_item': {
       const item = (content.items as any[]).find((i) => i.id === params?.itemId);
       if (!item) return { error: t('Предмет не найден') };
+      if (!item.price) {
+        // Эксклюзивы Stars (price 0) не покупаются за ₽ — их выдают только гранты.
+        return { error: t('Эксклюзив Stars — продаётся только в Telegram Stars') };
+      }
       if (state.items.includes(item.id)) return { error: t('Уже куплено') };
       state.items = [...state.items, item.id];
       state.maxEnergy = recalcMaxEnergy(state, content);

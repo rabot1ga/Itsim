@@ -28,6 +28,11 @@ export const PET_ACCESSORY_BADGE: Record<string, string> = {
   pet_bow: '🎀',
   pet_crown: '👑',
   pet_glasses: '🕶️',
+  // Эксклюзив Stars (мерч v2: живая косметика вместо мёртвых наград)
+  pet_halo: '😇',
+  pet_wings: '🪽',
+  pet_visor: '🥽',
+  pet_scarf: '🧣',
 };
 
 export function petEmoji(skin: string | null | undefined): string | null {

@@ -78,10 +78,16 @@ export async function applyGrantsToState(userId: string, grants: any): Promise<s
   }
   if (Array.isArray(grants.cosmetics) && grants.cosmetics.length) {
     const owned = new Set<string>(Array.isArray(state.entitlements) ? state.entitlements : []);
+    const items = new Set<string>(Array.isArray(state.items) ? state.items : []);
     const added = grants.cosmetics.filter((id: string) => !owned.has(id));
-    for (const id of added) owned.add(id);
+    for (const id of added) {
+      owned.add(id);
+      items.add(id);
+    }
     state.entitlements = [...owned];
-    if (added.length) applied.push(t('открыто в гардеробе/комнате: {p0}', { p0: added.join(', ') }));
+    // Косметика должна быть видимой: питомец (и другие потребители) читают items.
+    state.items = [...items];
+    if (added.length) applied.push(t('открыто питомцу: {p0}', { p0: added.join(', ') }));
   }
   if (grants.badge) {
     const badges = new Set<string>(Array.isArray(state.badges) ? state.badges : []);

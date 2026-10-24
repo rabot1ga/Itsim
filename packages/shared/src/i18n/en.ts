@@ -4148,3 +4148,27 @@ Object.assign(en, {
 Object.assign(en, {
   'Питомец спит': 'The pet is sleeping',
 });
+
+// Мерч v2: живая косметика питомца за Stars (мёртвые награды заменены)
+Object.assign(en, {
+  'Эксклюзив Stars — продаётся только в Telegram Stars': 'A Stars exclusive — only sold for Telegram Stars',
+  'открыто питомцу: {p0}': 'unlocked for your pet: {p0}',
+  '😇 Нимб питомца': '😇 Pet Halo',
+  '🪽 Крылья питомца': '🪽 Pet Wings',
+  '🥽 Кибер-визор питомца': '🥽 Pet Cyber Visor',
+  '🧣 Шарф питомца': '🧣 Pet Scarf',
+  '✨ Ангельский прикид': '✨ Angelic Style',
+  '🕶️ Кибер-прикид': '🕶️ Cyber Style',
+  'Только для владельцев Stars-наборов: питомец сияет невинностью. Косметика, никаких бонусов.':
+    'Stars bundle owners only: your pet glows with innocence. Purely cosmetic, no bonuses.',
+  'Только для владельцев Stars-наборов: маленькие ангельские крылья. Чистая косметика.':
+    'Stars bundle owners only: tiny angel wings. Purely cosmetic.',
+  'Только для владельцев Stars-наборов: неоновый визор из будущего. Чистая косметика.':
+    'Stars bundle owners only: a neon visor from the future. Purely cosmetic.',
+  'Только для владельцев Stars-наборов: тёплый стильный шарф. Чистая косметика.':
+    'Stars bundle owners only: a warm stylish scarf. Purely cosmetic.',
+  'Нимб и крылья для питомца — эксклюзив Stars, навсегда. Чистая косметика.':
+    'A halo and wings for your pet — a Stars exclusive, forever. Purely cosmetic.',
+  'Неоновый визор и шарф для питомца — эксклюзив Stars, навсегда. Чистая косметика.':
+    'A neon visor and scarf for your pet — a Stars exclusive, forever. Purely cosmetic.',
+});

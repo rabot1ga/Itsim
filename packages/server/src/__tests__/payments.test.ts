@@ -30,11 +30,11 @@ const PRODUCTS = [
   },
   {
     id: 'wardrobe_premium',
-    title: 'Премиум-гардероб',
+    title: 'Ангельский прикид',
     description: 'Косметика',
     stars: 150,
     repeatable: false,
-    grants: { cosmetics: ['acc_vr_headset'], badge: 'fashionista' },
+    grants: { cosmetics: ['pet_halo'], badge: 'fashionista' },
   },
 ];
 
@@ -203,7 +203,9 @@ describe('payments: granting', () => {
     });
 
     const state = await store.loadState('1');
-    expect(state.entitlements).toContain('acc_vr_headset');
+    expect(state.entitlements).toContain('pet_halo');
+    // Косметика видима: грант кладёт её и в items (питомец читает items).
+    expect(state.items).toContain('pet_halo');
     expect(state.badges).toContain('fashionista');
   });
 

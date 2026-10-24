@@ -80,7 +80,8 @@ export async function contentRoutes(app: FastifyInstance) {
   app.get('/items', async () => {
     const { items } = getContent();
     return {
-      items: items.filter((i: any) => !['housing', 'course'].includes(i.type)),
+      // price 0 — грантовые эксклюзивы Stars: в витрину магазина не попадают.
+      items: items.filter((i: any) => !['housing', 'course'].includes(i.type) && i.price > 0),
     };
   });
 

@@ -20,7 +20,7 @@ import { clamp, makeRngSalt } from './utils';
  *     and reported, so an accidental server downgrade cannot corrupt it.
  */
 
-export const CURRENT_STATE_VERSION = 6;
+export const CURRENT_STATE_VERSION = 7;
 
 export interface MigrationResult<T = PlayerState> {
   state: T;
@@ -156,6 +156,28 @@ const MIGRATIONS: Migration[] = [
     up(state: any) {
       if (typeof state.rngSalt !== 'string' || !state.rngSalt) state.rngSalt = makeRngSalt();
       if (typeof state.rngSeq !== 'number' || !Number.isFinite(state.rngSeq)) state.rngSeq = 0;
+    },
+  },
+  {
+    to: 7,
+    name: 'v7_stars_cosmetics_revival',
+    /**
+     * v6 → v7: Stars-мерч выдавал мёртвые id косметики (гардероб и конструктор
+     * комнаты удалены редизайном v5/v6). Обмениваем их на живые эксклюзивные
+     * аксессуары питомца; списки `items` и `entitlements` дедуплицируются.
+     * Идемпотентно: новые id в таблице не участвуют.
+     */
+    up(state: any) {
+      const SWAP: Record<string, string> = {
+        acc_vr_headset: 'pet_halo',
+        top_hoodie_corp: 'pet_wings',
+        decor_neon: 'pet_visor',
+        desk_rgb: 'pet_scarf',
+      };
+      for (const key of ['items', 'entitlements'] as const) {
+        if (!Array.isArray(state[key])) continue;
+        state[key] = [...new Set<string>((state[key] as string[]).map((id) => SWAP[id] ?? id))];
+      }
     },
   },
 ];

@@ -512,5 +512,41 @@
     "icon": "pet_dragon.png",
     "layerId": "pet_dragon",
     "rarity": "legendary"
+  },
+  {
+    "id": "pet_halo",
+    "name": "😇 Нимб питомца",
+    "type": "pet",
+    "price": 0,
+    "description": "Только для владельцев Stars-наборов: питомец сияет невинностью. Косметика, никаких бонусов.",
+    "effects": {},
+    "icon": "pet_halo.png"
+  },
+  {
+    "id": "pet_wings",
+    "name": "🪽 Крылья питомца",
+    "type": "pet",
+    "price": 0,
+    "description": "Только для владельцев Stars-наборов: маленькие ангельские крылья. Чистая косметика.",
+    "effects": {},
+    "icon": "pet_wings.png"
+  },
+  {
+    "id": "pet_visor",
+    "name": "🥽 Кибер-визор питомца",
+    "type": "pet",
+    "price": 0,
+    "description": "Только для владельцев Stars-наборов: неоновый визор из будущего. Чистая косметика.",
+    "effects": {},
+    "icon": "pet_visor.png"
+  },
+  {
+    "id": "pet_scarf",
+    "name": "🧣 Шарф питомца",
+    "type": "pet",
+    "price": 0,
+    "description": "Только для владельцев Stars-наборов: тёплый стильный шарф. Чистая косметика.",
+    "effects": {},
+    "icon": "pet_scarf.png"
   }
 ]

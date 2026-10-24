@@ -128,3 +128,32 @@ describe('POST /api/game/marketplace/buy', () => {
     expect(noGame.statusCode).toBe(404);
   });
 });
+
+describe('Stars-эксклюзивы (мерч v2): не покупаются за ₽', () => {
+  it('buy_item на грантовый предмет (price 0) отклоняется', async () => {
+    await reset(705);
+    await patch(705, { money: 5_000_000, energy: 10 });
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/game/action',
+      headers: { authorization: tma(705) },
+      payload: { actionId: 'buy_item', params: { itemId: 'pet_halo' } },
+    });
+    expect(res.statusCode).toBe(400);
+    expect(res.json().error).toContain('Stars');
+    const state = (await loadState('705')) as { items: string[] };
+    expect(state.items).not.toContain('pet_halo');
+  });
+
+  it('витрина каталога не показывает грантовые эксклюзивы', async () => {
+    const res = await app.inject({ method: 'GET', url: '/api/content/items' });
+    expect(res.statusCode).toBe(200);
+    const ids = (res.json().items as Array<{ id: string; price: number }>).map((i) => i.id);
+    expect(ids).not.toContain('pet_halo');
+    expect(ids).not.toContain('pet_wings');
+    expect(ids).not.toContain('pet_visor');
+    expect(ids).not.toContain('pet_scarf');
+    // обычные аксессуары за ₽ по-прежнему в витрине
+    expect(ids).toContain('pet_bow');
+  });
+});

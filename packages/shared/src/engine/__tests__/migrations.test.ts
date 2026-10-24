@@ -290,7 +290,7 @@ describe('v5_identity_removal (снятие пиксельной идентич�
     delete save.crossBonuses;
     delete save.room;
     const { state, applied } = migrateState(save);
-    expect(applied).toEqual(['v5_identity_removal', 'v6_rng_salt']);
+    expect(applied).toEqual(['v5_identity_removal', 'v6_rng_salt', 'v7_stars_cosmetics_revival']);
     // нормализация достаивает дефолты, поэтому сверяем суть: поля идентичности
     // не появились, остальной сейв доехал нетронутым
     for (const key of ['genetics', 'avatar', 'walletAddress', 'crossBonuses', 'room']) {
@@ -301,5 +301,32 @@ describe('v5_identity_removal (снятие пиксельной идентич�
     expect(state.rngSeq).toBe(0);
     expect(state.money).toBe(1000);
     expect(state.currentDay).toBe(40);
+  });
+});
+
+describe('v7_stars_cosmetics_revival (мерч v2: живая косметика)', () => {
+  /** Сейв с мёртвыми id косметики из старых Stars-наборов. */
+  function merchSave(): any {
+    return {
+      ...legacySave(),
+      version: 6,
+      items: ['pet_cat', 'acc_vr_headset', 'top_hoodie_corp', 'pet_cat'],
+      entitlements: ['decor_neon', 'desk_rgb', 'pet_cat_shadow'],
+    };
+  }
+
+  it('обменивает мёртвые id на эксклюзивы Stars и дедуплицирует', () => {
+    const { state, applied } = migrateState<any>(merchSave());
+    expect(applied).toEqual(['v7_stars_cosmetics_revival']);
+    expect(state.items).toEqual(['pet_cat', 'pet_halo', 'pet_wings']);
+    expect(state.entitlements).toEqual(['pet_visor', 'pet_scarf', 'pet_cat_shadow']);
+  });
+
+  it('идемпотентно: повторный прогон ничего не меняет', () => {
+    const first = migrateState<any>(merchSave());
+    const second = migrateState<any>(first.state);
+    expect(second.changed).toBe(false);
+    expect(second.applied).toEqual([]);
+    expect(second.state).toEqual(first.state);
   });
 });

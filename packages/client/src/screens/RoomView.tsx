@@ -47,8 +47,10 @@ export const RoomView: React.FC = () => {
   const meta = ROOM_TIER_META[tier];
   const items = player.items ?? [];
   // Скины и позиции питомца (роадмап): вид — эмоудзи по виду питомца,
-  // аксессуары — бейджем; позиция — якорь на сцене комнаты.
-  const ownedSkins = items.filter((i: string) => i in PET_SKIN_EMOJI);
+  // аксессуары — бейджем; позиция — якорь на сцене комнаты. Старые сейвы
+  // могли получить косметику только в entitlements — читаем объединение.
+  const owned = [...new Set<string>([...items, ...((player.entitlements as string[] | undefined) ?? [])])];
+  const ownedSkins = owned.filter((i: string) => i in PET_SKIN_EMOJI);
   const hasPet = ownedSkins.length > 0;
   const zones = ZONES.filter((z) => !z.needsPet || hasPet);
   const look = player.petRoom ?? {};
@@ -56,7 +58,7 @@ export const RoomView: React.FC = () => {
   const position: PetRoomPosition = look.position ?? DEFAULT_PET_POSITION;
   const anchor = PET_ROOM_META[position];
   const skinEmo = petEmoji(skin);
-  const badges = petBadges(items);
+  const badges = petBadges(owned);
   // Анимации питомца (роадмап): idle/sleep/happy — из состояния дня.
   const anim = petAnimState(player);
   const runZone = async (zone: Zone) => {
