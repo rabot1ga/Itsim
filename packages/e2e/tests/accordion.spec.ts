@@ -18,12 +18,12 @@ import { resolveStory, act } from './helpers/story';
  * тот же примитив, но живой экран.
  */
 
-/** Без скоупа по навигации локатор двусмысленен: «Обучение» — и тайл, и таб. */
+/** В новой IA (A2) «Развитие» — только таб, но скоуп по навигации не мешает. */
 async function openLearning(page: Page) {
   await act(page, async () => {
     await page
       .getByRole('navigation', { name: 'Основная навигация' })
-      .getByRole('button', { name: 'Обучение', exact: true })
+      .getByRole('button', { name: 'Развитие', exact: true })
       .click();
     await page.getByRole('tab', { name: /Направления/ }).click();
     await expect(page.getByRole('region', { name: 'Список навыков' })).toBeVisible();

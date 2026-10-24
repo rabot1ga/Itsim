@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useGameStore } from '../store/gameStore';
+import { PixelIcon } from './pixel/PixelIcon';
 
 /**
  * Floating gains.
@@ -25,7 +26,7 @@ const GainLabel: React.FC<{ id: number; icon: string; text: string; tone: 'good'
 
   return (
     <span className={`gain-float ${tone === 'good' ? 'text-moss-300' : 'text-clay-300'}`}>
-      <span aria-hidden="true">{icon}</span>
+      <PixelIcon name={icon} size={12} />
       <span className="num">{text}</span>
     </span>
   );

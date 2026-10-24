@@ -90,7 +90,7 @@ export async function interviewRoutes(app: FastifyInstance) {
       total: questions.length,
       state: respondState(
         state,
-        t('🎤 Собеседование в «{p0}» началось!', {
+        t('Собеседование в «{p0}» началось!', {
           p0: (content.companies as any[]).find((c) => c.id === app.companyId)?.name ?? 'компании',
         })
       ),
@@ -136,10 +136,7 @@ export async function interviewRoutes(app: FastifyInstance) {
       correct,
       correctIndex: def.correctIndex,
       explanation: def.explanation,
-      state: respondState(
-        state,
-        correct ? t('✅ Верно! Интервьюер кивает.') : t('❌ Мимо. Зато теперь точно запомнишь.')
-      ),
+      state: respondState(state, correct ? t('Верно! Интервьюер кивает.') : t('Мимо. Зато теперь точно запомнишь.')),
     };
   });
   /**
@@ -211,15 +208,17 @@ export async function interviewRoutes(app: FastifyInstance) {
       state.pendingOffers = [...state.pendingOffers, offer];
       app.status = 'accepted';
       app.result = 'accepted';
-      resultMessage = t(
-        '🎉 Собеседование пройдено ({correct}/{total})! Оффер: {p0}, {p1}/мес — прими его в «Карьере»',
-        { correct: correct, total: total, p0: app.position, p1: fmtMoney(salary) }
-      );
+      resultMessage = t('Собеседование пройдено ({correct}/{total})! Оффер: {p0}, {p1}/мес — прими его в «Карьере»', {
+        correct: correct,
+        total: total,
+        p0: app.position,
+        p1: fmtMoney(salary),
+      });
     } else {
       app.status = 'rejected';
       app.result = 'rejected';
       resultMessage = t(
-        '😔 Собеседование ({correct}/{total}): «мы впечатлены, но решили двигаться с другим кандидатом». Подтяни навыки и пробуй снова!',
+        'Собеседование ({correct}/{total}): «мы впечатлены, но решили двигаться с другим кандидатом». Подтяни навыки и пробуй снова!',
         { correct: correct, total: total }
       );
     }

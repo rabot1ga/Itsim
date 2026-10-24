@@ -13,6 +13,7 @@ import {
 } from '../lib/roomArt';
 import { PET_SKIN_EMOJI, petEmoji, petBadges, petAnimState } from '../lib/petSkins';
 import type { PetRoomPosition } from '@itsim/shared';
+import { PixelIcon } from '../components/pixel/PixelIcon';
 /**
  * «Дом» — комната как карточка события (решение 22.10.2026, вариант B):
  * сцена-баннер текущего тира + строки-зоны поверх общего каталога действий.
@@ -41,7 +42,7 @@ function zoneChips(zone: Zone): string[] {
   if (zone.chip) return [zone.chip];
   const def = ACTIONS.find((a) => a.id === zone.action);
   const chips: string[] = [];
-  if (def?.energy) chips.push(`−${def.energy}⚡`);
+  if (def?.energy) chips.push(`−${def.energy}`);
   if (def?.cost) chips.push(`−${def.cost} ₽`);
   return chips;
 }
@@ -77,7 +78,7 @@ export const RoomView: React.FC = () => {
   };
   return (
     <div className="space-y-4 animate-fade-in">
-      <ScreenTitle emoji="🏠" meta={<span className="num">{meta.tagline}</span>}>
+      <ScreenTitle icon="house" meta={<span className="num">{meta.tagline}</span>}>
         {t('Дом')}
       </ScreenTitle>
 

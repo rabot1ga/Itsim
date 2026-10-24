@@ -65,11 +65,11 @@ const GAIN_FIELDS: Array<{
   unit?: string;
   round?: number;
 }> = [
-  { key: 'money', icon: '🪙', unit: '₽' },
-  { key: 'energy', icon: '⚡' },
-  { key: 'motivation', icon: '😊' },
-  { key: 'health', icon: '❤️' },
-  { key: 'reputation', icon: '⭐' },
+  { key: 'money', icon: 'coin', unit: '₽' },
+  { key: 'energy', icon: 'bolt' },
+  { key: 'motivation', icon: 'flame' },
+  { key: 'health', icon: 'heart' },
+  { key: 'reputation', icon: 'trophy' },
 ];
 let gainId = 0;
 /** What moved between two states, as floating labels. */
@@ -91,7 +91,7 @@ export function diffGains(prev: any, next: any): Gain[] {
   const levels = (st: any) =>
     Object.values(st?.skills ?? {}).reduce((sum: number, sk: any) => sum + (sk?.level ?? 0), 0);
   const up = levels(next) - levels(prev);
-  if (up > 0) out.push({ id: ++gainId, icon: '📚', text: t('+{up} ур.', { up: up }), tone: 'good' });
+  if (up > 0) out.push({ id: ++gainId, icon: 'book', text: t('+{up} ур.', { up: up }), tone: 'good' });
   return out;
 }
 interface GameState {
@@ -99,8 +99,6 @@ interface GameState {
   screen: Screen;
   player: any;
   currentView: string;
-  /** is the «Ещё» sheet open? kept in the store so the native BackButton can close it first */
-  moreOpen: boolean;
   error: string | null;
   activeEvent: any;
   /** promotion/election outlook from the server (career gates) */
@@ -122,7 +120,6 @@ interface GameState {
   refreshState: () => Promise<void>;
   setScreen: (screen: Screen) => void;
   setView: (view: string) => void;
-  setMoreOpen: (open: boolean) => void;
   performAction: (actionId: string, params?: any) => Promise<boolean>;
   advanceDay: () => Promise<void>;
   /** prestige reset (P1.1): fresh career, meta ledger + achievements survive */
@@ -155,7 +152,6 @@ export const useGameStore = create<GameState>((set, get) => ({
   screen: 'loading',
   player: null,
   currentView: 'main',
-  moreOpen: false,
   error: null,
   activeEvent: null,
   careerOutlook: null,
@@ -233,12 +229,11 @@ export const useGameStore = create<GameState>((set, get) => ({
       });
     }
   },
-  setScreen: (screen) => set({ screen, moreOpen: false }),
+  setScreen: (screen) => set({ screen }),
   setView: (view) => {
-    set({ currentView: view, moreOpen: false });
+    set({ currentView: view });
     track('screen_view', { view });
   },
-  setMoreOpen: (open) => set({ moreOpen: open }),
   clearError: () => set({ error: null }),
   dropGain: (id) => set((s) => ({ gains: s.gains.filter((g) => g.id !== id) })),
   performAction: async (actionId, params) => {

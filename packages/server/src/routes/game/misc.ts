@@ -88,7 +88,7 @@ export async function miscRoutes(app: FastifyInstance) {
     state.maxEnergy = recalcMaxEnergy(state, content);
     state.ratingScore = calculateRating(state);
     await saveState(userId, state);
-    return { state: respondState(state, t('✨ Перк открыт: {p0} — {p1}', { p0: perk.name, p1: perk.flavor })) };
+    return { state: respondState(state, t('Перк открыт: {p0} — {p1}', { p0: perk.name, p1: perk.flavor })) };
   });
   /**
    * POST /api/game/main-skill
@@ -115,7 +115,7 @@ export async function miscRoutes(app: FastifyInstance) {
     }
     state.mainSkillId = skill.id;
     await saveState(userId, state);
-    return { state: respondState(state, t('🎯 Основной навык: {p0}', { p0: skill.name })) };
+    return { state: respondState(state, t('Основной навык: {p0}', { p0: skill.name })) };
   });
 
   /**
@@ -217,11 +217,11 @@ export async function miscRoutes(app: FastifyInstance) {
       state: respondState(
         next,
         pct > 0
-          ? t('♻ Жизнь {lives} началась с чистого листа. Ачивки и покупки с тобой — и навсегда +{pct}% к XP.', {
+          ? t('Жизнь {lives} началась с чистого листа. Ачивки и покупки с тобой — и навсегда +{pct}% к XP.', {
               lives: lives,
               pct: pct,
             })
-          : t('♻ Жизнь {lives} началась с чистого листа.', { lives: lives })
+          : t('Жизнь {lives} началась с чистого листа.', { lives: lives })
       ),
       activeEvent: null,
     };
@@ -249,6 +249,6 @@ export async function miscRoutes(app: FastifyInstance) {
     } as StoredState;
     resetDailyChallenge(state, getContent());
     await saveState(userId, state);
-    return { state: respondState(state, t('Новая жизнь началась! 💻')), activeEvent: null };
+    return { state: respondState(state, t('Новая жизнь началась!')), activeEvent: null };
   });
 }

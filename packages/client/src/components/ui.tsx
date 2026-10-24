@@ -1,12 +1,13 @@
 import { t } from '../lib/i18n';
 import React from 'react';
 import { IsoIcon } from './iso/IsoIcon';
+import { PixelIcon } from './pixel/PixelIcon';
 /**
  * Shared primitives of the IT LIFE design system (docs/design-system.md).
  *
- * Emoji are part of the chrome here: a screen title, a stat, a menu row and a
- * resource chip all carry one. Pixel icons stay for the bottom navigation and
- * the pixel-art surfaces, where they belong.
+ * Хром без эмодзи (B1, 25.10.2026): заголовки, статы и чипы носят
+ * pixel-иконки и текст. Эмодзи остаются только за контентом (имена скиллов,
+ * предметов, тексты событий) и пиксель-арт-поверхностями.
  */
 /** Inline loading indicator: three blinking pixels, no spinning ring. */
 export const Spinner: React.FC<{
@@ -36,9 +37,7 @@ export const Skeleton: React.FC<{
 export const RoomSkeleton: React.FC = () => (
   <div className="animate-fade-in" role="status" aria-label={t('Загрузка комнаты')}>
     <div className="aspect-square rounded-2xl border border-ink-700 bg-ink-800 flex flex-col items-center justify-center gap-3">
-      <span className="text-3xl" aria-hidden="true">
-        🏠
-      </span>
+      <PixelIcon name="house" size={28} />
       <span className="text-xs text-ink-500">{t('Загрузка комнаты…')}</span>
     </div>
   </div>
@@ -56,19 +55,17 @@ export const SpriteBadge: React.FC<{
   </span>
 );
 /**
- * Screen heading: emoji + title + optional right-hand meta.
+ * Screen heading: optional pixel icon + title + optional right-hand meta.
  * One shape for every screen, so the app feels like one product.
  */
 export const ScreenTitle: React.FC<{
-  emoji: string;
+  icon?: string;
   children: React.ReactNode;
   meta?: React.ReactNode;
-}> = ({ emoji, children, meta }) => (
+}> = ({ icon, children, meta }) => (
   <div className="screen-title">
     <h2>
-      <span className="emoji" aria-hidden="true">
-        {emoji}
-      </span>
+      {icon && <PixelIcon name={icon} size={18} />}
       {children}
     </h2>
     {meta && <div className="screen-title-meta">{meta}</div>}
@@ -109,45 +106,46 @@ export const EmojiToken: React.FC<{
 export const RESOURCE: Record<
   string,
   {
-    emoji: string;
+    icon: string;
     color: string;
     label: string;
   }
 > = {
-  energy: { emoji: '⚡', color: 'var(--res-energy)', label: t('Энергия') },
-  mood: { emoji: '😊', color: 'var(--res-mood)', label: t('Настроение') },
-  motivation: { emoji: '😊', color: 'var(--res-mood)', label: t('Настроение') },
-  health: { emoji: '❤️', color: 'var(--res-health)', label: t('Здоровье') },
-  xp: { emoji: '✨', color: 'var(--res-xp)', label: t('Опыт') },
-  money: { emoji: '💰', color: 'var(--res-money)', label: t('Деньги') },
-  coin: { emoji: '🪙', color: 'var(--res-coin)', label: t('Монеты') },
-  reputation: { emoji: '⭐', color: 'var(--res-rep)', label: t('Репутация') },
-  productivity: { emoji: '📈', color: 'var(--res-productivity)', label: t('Продуктивность') },
-  luck: { emoji: '🍀', color: 'var(--res-luck)', label: t('Удача') },
+  energy: { icon: 'bolt', color: 'var(--res-energy)', label: t('Энергия') },
+  mood: { icon: 'flame', color: 'var(--res-mood)', label: t('Настроение') },
+  motivation: { icon: 'flame', color: 'var(--res-mood)', label: t('Настроение') },
+  health: { icon: 'heart', color: 'var(--res-health)', label: t('Здоровье') },
+  xp: { icon: 'star', color: 'var(--res-xp)', label: t('Опыт') },
+  money: { icon: 'coin', color: 'var(--res-money)', label: t('Деньги') },
+  coin: { icon: 'coin', color: 'var(--res-coin)', label: t('Монеты') },
+  reputation: { icon: 'trophy', color: 'var(--res-rep)', label: t('Репутация') },
+  productivity: { icon: 'chart', color: 'var(--res-productivity)', label: t('Продуктивность') },
+  luck: { icon: 'dice', color: 'var(--res-luck)', label: t('Удача') },
 };
 /**
- * Resource meter — label + emoji on the left, `value / max` on the right,
+ * Resource meter — label + pixel icon on the left, `value / max` on the right,
  * a pill track underneath filled in the resource's own colour.
  *
- * `compact` collapses it to a single line (emoji · track · number) for tight
+ * `compact` collapses it to a single line (icon · track · number) for tight
  * places such as the home HUD next to the portrait; the label survives as the
  * accessible name and the tooltip.
  */
 export const StatBar: React.FC<{
   resource?: keyof typeof RESOURCE | string;
-  emoji?: string;
+  icon?: string;
   label?: string;
   color?: string;
   value: number;
   max: number;
   compact?: boolean;
   className?: string;
-}> = ({ resource, emoji, label, color, value, max, compact = false, className = '' }) => {
+}> = ({ resource, icon, label, color, value, max, compact = false, className = '' }) => {
   const token = resource ? RESOURCE[resource] : undefined;
   const safeMax = Number.isFinite(max) && max > 0 ? max : 1;
   const safeValue = Number.isFinite(value) ? Math.max(0, Math.min(safeMax, value)) : 0;
   const pct = (safeValue / safeMax) * 100;
   const name = label ?? token?.label ?? '';
+  const glyph = icon ?? token?.icon;
   const track = (
     <span
       className="stat-bar-track"
@@ -166,9 +164,7 @@ export const StatBar: React.FC<{
         className={`stat-bar is-compact ${pct < 25 ? 'is-low' : ''} ${className}`}
         title={`${name}: ${Math.round(safeValue)}/${safeMax}`}
       >
-        <span className="emoji" aria-hidden="true">
-          {emoji ?? token?.emoji ?? '•'}
-        </span>
+        {glyph ? <PixelIcon name={glyph} size={12} /> : <span aria-hidden="true">{'\u00B7'}</span>}
         {track}
         <span className="stat-bar-value num">{Math.round(safeValue)}</span>
       </div>
@@ -180,9 +176,7 @@ export const StatBar: React.FC<{
       title={`${name}: ${Math.round(safeValue)}/${safeMax}`}
     >
       <span className="stat-bar-name">
-        <span className="emoji" aria-hidden="true">
-          {emoji ?? token?.emoji ?? '•'}
-        </span>
+        {glyph ? <PixelIcon name={glyph} size={12} /> : null}
         {name}
       </span>
       <span className="stat-bar-value num">
@@ -193,7 +187,7 @@ export const StatBar: React.FC<{
     </div>
   );
 };
-/** `+15 XP`, `−500 ₽`, `+2 ⚡` — the smallest unit of feedback in the game. */
+/** `+15 XP`, `−500 ₽`, `+2 энергии` — the smallest unit of feedback in the game. */
 export const ResChip: React.FC<{
   tone?: 'positive' | 'negative' | 'gold' | 'blue' | 'orange' | 'purple' | 'neutral';
   children: React.ReactNode;
@@ -217,17 +211,15 @@ export const Toggle: React.FC<{
 );
 /** Empty state with a hint on what to do next. `bare` = no card wrapper. */
 export const EmptyState: React.FC<{
-  emoji?: string;
+  icon?: string;
   title: string;
   hint?: string;
   bare?: boolean;
   children?: React.ReactNode;
-}> = ({ emoji = '📦', title, hint, bare, children }) => (
+}> = ({ icon = 'box', title, hint, bare, children }) => (
   <div className={bare ? 'text-center py-5' : 'card text-center py-8'}>
     <div className="mb-2.5 flex justify-center">
-      <span className="text-3xl" aria-hidden="true">
-        {emoji}
-      </span>
+      <PixelIcon name={icon} size={28} />
     </div>
     <p className="text-base font-semibold text-ink-200">{title}</p>
     {hint && <p className="text-xs text-ink-500 mt-1 leading-relaxed max-w-[34ch] mx-auto">{hint}</p>}

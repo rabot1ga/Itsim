@@ -22,13 +22,13 @@ export function officeMoodOf(input: OfficeMoodInput): OfficeMood {
 export const OFFICE_MOOD_META: Record<
   OfficeMood,
   {
-    emoji: string;
+    icon: string;
     label: string;
   }
 > = {
-  normal: { emoji: '💼', label: t('обычный день') },
-  deadline: { emoji: '🔥', label: t('под дедлайном') },
-  friday: { emoji: '🎉', label: t('пятница') },
-  night: { emoji: '🌙', label: t('ночь у монитора') },
-  retro: { emoji: '📼', label: t('ретро-вечер') },
+  normal: { icon: 'briefcase', label: t('обычный день') },
+  deadline: { icon: 'flame', label: t('под дедлайном') },
+  friday: { icon: 'star', label: t('пятница') },
+  night: { icon: 'moon', label: t('ночь у монитора') },
+  retro: { icon: 'play', label: t('ретро-вечер') },
 };

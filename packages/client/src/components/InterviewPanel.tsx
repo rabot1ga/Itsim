@@ -2,6 +2,7 @@ import { t } from '../lib/i18n';
 import React, { useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { haptic } from '../lib/telegram';
+import { PixelIcon } from './pixel/PixelIcon';
 /**
  * Interview mini-game — gamified learning (quiz with explanations).
  * The player answers 3 questions for their skill branch and grade;
@@ -110,7 +111,7 @@ export const InterviewPanel: React.FC = () => {
       role="alert"
       className="mb-3 flex items-start gap-2 rounded-xl border border-clay-500/50 bg-clay-900/30 px-3 py-2 text-xs text-clay-200"
     >
-      <span aria-hidden="true">⚠</span>
+      <PixelIcon name="warn" size={14} />
       {error}
     </div>
   ) : null;
@@ -119,7 +120,7 @@ export const InterviewPanel: React.FC = () => {
       <div className="card panel-note panel-note-sky animate-pop-in">
         {errorNote}
         <h3 className="flex items-center gap-1.5 text-sm font-semibold text-white mb-1">
-          <span aria-hidden="true">💬</span>
+          <PixelIcon name="chat" size={14} />
           {t('Собеседование-квиз')}
         </h3>
         <p className="text-xs text-ink-400 mb-3 leading-relaxed">
@@ -192,7 +193,7 @@ export const InterviewPanel: React.FC = () => {
                   : 'bg-ochre-900/30 border-ochre-500/50 text-ochre-200'
               }`}
             >
-              <span className="font-semibold">{result.correct ? t('Верно. ') : t('Не совсем. ')}</span>
+              <span className="font-semibold">{result.correct ? t('Верно.') : t('Не совсем.')}</span>
               {result.explanation}
             </div>
             <button onClick={next} className="btn btn-primary w-full mt-2">
@@ -209,7 +210,7 @@ export const InterviewPanel: React.FC = () => {
         <h3 className="eyebrow mb-2">{t('Итоги собеседования')}</h3>
         <div className="text-center py-3">
           <p className="text-3xl leading-none mb-2" aria-hidden="true">
-            {correctCount === questions.length ? '🏆' : '🎯'}
+            {correctCount === questions.length ? '' : ''}
           </p>
           <p className="num text-xl font-semibold text-white">
             {correctCount} {t('из')} {questions.length}
@@ -234,7 +235,7 @@ export const InterviewPanel: React.FC = () => {
       <div className={`card panel-note animate-pop-in ${isOffer ? 'panel-note-moss' : 'panel-note-clay'}`}>
         <div className="text-center py-2">
           <p className="text-3xl leading-none mb-2" aria-hidden="true">
-            {isOffer ? '🎉' : '💔'}
+            {isOffer ? '' : ''}
           </p>
           <h3 className={`text-base font-semibold ${isOffer ? 'text-moss-300' : 'text-clay-300'}`}>
             {isOffer ? t('Оффер получен') : t('Отказ')}

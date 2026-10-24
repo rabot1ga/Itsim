@@ -40,7 +40,7 @@ export async function archetypeRoutes(app: FastifyInstance) {
     }
     state.archetypeChosen = archetypeId;
     await saveState(userId, state);
-    return { state: respondState(state, t('🧭 Путь «{p0}» выбран — следуй вехам на карте', { p0: def.title })) };
+    return { state: respondState(state, t('Путь «{p0}» выбран — следуй вехам на карте', { p0: def.title })) };
   });
   /**
    * POST /api/game/archetype/claim — one-time-per-life bonus for finishing a route (P1.3).
@@ -77,7 +77,7 @@ export async function archetypeRoutes(app: FastifyInstance) {
     if (money > 0) parts.push(`+${fmtMoney(money)}`);
     if (reputation > 0) parts.push(t('+{reputation} репутации', { reputation: reputation }));
     return {
-      state: respondState(state, t('🏆 Путь «{p0}» пройден до конца: {p1}', { p0: def.title, p1: parts.join(', ') })),
+      state: respondState(state, t('Путь «{p0}» пройден до конца: {p1}', { p0: def.title, p1: parts.join(', ') })),
     };
   });
 }

@@ -39,7 +39,7 @@ export function bumpChallenge(state: StoredState, content: any, actionId: string
   if (reward.money) parts.push(`+${reward.money} ₽`);
   if (reward.motivation) parts.push(`+${reward.motivation} 🔥`);
   if (reward.reputation) parts.push(`+${reward.reputation} ⭐`);
-  return t('🎯 Задание дня выполнено: {p0}', { p0: parts.join(', ') });
+  return t('Задание дня выполнено: {p0}', { p0: parts.join(', ') });
 }
 /**
  * Resolved, client-ready sprint view — what the banner in «День» renders.

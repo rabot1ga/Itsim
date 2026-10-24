@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import React from 'react';
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import App from '../App';
 
 /**
@@ -54,32 +54,35 @@ describe('App', () => {
     HTMLCanvasElement.prototype.getContext = (() => null) as never;
   });
 
-  it('walks every tab and every «⋮» destination without crashing', async () => {
+  it('walks every tab and every side destination without crashing', async () => {
     localStorage.setItem('itsim_onboarded_v1', '1');
     render(<App />);
     const nav = await screen.findByRole('navigation', { name: 'Основная навигация' });
-    const tabs = ['Работа', 'Обучение', 'Отдых', 'Магазин', 'Главная'];
+    const tabs = ['Сегодня', 'Работа', 'Развитие', 'Прогресс'];
     for (const label of tabs) {
       fireEvent.click(within(nav).getByRole('button', { name: label }));
       await waitFor(() => expect(screen.queryByText('Что-то сломалось')).toBeNull());
     }
 
+    // «Мир» и боковые экраны живут в контекстных дверях — обходим те же вьюхи,
+    // что доступны из NavLinks (лист «⋮» с A2 упразднён).
     const destinations = [
-      'Профиль',
-      'Дом',
-      'Друзья',
-      'Питомец',
-      'Цели',
-      'Топ',
-      'Офис',
-      'Майнинг',
-      'Финалы',
-      'Настройки',
+      'profile',
+      'room',
+      'friends',
+      'pet',
+      'leaderboard',
+      'office',
+      'mining',
+      'settings',
+      'rest',
+      'shop',
     ];
-    for (const label of destinations) {
-      fireEvent.click(await screen.findByRole('button', { name: 'Меню' }));
-      const dialog = await screen.findByRole('dialog', { name: 'Меню' });
-      fireEvent.click(within(dialog).getByRole('button', { name: label }));
+    const { useGameStore } = await import('../store/gameStore');
+    for (const view of destinations) {
+      act(() => {
+        useGameStore.getState().setView(view);
+      });
       await waitFor(() => expect(screen.queryByText('Что-то сломалось')).toBeNull());
     }
   });
@@ -89,22 +92,23 @@ describe('App', () => {
     render(<App />);
     const nav = await screen.findByRole('navigation', { name: 'Основная навигация' });
     // the store is a module singleton — the previous test may have parked it elsewhere
-    fireEvent.click(within(nav).getByRole('button', { name: 'Главная' }));
+    fireEvent.click(within(nav).getByRole('button', { name: 'Сегодня' }));
 
     // The dock is a sibling of the scroll area, not the last card inside it —
     // that is the whole point: no scrolling to end the day.
     const dock = await screen.findByRole('button', { name: /Завершить день/ });
     expect(document.getElementById('game-scroll')?.contains(dock)).toBe(false);
 
-    for (const label of ['Работа', 'Обучение', 'Отдых', 'Магазин']) {
+    for (const label of ['Работа', 'Развитие']) {
       fireEvent.click(within(nav).getByRole('button', { name: label }));
       expect(await screen.findByRole('button', { name: /Завершить день/ })).toBeTruthy();
     }
 
-    // Side screens are for looking around, so the turn button steps aside.
-    fireEvent.click(await screen.findByRole('button', { name: 'Меню' }));
-    const dialog = await screen.findByRole('dialog', { name: 'Меню' });
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Настройки' }));
+    // Боковые экраны — для осмотра, кнопка хода уступает место.
+    const { useGameStore } = await import('../store/gameStore');
+    act(() => {
+      useGameStore.getState().setView('settings');
+    });
     await waitFor(() => expect(screen.queryByRole('button', { name: /Завершить день/ })).toBeNull());
   });
 

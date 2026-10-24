@@ -76,6 +76,10 @@ test('profile opens from portrait and exposes live stats and goals', async ({ pa
   await expect(moodBanner).toBeVisible();
   await expect(moodBanner).toHaveAttribute('src', /^\/art\/profile\/(normal|tired|burnout)\.webp$/);
   await expect(profile.locator('img[src^="/layers/"]')).toHaveCount(0);
-  await page.getByRole('button', { name: 'Цели и достижения', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Цели', exact: true })).toBeVisible();
+  // Цели и достижения переехали на экран «Прогресс» (A2, 25.10.2026)
+  await page
+    .getByRole('navigation', { name: 'Основная навигация' })
+    .getByRole('button', { name: 'Прогресс', exact: true })
+    .click();
+  await expect(page.getByRole('heading', { name: /^Цели/ })).toBeVisible();
 });

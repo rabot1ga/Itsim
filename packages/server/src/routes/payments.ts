@@ -173,7 +173,7 @@ export async function paymentRoutes(app: FastifyInstance) {
         request.log.info({ userId: buyerId, product: product.id, stars: product.stars }, 'Stars purchase granted');
         await sendMessage(
           buyerId,
-          t('✅ Спасибо! Покупка «{p0}» активирована.\n{p1}', {
+          t('Спасибо! Покупка «{p0}» активирована.\n{p1}', {
             p0: product.title,
             p1: result.applied.join('\n') || 'Загляни в игру.',
           })

@@ -146,7 +146,7 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
     delta.skills = { [skillId]: { from: current.level, to: next.level } };
     delta.money = -(source.cost ?? 0);
     const leveled = next.level > current.level ? ` (${current.level} → ${next.level})` : '';
-    return { message: t('📚 Учёба: {skillId}{leveled}', { skillId: skillId, leveled: leveled }), delta };
+    return { message: t('Учёба: {skillId}{leveled}', { skillId: skillId, leveled: leveled }), delta };
   }
   switch (actionId) {
     // ---- English (soft skill, gates foreign companies) ----
@@ -155,7 +155,7 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       state.softSkills = { ...state.softSkills, english: applySoftXp(eng, 10, softOpts(content)) };
       delta.softSkills = { english: { from: eng.level, to: state.softSkills['english'].level } };
       return {
-        message: t('🇬🇧 Английский: бесплатные уроки с котиками. Уровень {p0}', {
+        message: t('Английский: бесплатные уроки с котиками. Уровень {p0}', {
           p0: state.softSkills['english'].level,
         }),
         delta,
@@ -166,7 +166,7 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       state.softSkills = { ...state.softSkills, english: applySoftXp(eng, 25, softOpts(content)) };
       delta.softSkills = { english: { from: eng.level, to: state.softSkills['english'].level } };
       return {
-        message: t('🇬🇧 Интенсивный курс английского: уровень {p0}. Now you can ask for a raise', {
+        message: t('Интенсивный курс английского: уровень {p0}. Now you can ask for a raise', {
           p0: state.softSkills['english'].level,
         }),
         delta,
@@ -183,7 +183,7 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       delta.energy = state.maxEnergy;
       delta.motivation = 10;
       return {
-        message: t('⏰ Офлайн-день использован: полная энергия и +10 мотивации. В банке осталось {p0}', {
+        message: t('Офлайн-день использован: полная энергия и +10 мотивации. В банке осталось {p0}', {
           p0: state.bankedDays,
         }),
         delta,
@@ -222,8 +222,8 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       delta.skills = { [skillId]: { from: current.level, to: next.level } };
       return {
         message: carriesPeople
-          ? t('💼 Задачи + разбор чужого кода. Растёшь не только ты')
-          : t('💼 Закрыл рабочие задачи. Ретроспектива отменена, все свободны'),
+          ? t('Задачи + разбор чужого кода. Растёшь не только ты')
+          : t('Закрыл рабочие задачи. Ретроспектива отменена, все свободны'),
       };
     }
     case 'work_overtime': {
@@ -239,7 +239,7 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       state.job.daysWorked += 1;
       delta.money = bonus;
       delta.skills = { [skillId]: { from: current.level, to: next.level } };
-      return { message: t('🌙 Переработка. Начальник доволен (+{p0}), спина — нет', { p0: fmtMoney(bonus) }) };
+      return { message: t('Переработка. Начальник доволен (+{p0}), спина — нет', { p0: fmtMoney(bonus) }) };
     }
     case 'pet_project': {
       const skillId = state.mainSkillId;
@@ -249,7 +249,7 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       state.reputation = clamp(state.reputation + 0.5, 0, 100);
       delta.reputation = 0.5;
       delta.skills = { [skillId]: { from: current.level, to: next.level } };
-      return { message: t('🚀 Пет-проект: ещё один TODO-трекер в портфолио. Репутация растёт') };
+      return { message: t('Пет-проект: ещё один TODO-трекер в портфолио. Репутация растёт') };
     }
     // ---- Projects with deadlines: won by bidding, never handed out ----
     case 'project_task': {
@@ -269,8 +269,8 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       const left = remainingTasks(def, state.activeProject).length;
       return {
         message: left
-          ? t('✅ {p0}. Осталось задач: {left}', { p0: task.title, left: left })
-          : t('✅ {p0}. Все задачи готовы — можно сдавать проект', { p0: task.title }),
+          ? t('{p0}. Осталось задач: {left}', { p0: task.title, left: left })
+          : t('{p0}. Все задачи готовы — можно сдавать проект', { p0: task.title }),
         delta,
       };
     }
@@ -290,12 +290,12 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       delta.activeProject = null;
       return {
         message: payout.late
-          ? t('📦 «{p0}» сдан с опозданием: {p1} вместо {p2}', {
+          ? t('«{p0}» сдан с опозданием: {p1} вместо {p2}', {
               p0: def.title,
               p1: fmtMoney(payout.money),
               p2: fmtMoney(def.payment),
             })
-          : t('📦 «{p0}» сдан в срок: +{p1}, +{p2} репутации', {
+          : t('«{p0}» сдан в срок: +{p1}, +{p2} репутации', {
               p0: def.title,
               p1: fmtMoney(payout.money),
               p2: payout.reputation,
@@ -312,7 +312,7 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       state.activeProject = null;
       delta.reputation = -penalty;
       delta.activeProject = null;
-      return { message: t('🚪 Проект брошен. Заказчик расстроен: −{penalty} репутации', { penalty: penalty }), delta };
+      return { message: t('Проект брошен. Заказчик расстроен: −{penalty} репутации', { penalty: penalty }), delta };
     }
     // ---- Freelance: answer an ad on the board, hear back in the morning ----
     case 'freelance': {
@@ -332,7 +332,7 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       state.lastFreelanceDay = state.currentDay;
       delta.freelanceBid = state.freelanceBid;
       return {
-        message: t('📨 Отклик на «{p0}» отправлен. Заказчик ответит утром — шанс {p1}%', {
+        message: t('Отклик на «{p0}» отправлен. Заказчик ответит утром — шанс {p1}%', {
           p0: def.title,
           p1: Math.round(chance * 100),
         }),
@@ -384,7 +384,7 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       state.petFedToday = true;
       state.motivation = clamp(state.motivation + 3, 0, 100);
       delta.motivation = 3;
-      return { message: t('🍖 Питомец сыт и счастлив. Урчит, мурчит, виляет (+3 🔥)'), delta };
+      return { message: t('Питомец сыт и счастлив. Урчит, мурчит, виляет (+3 )'), delta };
     }
     // ---- Rest ----
     case 'rest_sleep':
@@ -392,27 +392,27 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       state.health = clamp(state.health + 2, 0, 100);
       delta.motivation = 15;
       delta.health = 2;
-      return { message: t('😴 Поспал как человек. Или как айтишник: 10 часов') };
+      return { message: t('Поспал как человек. Или как айтишник: 10 часов') };
     case 'rest_walk':
       state.motivation = clamp(state.motivation + 8, 0, 100);
       state.health = clamp(state.health + 1, 0, 100);
       delta.motivation = 8;
       delta.health = 1;
-      return { message: t('🚶 Прогулка. Впервые за неделю увидел солнце') };
+      return { message: t('Прогулка. Впервые за неделю увидел солнце') };
     case 'rest_bar':
       state.motivation = clamp(state.motivation + 12, 0, 100);
       delta.motivation = 12;
-      return { message: t('🍺 Бар с друзьями: обсудили дженерики, легаси и почему всё горит') };
+      return { message: t('Бар с друзьями: обсудили дженерики, легаси и почему всё горит') };
     case 'rest_hobby':
       state.motivation = clamp(state.motivation + 10, 0, 100);
       delta.motivation = 10;
-      return { message: t('🎮 Хобби-вечер. Да, сборка лего — это тоже хобби') };
+      return { message: t('Хобби-вечер. Да, сборка лего — это тоже хобби') };
     case 'rest_gym':
       state.health = clamp(state.health + 3, 0, 100);
       state.motivation = clamp(state.motivation + 2, 0, 100);
       delta.health = 3;
       delta.motivation = 2;
-      return { message: t('🏋️ Качалка. Мышцы болят, зато деплой не страшен') };
+      return { message: t('Качалка. Мышцы болят, зато деплой не страшен') };
     case 'rest_lunch': {
       // Еда — потребность, а не фоновый налог: нормальный обед лечит тело
       // и обрывает цепочку голодных дней.
@@ -421,7 +421,7 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       state.hungryDays = 0;
       delta.health = 5;
       delta.motivation = 3;
-      return { message: t('🍲 Нормально поел: здоровье +5, мотивация +3. Гречка — не приговор') };
+      return { message: t('Нормально поел: здоровье +5, мотивация +3. Гречка — не приговор') };
     }
     // ---- Social ----
     case 'networking': {
@@ -459,12 +459,12 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
           [npc.id]: clamp((state.relationships[npc.id] ?? 0) + 2, -100, 100),
         };
         return {
-          message: t('🤝 Митап: новые знакомства (+{p0} в контактах). Доклад был скучный, пицца — нет', {
+          message: t('Митап: новые знакомства (+{p0} в контактах). Доклад был скучный, пицца — нет', {
             p0: npc.name,
           }),
         };
       }
-      return { message: t('🤝 Митап: раздал визитки, собрал 40 стикеров. Репутация растёт') };
+      return { message: t('Митап: раздал визитки, собрал 40 стикеров. Репутация растёт') };
     }
     // ---- Career ----
     case 'apply_job': {
@@ -512,7 +512,7 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
         return { message: `📄 ${company.name}: ${screen.msg}`, delta };
       }
       return {
-        message: t('📄 Отклик в «{p0}» отправлен. {p1} Собеседование через 2 дня', {
+        message: t('Отклик в «{p0}» отправлен. {p1} Собеседование через 2 дня', {
           p0: company.name,
           p1: screen.msg,
         }),
@@ -544,7 +544,7 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       state.currentApplication = null;
       delta.job = state.job;
       return {
-        message: t('🎉 Ты принят в «{p0}» на позицию {p1}! Зарплата: {p2}/мес', {
+        message: t('Ты принят в «{p0}» на позицию {p1}! Зарплата: {p2}/мес', {
           p0: company.name,
           p1: offer.position,
           p2: fmtMoney(offer.salary),
@@ -583,7 +583,7 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       state.careerEnding = map[endingId];
       // For terminals, free the player from the job so New Life is reachable
       if (endingId === 'burnout' || endingId === 'left_it') state.job = null;
-      return { message: t('🏁 Финал зафиксирован: {p0}', { p0: target.title }) };
+      return { message: t('Финал зафиксирован: {p0}', { p0: target.title }) };
     }
     // ---- Shop ----
     case 'buy_item': {
@@ -597,7 +597,7 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       state.items = [...state.items, item.id];
       state.maxEnergy = recalcMaxEnergy(state, content);
       delta.items = [...state.items];
-      return { message: t('🛒 Куплено: {p0}', { p0: item.name }) };
+      return { message: t('Куплено: {p0}', { p0: item.name }) };
     }
     case 'upgrade_housing': {
       const next = (state.housingLevel + 1) as 0 | 1 | 2 | 3 | 4;
@@ -644,7 +644,7 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       state.maxEnergy = recalcMaxEnergy(state, content);
       delta.housingLevel = next;
       return {
-        message: t('🏠 Переезд! Теперь твой дом — «{p0}». Запах картонных коробок — запах свободы', {
+        message: t('Переезд! Теперь твой дом — «{p0}». Запах картонных коробок — запах свободы', {
           p0: t(HOUSING_NAMES[next] ?? ''),
         }),
       };
@@ -713,7 +713,7 @@ export async function actionRoutes(app: FastifyInstance) {
     const sprintBump = bumpSprintProgress(state.sprint, content.sprints?.themes, actionId, Date.now());
     if (sprintBump) state.sprint = sprintBump.sprint;
     if (sprintBump?.doneJustNow) {
-      finalMessage += t('\n🎯 Спринт недели выполнен — награда ждёт в карточке спринта');
+      finalMessage += t('\n Спринт недели выполнен — награда ждёт в карточке спринта');
     }
     // Archetype routes (P1.3): did this action just walk a route to the end?
     const archDefs = content.archetypes?.archetypes ?? [];
@@ -721,7 +721,7 @@ export async function actionRoutes(app: FastifyInstance) {
       const finished = newlyClaimableArchetypes(archDefs, levelsBefore, skillLevelMap(state), state.archetypeBonuses);
       if (finished.length > 0) {
         const titles = finished.map((a) => `«${a.title}»`).join(', ');
-        finalMessage += t('\n🏆 Путь {titles} пройден — забери бонус в карточке пути', { titles: titles });
+        finalMessage += t('\n Путь {titles} пройден — забери бонус в карточке пути', { titles: titles });
       }
     }
     state.totalActions += 1;
@@ -729,7 +729,7 @@ export async function actionRoutes(app: FastifyInstance) {
     state.ratingScore = calculateRating(state);
     // Автопостинг вех («Стал сеньор за 78 дней!»): финал/миллион — пост в ленту
     for (const m of recordMilestones(state, content.balance)) {
-      finalMessage += `\n${t('🌟 Веха: {p0}', { p0: t(m.key, m.params) })}`;
+      finalMessage += `\n${t('Веха: {p0}', { p0: t(m.key, m.params) })}`;
     }
     await saveState(userId, state);
     // Action-triggered follow-up events (bar -> HR, freelance -> ghost client, ...)

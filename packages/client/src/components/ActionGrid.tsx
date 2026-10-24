@@ -1,6 +1,7 @@
 import { t } from '../lib/i18n';
 import React from 'react';
 import { ResChip } from './ui';
+import { PixelIcon } from './pixel/PixelIcon';
 import { formatMoney, type ActionDef } from '../screens/actionCatalogue';
 /**
  * A grid of action tiles — the single way the game offers «spend energy, get
@@ -9,7 +10,7 @@ import { formatMoney, type ActionDef } from '../screens/actionCatalogue';
  */
 export interface ActionTile {
   id: string;
-  emoji: string;
+  icon: string;
   name: string;
   energy: number;
   cost?: number;
@@ -22,7 +23,7 @@ export interface ActionTile {
 }
 export const toTile = (action: ActionDef, hasJob: boolean): ActionTile => ({
   id: action.id,
-  emoji: action.emoji,
+  icon: action.icon,
   name: action.name,
   energy: action.energy,
   cost: action.cost,
@@ -55,15 +56,21 @@ export const ActionGrid: React.FC<{
           className="tile tile-action"
         >
           <span className="tile-icon" aria-hidden="true">
-            {action.emoji}
+            <PixelIcon name={action.icon} size={18} />
           </span>
           <span className="min-w-0 flex-1">
             <span className="block text-sm font-semibold text-ink-100 leading-tight mb-1.5">{action.name}</span>
             <span className="flex flex-wrap items-center gap-1.5">
-              <ResChip tone="blue">−{action.energy} ⚡</ResChip>
+              <ResChip tone="blue">
+                −{action.energy} <PixelIcon name="bolt" size={10} />
+              </ResChip>
               {cost > 0 && <ResChip tone="negative">−{formatMoney(cost)} ₽</ResChip>}
               {action.gain}
-              {action.locked && action.lockLabel && <ResChip tone="orange">🔒 {action.lockLabel}</ResChip>}
+              {action.locked && action.lockLabel && (
+                <ResChip tone="orange">
+                  <PixelIcon name="lock" size={10} /> {action.lockLabel}
+                </ResChip>
+              )}
             </span>
             {action.hint && <span className="block text-2xs text-ink-600 mt-1 leading-tight">{action.hint}</span>}
           </span>

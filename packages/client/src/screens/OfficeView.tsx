@@ -4,7 +4,8 @@ import { useGameStore } from '../store/gameStore';
 import { haptic } from '../lib/telegram';
 import { officeArtwork, officeTierOf, OFFICE_TIER_META } from '../lib/officeArt';
 import { officeMoodOf, OFFICE_MOOD_META, type OfficeMoodInput } from '../lib/officeMood';
-import { EmojiToken, ScreenTitle, SectionTitle, EmptyState } from '../components/ui';
+import { ScreenTitle, SectionTitle, EmptyState } from '../components/ui';
+import { PixelIcon } from '../components/pixel/PixelIcon';
 /**
  * Офис (docs/design.md §11) — карточка события поверх тех же work-действий
  * (фаза 3 редизайна 22.10.2026): баннер-сцена тира + строки-действия из общего
@@ -18,19 +19,19 @@ const SIZE_LABELS: Record<string, string> = {
 };
 const TEAM = [{ npcId: 'teamlead' }, { npcId: 'junior_colleague' }, { npcId: 'toxic_senior' }];
 const ACTIONS = [
-  { id: 'work_task', emoji: '💻', name: t('Закрыть задачу'), energy: 4 },
-  { id: 'work_overtime', emoji: '🌙', name: t('Овертайм'), energy: 5 },
-  { id: 'networking', emoji: '💬', name: t('Стендап / 1:1'), energy: 2 },
+  { id: 'work_task', icon: 'briefcase', name: t('Закрыть задачу'), energy: 4 },
+  { id: 'work_overtime', icon: 'moon', name: t('Овертайм'), energy: 5 },
+  { id: 'networking', icon: 'people', name: t('Стендап / 1:1'), energy: 2 },
 ];
 function relationMeta(value: number): {
-  emoji: string;
+  icon: string;
   label: string;
   cls: string;
 } {
-  if (value >= 30) return { emoji: '💚', label: t('друг'), cls: 'text-moss-300' };
-  if (value >= 0) return { emoji: '🙂', label: t('нейтрально'), cls: 'text-ink-400' };
-  if (value >= -30) return { emoji: '😕', label: t('натянуто'), cls: 'text-ochre-300' };
-  return { emoji: '⚠️', label: t('конфликт'), cls: 'text-clay-300' };
+  if (value >= 30) return { icon: 'people', label: t('друг'), cls: 'text-moss-300' };
+  if (value >= 0) return { icon: 'people', label: t('нейтрально'), cls: 'text-ink-400' };
+  if (value >= -30) return { icon: 'warn', label: t('натянуто'), cls: 'text-ochre-300' };
+  return { icon: 'warn', label: t('конфликт'), cls: 'text-clay-300' };
 }
 export const OfficeView: React.FC = () => {
   const player = useGameStore((s) => s.player);
@@ -68,7 +69,7 @@ export const OfficeView: React.FC = () => {
         <div className="card">
           <EmptyState
             bare
-            emoji="💼"
+            icon="screen"
             title={t('Офиса пока нет')}
             hint={t('Сначала найди работу — тогда здесь появится твой open-space')}
           />
@@ -100,24 +101,27 @@ export const OfficeView: React.FC = () => {
         {t('← Карьера')}
       </button>
 
-      <ScreenTitle emoji="🏢" meta={<span>{company ? (SIZE_LABELS[company.size] ?? company.size) : t('Офис')}</span>}>
+      <ScreenTitle
+        icon="screen"
+        meta={<span>{company ? (SIZE_LABELS[company.size] ?? company.size) : t('Офис')}</span>}
+      >
         {company?.name ?? t('Мой офис')}
       </ScreenTitle>
 
       {error && (
         <div role="alert" className="card card-sm cursor-pointer" onClick={clearError}>
-          <p className="text-sm text-clay-300">⚠ {error}</p>
+          <p className="text-sm text-clay-300"> {error}</p>
         </div>
       )}
       {loadError && (
         <div role="alert" className="card card-sm">
-          <p className="text-sm text-clay-300">⚠ {loadError}</p>
+          <p className="text-sm text-clay-300">{loadError}</p>
         </div>
       )}
 
       <section className="story-card" aria-label={t('Твой офис')}>
         <div className="story-card-kicker">
-          {t('офис ·')} {tier} · {moodMeta.emoji} {moodMeta.label}
+          {t('офис ·')} {tier} · <PixelIcon name={moodMeta.icon} size={12} /> {moodMeta.label}
         </div>
         <img
           className="story-card-art"
@@ -146,10 +150,10 @@ export const OfficeView: React.FC = () => {
                   onClick={() => runAction(a.id)}
                 >
                   <span>
-                    <span aria-hidden="true">{a.emoji}</span> {busy === a.id ? t('Делаем…') : a.name}
+                    <PixelIcon name={a.icon} size={12} /> {busy === a.id ? t('Делаем…') : a.name}
                   </span>
                   <span className="story-choice-effects">
-                    <span className="res-chip num">−{a.energy}⚡</span>
+                    <span className="res-chip num">−{a.energy}</span>
                   </span>
                 </button>
                 {missing.length > 0 && <p className="story-requirements">{missing.join(' · ')}</p>}
@@ -189,11 +193,13 @@ export const OfficeView: React.FC = () => {
                     }}
                   />
                 ) : (
-                  <EmojiToken className="mx-auto">🧑‍💻</EmojiToken>
+                  <span className="mx-auto">
+                    <PixelIcon name="people" size={18} />
+                  </span>
                 )}
                 <p className="text-xs font-medium text-ink-100 truncate mt-1.5">{npc?.name ?? t.npcId}</p>
                 <p className={`flex items-center justify-center gap-1 text-2xs mt-0.5 ${rel.cls}`} title={rel.label}>
-                  <span aria-hidden="true">{rel.emoji}</span>
+                  <PixelIcon name={rel.icon} size={12} />
                   <span className="num">{value > 0 ? `+${value}` : value}</span>
                 </p>
               </div>

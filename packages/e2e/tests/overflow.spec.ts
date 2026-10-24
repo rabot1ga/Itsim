@@ -5,7 +5,7 @@ import { resolveStory } from './helpers/story';
  * Горизонтального скролла нет ни на одном экране, ни в каком состоянии.
  *
  * Причина появления этого спека — реальный баг, который висел красным и был
- * списан на «тайминги»: на «Обучении» в состоянии «таб „Направления“ + второй
+ * списан на «тайминги»: на «Развитии» в состоянии «таб „Направления“ + второй
  * аккордеон + выбранный навык» плитка пути-архетипа растягивала весь экран на
  * 52px. Сами плитки (`div.grid` в одну колонку внутри `.card`) при этом
  * выглядели нормально, потому что у implicit-колонки грида размер `auto`: одна
@@ -18,9 +18,88 @@ import { resolveStory } from './helpers/story';
  * касался, и проверять только его — значит оставить дыру открытой.
  */
 
-const TABS = ['Главная', 'Работа', 'Обучение', 'Отдых', 'Магазин'] as const;
-/** всё, что живёт в шторке «Меню» — боковые экраны, куда заходят посмотреть */
-const SIDE = ['Профиль', 'Дом', 'Друзья', 'Питомец', 'Цели', 'Топ', 'Офис', 'Майнинг', 'Финалы', 'Настройки'] as const;
+const TABS = ['Сегодня', 'Работа', 'Развитие', 'Прогресс'] as const;
+/**
+ * Боковые экраны новой IA (A2): листа «Меню» больше нет, каждый экран живёт
+ * своей дверью внутри табов. Роуты — как реально ходит игрок.
+ */
+const navTo = (page: import('@playwright/test').Page, tab: string) =>
+  page.getByRole('navigation', { name: 'Основная навигация' }).getByRole('button', { name: tab, exact: true }).click();
+const SIDE_ROUTES: ReadonlyArray<readonly [string, (page: import('@playwright/test').Page) => Promise<void>]> = [
+  [
+    'Профиль',
+    async (page) => {
+      await navTo(page, 'Сегодня');
+      await page.getByRole('button', { name: 'Открыть профиль' }).click();
+    },
+  ],
+  [
+    'Отдых',
+    async (page) => {
+      await navTo(page, 'Сегодня');
+      await page.getByRole('button', { name: 'Отдых', exact: true }).click();
+    },
+  ],
+  [
+    'Магазин',
+    async (page) => {
+      await navTo(page, 'Сегодня');
+      await page.getByRole('button', { name: 'Магазин', exact: true }).click();
+    },
+  ],
+  [
+    'Дом',
+    async (page) => {
+      await navTo(page, 'Сегодня');
+      await page.getByRole('button', { name: 'Дом', exact: true }).click();
+    },
+  ],
+  [
+    'Друзья',
+    async (page) => {
+      await navTo(page, 'Работа');
+      await page.getByRole('button', { name: /^Коллеги и знакомые/ }).click();
+    },
+  ],
+  [
+    'Офис',
+    async (page) => {
+      await navTo(page, 'Работа');
+      await page.getByRole('button', { name: /^Мой офис/ }).click();
+    },
+  ],
+  [
+    'Питомец',
+    async (page) => {
+      await navTo(page, 'Сегодня');
+      await page.getByRole('button', { name: 'Отдых', exact: true }).click();
+      await page.getByRole('button', { name: /^Питомец/ }).click();
+    },
+  ],
+  [
+    'Майнинг',
+    async (page) => {
+      await navTo(page, 'Сегодня');
+      await page.getByRole('button', { name: 'Магазин', exact: true }).click();
+      await page.getByRole('button', { name: /^Майнинг-ферма/ }).click();
+    },
+  ],
+  [
+    'Топ',
+    async (page) => {
+      await navTo(page, 'Прогресс');
+      await page.getByRole('button', { name: /^Топ игроков/ }).click();
+    },
+  ],
+  [
+    'Настройки',
+    async (page) => {
+      await navTo(page, 'Сегодня');
+      await page.getByRole('button', { name: 'Открыть профиль' }).click();
+      await page.getByRole('button', { name: /^Настройки/ }).click();
+    },
+  ],
+];
 
 /** Сюжет после перехода по экранам — не часть проверки, поэтому чистим без
     жёстких асертов: нам важно не оставить невзятую модалку следующему спеку. */
@@ -64,10 +143,20 @@ async function measure(page: Page, where: string): Promise<string | null> {
 }
 
 async function openSide(page: Page, label: string): Promise<void> {
-  await page.getByRole('button', { name: 'Меню' }).click();
-  const dialog = page.getByRole('dialog', { name: 'Меню' });
-  await dialog.getByRole('button', { name: label, exact: true }).click();
-  await expect(dialog).toHaveCount(0);
+  const route = SIDE_ROUTES.find(([name]) => name === label)?.[1];
+  if (!route) throw new Error(`нет маршрута до экрана «${label}»`);
+  // Случайное событие всплывает на любом GET /game/state и перекрывает экран:
+  // чистим до и после маршрута, а клик ретраим — сюжет здесь не часть проверки.
+  for (let attempt = 0; ; attempt++) {
+    try {
+      await dismissStory(page);
+      await route(page);
+      await dismissStory(page);
+      return;
+    } catch (err) {
+      if (attempt >= 2) throw err;
+    }
+  }
 }
 
 test.afterEach(async ({ request }) => {
@@ -95,17 +184,17 @@ test('320px: ни один экран не раздается горизонта
 
   // Состояние, в котором баг и жил: сетка путей + раскрытый аккордеон школы +
   // выбранный основной навык.
-  await nav.getByRole('button', { name: 'Обучение', exact: true }).click();
+  await nav.getByRole('button', { name: 'Развитие', exact: true }).click();
   await page.getByRole('tab', { name: /Направления/ }).click();
   const list = page.getByRole('region', { name: 'Список навыков' });
   await expect(list).toBeVisible();
   await list.getByRole('button', { name: /Backend/ }).click();
   const python = list.getByRole('button', { name: 'Python', exact: true });
   if (await python.isEnabled()) await python.click();
-  const warm = await measure(page, 'Обучение · направления + выбранный навык');
+  const warm = await measure(page, 'Развитие · направления + выбранный навык');
   if (warm) problems.push(warm);
 
-  for (const label of SIDE) {
+  for (const [label] of SIDE_ROUTES) {
     await openSide(page, label);
     const problem = await measure(page, label);
     if (problem) problems.push(problem);

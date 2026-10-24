@@ -1,5 +1,6 @@
 import { t } from '../lib/i18n';
 import React, { useRef, useState } from 'react';
+import { PixelIcon } from './pixel/PixelIcon';
 import {
   storyLabel,
   choiceTone,
@@ -44,7 +45,7 @@ const ChoicePreview: React.FC<{
     <span className="story-choice-effects">
       {rows.map((row) => (
         <span key={row.key} className="res-chip num">
-          {row.text} {row.emoji}
+          <PixelIcon name={row.icon} size={10} /> {row.text}
         </span>
       ))}
     </span>
@@ -86,7 +87,7 @@ export const EventCard: React.FC<EventCardProps> = ({
   return (
     <section className={`story-card ${cardTone(tags)} animate-pop-in`} aria-label={title} aria-busy={busy !== null}>
       <div className="story-card-kicker">
-        <span aria-hidden="true">🎲</span>
+        <PixelIcon name="dice" size={12} />
         {t('Случайное событие')}
       </div>
       <img className="story-card-art" src={eventArtwork(tags, title, eventId)} alt="" width={384} height={288} />
@@ -141,7 +142,7 @@ export const EventOutcomeCard: React.FC<{
       aria-label={t('Результат: {heading}', { heading: heading })}
     >
       <div className="story-card-kicker">
-        <span aria-hidden="true">✅</span>
+        <PixelIcon name="check" size={12} />
         {t('Решение принято')}
       </div>
       <div className="story-card-copy">
@@ -157,9 +158,7 @@ export const EventOutcomeCard: React.FC<{
             {rows.map((row) => (
               <div key={row.key} className={row.good ? 'is-positive' : 'is-negative'}>
                 <dt>
-                  <span className="emoji" aria-hidden="true">
-                    {row.emoji}
-                  </span>
+                  <PixelIcon name={row.icon} size={12} />
                   <span>{row.label}</span>
                 </dt>
                 <dd className="num">{row.text}</dd>

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import React from 'react';
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import App from '../App';
 import { useGameStore } from '../store/gameStore';
 
@@ -44,10 +44,11 @@ function jsonRoute(url: string): unknown {
   return {};
 }
 
+const VIEW_BY_LABEL: Record<string, string> = { Дом: 'room', Профиль: 'profile', Офис: 'office' };
 async function openScreen(label: string) {
-  fireEvent.click(await screen.findByRole('button', { name: 'Меню' }));
-  const dialog = await screen.findByRole('dialog', { name: 'Меню' });
-  fireEvent.click(within(dialog).getByRole('button', { name: label }));
+  act(() => {
+    useGameStore.getState().setView(VIEW_BY_LABEL[label]);
+  });
 }
 
 describe('комната-карточка и профиль-карточка жизни', () => {

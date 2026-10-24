@@ -2,15 +2,17 @@ import { t } from '../lib/i18n';
 import React from 'react';
 import { useGameStore } from '../store/gameStore';
 import { SectionTitle } from './ui';
+import { PixelIcon } from './pixel/PixelIcon';
 /**
- * Contextual doors to the screens that used to hide behind «⋮».
+ * Contextual doors to the screens of the «мир» (A2, 25.10.2026).
  *
  * A section is not «somewhere in the menu» — it belongs next to the thing it
  * continues: офис — к работе, майнинг — к технике, питомец — к отдыху.
+ * Хром без эмодзи: вместо эмодзи — pixel-иконки.
  */
 export interface NavLink {
   view: string;
-  emoji: string;
+  icon: string;
   label: string;
   hint: string;
 }
@@ -32,7 +34,7 @@ export const NavLinks: React.FC<{
             aria-label={link.label}
           >
             <span className="tile-icon" aria-hidden="true">
-              {link.emoji}
+              <PixelIcon name={link.icon} size={18} />
             </span>
             <span className="flex-1 min-w-0">
               <span className="block text-sm font-semibold text-ink-100 leading-tight">{link.label}</span>

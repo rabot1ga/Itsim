@@ -15,7 +15,7 @@ import { Spinner } from './ui';
  * Биржа заказов — the «Работа» screen of reference 1.png.
  *
  * A contract is not handed out on tap any more: the player answers the ad
- * («Откликнуться», −3 ⚡), and the client sleeps on it. In the morning one of
+ * («Откликнуться», −3 ), and the client sleeps on it. In the morning one of
  * three things happens — signed, paid for the test task, or picked someone
  * else. That is why the freelance action and the board are one thing now
  * instead of two doors to the same money.
@@ -31,16 +31,16 @@ function deadlineLabel(daysLeft: number): string {
 }
 /** Content ships pixel-icon names; the chrome speaks emoji. */
 const PROJECT_EMOJI: Record<string, string> = {
-  screen: '🖥',
-  chat: '💬',
-  rocket: '🚀',
-  briefcase: '💼',
-  chart: '📈',
-  cap: '🎓',
-  coin: '🪙',
-  mug: '☕',
+  screen: '',
+  chat: '',
+  rocket: '',
+  briefcase: '',
+  chart: '',
+  cap: '',
+  coin: '',
+  mug: '',
 };
-const projectEmoji = (icon?: string) => PROJECT_EMOJI[icon ?? ''] ?? '📁';
+const projectEmoji = (icon?: string) => PROJECT_EMOJI[icon ?? ''] ?? '';
 /** Energy the server charges for a bid (`EXTRA_ENERGY_COSTS.freelance`). */
 const BID_ENERGY = 3;
 export const ProjectBoard: React.FC = () => {
@@ -95,7 +95,7 @@ export const ProjectBoard: React.FC = () => {
         <article className="card card-sm panel-note panel-note-sky" aria-label={t('Отклик отправлен')}>
           <img className="project-art" src="/art/story-v1/freelance.webp" alt="" width={384} height={230} />
           <p className="text-sm text-ink-100">
-            <span aria-hidden="true">📨 </span>
+            <span aria-hidden="true"> </span>
             {t('Отклик на «')}
             {bidDef?.title ?? t('заказ')}
             {t('» отправлен')}
@@ -149,7 +149,7 @@ export const ProjectBoard: React.FC = () => {
                       disabled={busy || !affordable}
                       onClick={() => act('project_task', { projectId: activeDef.id, taskId: task.id })}
                     >
-                      +{task.xp} XP · −{task.energy} ⚡
+                      +{task.xp} XP · −{task.energy}
                     </button>
                   )}
                 </li>
@@ -212,7 +212,7 @@ export const ProjectBoard: React.FC = () => {
                   <button
                     className="btn btn-sm btn-primary project-take"
                     disabled={busy || blocked !== null || tired}
-                    title={tired ? t('Нужно {BID_ENERGY} ⚡', { BID_ENERGY: BID_ENERGY }) : t('Ответ придёт утром')}
+                    title={tired ? t('Нужно {BID_ENERGY}', { BID_ENERGY: BID_ENERGY }) : t('Ответ придёт утром')}
                     onClick={() => act('freelance', { projectId: def.id })}
                   >
                     {t('Откликнуться')}
@@ -228,7 +228,7 @@ export const ProjectBoard: React.FC = () => {
       )}
       <p className="text-2xs text-ink-600">
         {t('Один отклик в день, −')}
-        {BID_ENERGY} {t('⚡. Заказчик отвечает утром: контракт, оплаченное тестовое или отказ.')}
+        {BID_ENERGY} {t('. Заказчик отвечает утром: контракт, оплаченное тестовое или отказ.')}
       </p>
     </section>
   );

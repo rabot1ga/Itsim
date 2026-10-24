@@ -26,10 +26,10 @@ interface StarsProduct {
 }
 /** Чип витринной метки: сезонные наборы и т.п. — только подача, не механика. */
 const TAG_LABEL: Record<NonNullable<StarsProduct['tag']>, string> = {
-  support: '💜 поддержка',
-  utility: '⚙️ банк дней',
-  cosmetic: '✨ косметика',
-  seasonal: '🎁 сезонный набор',
+  support: ' поддержка',
+  utility: ' банк дней',
+  cosmetic: ' косметика',
+  seasonal: ' сезонный набор',
 };
 export const StarsShop: React.FC = () => {
   const refreshState = useGameStore((s) => s.refreshState);
@@ -86,7 +86,7 @@ export const StarsShop: React.FC = () => {
       setBusy(null);
       if (status === 'paid') {
         haptic('success');
-        setNote(t('✅ Оплачено — награда уже в игре'));
+        setNote(t('Оплачено — награда уже в игре'));
         // The webhook grants asynchronously; give it a beat, then re-read.
         setTimeout(() => {
           load();
@@ -102,7 +102,7 @@ export const StarsShop: React.FC = () => {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <h3 className="eyebrow">{t('⭐ За Telegram Stars')}</h3>
+        <h3 className="eyebrow">{t('За Telegram Stars')}</h3>
         {mock && <span className="chip !text-ink-500 ml-2">dev</span>}
       </div>
       {policy && <p className="text-xs text-ink-500 leading-relaxed">{policy}</p>}
@@ -131,7 +131,7 @@ export const StarsShop: React.FC = () => {
                 disabled={disabled}
                 className={`btn btn-sm ${disabled ? 'btn-secondary' : 'btn-primary'}`}
               >
-                {busy === product.id ? '…' : <span className="num">⭐ {product.stars}</span>}
+                {busy === product.id ? '…' : <span className="num"> {product.stars}</span>}
               </button>
             </div>
           );

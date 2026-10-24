@@ -89,7 +89,7 @@ export async function marketplaceRoutes(app: FastifyInstance) {
     state.items = [...(state.items ?? []), listing.itemId];
     await saveState(userId, state);
     return {
-      state: respondState(state, t('🐾 {p0} теперь живёт у тебя дома', { p0: item?.name ?? listing.itemId })),
+      state: respondState(state, t('{p0} теперь живёт у тебя дома', { p0: item?.name ?? listing.itemId })),
     };
   });
 
@@ -232,7 +232,7 @@ export async function marketplaceRoutes(app: FastifyInstance) {
     state.items = (state.items ?? []).filter((i) => i !== item.id);
     await saveState(userId, state);
     return {
-      state: respondState(state, t('🏪 {p0} выставлен на продажу за {p1}', { p0: item.name, p1: Math.round(price!) })),
+      state: respondState(state, t('{p0} выставлен на продажу за {p1}', { p0: item.name, p1: Math.round(price!) })),
     };
   });
 
@@ -268,7 +268,7 @@ export async function marketplaceRoutes(app: FastifyInstance) {
     offer.soldAt = Date.now();
     await store.put(offer);
     return {
-      state: respondState(state, t('🐾 {p0} теперь живёт у тебя дома', { p0: item?.name ?? offer.itemId })),
+      state: respondState(state, t('{p0} теперь живёт у тебя дома', { p0: item?.name ?? offer.itemId })),
     };
   });
 
@@ -291,7 +291,7 @@ export async function marketplaceRoutes(app: FastifyInstance) {
     await store.put(offer);
     const item = (getContent().items as any[]).find((i) => i.id === offer.itemId);
     return {
-      state: respondState(state, t('💰 Продажа «{p0}»: +{p1}', { p0: item?.name ?? offer.itemId, p1: offer.price })),
+      state: respondState(state, t('Продажа «{p0}»: +{p1}', { p0: item?.name ?? offer.itemId, p1: offer.price })),
     };
   });
 
@@ -314,7 +314,7 @@ export async function marketplaceRoutes(app: FastifyInstance) {
     await saveState(userId, state);
     const item = (getContent().items as any[]).find((i) => i.id === offer.itemId);
     return {
-      state: respondState(state, t('↩️ «{p0}» снят с продажи и вернулся к тебе', { p0: item?.name ?? offer.itemId })),
+      state: respondState(state, t('↩ «{p0}» снят с продажи и вернулся к тебе', { p0: item?.name ?? offer.itemId })),
     };
   });
 

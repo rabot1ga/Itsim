@@ -2,6 +2,7 @@ import { t } from '../lib/i18n';
 import React, { useState } from 'react';
 import { xpToNext } from '@itsim/shared';
 import { accordionBodyRef } from '../components/ui';
+import { PixelIcon } from '../components/pixel/PixelIcon';
 export interface SkillInfo {
   id: string;
   name: string;
@@ -36,18 +37,18 @@ export const BRANCH_META: Record<
   string,
   {
     name: string;
-    emoji: string;
+    icon: string;
   }
 > = {
-  frontend: { name: 'Frontend', emoji: '🎨' },
-  backend: { name: 'Backend', emoji: '⚙️' },
-  mobile: { name: 'Mobile', emoji: '📱' },
-  qa: { name: 'QA', emoji: '🔍' },
-  devops: { name: 'DevOps', emoji: '🐳' },
-  ai_ml: { name: 'AI / ML', emoji: '🤖' },
-  cybersec: { name: t('Кибербез'), emoji: '🛡️' },
-  gamedev: { name: 'GameDev', emoji: '🎮' },
-  blockchain: { name: 'Blockchain', emoji: '⛓️' },
+  frontend: { name: 'Frontend', icon: 'code' },
+  backend: { name: 'Backend', icon: 'chip' },
+  mobile: { name: 'Mobile', icon: 'laptop' },
+  qa: { name: 'QA', icon: 'check' },
+  devops: { name: 'DevOps', icon: 'gear' },
+  ai_ml: { name: 'AI / ML', icon: 'rocket' },
+  cybersec: { name: t('Кибербез'), icon: 'lock' },
+  gamedev: { name: 'GameDev', icon: 'dice' },
+  blockchain: { name: 'Blockchain', icon: 'box' },
 };
 const BRANCH_ORDER = Object.keys(BRANCH_META);
 /** Two-letter monogram, the way the reference draws skill badges. */
@@ -98,7 +99,7 @@ export const SkillList: React.FC<SkillListProps> = ({ skills, levels, mainSkillI
   return (
     <section aria-label={t('Список навыков')}>
       {branches.map((branch) => {
-        const meta = BRANCH_META[branch] ?? { name: branch, emoji: '📘' };
+        const meta = BRANCH_META[branch] ?? { name: branch, icon: 'book' };
         const items = skills.filter((s) => s.branch === branch);
         const learned = items.filter((s) => (levels[s.id]?.level ?? 0) > 0).length;
         const isOpen = open[branch] ?? false;
@@ -106,7 +107,7 @@ export const SkillList: React.FC<SkillListProps> = ({ skills, levels, mainSkillI
           <div className="skill-group" key={branch}>
             <button className="skill-group-head" aria-expanded={isOpen} onClick={() => toggle(branch)}>
               <span className="emoji" aria-hidden="true">
-                {meta.emoji}
+                <PixelIcon name={meta.icon} size={14} />
               </span>
               <span className="skill-group-name">{meta.name}</span>
               <span className="skill-group-count num">
@@ -140,7 +141,7 @@ export const SkillList: React.FC<SkillListProps> = ({ skills, levels, mainSkillI
                         onClick={() => onPick(skill.id)}
                       >
                         <span className="skill-badge" aria-hidden="true">
-                          {locked ? '🔒' : (SYMBOLS[skill.id] ?? skill.name.slice(0, 2))}
+                          {locked ? '' : (SYMBOLS[skill.id] ?? skill.name.slice(0, 2))}
                         </span>
                         <span className="skill-row-copy">
                           <span className="skill-row-title">

@@ -34,10 +34,8 @@ export interface EffectRow {
   key: string;
   label: string;
   text: string;
-  /** pixel icon name (legacy surfaces) */
+  /** pixel icon name (хром без эмодзи, B1) */
   icon: string;
-  /** chrome emoji — the design system's resource token */
-  emoji: string;
   good: boolean;
 }
 const PEOPLE: Record<string, string> = {
@@ -47,44 +45,34 @@ const PEOPLE: Record<string, string> = {
   uni_friend: t('Саня'),
   hr_anna: t('Анна из HR'),
 };
-const RESOURCES: Array<[keyof EventEffects, string, string, string, string, boolean]> = [
-  ['money', t('Деньги'), 'coin', '💰', ' ₽', false],
-  ['energy', t('Энергия'), 'bolt', '⚡', '', false],
-  ['motivation', t('Настроение'), 'flame', '😊', '', false],
-  ['health', t('Здоровье'), 'heart', '❤️', '', false],
-  ['reputation', t('Репутация'), 'star', '⭐', '', false],
-  ['karma', t('Карма'), 'dice', '🍀', '', false],
-  ['burnoutDays', t('Дни выгорания'), 'warn', '🔥', t(' дн.'), true],
-  ['jobWarnings', t('Замечания на работе'), 'warn', '⚠️', '', true],
+const RESOURCES: Array<[keyof EventEffects, string, string, string, boolean]> = [
+  ['money', t('Деньги'), 'coin', ' ₽', false],
+  ['energy', t('Энергия'), 'bolt', '', false],
+  ['motivation', t('Настроение'), 'flame', '', false],
+  ['health', t('Здоровье'), 'heart', '', false],
+  ['reputation', t('Репутация'), 'star', '', false],
+  ['karma', t('Карма'), 'dice', '', false],
+  ['burnoutDays', t('Дни выгорания'), 'warn', t('дн.'), true],
+  ['jobWarnings', t('Замечания на работе'), 'warn', '', true],
 ];
 /** No totals: +XP for one skill must not cancel −XP for another. */
 export function effectRows(effects: EventEffects = {}): EffectRow[] {
   const rows: EffectRow[] = [];
-  const add = (
-    key: string,
-    label: string,
-    icon: string,
-    emoji: string,
-    value: unknown,
-    suffix = '',
-    inverse = false
-  ) => {
+  const add = (key: string, label: string, icon: string, value: unknown, suffix = '', inverse = false) => {
     if (typeof value !== 'number' || !Number.isFinite(value) || value === 0) return;
     rows.push({
       key,
       label,
       icon,
-      emoji,
       text: `${value > 0 ? '+' : ''}${fmtNumber(value)}${suffix}`,
       good: inverse ? value < 0 : value > 0,
     });
   };
-  for (const [key, label, icon, emoji, suffix, inverse] of RESOURCES)
-    add(key, label, icon, emoji, effects[key], suffix, inverse);
+  for (const [key, label, icon, suffix, inverse] of RESOURCES) add(key, label, icon, effects[key], suffix, inverse);
   for (const [id, xp] of Object.entries(effects.skill ?? {}))
-    add(`skill:${id}`, t('Опыт · {p0}', { p0: skillName(id) }), 'book', '✨', xp, ' XP');
+    add(`skill:${id}`, t('Опыт · {p0}', { p0: skillName(id) }), 'book', xp, ' XP');
   for (const [id, value] of Object.entries(effects.relation ?? {}))
-    add(`relation:${id}`, t('Отношения · {p0}', { p0: PEOPLE[id] ?? id }), 'people', '👥', value);
+    add(`relation:${id}`, t('Отношения · {p0}', { p0: PEOPLE[id] ?? id }), 'people', value);
   return rows;
 }
 export function choiceTone(rows: EffectRow[]): 'green' | 'amber' | 'red' | 'purple' {
@@ -161,7 +149,7 @@ export function eventArtwork(tags: string[], title = '', eventId = ''): string {
   }
   return `/art/story-v1/${scene}.webp`;
 }
-/** Content emoji are decorative; pixel icons provide consistent resource symbols. */
+/** Pixel icons provide consistent resource symbols (хром без эмодзи, B1). */
 export function storyLabel(text: string): string {
   return text
     .replace(/[\p{Extended_Pictographic}\p{Emoji_Modifier}\uFE0F\u200D]/gu, '')

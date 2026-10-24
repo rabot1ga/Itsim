@@ -28,7 +28,7 @@ test('archetype routes: choose → milestones in the list → clear → guarded 
 
   await page
     .getByRole('navigation', { name: 'Основная навигация' })
-    .getByRole('button', { name: /^Обучение$/ })
+    .getByRole('button', { name: /^Развитие$/ })
     .click();
   await page.getByRole('tab', { name: /Направления/ }).click();
 

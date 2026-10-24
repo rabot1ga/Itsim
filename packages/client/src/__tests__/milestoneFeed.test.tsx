@@ -1,17 +1,25 @@
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { ProfileView } from '../screens/ProfileView';
+import { ProgressView } from '../screens/ProgressView';
 import { useGameStore } from '../store/gameStore';
 
 /**
- * Автопостинг вех: лента авто-постов «Стал сеньор за 78 дней!» в «Карточке
- * жизни» — посты видны по одному на веху, «Поделиться» открывает t.me/share,
- * без вех секция не рисуется.
+ * Автопостинг вех: лента авто-постов «Стал сеньор за 78 дней!» живёт на экране
+ * «Прогресс» (A2, 25.10.2026), секция «Знаковые события» — посты по одному на веху, «Поделиться»
+ * открывает t.me/share, без вех секция не рисуется.
  */
+
+beforeEach(() => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async () => ({ ok: true, json: async () => ({}) }))
+  );
+});
 
 afterEach(() => {
   useGameStore.setState({ player: null });
+  vi.unstubAllGlobals();
 });
 
 function setPlayer(over: Record<string, unknown>): void {
@@ -28,11 +36,11 @@ function setPlayer(over: Record<string, unknown>): void {
   });
 }
 
-describe('ProfileView: лента вех', () => {
-  it('без вех секция «Вехи» не рисуется', () => {
+describe('ProgressView: лента вех', () => {
+  it('без вех секция показывает заглушку', () => {
     setPlayer({});
-    render(<ProfileView />);
-    expect(screen.queryByText('Вехи')).toBeNull();
+    render(<ProgressView />);
+    expect(screen.getByText('Пока пусто — проживи ещё пару дней.')).toBeTruthy();
   });
 
   it('каждая веха — пост с подписью и кнопкой «Поделиться»', () => {
@@ -46,8 +54,8 @@ describe('ProfileView: лента вех', () => {
         },
       ],
     });
-    render(<ProfileView />);
-    expect(screen.getByText('Вехи')).toBeTruthy();
+    render(<ProgressView />);
+    expect(screen.getByText('Знаковые события')).toBeTruthy();
     expect(screen.getByText('Стал сеньор за 78 дней!')).toBeTruthy();
     // «День 78» есть и в футноте карточки — ищем в посте вехи
     const day = document.querySelector('.milestone-day');
@@ -69,7 +77,7 @@ describe('ProfileView: лента вех', () => {
         },
       ],
     });
-    render(<ProfileView />);
+    render(<ProgressView />);
     expect(screen.getByText('Стал джун за 2 дня!')).toBeTruthy();
   });
 });

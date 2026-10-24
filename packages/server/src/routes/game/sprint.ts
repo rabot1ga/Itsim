@@ -55,7 +55,7 @@ export async function sprintRoutes(app: FastifyInstance) {
     if (reward.motivation) parts.push(t('+{p0} мотивации', { p0: reward.motivation }));
     if (reward.reputation) parts.push(t('+{p0} репутации', { p0: reward.reputation }));
     return {
-      state: respondState(state, t('🏁 Спринт «{p0}» закрыт: {p1}', { p0: theme.title, p1: parts.join(', ') })),
+      state: respondState(state, t('Спринт «{p0}» закрыт: {p1}', { p0: theme.title, p1: parts.join(', ') })),
       sprint: sprintView(state, content, nowMs),
     };
   });

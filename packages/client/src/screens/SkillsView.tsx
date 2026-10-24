@@ -7,8 +7,9 @@ import { EmojiToken, ScreenTitle, SectionTitle, Spinner, ResChip } from '../comp
 import { ActionGrid, toTile } from '../components/ActionGrid';
 import { STUDY_ACTIONS } from './actionCatalogue';
 import { SkillList, BRANCH_META, type SkillInfo } from './SkillList';
+import { PixelIcon } from '../components/pixel/PixelIcon';
 /**
- * Обучение — a flat, readable catalogue.
+ * «Развитие» — a flat, readable catalogue (таб A2; бывшее «Обучение»).
  *
  * The skill forest used to be drawn as a Path-of-Exile constellation. It was
  * beautiful and unusable on a 480px phone: players panned around looking for
@@ -25,15 +26,15 @@ import { SkillList, BRANCH_META, type SkillInfo } from './SkillList';
 interface SoftSkillMeta {
   key: string;
   name: string;
-  emoji: string;
+  icon: string;
 }
 const SOFT_SKILLS: SoftSkillMeta[] = [
-  { key: 'communication', name: t('Коммуникация'), emoji: '🗣️' },
-  { key: 'english', name: t('Английский'), emoji: '🇬🇧' },
-  { key: 'time_management', name: t('Тайм-менеджмент'), emoji: '📊' },
-  { key: 'leadership', name: t('Лидерство'), emoji: '👑' },
-  { key: 'stress_resistance', name: t('Стрессоустойчивость'), emoji: '🧘' },
-  { key: 'public_speaking', name: t('Выступления'), emoji: '🎤' },
+  { key: 'communication', name: t('Коммуникация'), icon: 'people' },
+  { key: 'english', name: t('Английский'), icon: 'globe' },
+  { key: 'time_management', name: t('Тайм-менеджмент'), icon: 'calendar' },
+  { key: 'leadership', name: t('Лидерство'), icon: 'trophy' },
+  { key: 'stress_resistance', name: t('Стрессоустойчивость'), icon: 'heart' },
+  { key: 'public_speaking', name: t('Выступления'), icon: 'play' },
 ];
 interface PerkInfo {
   id: string;
@@ -42,23 +43,23 @@ interface PerkInfo {
   effects: Record<string, number>;
   flavor: string;
 }
-const PERK_EMOJI: Record<string, string> = {
-  perk_fullstack: '⚔️',
-  perk_morning_person: '🌅',
-  perk_speed_reader: '📖',
-  perk_stoic: '🗿',
-  perk_networker: '🤝',
-  perk_pro_gamer: '🎮',
-  perk_gold_rush: '🪙',
-  perk_hustler: '🧳',
+const PERK_ICON: Record<string, string> = {
+  perk_fullstack: 'code',
+  perk_morning_person: 'bulb',
+  perk_speed_reader: 'book',
+  perk_stoic: 'heart',
+  perk_networker: 'people',
+  perk_pro_gamer: 'gamepad',
+  perk_gold_rush: 'coin',
+  perk_hustler: 'briefcase',
 };
-const ARCH_EMOJI: Record<string, string> = {
-  frontend: '🎨',
-  backend: '⚙️',
-  ml: '🧠',
-  mobile: '📱',
-  qa: '🔍',
-  web3: '⛓️',
+const ARCH_ICON: Record<string, string> = {
+  frontend: 'code',
+  backend: 'chip',
+  ml: 'rocket',
+  mobile: 'laptop',
+  qa: 'check',
+  web3: 'box',
 };
 const SOFT_REQUIRE_NAMES: Record<string, string> = {
   communication: t('Коммуникация'),
@@ -169,14 +170,14 @@ export const SkillsView: React.FC = () => {
     : null;
   return (
     <div className="space-y-4 animate-fade-in">
-      <ScreenTitle emoji="📚" meta={t('{totalLevels} уровней', { totalLevels: totalLevels })}>
-        {t('Обучение')}
+      <ScreenTitle icon="book" meta={t('{totalLevels} уровней', { totalLevels: totalLevels })}>
+        {t('Развитие')}
       </ScreenTitle>
 
       {error && (
         <div role="alert" className="card panel-note panel-note-clay">
           <p className="flex items-start gap-2 text-sm text-clay-300">
-            <span aria-hidden="true">⚠️</span>
+            <PixelIcon name="warn" size={14} />
             {error}
           </p>
           <button className="btn btn-ghost btn-sm mt-2" onClick={clearError}>
@@ -206,10 +207,10 @@ export const SkillsView: React.FC = () => {
 
       <div className="segmented" role="tablist" aria-label={t('Режим обучения')}>
         <button role="tab" aria-selected={mode === 'actions'} onClick={() => setMode('actions')}>
-          {t('📖 Действия')}
+          {t('Действия')}
         </button>
         <button role="tab" aria-selected={mode === 'tracks'} onClick={() => setMode('tracks')}>
-          {t('🧭 Направления')}
+          {t('Направления')}
         </button>
       </div>
 
@@ -238,7 +239,7 @@ export const SkillsView: React.FC = () => {
                 return (
                   <div key={s.key} className="well text-center px-2 py-2.5">
                     <div className="text-base leading-none mb-1" aria-hidden="true">
-                      {s.emoji}
+                      <PixelIcon name={s.icon} size={16} />
                     </div>
                     <div className="text-2xs text-ink-500 mb-1 leading-tight">{s.name}</div>
                     <div className="num text-base font-bold text-ink-100">{lvl}</div>
@@ -302,7 +303,7 @@ export const SkillsView: React.FC = () => {
                   return (
                     <div key={v.id} className={`tile ${chosen ? 'is-chosen' : ''}`} data-selected={chosen}>
                       <div className="flex items-center gap-2 min-w-0">
-                        <EmojiToken>{ARCH_EMOJI[v.id] ?? '🧭'}</EmojiToken>
+                        <PixelIcon name={ARCH_ICON[v.id] ?? 'star'} size={14} />
                         <span className="flex-1 min-w-0 truncate text-sm font-semibold text-ink-100">{v.title}</span>
                         {v.claimed ? (
                           <ResChip tone="positive">{t('бонус ✓')}</ResChip>
@@ -366,7 +367,7 @@ export const SkillsView: React.FC = () => {
                 const canUnlock = !owned && canUnlockPerk(player, perk.requires, branchOf);
                 return (
                   <div key={perk.id} className="tile flex items-center gap-3" data-selected={owned}>
-                    <EmojiToken>{PERK_EMOJI[perk.id] ?? '✨'}</EmojiToken>
+                    <PixelIcon name={PERK_ICON[perk.id] ?? 'star'} size={14} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-semibold text-ink-100">{perk.name}</span>

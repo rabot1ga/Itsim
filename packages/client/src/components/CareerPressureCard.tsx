@@ -4,6 +4,7 @@ import { useGameStore } from '../store/gameStore';
 import { metaXpBonusPct } from '@itsim/shared';
 import { haptic } from '../lib/telegram';
 import { accordionBodyRef } from './ui';
+import { PixelIcon } from './pixel/PixelIcon';
 /**
  * Career pressure card (v2.1 balance layer).
  *
@@ -82,7 +83,7 @@ export const CareerPressureCard: React.FC = () => {
             <div className="mt-2 space-y-1 text-xs leading-relaxed">
               {metaXpBonusPct(player.meta) > 0 && (
                 <p className="flex items-center gap-1.5 text-gold-300/90">
-                  <span aria-hidden="true">🔥</span>
+                  <PixelIcon name="flame" size={14} />
                   {t('Мета-бонус: навсегда')} <span className="num">+{metaXpBonusPct(player.meta)}% XP</span>
                 </p>
               )}
@@ -101,8 +102,8 @@ export const CareerPressureCard: React.FC = () => {
                 : confirmLife
                   ? t('Точно? Всё начнётся с дня 1')
                   : player.meta && player.meta.lives > 0
-                    ? t('♻ Начать жизнь {p0}', { p0: player.meta.lives + 1 })
-                    : t('♻ Начать новую жизнь')}
+                    ? t('Начать жизнь {p0}', { p0: player.meta.lives + 1 })
+                    : t('Начать новую жизнь')}
             </button>
             {confirmLife && (
               <p className="mt-1 text-2xs text-clay-300 leading-tight">
@@ -121,7 +122,7 @@ export const CareerPressureCard: React.FC = () => {
             aria-expanded={costOpen}
             className="w-full flex items-center gap-2 text-left touch-target"
           >
-            <span aria-hidden="true">🪙</span>
+            <PixelIcon name="coin" size={14} />
             <span className="flex-1 text-sm font-semibold text-ink-100">{t('Стоимость дня')}</span>
             <span className={`num text-sm font-semibold ${cost.balanceDaily >= 0 ? 'text-moss-300' : 'text-clay-300'}`}>
               {cost.balanceDaily >= 0 ? '+' : ''}
@@ -170,7 +171,7 @@ export const CareerPressureCard: React.FC = () => {
           <div>
             <div className="flex items-baseline justify-between gap-2">
               <span className="flex items-center gap-1.5 text-sm font-semibold text-ink-100">
-                <span aria-hidden="true">🎯</span>
+                <PixelIcon name="target" size={14} />
                 {outlook!.kind === 'cto_election' ? outlook!.label : t('До «{p0}»', { p0: outlook!.label })}
               </span>
               {typeof outlook!.progress === 'number' && (
@@ -193,7 +194,7 @@ export const CareerPressureCard: React.FC = () => {
                     <div className="text-moss-300">
                       {t('Требования выполнены. Ждём ревью: через')} {outlook!.daysToReview} {t('дн.')}
                       {outlook!.competition > 1
-                        ? t(' · мест на двоих: {p0} претендента', { p0: outlook!.competition })
+                        ? t('· мест на двоих: {p0} претендента', { p0: outlook!.competition })
                         : ''}
                     </div>
                   ) : (

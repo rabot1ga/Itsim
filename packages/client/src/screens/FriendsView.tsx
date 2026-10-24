@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { ScreenTitle, SectionTitle, EmptyState, Spinner } from '../components/ui';
 import { inviteLink, openTelegramLink, haptic } from '../lib/telegram';
+import { PixelIcon } from '../components/pixel/PixelIcon';
 interface Friend {
   id: string;
   name: string;
@@ -49,7 +50,10 @@ export const FriendsView: React.FC = () => {
   };
   return (
     <div className="space-y-4 animate-fade-in">
-      <ScreenTitle emoji="👥" meta={status === 'ready' ? `${people.length} / 50` : undefined}>
+      <button onClick={() => useGameStore.getState().setView('career')} className="link-back">
+        {t('← Работа')}
+      </button>
+      <ScreenTitle icon="people" meta={status === 'ready' ? `${people.length} / 50` : undefined}>
         {t('Друзья')}
       </ScreenTitle>
 
@@ -75,7 +79,7 @@ export const FriendsView: React.FC = () => {
 
       {status === 'ready' && people.length === 0 && (
         <EmptyState
-          emoji="😶"
+          icon="people"
           title={t('Пока никого нет')}
           hint={t('Приглашай друзей и получай бонусы — вместе карьера растёт быстрее.')}
         >
@@ -110,9 +114,7 @@ export const FriendsView: React.FC = () => {
                       }}
                     />
                   ) : (
-                    <span className="friend-avatar" aria-hidden="true">
-                      🧑‍💻
-                    </span>
+                    <PixelIcon name="code" size={14} />
                   )}
                   <div className="friend-copy">
                     <h3>{person.name}</h3>

@@ -7,7 +7,7 @@ import { ProjectBoard } from '../components/ProjectBoard';
 import { CareerPressureCard } from '../components/CareerPressureCard';
 import { ActionGrid, toTile } from '../components/ActionGrid';
 import { NavLinks } from '../components/NavLinks';
-import { SIDE_JOB_EMOJI, WORK_ACTIONS, formatMoney as formatCash, type SideJobInfo } from './actionCatalogue';
+import { SIDE_JOB_ICON, WORK_ACTIONS, formatMoney as formatCash, type SideJobInfo } from './actionCatalogue';
 interface GateInfo {
   grade: string;
   label?: string;
@@ -113,7 +113,7 @@ export const CareerView: React.FC = () => {
   const offers = player.pendingOffers ?? [];
   return (
     <div className="space-y-4 animate-fade-in">
-      <ScreenTitle emoji="💼">{t('Работа')}</ScreenTitle>
+      <ScreenTitle icon="briefcase">{t('Работа')}</ScreenTitle>
 
       {error && (
         <p role="alert" className="card card-sm text-sm text-clay-300">
@@ -184,7 +184,7 @@ export const CareerView: React.FC = () => {
               const payout = job.payment + (job.paymentPerSkill ? Math.round(skillLevel * job.paymentPerSkill) : 0);
               return {
                 id: jobId,
-                emoji: SIDE_JOB_EMOJI[jobId] ?? '📦',
+                icon: SIDE_JOB_ICON[jobId] ?? 'box',
                 name: job.name,
                 energy: job.energy,
                 locked: !minSkillMet || tooEarly,
@@ -204,22 +204,19 @@ export const CareerView: React.FC = () => {
         </section>
       )}
 
-      {/* The rest of the career lives one tap away, not in the «⋮» menu */}
+      {/* The rest of the career lives one tap away, not in a menu */}
       <NavLinks
         title={t('Карьера дальше')}
         links={[
-          ...(player.job
-            ? [
-                {
-                  view: 'office',
-                  emoji: '🖥',
-                  label: t('Мой офис'),
-                  hint: t('{p0} · команда, задачи и настроение дня', { p0: player.job.position }),
-                },
-              ]
-            : []),
-          { view: 'endings', emoji: '🏁', label: t('Финалы'), hint: t('шесть способов завершить карьеру') },
-          { view: 'leaderboard', emoji: '🏆', label: t('Топ игроков'), hint: t('кто и как быстро растёт') },
+          {
+            view: 'office',
+            icon: 'screen',
+            label: t('Мой офис'),
+            hint: player.job
+              ? t('{p0} · команда, задачи и настроение дня', { p0: player.job.position })
+              : t('сначала нужна работа'),
+          },
+          { view: 'friends', icon: 'people', label: t('Коллеги и знакомые'), hint: t('отношения, события и помощь') },
         ]}
       />
 

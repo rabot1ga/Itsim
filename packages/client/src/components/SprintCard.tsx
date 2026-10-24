@@ -1,6 +1,7 @@
 import { t, fmtNumber } from '../lib/i18n';
 import React, { useState } from 'react';
 import { useGameStore } from '../store/gameStore';
+import { PixelIcon } from './pixel/PixelIcon';
 /**
  * Weekly season sprint card (P1.2).
  *
@@ -47,9 +48,7 @@ export const SprintCard: React.FC = () => {
   return (
     <section className="card space-y-2.5">
       <div className="flex items-start gap-2">
-        <span className="text-base leading-none mt-0.5 shrink-0" aria-hidden="true">
-          🗓
-        </span>
+        <PixelIcon name="calendar" size={14} />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className="text-sm font-semibold text-ink-100">{sprint.title}</span>
@@ -100,7 +99,7 @@ export const SprintCard: React.FC = () => {
       ) : (
         rewardLabel && (
           <p className="flex items-center gap-1.5 text-2xs text-ink-500">
-            <span aria-hidden="true">🔒</span>
+            <PixelIcon name="lock" size={14} />
             {t('Выполни все цели до конца недели — награда')} {rewardLabel}
           </p>
         )

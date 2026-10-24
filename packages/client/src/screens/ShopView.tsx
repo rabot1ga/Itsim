@@ -160,7 +160,7 @@ export const ShopView: React.FC = () => {
   const visible = items.filter((item) => itemInCategory(item, category, shopCatalogue ?? undefined));
   return (
     <div className="space-y-4 animate-fade-in">
-      <ScreenTitle emoji="🛍" meta={<span className="num text-moss-300">{shopMoney(player.money ?? 0)}</span>}>
+      <ScreenTitle icon="bag" meta={<span className="num text-moss-300">{shopMoney(player.money ?? 0)}</span>}>
         {t('Магазин')}
       </ScreenTitle>
       <div className="segmented" role="group" aria-label={t('Категории товаров')}>
@@ -184,7 +184,7 @@ export const ShopView: React.FC = () => {
       {loadError && (
         <div className="card">
           <EmptyState
-            emoji="🛍"
+            icon="bag"
             title={t('Магазин недоступен')}
             hint={t('Не удалось загрузить каталог. Попробуй ещё раз.')}
             bare
@@ -195,7 +195,7 @@ export const ShopView: React.FC = () => {
         </div>
       )}
       {loaded && !loadError && visible.length === 0 && (
-        <EmptyState emoji="📦" title={t('Здесь пока пусто')} hint={t('Загляни в другую категорию.')} />
+        <EmptyState icon="bag" title={t('Здесь пока пусто')} hint={t('Загляни в другую категорию.')} />
       )}
       {loaded && !loadError && (
         <div className="grid grid-cols-1 gap-2" aria-label={t('Товары')}>
@@ -324,7 +324,7 @@ export const ShopView: React.FC = () => {
       </div>
 
       <NavLinks
-        links={[{ view: 'mining', emoji: '⛏', label: t('Майнинг-ферма'), hint: t('оборудование, доход и прогноз') }]}
+        links={[{ view: 'mining', icon: 'chip', label: t('Майнинг-ферма'), hint: t('оборудование, доход и прогноз') }]}
       />
     </div>
   );

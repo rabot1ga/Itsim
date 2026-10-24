@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { ScreenTitle, SectionTitle, Toggle } from '../components/ui';
 import { haptic } from '../lib/telegram';
+import { PixelIcon } from '../components/pixel/PixelIcon';
 /**
  * Settings — local, honest and small.
  *
@@ -55,14 +56,15 @@ export const SettingsView: React.FC = () => {
   };
   return (
     <div className="space-y-4 animate-fade-in">
-      <ScreenTitle emoji="⚙️">{t('Настройки')}</ScreenTitle>
+      <button onClick={() => useGameStore.getState().setView('profile')} className="link-back">
+        {t('← Профиль')}
+      </button>
+      <ScreenTitle icon="gear">{t('Настройки')}</ScreenTitle>
 
       <section className="card">
         <div className="settings-list">
           <div className="settings-row">
-            <span className="emoji" aria-hidden="true">
-              🔔
-            </span>
+            <span className="emoji" aria-hidden="true"></span>
             <span className="settings-row-label">{t('Уведомления')}</span>
             <Toggle
               checked={notifications}
@@ -71,23 +73,17 @@ export const SettingsView: React.FC = () => {
             />
           </div>
           <div className="settings-row">
-            <span className="emoji" aria-hidden="true">
-              🎵
-            </span>
+            <span className="emoji" aria-hidden="true"></span>
             <span className="settings-row-label">{t('Звук')}</span>
             <Toggle checked={sound} label={t('Звук')} onChange={(v) => flip(KEYS.sound, v, setSound)} />
           </div>
           <div className="settings-row">
-            <span className="emoji" aria-hidden="true">
-              📳
-            </span>
+            <span className="emoji" aria-hidden="true"></span>
             <span className="settings-row-label">{t('Вибрация')}</span>
             <Toggle checked={haptics} label={t('Вибрация')} onChange={(v) => flip(KEYS.haptics, v, setHaptics)} />
           </div>
           <div className="settings-row">
-            <span className="emoji" aria-hidden="true">
-              🌗
-            </span>
+            <span className="emoji" aria-hidden="true"></span>
             <span className="settings-row-label">{t('Тема')}</span>
             <span className="settings-row-value">{t('Тёмная')}</span>
           </div>
@@ -97,9 +93,7 @@ export const SettingsView: React.FC = () => {
       <section className="card">
         <SectionTitle>{t('Язык')}</SectionTitle>
         <div className="settings-row">
-          <span className="emoji" aria-hidden="true">
-            🌍
-          </span>
+          <PixelIcon name="globe" size={14} />
           <span className="settings-row-label">{t('Язык интерфейса')}</span>
           <div className="settings-row-value" role="group" aria-label={t('Язык интерфейса')}>
             {LOCALES.map((l: Locale) => (
