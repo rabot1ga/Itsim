@@ -17,7 +17,9 @@ const errors = issues.filter((i) => i.level === 'error');
 const warnings = issues.filter((i) => i.level === 'warning');
 
 if (asJson) {
-  console.log(JSON.stringify({ ok: errors.length === 0 && (!strict || warnings.length === 0), stats, issues }, null, 2));
+  console.log(
+    JSON.stringify({ ok: errors.length === 0 && (!strict || warnings.length === 0), stats, issues }, null, 2)
+  );
 } else {
   console.log('📦 Content validation\n');
   const width = Math.max(...Object.keys(stats).map((k) => k.length));

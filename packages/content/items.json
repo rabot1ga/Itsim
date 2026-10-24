@@ -395,7 +395,10 @@
     "type": "course",
     "price": 1200000,
     "description": "Час стоит как неделя твоей стажировки. Учат не коду — учат молчать так, чтобы дослушали.",
-    "effects": { "xpBonus": 0.12, "motivationBonus": 4 },
+    "effects": {
+      "xpBonus": 0.12,
+      "motivationBonus": 4
+    },
     "icon": "exec_coaching.png",
     "nft": false,
     "rarity": "rare"
@@ -406,7 +409,10 @@
     "type": "chair",
     "price": 3500000,
     "description": "Его выносят из кабинета последним. Сидеть в нём — отдельный вид мотивации.",
-    "effects": { "motivationBonus": 12, "healthBonus": 3 },
+    "effects": {
+      "motivationBonus": 12,
+      "healthBonus": 3
+    },
     "icon": "board_chair.png",
     "nft": false,
     "rarity": "legendary",
@@ -418,9 +424,129 @@
     "type": "other",
     "price": 8000000,
     "description": "Стрелки показывают то же, что телефон. Уверенность в голосе — нет, но её продают в комплекте.",
-    "effects": { "motivationBonus": 8, "xpBonus": 0.05 },
+    "effects": {
+      "motivationBonus": 8,
+      "xpBonus": 0.05
+    },
     "icon": "aviator_watch.png",
     "nft": false,
     "rarity": "legendary"
+  },
+  {
+    "id": "pet_fox",
+    "name": "Лисёнок Рыжик",
+    "type": "pet",
+    "price": 90000,
+    "description": "Рыжий гость с барахолки: умный, наглый и очень любопытный. +3 мотивации в день.",
+    "effects": {
+      "motivationBonus": 3
+    },
+    "icon": "pet_fox.png",
+    "layerId": "pet_fox",
+    "rarity": "rare"
+  },
+  {
+    "id": "pet_owl",
+    "name": "Ночная сова",
+    "type": "pet",
+    "price": 120000,
+    "description": "Твоя совесть в ночных деплоях: молча смотрит и всё понимает. +3 мотивации в день.",
+    "effects": {
+      "motivationBonus": 3
+    },
+    "icon": "pet_owl.png",
+    "layerId": "pet_owl",
+    "rarity": "rare"
+  },
+  {
+    "id": "pet_raccoon",
+    "name": "Енот-хакер",
+    "type": "pet",
+    "price": 150000,
+    "description": "Роется в корзине, но зато чинит баги лапами. +3 мотивации и +1 здоровье в день.",
+    "effects": {
+      "motivationBonus": 3,
+      "healthBonus": 1
+    },
+    "icon": "pet_raccoon.png",
+    "layerId": "pet_raccoon",
+    "rarity": "rare"
+  },
+  {
+    "id": "pet_turtle",
+    "name": "Черепаха-долгожитель",
+    "type": "pet",
+    "price": 80000,
+    "description": "Живёт веками и никуда не спешит — пример для выгоревших. +2 мотивации и +2 здоровья в день.",
+    "effects": {
+      "motivationBonus": 2,
+      "healthBonus": 2
+    },
+    "icon": "pet_turtle.png",
+    "layerId": "pet_turtle",
+    "rarity": "rare"
+  },
+  {
+    "id": "pet_cat_shadow",
+    "name": "Теневой кот",
+    "type": "pet",
+    "price": 400000,
+    "description": "Появляется ниоткуда и знает твой пароль от продакшена. +4 мотивации в день.",
+    "effects": {
+      "motivationBonus": 4
+    },
+    "icon": "pet_cat_shadow.png",
+    "layerId": "pet_cat_shadow",
+    "rarity": "legendary"
+  },
+  {
+    "id": "pet_dragon",
+    "name": "Дракончик",
+    "type": "pet",
+    "price": 800000,
+    "description": "Согревает серверную и грозит сжечь техдолг. +4 мотивации и +2 здоровья в день.",
+    "effects": {
+      "motivationBonus": 4,
+      "healthBonus": 2
+    },
+    "icon": "pet_dragon.png",
+    "layerId": "pet_dragon",
+    "rarity": "legendary"
+  },
+  {
+    "id": "pet_halo",
+    "name": "😇 Нимб питомца",
+    "type": "pet",
+    "price": 0,
+    "description": "Только для владельцев Stars-наборов: питомец сияет невинностью. Косметика, никаких бонусов.",
+    "effects": {},
+    "icon": "pet_halo.png"
+  },
+  {
+    "id": "pet_wings",
+    "name": "🪽 Крылья питомца",
+    "type": "pet",
+    "price": 0,
+    "description": "Только для владельцев Stars-наборов: маленькие ангельские крылья. Чистая косметика.",
+    "effects": {},
+    "icon": "pet_wings.png"
+  },
+  {
+    "id": "pet_visor",
+    "name": "🥽 Кибер-визор питомца",
+    "type": "pet",
+    "price": 0,
+    "description": "Только для владельцев Stars-наборов: неоновый визор из будущего. Чистая косметика.",
+    "effects": {},
+    "icon": "pet_visor.png"
+  },
+  {
+    "id": "pet_scarf",
+    "name": "🧣 Шарф питомца",
+    "type": "pet",
+    "price": 0,
+    "description": "Только для владельцев Stars-наборов: тёплый стильный шарф. Чистая косметика.",
+    "effects": {},
+    "icon": "pet_scarf.png"
   }
 ]

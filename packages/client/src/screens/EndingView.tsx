@@ -1,3 +1,4 @@
+import { t } from '../lib/i18n';
 import React, { useMemo, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { checkEndings, ctoTenureDays } from '@itsim/shared';
@@ -13,7 +14,6 @@ const ENDING_EMOJI: Record<string, string> = {
   burnout: '🔥',
   left_it: '🚪',
 };
-
 /**
  * Endings — экран 6 финалов из ТЗ.
  *
@@ -28,19 +28,16 @@ export const EndingView: React.FC = () => {
   const [balance, setBalance] = useState<any | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
-
   React.useEffect(() => {
     fetch('/api/content/balance')
       .then((r) => r.json())
       .then((data) => setBalance(data.balance ?? null))
-      .catch(() => setError('Не удалось загрузить условия финалов'));
+      .catch(() => setError(t('Не удалось загрузить условия финалов')));
   }, []);
-
   const endings = useMemo(() => {
     if (!player || !balance) return [];
     return checkEndings(player, balance);
   }, [player, balance]);
-
   // В2 (22.10.2026): выборы борда больше не фиксируют финал в день победы —
   // CTO надо удержать. Показываем срок тем же движком, что считает доступность
   // (`ctoTenureDays` из shared), чтобы цифра на экране не могла разъехаться с
@@ -48,7 +45,6 @@ export const EndingView: React.FC = () => {
   const ctoHoldDays = Math.max(0, Math.floor(balance?.endings?.cto?.minDaysAsCto ?? 60));
   const ctoTenure = player ? ctoTenureDays(player) : 0;
   const sittingCto = player?.grade === 'cto' && Boolean(player?.job);
-
   if (!player) return null;
   const meta = player.meta;
   const memories = meta?.memories ?? [];
@@ -61,12 +57,11 @@ export const EndingView: React.FC = () => {
       // Server-side: action `claim_ending` validates the conditions again
       // and sets state.careerEnding. New Life is then available from «Ещё».
       const ok = await performAction('claim_ending', { endingId: id });
-      if (!ok) setError(useGameStore.getState().error ?? 'Не удалось зафиксировать финал');
+      if (!ok) setError(useGameStore.getState().error ?? t('Не удалось зафиксировать финал'));
     } finally {
       setBusy(null);
     }
   };
-
   return (
     <div className="space-y-4 animate-fade-in">
       <ScreenTitle
@@ -77,11 +72,12 @@ export const EndingView: React.FC = () => {
           </span>
         }
       >
-        Финалы карьеры
+        {t('Финалы карьеры')}
       </ScreenTitle>
       <p className="subtle">
-        Шесть финалов из ТЗ. Положительные открываются при выполнении условий; отрицательные срабатывают сами, если
-        долго игнорировать здоровье или деньги. После любого финала доступна «Новая жизнь» с постоянным бонусом XP.
+        {t(
+          'Шесть финалов из ТЗ. Положительные открываются при выполнении условий; отрицательные срабатывают сами, если долго игнорировать здоровье или деньги. После любого финала доступна «Новая жизнь» с постоянным бонусом XP.'
+        )}
       </p>
       {error && (
         <p role="alert" className="card card-sm text-sm text-clay-300">
@@ -98,7 +94,7 @@ export const EndingView: React.FC = () => {
             <article
               key={e.id}
               className={`card ${e.available ? 'panel-note panel-note-gold' : 'panel-note panel-note-sky'}`}
-              aria-label={e.title}
+              aria-label={t(e.title)}
             >
               <img
                 className="ending-art"
@@ -118,16 +114,16 @@ export const EndingView: React.FC = () => {
                 <span className="text-base leading-none" aria-hidden="true">
                   {ENDING_EMOJI[e.id] ?? (e.available ? '⭐' : '🔒')}
                 </span>
-                <h3 className="text-sm font-semibold text-ink-100 leading-tight flex-1">{e.title}</h3>
-                {seen && <span className="chip chip-gold shrink-0">пройдено</span>}
+                <h3 className="text-sm font-semibold text-ink-100 leading-tight flex-1">{t(e.title)}</h3>
+                {seen && <span className="chip chip-gold shrink-0">{t('пройдено')}</span>}
               </div>
-              <p className="text-sm text-ink-300 leading-relaxed mb-2">{e.description}</p>
+              <p className="text-sm text-ink-300 leading-relaxed mb-2">{t(e.description)}</p>
               {e.id === 'cto' && sittingCto && !seen && (
                 <div className="mb-2">
                   <div className="flex justify-between text-2xs text-ink-400 mb-1">
-                    <span>Срок в кресле CTO</span>
+                    <span>{t('Срок в кресле CTO')}</span>
                     <span className="num">
-                      {ctoTenure} / {ctoHoldDays} дн.
+                      {ctoTenure} / {ctoHoldDays} {t('дн.')}
                     </span>
                   </div>
                   <div className="meter">
@@ -147,22 +143,22 @@ export const EndingView: React.FC = () => {
                 className={`btn w-full ${e.available && !seen ? 'btn-primary' : 'btn-secondary'}`}
               >
                 {seen
-                  ? 'Зафиксировано — начни новую жизнь'
+                  ? t('Зафиксировано — начни новую жизнь')
                   : e.available
                     ? busy === e.id
-                      ? 'Фиксируем…'
-                      : 'Зафиксировать финал'
-                    : 'Условия не выполнены'}
+                      ? t('Фиксируем…')
+                      : t('Зафиксировать финал')
+                    : t('Условия не выполнены')}
               </button>
             </article>
           );
         })}
-        {endings.length === 0 && <p className="subtle">Условия финалов подгружаются…</p>}
+        {endings.length === 0 && <p className="subtle">{t('Условия финалов подгружаются…')}</p>}
       </div>
       {meta && (
         <p className="subtle">
-          Прожито жизней: {meta.lives ?? 0} · пройдено финалов: {memories.length} · лучший грейд:{' '}
-          {meta.bestGrade ?? '—'} · глубочайший день: {meta.deepestDay ?? 0}
+          {t('Прожито жизней:')} {meta.lives ?? 0} {t('· пройдено финалов:')} {memories.length} {t('· лучший грейд:')}{' '}
+          {meta.bestGrade ?? '—'} {t('· глубочайший день:')} {meta.deepestDay ?? 0}
         </p>
       )}
     </div>

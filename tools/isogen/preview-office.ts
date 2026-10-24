@@ -22,7 +22,7 @@ const manifest = JSON.parse(fs.readFileSync(path.join(PUBLIC, 'iso/manifest.json
   sprites: Record<string, SpriteMeta>;
 };
 
-const out = process.argv[2]?.startsWith('--') ? '/tmp/iso/offices.png' : process.argv[2] ?? '/tmp/iso/offices.png';
+const out = process.argv[2]?.startsWith('--') ? '/tmp/iso/offices.png' : (process.argv[2] ?? '/tmp/iso/offices.png');
 const si = process.argv.indexOf('--scale');
 const SCALE = si === -1 ? 2 : Number(process.argv[si + 1]);
 
@@ -61,7 +61,9 @@ async function render(input: OfficeInput) {
 
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${vp.width}" height="${vp.height}" shape-rendering="crispEdges">
 ${polys
-  .map((p) => `<polygon points="${pointsAttr(p.points)}" fill="${p.fill}"${p.opacity ? ` opacity="${p.opacity}"` : ''}/>`)
+  .map(
+    (p) => `<polygon points="${pointsAttr(p.points)}" fill="${p.fill}"${p.opacity ? ` opacity="${p.opacity}"` : ''}/>`
+  )
   .join('\n')}
 </svg>`;
 
@@ -99,7 +101,10 @@ const sheet = await sharp({
   .composite(
     await Promise.all(
       rendered.map(async (r, i) => ({
-        input: await sharp(r.buf).resize(r.w * SCALE, r.h * SCALE, { kernel: 'nearest' }).png().toBuffer(),
+        input: await sharp(r.buf)
+          .resize(r.w * SCALE, r.h * SCALE, { kernel: 'nearest' })
+          .png()
+          .toBuffer(),
         left: (cellW * (i % COLS) + 4) * SCALE,
         top: (cellH * Math.floor(i / COLS) + 4) * SCALE,
       }))

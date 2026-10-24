@@ -137,7 +137,13 @@ server {
 
 - Сохранения: `DATA_DIR/<telegramId>.json`, атомарная запись (tmp + rename).
 - Покупки: `DATA_DIR/entitlements.json` (аудит + идемпотентность начислений).
-- NFT-мок: `DATA_DIR/nft_registry.json`.
+
+**PostgreSQL (рекомендуется для прода):** `STORAGE=postgres` + `DATABASE_URL`
+включают Prisma-бэкенд; структуру (`players`, `purchases`) создают SQL-миграции
+`packages/server/src/db/migrations/*.sql` при старте сервера. Существующие
+JSON-файлы переносит `STORAGE=postgres DATABASE_URL=... npm run storage:import`
+(идемпотентно). GDPR-удаление (`/delete_my_data`) стирает только `players`;
+строки `purchases` остаются как платёжный аудит.
 
 **Бэкап:** достаточно копировать `DATA_DIR` (например, `restic`/`rsync` раз в час).
 **Миграции:** при загрузке сейв прогоняется через `migrateState()` и, если
@@ -170,5 +176,6 @@ curl http://127.0.0.1:3002/health
 - [ ] `.env` заполнен, `NODE_ENV=production`, сервер стартует без предупреждений;
 - [ ] `setWebhook` для платежей выполнен, `getWebhookInfo` не показывает ошибок;
 - [ ] бот отвечает на `/start` и открывает мини-апп;
-- [ ] `DATA_DIR` бэкапится и лежит вне репозитория;
+- [ ] `DATA_DIR` бэкапится и лежит вне репозитория (или задан `STORAGE=postgres` +
+      `DATABASE_URL` и настроены бэкапы PostgreSQL);
 - [ ] баланс проверен симулятором: `npm run simulate -- --check`.

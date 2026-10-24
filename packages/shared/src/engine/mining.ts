@@ -30,11 +30,7 @@ export function miningDayNoise(day: number): number {
  * Daily mining income for a given hashrate on a given day.
  * price = priceBase * (1 + volatility * noise) — deterministic random walk.
  */
-export function miningDailyIncome(
-  hashrate: number,
-  day: number,
-  cfg: MiningConfig
-): MiningIncome {
+export function miningDailyIncome(hashrate: number, day: number, cfg: MiningConfig): MiningIncome {
   const price = cfg.priceBase * (1 + cfg.volatility * miningDayNoise(day));
   const gross = hashrate * price;
   const electricity = hashrate * cfg.electricityPerHashrate;
@@ -49,10 +45,7 @@ export function miningDailyIncome(
 /**
  * Total hashrate from owned items
  */
-export function hashrateOfItems(
-  items: string[],
-  defs: Array<Pick<ItemDefinition, 'id' | 'effects'>>
-): number {
+export function hashrateOfItems(items: string[], defs: Array<Pick<ItemDefinition, 'id' | 'effects'>>): number {
   const owned = new Set(items);
   let total = 0;
   for (const def of defs) {
@@ -66,10 +59,7 @@ export function hashrateOfItems(
 /**
  * Total electricity savings fraction (summed, capped at 0.9)
  */
-export function electricitySaveOfItems(
-  items: string[],
-  defs: Array<Pick<ItemDefinition, 'id' | 'effects'>>
-): number {
+export function electricitySaveOfItems(items: string[], defs: Array<Pick<ItemDefinition, 'id' | 'effects'>>): number {
   const owned = new Set(items);
   let total = 0;
   for (const def of defs) {

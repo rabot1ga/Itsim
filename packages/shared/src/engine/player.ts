@@ -1,5 +1,6 @@
 import { PlayerState } from '../types';
 import { CURRENT_STATE_VERSION } from './migrations';
+import { makeRngSalt } from './utils';
 
 /**
  * Player creation and helpers
@@ -11,6 +12,9 @@ import { CURRENT_STATE_VERSION } from './migrations';
 export function createNewPlayer(): PlayerState {
   return {
     version: CURRENT_STATE_VERSION,
+    // Секретная соль серверного RNG + счётчик бросков (P2.4); клиенту не отдаются.
+    rngSalt: makeRngSalt(),
+    rngSeq: 0,
 
     currentDay: 1,
     grade: 'unemployed',
@@ -21,6 +25,7 @@ export function createNewPlayer(): PlayerState {
     maxEnergy: 10,
     reputation: 0,
     bankedDays: 0,
+    bankSlots: 0,
 
     skills: {},
     perks: [],
@@ -54,6 +59,7 @@ export function createNewPlayer(): PlayerState {
     daysSinceRegistration: 1,
     lastMotivationDrift: 0,
     burnoutDays: 0,
+    hungryDays: 0,
     lastPromotionDay: 0,
     ctoCooldownUntilDay: 0,
   };

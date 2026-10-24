@@ -18,7 +18,13 @@ const item = (overrides: Partial<ShopItem>): ShopItem => ({
 });
 
 const FALLBACK_CATALOGUE: ShopCategoryDef[] = [
-  { id: 'equipment', label: 'Техника', match: ['pc', 'headphones'], matchIds: ['mechanical_keyboard', 'solar_panel'], matchPrefixes: ['mining_'] },
+  {
+    id: 'equipment',
+    label: 'Техника',
+    match: ['pc', 'headphones'],
+    matchIds: ['mechanical_keyboard', 'solar_panel'],
+    matchPrefixes: ['mining_'],
+  },
   { id: 'home', label: 'Для дома', match: ['housing', 'chair', 'coffee', 'other'] },
   { id: 'pets', label: 'Питомцы', match: ['pet'] },
   { id: 'courses', label: 'Курсы', match: ['course'] },

@@ -1,9 +1,4 @@
-import {
-  loadContentBundle,
-  ContentValidationError,
-  type ContentBundle,
-  type ContentIssue,
-} from '@itsim/content';
+import { loadContentBundle, ContentValidationError, type ContentBundle, type ContentIssue } from '@itsim/content';
 
 /**
  * Server-side content access.

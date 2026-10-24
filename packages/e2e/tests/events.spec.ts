@@ -55,7 +55,8 @@ for (const width of [320, 390, 480]) {
     await expect(receipt.getByText('-1 XP', { exact: true })).toBeVisible();
     await receipt.getByRole('button', { name: 'Продолжить' }).click();
     await expect(card).toHaveCount(0);
-    await expect(page.getByRole('region', { name: 'Твоя комната' })).toBeVisible();
+    // назад на «Главную»: комната там — миниатюра тира, а не регион-сцена
+    await expect(page.locator('img.room-thumb')).toBeVisible();
     expect(chooseCount).toBe(2);
   });
 }
@@ -69,10 +70,12 @@ test('profile opens from portrait and exposes live stats and goals', async ({ pa
   // «Профиль персонажа» — это hero-карточка с фигурой, статистика — отдельная
   // <section>, поэтому ищем по экрану, а не внутри региона.
   await expect(page.getByText('Основной навык', { exact: true })).toBeVisible();
-  // «Портрета» одной картинкой больше нет: лицо и тело собираются слоями,
-  // фигуру отдаёт ProceduralAvatar (см. docs/QUESTIONS, решение D)
-  await expect(profile.getByLabel('Аватар игрока')).toBeVisible();
-  await expect(profile.locator('img[src^="/layers/avatar/"]')).toHaveCount(0);
+  // «Карточка жизни» (редизайн 22.10.2026): баннер-портрет настроения
+  // (/art/profile/<mood>.webp), слоистой фигуры и ассетов /layers/ больше нет
+  const moodBanner = profile.getByRole('img', { name: /^Настроение/ });
+  await expect(moodBanner).toBeVisible();
+  await expect(moodBanner).toHaveAttribute('src', /^\/art\/profile\/(normal|tired|burnout)\.webp$/);
+  await expect(profile.locator('img[src^="/layers/"]')).toHaveCount(0);
   await page.getByRole('button', { name: 'Цели и достижения', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Цели', exact: true })).toBeVisible();
 });

@@ -28,7 +28,7 @@ const arg = (flag: string, dflt: number) => {
   const i = process.argv.indexOf(flag);
   return i === -1 ? dflt : Number(process.argv[i + 1]);
 };
-const out = process.argv[2]?.startsWith('--') ? '/tmp/iso/room.png' : process.argv[2] ?? '/tmp/iso/room.png';
+const out = process.argv[2]?.startsWith('--') ? '/tmp/iso/room.png' : (process.argv[2] ?? '/tmp/iso/room.png');
 const SCALE = arg('--scale', 2);
 const COLS = arg('--cols', 4);
 
@@ -79,7 +79,9 @@ async function renderRoom(player: ScenePlayer) {
 
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${vp.width}" height="${vp.height}" shape-rendering="crispEdges">
 ${polys
-  .map((p) => `<polygon points="${pointsAttr(p.points)}" fill="${p.fill}"${p.opacity ? ` opacity="${p.opacity}"` : ''}/>`)
+  .map(
+    (p) => `<polygon points="${pointsAttr(p.points)}" fill="${p.fill}"${p.opacity ? ` opacity="${p.opacity}"` : ''}/>`
+  )
   .join('\n')}
 </svg>`;
 
@@ -128,7 +130,10 @@ const sheet = await sharp({
   .composite(
     await Promise.all(
       rendered.map(async (r, i) => ({
-        input: await sharp(r.buf).resize(r.w * SCALE, r.h * SCALE, { kernel: 'nearest' }).png().toBuffer(),
+        input: await sharp(r.buf)
+          .resize(r.w * SCALE, r.h * SCALE, { kernel: 'nearest' })
+          .png()
+          .toBuffer(),
         left: (cellW * (i % COLS) + 4) * SCALE,
         top: (cellH * Math.floor(i / COLS) + 4) * SCALE,
       }))

@@ -1,0 +1,29 @@
+{
+  "listingsPerDay": 3,
+  "pool": [
+    {
+      "itemId": "pet_fox",
+      "weight": 30
+    },
+    {
+      "itemId": "pet_owl",
+      "weight": 30
+    },
+    {
+      "itemId": "pet_raccoon",
+      "weight": 25
+    },
+    {
+      "itemId": "pet_turtle",
+      "weight": 30
+    },
+    {
+      "itemId": "pet_cat_shadow",
+      "weight": 10
+    },
+    {
+      "itemId": "pet_dragon",
+      "weight": 5
+    }
+  ]
+}

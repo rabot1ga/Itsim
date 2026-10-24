@@ -26,8 +26,18 @@ describe('pixel icons', () => {
 
   it('has icons for every bottom-tab and resource', () => {
     for (const required of [
-      'calendar', 'book', 'briefcase', 'house', 'bag', 'trophy', 'chart',
-      'bolt', 'heart', 'flame', 'star', 'coin',
+      'calendar',
+      'book',
+      'briefcase',
+      'house',
+      'bag',
+      'trophy',
+      'chart',
+      'bolt',
+      'heart',
+      'flame',
+      'star',
+      'coin',
     ]) {
       expect(PIXEL_ICONS[required], required).toBeDefined();
     }

@@ -12,10 +12,7 @@ export function clamp(value: number, min: number, max: number): number {
 /**
  * Weighted random pick from items with a `weight` property
  */
-export function weightedPick<T extends { weight: number }>(
-  items: T[],
-  rng: () => number
-): T | null {
+export function weightedPick<T extends { weight: number }>(items: T[], rng: () => number): T | null {
   if (items.length === 0) return null;
 
   const totalWeight = items.reduce((sum, item) => sum + Math.max(0, item.weight), 0);
@@ -37,7 +34,71 @@ export function generateId(): string {
     return crypto.randomUUID();
   }
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    const r = Math.random() * 16 | 0;
-    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    const r = (Math.random() * 16) | 0;
+    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
   });
+}
+/**
+ * xmur3: hash a string into a 32-bit seed (deterministic across engines).
+ * Жил в genetics.ts; после снятия идентичности (22.10.2026) остался нужен
+ * детерминированным дневным роллам (`_day.ts`) — переехал в utils.
+ */
+function hashStringToSeed(str: string): number {
+  let h = 1779033703 ^ str.length;
+  for (let i = 0; i < str.length; i++) {
+    h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+    h = (h << 13) | (h >>> 19);
+  }
+  h = Math.imul(h ^ (h >>> 16), 2246822507);
+  h = Math.imul(h ^ (h >>> 13), 3266489909);
+  return (h ^= h >>> 16) >>> 0;
+}
+
+/** mulberry32 PRNG — deterministic integer-math RNG */
+export function seededRng(seed: string): () => number {
+  let a = hashStringToSeed(seed);
+  return () => {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/**
+ * Секретная соль серверного RNG (P2.4, docs/PROPOSALS-2026-10-23-rng.md).
+ * Генерится при создании сейва и миграции v6; клиенту не отдаётся
+ * (`stripInternal` на сервере). Hex 16 байт.
+ */
+export function makeRngSalt(): string {
+  // ITSIM_RNG_SALT пинит соль — воспроизводимые прогоны e2e/dev (P2.5).
+  // В браузере переменной нет: клиентская соль остаётся случайной.
+  const pinned = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env
+    ?.ITSIM_RNG_SALT;
+  if (pinned) return pinned;
+  const bytes = new Uint8Array(16);
+  const cryptoObj = (globalThis as { crypto?: { getRandomValues?: (a: Uint8Array) => Uint8Array } }).crypto;
+  if (cryptoObj?.getRandomValues) {
+    cryptoObj.getRandomValues(bytes);
+  } else {
+    for (let i = 0; i < bytes.length; i++) bytes[i] = Math.floor(Math.random() * 256);
+  }
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+/**
+ * Deterministic weighted pick with a per-slot salt
+ */
+export function seededWeightedPick<T extends { weight: number }>(items: T[], seed: string, salt: string): T {
+  const rng = seededRng(`${seed}:${salt}`);
+  const total = items.reduce((sum, item) => sum + Math.max(0, item.weight), 0);
+  if (total <= 0) return items[0];
+
+  let roll = rng() * total;
+  for (const item of items) {
+    roll -= Math.max(0, item.weight);
+    if (roll <= 0) return item;
+  }
+  return items[items.length - 1];
 }

@@ -23,6 +23,7 @@ import { archetypeRoutes } from './archetype.js';
 import { interviewRoutes } from './interview.js';
 import { dayRoutes } from './day.js';
 import { miscRoutes } from './misc.js';
+import { marketplaceRoutes } from './marketplace.js';
 
 export async function gameRoutes(app: FastifyInstance) {
   // All game routes require auth
@@ -35,4 +36,5 @@ export async function gameRoutes(app: FastifyInstance) {
   await app.register(interviewRoutes);
   await app.register(dayRoutes);
   await app.register(miscRoutes);
+  await app.register(marketplaceRoutes);
 }

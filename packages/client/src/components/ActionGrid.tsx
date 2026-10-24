@@ -1,13 +1,12 @@
+import { t } from '../lib/i18n';
 import React from 'react';
 import { ResChip } from './ui';
 import { formatMoney, type ActionDef } from '../screens/actionCatalogue';
-
 /**
  * A grid of action tiles — the single way the game offers «spend energy, get
  * something». Every tab renders its own slice of the catalogue through it, so
  * a tile looks and behaves the same whether it is a sprint task or a walk.
  */
-
 export interface ActionTile {
   id: string;
   emoji: string;
@@ -21,7 +20,6 @@ export interface ActionTile {
   /** extra chips after the cost — payouts, bonuses */
   gain?: React.ReactNode;
 }
-
 export const toTile = (action: ActionDef, hasJob: boolean): ActionTile => ({
   id: action.id,
   emoji: action.emoji,
@@ -30,9 +28,8 @@ export const toTile = (action: ActionDef, hasJob: boolean): ActionTile => ({
   cost: action.cost,
   hint: action.hint,
   locked: Boolean(action.requiresJob && !hasJob),
-  lockLabel: 'Нужна работа',
+  lockLabel: t('Нужна работа'),
 });
-
 export const ActionGrid: React.FC<{
   actions: ActionTile[];
   energy: number;

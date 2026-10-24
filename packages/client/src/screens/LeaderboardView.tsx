@@ -1,8 +1,8 @@
+import { t } from '../lib/i18n';
 import React, { useEffect, useState } from 'react';
 import { useGameStore, apiRequest } from '../store/gameStore';
 import type { RatingMetric } from '@itsim/shared';
 import { Spinner, EmptyState, ScreenTitle } from '../components/ui';
-
 /**
  * Leaderboard — real ratings from persisted player states.
  *
@@ -11,7 +11,6 @@ import { Spinner, EmptyState, ScreenTitle } from '../components/ui';
  * сортирует по тем самым компонентам, из которых `calculateRating` складывает
  * итог (packages/shared/src/engine/rating.ts), и только что показывает.
  */
-
 interface LeaderRow {
   rank: number;
   name: string;
@@ -23,21 +22,18 @@ interface LeaderRow {
   honest?: boolean;
   ending?: string | null;
 }
-
 const GRADE_LABELS: Record<string, string> = {
-  unemployed: 'Без работы',
-  intern: 'Стажёр',
+  unemployed: t('Без работы'),
+  intern: t('Стажёр'),
   junior: 'Junior',
   middle: 'Middle',
   senior: 'Senior',
   teamlead: 'Teamlead',
-  architect: 'Архитектор',
+  architect: t('Архитектор'),
   cto: 'CTO',
 };
-
 /** Podium medals; everybody else gets a quiet number. */
 const MEDAL: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
-
 /**
  * Вкладки — четыре метрики из ТЗ плюс «Рейтинг», потому что им отвечает сервер
  * по умолчанию и именно это число показывает шапка. `id` типизированы
@@ -47,15 +43,21 @@ const MEDAL: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
  * «Rep», а не «Репутация»: на 320 px пятая длинная подпись выталкивала бы
  * строку в горизонтальный скролл, у которого скроллбар скрыт дизайном.
  */
-const TABS: { id: RatingMetric; label: string; unit: string }[] = [
-  { id: 'rating', label: 'Рейтинг', unit: '⭐' },
-  { id: 'career', label: 'Карьера', unit: '/100' },
-  { id: 'skills', label: 'Навыки', unit: '/100' },
-  { id: 'money', label: 'Деньги', unit: '/100' },
+const TABS: {
+  id: RatingMetric;
+  label: string;
+  unit: string;
+}[] = [
+  { id: 'rating', label: t('Рейтинг'), unit: '⭐' },
+  { id: 'career', label: t('Карьера'), unit: '/100' },
+  { id: 'skills', label: t('Навыки'), unit: '/100' },
+  { id: 'money', label: t('Деньги'), unit: '/100' },
   { id: 'reputation', label: 'Rep', unit: '/100' },
 ];
-
-const Row: React.FC<{ row: LeaderRow; unit: string }> = ({ row, unit }) => (
+const Row: React.FC<{
+  row: LeaderRow;
+  unit: string;
+}> = ({ row, unit }) => (
   <div className={`lb-row ${row.isYou ? 'is-me' : ''}`}>
     <span className="lb-rank num" aria-hidden="true">
       {MEDAL[row.rank] ?? row.rank}
@@ -63,10 +65,13 @@ const Row: React.FC<{ row: LeaderRow; unit: string }> = ({ row, unit }) => (
     <div className="flex-1 min-w-0">
       <div className="lb-name">
         {row.name}
-        {row.isYou && <span className="text-2xs text-ink-500"> · ты</span>}
+        {row.isYou && <span className="text-2xs text-ink-500"> {t('· ты')}</span>}
       </div>
       <span className="lb-meta">
-        {GRADE_LABELS[row.grade] ?? row.grade} · <span className="num">день {row.day}</span>
+        {GRADE_LABELS[row.grade] ?? row.grade} ·{' '}
+        <span className="num">
+          {t('день')} {row.day}
+        </span>
       </span>
     </div>
     <span className="lb-score num">
@@ -74,7 +79,6 @@ const Row: React.FC<{ row: LeaderRow; unit: string }> = ({ row, unit }) => (
     </span>
   </div>
 );
-
 export const LeaderboardView: React.FC = () => {
   const player = useGameStore((s) => s.player);
   const [rows, setRows] = useState<LeaderRow[]>([]);
@@ -83,9 +87,7 @@ export const LeaderboardView: React.FC = () => {
   const [honestOnly, setHonestOnly] = useState(false);
   const [metric, setMetric] = useState<RatingMetric>('rating');
   const [loaded, setLoaded] = useState(false);
-
   const unit = TABS.find((t) => t.id === metric)?.unit ?? '⭐';
-
   useEffect(() => {
     let cancelled = false;
     setLoaded(false);
@@ -102,23 +104,22 @@ export const LeaderboardView: React.FC = () => {
       cancelled = true;
     };
   }, [player?.telegramId, honestOnly, metric]);
-
   const youOutsidePage = you && !rows.some((r) => r.isYou);
-
   return (
     <div className="space-y-4 animate-fade-in">
       <ScreenTitle
         emoji="🏆"
-        meta={player?.ratingScore !== undefined ? `твой рейтинг ${player.ratingScore} ⭐` : undefined}
+        meta={player?.ratingScore !== undefined ? t('твой рейтинг {p0} ⭐', { p0: player.ratingScore }) : undefined}
       >
-        Топ игроков
+        {t('Топ игроков')}
       </ScreenTitle>
       <p className="subtle -mt-2">
-        Рейтинг складывается из карьеры, навыков, денег, репутации, ачивок и жилья — вкладки считают место по этим же
-        компонентам (0…100), «Рейтинг» — итог (0…1000).
+        {t(
+          'Рейтинг складывается из карьеры, навыков, денег, репутации, ачивок и жилья — вкладки считают место по этим же компонентам (0…100), «Рейтинг» — итог (0…1000).'
+        )}
       </p>
 
-      <div className="segmented" role="group" aria-label="Метрика рейтинга">
+      <div className="segmented" role="group" aria-label={t('Метрика рейтинга')}>
         {TABS.map((tab) => (
           <button key={tab.id} aria-pressed={metric === tab.id} onClick={() => setMetric(tab.id)}>
             {tab.label}
@@ -126,10 +127,10 @@ export const LeaderboardView: React.FC = () => {
         ))}
       </div>
 
-      <div className="segmented" role="group" aria-label="Фильтр рейтинга">
+      <div className="segmented" role="group" aria-label={t('Фильтр рейтинга')}>
         {[
-          { id: false, label: 'Все' },
-          { id: true, label: 'Без бустеров' },
+          { id: false, label: t('Все') },
+          { id: true, label: t('Без бустеров') },
         ].map((tab) => (
           <button key={String(tab.id)} aria-pressed={honestOnly === tab.id} onClick={() => setHonestOnly(tab.id)}>
             {tab.label}
@@ -137,13 +138,13 @@ export const LeaderboardView: React.FC = () => {
         ))}
         {total > 0 && (
           <span className="chip ml-auto shrink-0">
-            игроков: <span className="num">{total}</span>
+            {t('игроков:')} <span className="num">{total}</span>
           </span>
         )}
       </div>
 
       <div className="space-y-1.5">
-        {!loaded && <Spinner label="Считаем рейтинг…" />}
+        {!loaded && <Spinner label={t('Считаем рейтинг…')} />}
         {rows.map((row) => (
           <Row key={row.rank} row={row} unit={unit} />
         ))}
@@ -154,7 +155,7 @@ export const LeaderboardView: React.FC = () => {
           </>
         )}
         {loaded && rows.length === 0 && (
-          <EmptyState emoji="📊" title="Пока пусто" hint="Сыграй первый день — и попадёшь в топ." />
+          <EmptyState emoji="📊" title={t('Пока пусто')} hint={t('Сыграй первый день — и попадёшь в топ.')} />
         )}
       </div>
     </div>

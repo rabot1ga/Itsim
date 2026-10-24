@@ -1,7 +1,7 @@
+import { t, fmtNumber } from '../lib/i18n';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { Spinner, EmptyState, ScreenTitle, SectionTitle } from '../components/ui';
-
 /**
  * Mining — пассивный доход от майнинг-фермы.
  *
@@ -14,11 +14,12 @@ export const MiningView: React.FC = () => {
   const player = useGameStore((s) => s.player);
   const mining = useGameStore((s) => s.mining);
   const [items, setItems] = useState<any[] | null>(null);
-  const [cfg, setCfg] = useState<{ priceBase: number; volatility: number; electricityPerHashrate: number } | null>(
-    null
-  );
+  const [cfg, setCfg] = useState<{
+    priceBase: number;
+    volatility: number;
+    electricityPerHashrate: number;
+  } | null>(null);
   const [loadError, setLoadError] = useState(false);
-
   useEffect(() => {
     const controller = new AbortController();
     setLoadError(false);
@@ -41,7 +42,6 @@ export const MiningView: React.FC = () => {
       });
     return () => controller.abort();
   }, []);
-
   const farms = useMemo(() => {
     if (!items || !player) return [];
     const owned = new Set(player.items ?? []);
@@ -55,15 +55,22 @@ export const MiningView: React.FC = () => {
       owned: owned.has(it.id),
     }));
   }, [items, player]);
-
   const hashrate = mining?.hashrate ?? 0;
   const currentDay = player?.currentDay ?? 1;
-
   // 7-day forecast: deterministic, mirrors the engine's miningDailyIncome.
   // Declared before the early return so the hook order never changes.
   const forecast = useMemo(() => {
-    if (!cfg || hashrate <= 0) return [] as { day: number; net: number; price: number }[];
-    const out: { day: number; net: number; price: number }[] = [];
+    if (!cfg || hashrate <= 0)
+      return [] as {
+        day: number;
+        net: number;
+        price: number;
+      }[];
+    const out: {
+      day: number;
+      net: number;
+      price: number;
+    }[] = [];
     const start = currentDay;
     for (let i = 1; i <= 7; i++) {
       const day = start + i;
@@ -77,48 +84,45 @@ export const MiningView: React.FC = () => {
     }
     return out;
   }, [cfg, hashrate, currentDay]);
-
   const weekNet = forecast.reduce((s, d) => s + d.net, 0);
   const maxAbs = Math.max(1, ...forecast.map((d) => Math.abs(d.net)));
-
   if (!player) return null;
-
   return (
     <div className="space-y-4 animate-fade-in">
       <ScreenTitle
         emoji="⛏"
         meta={
-          <span className="num" aria-label="Хешрейт">
-            {hashrate > 0 ? `${hashrate} MH/s` : 'нет фермы'}
+          <span className="num" aria-label={t('Хешрейт')}>
+            {hashrate > 0 ? `${hashrate} MH/s` : t('нет фермы')}
           </span>
         }
       >
-        Майнинг
+        {t('Майнинг')}
       </ScreenTitle>
 
       {/* Live summary — same numbers as the main screen card, so the two never disagree */}
       {mining ? (
-        <article className="card shop-product" aria-label="Доход фермы">
+        <article className="card shop-product" aria-label={t('Доход фермы')}>
           <span className="shop-product-art" aria-hidden="true">
             🪙
           </span>
           <div className="shop-product-copy">
-            <h3>Сегодня</h3>
+            <h3>{t('Сегодня')}</h3>
             <p className="shop-product-effects">
-              Курс {mining.price.toFixed(1)} ₽/MH · ферма: {mining.hashrate} MH/s
+              {t('Курс')} {mining.price.toFixed(1)} {t('₽/MH · ферма:')} {mining.hashrate} MH/s
             </p>
             <p className="text-xs text-ink-500 mt-1">
-              Валовый доход {mining.gross.toLocaleString('ru-RU')} ₽, электричество −
-              {mining.electricity.toLocaleString('ru-RU')} ₽
+              {t('Валовый доход')} {fmtNumber(mining.gross)} {t('₽, электричество −')}
+              {fmtNumber(mining.electricity)} ₽
             </p>
           </div>
           <div className="shop-product-buy">
             <span
               className={`num text-sm font-semibold ${mining.net >= 0 ? 'text-moss-300' : 'text-clay-300'}`}
-              aria-label="Чистый доход"
+              aria-label={t('Чистый доход')}
             >
               {mining.net >= 0 ? '+' : ''}
-              {mining.net.toLocaleString('ru-RU')} ₽/день
+              {fmtNumber(mining.net)} {t('₽/день')}
             </span>
           </div>
         </article>
@@ -127,26 +131,28 @@ export const MiningView: React.FC = () => {
           <EmptyState
             bare
             emoji="⛏"
-            title="Ферма не запущена"
-            hint="Купи GPU/риг/асик в магазине, чтобы получать пассивный доход. Чем больше хешрейт — тем выше валовый доход, но и счёт за свет."
+            title={t('Ферма не запущена')}
+            hint={t(
+              'Купи GPU/риг/асик в магазине, чтобы получать пассивный доход. Чем больше хешрейт — тем выше валовый доход, но и счёт за свет.'
+            )}
           />
           <button className="btn btn-primary w-full mt-3" onClick={() => useGameStore.getState().setView('shop')}>
-            В магазин
+            {t('В магазин')}
           </button>
         </div>
       )}
 
       {/* 7-day forecast (deterministic, no fake randomness) */}
       {hashrate > 0 && forecast.length > 0 && (
-        <article className="card" aria-label="Прогноз на 7 дней">
+        <article className="card" aria-label={t('Прогноз на 7 дней')}>
           <header className="flex items-center justify-between mb-3">
-            <SectionTitle>Прогноз · 7 дней</SectionTitle>
+            <SectionTitle>{t('Прогноз · 7 дней')}</SectionTitle>
             <span
               className={`num text-xs font-semibold ${weekNet >= 0 ? 'text-moss-300' : 'text-clay-300'}`}
-              aria-label="Итого за неделю"
+              aria-label={t('Итого за неделю')}
             >
               {weekNet >= 0 ? '+' : ''}
-              {weekNet.toLocaleString('ru-RU')} ₽
+              {fmtNumber(weekNet)} ₽
             </span>
           </header>
           <div className="flex items-end gap-1 h-16">
@@ -157,7 +163,7 @@ export const MiningView: React.FC = () => {
                 <div
                   key={d.day}
                   className="flex-1 flex flex-col items-center justify-end gap-1"
-                  title={`День ${d.day}: ${d.net} ₽`}
+                  title={t('День {p0}: {p1} ₽', { p0: d.day, p1: d.net })}
                 >
                   <span
                     aria-hidden="true"
@@ -179,32 +185,30 @@ export const MiningView: React.FC = () => {
       )}
 
       {/* Farm inventory + shop teaser */}
-      <article className="card" aria-label="Оборудование">
-        <SectionTitle className="mb-3">Оборудование</SectionTitle>
+      <article className="card" aria-label={t('Оборудование')}>
+        <SectionTitle className="mb-3">{t('Оборудование')}</SectionTitle>
         {loadError ? (
-          <p className="text-xs text-clay-300">Не удалось загрузить каталог ферм</p>
+          <p className="text-xs text-clay-300">{t('Не удалось загрузить каталог ферм')}</p>
         ) : items === null ? (
-          <Spinner label="Открываем ферму…" />
+          <Spinner label={t('Открываем ферму…')} />
         ) : farms.length === 0 ? (
-          <p className="subtle">В каталоге пока нет майнинг-оборудования</p>
+          <p className="subtle">{t('В каталоге пока нет майнинг-оборудования')}</p>
         ) : (
           <ul className="space-y-1.5">
             {farms.map((f) => (
               <li
                 key={f.id}
-                className={`flex items-center justify-between gap-2 rounded-xl border px-3 py-2 ${
-                  f.owned ? 'border-moss-500 bg-moss-900/25' : 'border-ink-700 bg-ink-950'
-                }`}
+                className={`flex items-center justify-between gap-2 rounded-xl border px-3 py-2 ${f.owned ? 'border-moss-500 bg-moss-900/25' : 'border-ink-700 bg-ink-950'}`}
               >
                 <div className="min-w-0">
                   <p className={`text-sm ${f.owned ? 'text-moss-300 font-medium' : 'text-ink-200'}`}>{f.name}</p>
                   <p className="text-2xs text-ink-500">
                     {f.hashrate} MH/s
-                    {f.electricitySave ? ` · −${Math.round(f.electricitySave * 100)}% свет` : ''}
+                    {f.electricitySave ? t(' · −{p0}% свет', { p0: Math.round(f.electricitySave * 100) }) : ''}
                   </p>
                 </div>
                 <span className={`text-2xs shrink-0 ${f.owned ? 'text-moss-300' : 'text-ink-500'}`}>
-                  {f.owned ? 'установлено' : `${f.price.toLocaleString('ru-RU')} ₽`}
+                  {f.owned ? t('установлено') : `${fmtNumber(f.price)} ₽`}
                 </span>
               </li>
             ))}

@@ -62,14 +62,7 @@ export const PixelIcon: React.FC<PixelIconProps> = ({ name, size = 16, className
     >
       {title && <title>{title}</title>}
       {runs.map((r, i) => (
-        <rect
-          key={i}
-          x={r.x}
-          y={r.y}
-          width={r.w}
-          height={1}
-          fillOpacity={r.solid ? 1 : 0.45}
-        />
+        <rect key={i} x={r.x} y={r.y} width={r.w} height={1} fillOpacity={r.solid ? 1 : 0.45} />
       ))}
     </svg>
   );

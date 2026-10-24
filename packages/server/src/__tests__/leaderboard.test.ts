@@ -30,8 +30,8 @@ async function freshModules() {
   return { store, index };
 }
 
-function save(store: any, id: string, patch: Record<string, any> = {}) {
-  store.saveState(id, {
+async function save(store: any, id: string, patch: Record<string, any> = {}) {
+  await store.saveState(id, {
     version: 2,
     telegramId: id,
     firstName: `Игрок ${id}`,
@@ -50,9 +50,9 @@ describe('leaderboard index', () => {
 
   it('ranks players by rating, then by day', async () => {
     const { store, index } = await freshModules();
-    save(store, '1', { ratingScore: 50 });
-    save(store, '2', { ratingScore: 300 });
-    save(store, '3', { ratingScore: 300, currentDay: 99 });
+    await save(store, '1', { ratingScore: 50 });
+    await save(store, '2', { ratingScore: 300 });
+    await save(store, '3', { ratingScore: 300, currentDay: 99 });
 
     const page = await index.getLeaderboard();
     expect(page.rows.map((r) => r.userId)).toEqual(['3', '2', '1']);
@@ -62,8 +62,8 @@ describe('leaderboard index', () => {
 
   it('marks the authenticated player as `isYou`', async () => {
     const { store, index } = await freshModules();
-    save(store, '4242', { ratingScore: 10 });
-    save(store, '1', { ratingScore: 20 });
+    await save(store, '4242', { ratingScore: 10 });
+    await save(store, '1', { ratingScore: 20 });
 
     const page = await index.getLeaderboard({ userId: '4242' });
     expect(page.rows.find((r) => r.userId === '4242')?.isYou).toBe(true);
@@ -72,8 +72,8 @@ describe('leaderboard index', () => {
 
   it('returns your own rank even when you are outside the page', async () => {
     const { store, index } = await freshModules();
-    for (let i = 0; i < 25; i++) save(store, String(100 + i), { ratingScore: 1000 - i });
-    save(store, 'me', { ratingScore: 1 });
+    for (let i = 0; i < 25; i++) await save(store, String(100 + i), { ratingScore: 1000 - i });
+    await save(store, 'me', { ratingScore: 1 });
 
     const page = await index.getLeaderboard({ limit: 5, userId: 'me' });
     expect(page.rows).toHaveLength(5);
@@ -84,7 +84,7 @@ describe('leaderboard index', () => {
 
   it('paginates with limit/offset and caps the page size', async () => {
     const { store, index } = await freshModules();
-    for (let i = 0; i < 10; i++) save(store, String(i), { ratingScore: i });
+    for (let i = 0; i < 10; i++) await save(store, String(i), { ratingScore: i });
 
     const second = await index.getLeaderboard({ limit: 3, offset: 3 });
     expect(second.rows.map((r) => r.rank)).toEqual([4, 5, 6]);
@@ -95,8 +95,8 @@ describe('leaderboard index', () => {
 
   it('filters booster owners out of the honest board', async () => {
     const { store, index } = await freshModules();
-    save(store, 'clean', { ratingScore: 10 });
-    save(store, 'boosted', { ratingScore: 999, items: ['energy_drink'] });
+    await save(store, 'clean', { ratingScore: 10 });
+    await save(store, 'boosted', { ratingScore: 999, items: ['energy_drink'] });
 
     const all = await index.getLeaderboard();
     expect(all.rows).toHaveLength(2);
@@ -107,9 +107,9 @@ describe('leaderboard index', () => {
 
   it('сортирует по метрике: «Деньги» меняют порядок там, где итог ничья', async () => {
     const { store, index } = await freshModules();
-    save(store, 'rich', { ratingScore: 200, money: 9_000_000 });
-    save(store, 'poor', { ratingScore: 200, money: 1_000 });
-    save(store, 'mid', { ratingScore: 500, money: 100_000 });
+    await save(store, 'rich', { ratingScore: 200, money: 9_000_000 });
+    await save(store, 'poor', { ratingScore: 200, money: 1_000 });
+    await save(store, 'mid', { ratingScore: 500, money: 100_000 });
 
     const byRating = await index.getLeaderboard();
     expect(byRating.metric).toBe('rating');
@@ -132,9 +132,9 @@ describe('leaderboard index', () => {
 
   it('ничья по метрике не зависит от порядка обхода: день, потом id', async () => {
     const { store, index } = await freshModules();
-    save(store, 'b', { ratingScore: 100, money: 5_000, currentDay: 4 });
-    save(store, 'a', { ratingScore: 100, money: 5_000, currentDay: 9 });
-    save(store, 'c', { ratingScore: 100, money: 5_000, currentDay: 9 });
+    await save(store, 'b', { ratingScore: 100, money: 5_000, currentDay: 4 });
+    await save(store, 'a', { ratingScore: 100, money: 5_000, currentDay: 9 });
+    await save(store, 'c', { ratingScore: 100, money: 5_000, currentDay: 9 });
 
     const first = await index.getLeaderboard({ metric: 'money' });
     const again = await index.getLeaderboard({ metric: 'money' });
@@ -146,7 +146,7 @@ describe('leaderboard index', () => {
     const { store, index } = await freshModules();
     // scanStates читает JSON без migrateState — поле может отсутствовать или
     // быть строкой; NaN в компараторе = произвольный (и неустойчивый) порядок.
-    store.saveState('odd', {
+    await store.saveState('odd', {
       version: 2,
       telegramId: 'odd',
       firstName: 'Странный',
@@ -167,7 +167,7 @@ describe('leaderboard index', () => {
 
   it('метрика из URL валидируется на роуте, а не молча откатывается', async () => {
     const { store } = await freshModules();
-    save(store, '1', { ratingScore: 10 });
+    await save(store, '1', { ratingScore: 10 });
 
     const { leaderboardRoutes } = await import('../routes/leaderboard.js');
     const app = Fastify();
@@ -192,17 +192,17 @@ describe('leaderboard index', () => {
 
   it('picks up a newly saved player without re-scanning the disk', async () => {
     const { store, index } = await freshModules();
-    save(store, '1', { ratingScore: 10 });
+    await save(store, '1', { ratingScore: 10 });
     await index.getLeaderboard(); // warms the index
 
-    save(store, '2', { ratingScore: 999 });
+    await save(store, '2', { ratingScore: 999 });
     const page = await index.getLeaderboard();
     expect(page.rows[0].userId).toBe('2');
   });
 
   it('ignores the NFT registry and other non-save files', async () => {
     const { store, index } = await freshModules();
-    save(store, '1');
+    await save(store, '1');
     const { writeFileSync } = await import('fs');
     writeFileSync(join(DATA_DIR, 'nft_registry.json'), JSON.stringify({ mints: [] }));
     writeFileSync(join(DATA_DIR, 'entitlements.json'), JSON.stringify({ charges: {} }));

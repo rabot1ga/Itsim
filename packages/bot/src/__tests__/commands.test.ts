@@ -34,6 +34,17 @@ function api(overrides: Partial<GameApi> = {}): GameApi {
     available: true,
     getSummary: async () => SUMMARY,
     deleteUser: async () => true,
+    listProducts: async () => [
+      { id: 'bank_slot', title: '🪟 Слот банка дней', description: '+1 к ёмкости банка', stars: 120, tag: 'utility' },
+      { id: 'support_coffee', title: '☕ Кофе разработчику', description: 'Поддержать разработку', stars: 25 },
+      {
+        id: 'winter_pack',
+        title: '❄️ Зимний набор',
+        description: 'Сезонная косметика',
+        stars: 200,
+        tag: 'seasonal',
+      },
+    ],
     ...overrides,
   } as GameApi;
 }
@@ -153,6 +164,16 @@ describe('formatting helpers', () => {
     expect(nudgeText('Тестер', 6)).toContain('6 дней');
   });
 
+  it('nudge respects purchased bank slots (capacity 7 + slots)', () => {
+    // 8 дней при одном слоте — ещё не переполнен (ёмкость 8)
+    expect(nudgeText('Тестер', 7, 1)).toContain('7 дней');
+    expect(nudgeText('Тестер', 8, 1)).toContain('переполнен (8/8)');
+    // три слота — ёмкость 10
+    expect(nudgeText('Тестер', 10, 3)).toContain('переполнен (10/10)');
+    // мусор в слотах не роняет текст и не завышает кап (99 → 3)
+    expect(nudgeText('Тестер', 10, 99)).toContain('(10/10)');
+  });
+
   it('pluralises Russian day counts', () => {
     expect(plural(1, 'день', 'дня', 'дней')).toBe('день');
     expect(plural(3, 'день', 'дня', 'дней')).toBe('дня');
@@ -169,5 +190,45 @@ describe('formatting helpers', () => {
   it('appends startapp to a URL that already has a query string', () => {
     const markup = playButton('https://itsim.app?v=2', 'ref_1');
     expect(markup.inline_keyboard[0][0].web_app.url).toBe('https://itsim.app?v=2&startapp=ref_1');
+  });
+});
+
+describe('/buy — магазин Stars из чата', () => {
+  it('список без аргумента: id, цены и подсказка покупки', async () => {
+    const reply = await handleCommand(ctx(), 'buy');
+    expect(reply.text).toContain('Магазин Stars');
+    expect(reply.text).toContain('bank_slot');
+    expect(reply.text).toContain('120⭐');
+    expect(reply.text).toContain('/buy');
+    expect(reply.invoice).toBeUndefined();
+  });
+
+  it('/buy <id> — инвойс XTR с payload формата itsim:v1', async () => {
+    const reply = await handleCommand(ctx({ arg: 'bank_slot' }), 'buy');
+    expect(reply.invoice).toBeTruthy();
+    expect(reply.invoice!.title).toContain('Слот');
+    expect(reply.invoice!.stars).toBe(120);
+    // формат обязан разбираться серверным parsePaymentPayload
+    expect(reply.invoice!.payload).toMatch(/^itsim:v1:4242:bank_slot:[0-9a-f-]{1,8}$/);
+  });
+
+  it('неизвестный id — перечисляет каталог', async () => {
+    const reply = await handleCommand(ctx({ arg: 'gold_money' }), 'buy');
+    expect(reply.text).toContain('не найден');
+    expect(reply.text).toContain('support_coffee');
+    expect(reply.invoice).toBeUndefined();
+  });
+
+  it('витринные метки видны в каталоге (банк дней/сезонный набор)', async () => {
+    const reply = await handleCommand(ctx({ arg: 'gold_money' }), 'buy');
+    expect(reply.text).toContain('банк дней');
+    expect(reply.text).toContain('сезонный набор');
+    // без метки — просто без суффикса, не пустая метка
+    expect(reply.text).toContain('☕ Кофе разработчику · 25⭐');
+  });
+
+  it('сервер недоступен — вежливый отказ', async () => {
+    const reply = await handleCommand(ctx({ api: api({ available: false }) }), 'buy');
+    expect(reply.text).toContain('временно недоступен');
   });
 });

@@ -1,8 +1,8 @@
+import { t } from '../lib/i18n';
 import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { ScreenTitle, SectionTitle, EmptyState, Spinner } from '../components/ui';
 import { inviteLink, openTelegramLink, haptic } from '../lib/telegram';
-
 interface Friend {
   id: string;
   name: string;
@@ -10,17 +10,14 @@ interface Friend {
   initialRelation: number;
   avatar: string | null;
 }
-
 const BOT_NAME = 'itlife_simulator_bot';
-
 /** Relationship label — the same words the events use. */
 function relationLabel(relation: number): string {
-  if (relation >= 60) return 'Близкий друг';
-  if (relation >= 30) return 'Друг';
-  if (relation < 0) return 'Напряжённые отношения';
-  return 'Знакомый';
+  if (relation >= 60) return t('Близкий друг');
+  if (relation >= 30) return t('Друг');
+  if (relation < 0) return t('Напряжённые отношения');
+  return t('Знакомый');
 }
-
 export const FriendsView: React.FC = () => {
   const player = useGameStore((s) => s.player);
   const setView = useGameStore((s) => s.setView);
@@ -28,7 +25,6 @@ export const FriendsView: React.FC = () => {
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [attempt, setAttempt] = useState(0);
   const [openId, setOpenId] = useState<string | null>(null);
-
   useEffect(() => {
     const controller = new AbortController();
     setStatus('loading');
@@ -47,33 +43,32 @@ export const FriendsView: React.FC = () => {
       });
     return () => controller.abort();
   }, [attempt]);
-
   const invite = () => {
     haptic('medium');
     openTelegramLink(inviteLink(BOT_NAME, player?.telegramId ?? 'player'));
   };
-
   return (
     <div className="space-y-4 animate-fade-in">
       <ScreenTitle emoji="👥" meta={status === 'ready' ? `${people.length} / 50` : undefined}>
-        Друзья
+        {t('Друзья')}
       </ScreenTitle>
 
       <button className="btn btn-primary btn-lg w-full" onClick={invite}>
-        Пригласить друга
+        {t('Пригласить друга')}
       </button>
       <p className="subtle">
-        За каждого приглашённого друга — бонус к деньгам и лимиту друзей. Отношения с персонажами меняют прогулки,
-        общение и события.
+        {t(
+          'За каждого приглашённого друга — бонус к деньгам и лимиту друзей. Отношения с персонажами меняют прогулки, общение и события.'
+        )}
       </p>
 
-      {status === 'loading' && <Spinner label="Загрузка знакомых…" />}
+      {status === 'loading' && <Spinner label={t('Загрузка знакомых…')} />}
 
       {status === 'error' && (
         <div role="alert" className="card">
-          <p className="text-sm text-clay-300">Не удалось загрузить знакомых.</p>
+          <p className="text-sm text-clay-300">{t('Не удалось загрузить знакомых.')}</p>
           <button className="btn btn-secondary w-full mt-3" onClick={() => setAttempt((n) => n + 1)}>
-            Повторить загрузку
+            {t('Повторить загрузку')}
           </button>
         </div>
       )}
@@ -81,18 +76,18 @@ export const FriendsView: React.FC = () => {
       {status === 'ready' && people.length === 0 && (
         <EmptyState
           emoji="😶"
-          title="Пока никого нет"
-          hint="Приглашай друзей и получай бонусы — вместе карьера растёт быстрее."
+          title={t('Пока никого нет')}
+          hint={t('Приглашай друзей и получай бонусы — вместе карьера растёт быстрее.')}
         >
           <button className="btn btn-primary mt-4" onClick={invite}>
-            Пригласить
+            {t('Пригласить')}
           </button>
         </EmptyState>
       )}
 
       {status === 'ready' && people.length > 0 && (
         <>
-          <SectionTitle>Список</SectionTitle>
+          <SectionTitle>{t('Список')}</SectionTitle>
           <div className="space-y-2">
             {people.map((person) => {
               const relation = player?.relationships?.[person.id] ?? person.initialRelation ?? 0;
@@ -132,7 +127,7 @@ export const FriendsView: React.FC = () => {
                   </div>
                   <div className="friend-actions">
                     <button className="btn btn-sm btn-secondary" onClick={() => setOpenId(open ? null : person.id)}>
-                      {open ? 'Скрыть' : 'Профиль'}
+                      {open ? t('Скрыть') : t('Профиль')}
                     </button>
                   </div>
                 </article>
@@ -143,7 +138,7 @@ export const FriendsView: React.FC = () => {
       )}
 
       <button className="btn btn-secondary w-full" onClick={() => setView('main')}>
-        К действиям дня
+        {t('К действиям дня')}
       </button>
     </div>
   );

@@ -8,37 +8,117 @@
       "description": "Поддержать разработку игры. В профиле появится значок «Спонсор».",
       "stars": 25,
       "repeatable": true,
-      "grants": { "badge": "supporter" }
+      "grants": {
+        "badge": "supporter"
+      },
+      "tag": "support"
     },
     {
       "id": "banked_day",
       "title": "🗓 Дополнительный день в банке",
-      "description": "+1 день в банк офлайн-энергии (сверх обычного накопления, максимум 7).",
+      "description": "+1 день в банк офлайн-энергии (сверх обычного накопления, в пределах ёмкости банка).",
       "stars": 50,
       "repeatable": true,
       "dailyLimit": 2,
-      "grants": { "bankedDays": 1 }
+      "grants": {
+        "bankedDays": 1
+      },
+      "tag": "utility"
+    },
+    {
+      "id": "bank_slot",
+      "title": "🪟 Слот банка дней",
+      "description": "+1 к ёмкости банка офлайн-дней навсегда (7 → 10, всего 3 слота).",
+      "stars": 120,
+      "repeatable": true,
+      "totalLimit": 3,
+      "grants": {
+        "bankSlots": 1
+      },
+      "tag": "utility"
     },
     {
       "id": "wardrobe_premium",
-      "title": "👕 Премиум-гардероб",
-      "description": "Открывает VR-шлем и корп-худи в гардеробе навсегда — без ачивок и работы.",
+      "title": "✨ Ангельский прикид",
+      "description": "Нимб и крылья для питомца — эксклюзив Stars, навсегда. Чистая косметика.",
       "stars": 150,
       "repeatable": false,
       "grants": {
         "badge": "fashionista",
-        "cosmetics": ["acc_vr_headset", "top_hoodie_corp"]
-      }
+        "cosmetics": [
+          "pet_halo",
+          "pet_wings"
+        ]
+      },
+      "tag": "cosmetic"
     },
     {
       "id": "room_neon_pack",
-      "title": "🌈 Неоновая комната",
-      "description": "Неоновая вывеска и RGB-стол в редакторе комнаты навсегда.",
+      "title": "🕶️ Кибер-прикид",
+      "description": "Неоновый визор и шарф для питомца — эксклюзив Stars, навсегда. Чистая косметика.",
       "stars": 150,
       "repeatable": false,
       "grants": {
         "badge": "neon",
-        "cosmetics": ["decor_neon", "desk_rgb"]
+        "cosmetics": [
+          "pet_visor",
+          "pet_scarf"
+        ]
+      },
+      "tag": "cosmetic"
+    },
+    {
+      "id": "support_lunch",
+      "title": "🍕 Обед разработчику",
+      "description": "Поддержать разработку по-крупному. Тот же значок «Спонсор», но автор точно пообедает.",
+      "stars": 100,
+      "repeatable": true,
+      "tag": "support",
+      "grants": {
+        "badge": "supporter"
+      }
+    },
+    {
+      "id": "support_patron",
+      "title": "👑 Меценат",
+      "description": "Значок «Меценат» и огромное спасибо за поддержку игры. Только поддержка — без игровых преимуществ.",
+      "stars": 500,
+      "repeatable": true,
+      "tag": "support",
+      "grants": {
+        "badge": "patron"
+      }
+    },
+    {
+      "id": "winter_pack",
+      "title": "❄️ Зимний набор",
+      "description": "Новогодний колпак, варежки и снежинка для питомца — сезонная коллекция, навсегда. Чистая косметика.",
+      "stars": 200,
+      "repeatable": false,
+      "tag": "seasonal",
+      "grants": {
+        "badge": "winter",
+        "cosmetics": [
+          "pet_santa",
+          "pet_mitten",
+          "pet_snowflake"
+        ]
+      }
+    },
+    {
+      "id": "summer_pack",
+      "title": "🌞 Летний набор",
+      "description": "Цветок, мороженое и солнышко для питомца — сезонная коллекция, навсегда. Чистая косметика.",
+      "stars": 200,
+      "repeatable": false,
+      "tag": "seasonal",
+      "grants": {
+        "badge": "summer",
+        "cosmetics": [
+          "pet_flower",
+          "pet_icecream",
+          "pet_sun"
+        ]
       }
     }
   ]

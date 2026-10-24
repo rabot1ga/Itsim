@@ -66,171 +66,36 @@ export interface LivingCosts {
 /** Career endings (ТЗ «Финалы») */
 export type CareerEnding = 'corporate_god' | 'exit' | 'free_artist' | 'teacher' | 'burnout' | 'left_it';
 
-// ---- Pixel-art avatar (docs/pixel-art.md, ТЗ «Процедурная генерация пиксельных персонажей») ----
-
-export type PixelCategory = 'face' | 'eyes' | 'mouth' | 'hair' | 'hat' | 'clothing' | 'accessory';
-
-/** Named palette roles — index-based access is fragile, role-based is not */
-export type PaletteRole = 'hlt' | 'base' | 'shd' | 'outline';
-
-/** One pixel of a component; x/y are offsets from the component anchor */
-export interface PixelDef {
-  x: number;
-  y: number;
-  /** "palette#index", "palette#role" (preferred) or "#rrggbb" (hat/accessory only) */
-  c: string;
-}
-
-/** Authored form: rows of tokens, '.' = empty. Compiled into `pixels`. */
-export interface PixelComponentRows {
-  rows: string[];
-}
-
-export interface PixelComponent {
-  category: PixelCategory;
-  label: string;
-  anchor: { x: number; y: number };
-  /** mirror the component about layout.symmetry_axis_x (right half is generated) */
-  mirror?: boolean;
-  /** categories force-set to their *_none/*_bald variant when this component is chosen */
-  excludes?: PixelCategory[];
-  pixels: PixelDef[];
-  /** tags for the shop/vitrina filtering */
-  tags?: string[];
-  /** extended set flag — MVP components must not set it */
-  extended?: boolean;
-  /**
-   * Authored-only shorthand (consumed by `pixelgen compile`, never shipped in
-   * components.json): rows of space-separated tokens — '.' empty, digit N =
-   * palettes[N], "#rrggbb" = literal. Requires `palettes` below.
-   */
-  rows?: string[];
-  /** palette tokens used by `rows`, index order matters */
-  palettes?: string[];
-}
-
-export interface PixelArtLayout {
-  /** fixed rows so features don't drift between variants */
-  eyes_y: number;
-  mouth_y: number;
-  /** fractional axis allowed: 15.5 on a 32-wide canvas */
-  symmetry_axis_x: number;
-  /** head bounds — informational, used by validators and the prompt builder */
-  head?: { x: number; y: number; w: number; h: number };
-}
-
-export interface PixelArtFile {
-  format: number;
-  $schema?: string;
-  /** sha256 of components.source.json this file was compiled from (drift guard) */
-  sourceChecksum?: string;
-  canvas: { width: number; height: number };
-  layout: PixelArtLayout;
-  /** palette name → ordered hex list, light → dark: [hlt, base, shd, outline] */
-  palettes: Record<string, string[]>;
-  layer_order: PixelCategory[];
-  components: Record<string, PixelComponent>;
-}
-
-/** A named full-palette recolor (generator_config.colorSchemes entry) */
-export interface PixelColorScheme {
+/** Пост ленты вех (автопостинг, README): caption — gettext-ключ + params. */
+export interface Milestone {
+  /** идемпотентный id факта: `grade:senior`, `million`, `year`, `ending:exit` */
   id: string;
-  name?: string;
-  /** palette name → colors; missing palettes fall back to the base palettes */
-  palettes: Record<string, string[]>;
-  tags?: string[];
-  /** genetic trait ids (GeneticTraits) this recolor is picked for */
-  match?: { hairColor?: string[]; skinTone?: string[] };
+  /** игровой день, когда веха случилась */
+  day: number;
+  /** gettext-ключ подписи; клиент/сервер собирают через t(key, params) */
+  key: string;
+  /** параметры подписи; строковые значения t() авто-переводит */
+  params?: Record<string, unknown>;
 }
 
-export interface PixelCategoryConfig {
-  category: PixelCategory;
-  required: boolean;
-  /** id of the variant used when the category is excluded (none/bald) */
-  noneId?: string;
-  variants: string[];
-  weights?: Record<string, number>;
-}
+/** Якоря позиций питомца на сцене комнаты (роадмап: скины и позиции). */
+export const PET_ROOM_POSITIONS = ['bed', 'window', 'rug', 'desk', 'shelf'] as const;
+export type PetRoomPosition = (typeof PET_ROOM_POSITIONS)[number];
 
-export interface PixelGeneratorConfig {
-  format: number;
-  categories: PixelCategoryConfig[];
-  colorSchemes: PixelColorScheme[];
-}
-
-/** Chosen component ids per category (after excludes) + palette scheme */
-export interface PixelComposition {
-  [categoryOrKey: string]: string | null;
-}
-
-export interface PixelManifestEntry {
-  id: string;
-  file: string;
-  /**
-   * Reproduction key. "draw" = a real seed consumed by combinationFromSeed;
-   * "enumerate" = an index into the enumerated cartesian product. Both are
-   * reproducible, but only the first via the seeded path (docs/pixel-art.md §1.7).
-   */
-  seed: string;
-  seedKind: 'draw' | 'enumerate';
-  scheme: string;
-  /** final component ids per category, after excludes */
-  combo: Record<string, string | null>;
-  /** palette name → colors actually used */
-  palettes: Record<string, string[]>;
-  tags: string[];
-}
-
-export interface PixelManifest {
-  format: number;
-  generatedAt?: string;
-  /** content checksums — reproducibility without them is a lottery */
-  checksums: { components: string; generatorConfig?: string };
-  canvas: { width: number; height: number };
-  count: number;
-  entries: PixelManifestEntry[];
-}
-
-// ---- Room customization (docs/design.md §12.2) ----
-
-export type RoomSlotId = 'bg' | 'window' | 'decor' | 'desk' | 'setup' | 'chair' | 'atmosphere' | 'pet';
-
-export type AvatarSlotId = 'hair' | 'beard' | 'top' | 'bottom' | 'accessory';
-
-/**
- * Wardrobe overrides (docs/design.md §12.5) — layered-manifest entry ids.
- * Missing/null = genetic. Eyes stay genetic (bloodline), everything else changeable.
- */
-export interface AvatarCustomization {
-  hair?: string | null;
-  /** isometric recolour choices (hex from the shared palettes) */
+/** Косметика питомца в комнате: кто сидит (скин) и где (позиция). */
+export interface PetRoomLook {
+  /** id настоящего питомца из инвентаря (не аксессуар); null — спрятан */
   skin?: string | null;
-  hairColor?: string | null;
-  topColor?: string | null;
-  bottomColor?: string | null;
-  shoeColor?: string | null;
-  beard?: string | null;
-  top?: string | null;
-  /** trousers/shorts — the avatar is drawn full-body (docs/design.md §12) */
-  bottom?: string | null;
-  accessory?: string | null;
-}
-
-/** Player overrides on top of the automatic room composition (housing + items + genetics). */
-export interface RoomCustomization {
-  /** explicit entry per slot; missing/null = automatic */
-  slots: Partial<Record<RoomSlotId, string | null>>;
-  /** wallColor palette id override (a repaint); missing = genetic */
-  wallColor?: string;
-  /** isometric wall finish id (see isoFinishes); missing = seeded */
-  paint?: string;
-  /** isometric flooring id (see isoFinishes); missing = seeded */
-  floor?: string;
+  position?: PetRoomPosition;
 }
 
 // ---- Player State ----
 
 export interface PlayerState {
+  /** Секретная соль серверного RNG (P2.4); клиенту не отдаётся. */
+  rngSalt?: string;
+  /** Счётчик бросков серверного RNG (P2.4); клиенту не отдаётся. */
+  rngSeq?: number;
   version: number;
 
   // Core progress
@@ -243,6 +108,8 @@ export interface PlayerState {
   maxEnergy: number;
   reputation: number;
   bankedDays: number;
+  /** Купленные слоты банка дней (Stars): +1 к ёмкости банка каждый, максимум 3. */
+  bankSlots?: number;
 
   // Career (v2.1 balance layer)
   /** skill the player is known for — the depth requirement of career gates applies to it */
@@ -264,6 +131,8 @@ export interface PlayerState {
   lastLivingCost?: number;
   /** consecutive days with zero money (drives the «ушёл из IT» ending) */
   brokeDays?: number;
+  /** consecutive days when living costs (food) did not fit the wallet — starvation drains health */
+  hungryDays?: number;
   /** last freelance payout — landlord income estimate for players without a job */
   freelanceLastPayment?: number;
   /**
@@ -272,14 +141,24 @@ export interface PlayerState {
    * первым, а сюда падает только как фолбэк для сейвов, где его заполнили.
    */
   leadership?: number;
-  // Procedural generation (DESIGN.md) — optional for backward compatibility
-  walletAddress?: string;
-  genetics?: GeneticTraits;
-  crossBonuses?: ActiveCrossBonus[];
-  /** room editor overrides (docs/design.md §12.2); missing = fully automatic room */
-  room?: RoomCustomization;
-  /** wardrobe overrides (docs/design.md §12.5); missing = genetic look */
-  avatar?: AvatarCustomization;
+  /**
+   * Язык интерфейса, выбранный игроком (P2.5, этап 3): поле профиля хранится
+   * в сейве и подхватывается на новом устройстве; запросы по-прежнему несут
+   * X-Locale (клиент шлёт выбор). Строкой, а не Locale, чтобы типы не тянули
+   * i18n; границы валидируют через `isLocale`.
+   */
+  language?: string;
+
+  /**
+   * Автопостинг вех (README «В процессе»): лента авто-постов карьеры и жизни
+   * («Стал сеньор за 78 дней!»). Записывает сервер при мутациях сейва,
+   * клиент показывает в «Карточке жизни» и шарит в Telegram.
+   */
+  milestones?: Milestone[];
+  /** одноразовый seed ленты: сейвы до фичи не ретро-постятся */
+  milestonesSeeded?: boolean;
+  /** Скины и позиции питомца в комнате (роадмап): косметика сейва. */
+  petRoom?: PetRoomLook;
 
   // Skills
   skills: Record<SkillId, SkillLevel>;
@@ -661,11 +540,7 @@ export interface ItemDefinition {
   description: string;
   effects: ItemEffects;
   icon: string;
-  /** Minted as cNFT/pNFT on purchase (DESIGN.md 3.2) */
-  nft?: boolean;
   rarity?: TraitRarity;
-  /** Layer id in the room/avatar manifest rendered when owned */
-  layerId?: string;
 }
 
 export interface ItemEffects {
@@ -744,119 +619,6 @@ export interface InterviewInput {
 // ---- Procedural generation (DESIGN.md) ----
 
 export type TraitRarity = 'common' | 'rare' | 'legendary';
-
-export interface TraitOption {
-  id: string;
-  name: string;
-  weight: number;
-  rarity?: TraitRarity;
-}
-
-/** Tint entry for grayscale assets: hue (deg) + saturation + lightness */
-export interface TintPaletteEntry {
-  id: string;
-  name: string;
-  hue: number;
-  sat?: number;
-  light?: number;
-  /** Optional weight for deterministic palette picking (default 1) */
-  weight?: number;
-}
-
-export interface GeneticsConfig {
-  version?: string;
-  eyes: TraitOption[];
-  hairstyles: TraitOption[];
-  hairPalette: TintPaletteEntry[];
-  skinTones: TintPaletteEntry[];
-  beards: TraitOption[];
-  tops: TraitOption[];
-  accessories: TraitOption[];
-  windows: TraitOption[];
-  wallPalette: TintPaletteEntry[];
-  decorOptions: TraitOption[];
-}
-
-/** Deterministic "genotype" derived from the player seed */
-export interface GeneticTraits {
-  seed: string;
-  skinTone: string;
-  eyeShape: string;
-  hairStyle: string;
-  hairColor: string;
-  beard: string;
-  top: string;
-  accessory: string;
-  windowShape: string;
-  wallColor: string;
-  decor: string;
-}
-
-// ---- Layer manifests (HashLips-style) ----
-
-export interface LayerEntry {
-  id: string;
-  file: string | null; // null = "no layer" option
-  weight?: number;
-  rarity?: TraitRarity;
-  /** Exclusions: "slotId.optionId" pairs that this entry must not be combined with */
-  excludeWith?: string[];
-}
-
-export interface LayerSlot {
-  id: string;
-  zOrder: number;
-  required: boolean;
-  /** Slot id of the palette used to tint this layer (e.g. "wallColor") */
-  tintSlot?: string;
-  entries: LayerEntry[];
-}
-
-export interface LayerManifest {
-  collection: 'avatar' | 'room' | 'office';
-  version: number;
-  resolution: { width: number; height: number };
-  slots: LayerSlot[];
-}
-
-// ---- Solana / NFT (DESIGN.md section 3) ----
-
-export interface NftAttribute {
-  trait_type: string;
-  value: string | number;
-}
-
-export interface NftFile {
-  uri: string;
-  type: string;
-}
-
-/** Metaplex-style item metadata */
-export interface NftMetadata {
-  name: string;
-  symbol: string;
-  description: string;
-  image: string;
-  attributes: NftAttribute[];
-  properties: { files: NftFile[] };
-}
-
-export interface CrossCollectionBonus {
-  collectionId: string;
-  collectionName: string;
-  nftType: 'skin' | 'decor' | 'pet';
-  layerId: string;
-  bonuses: ActiveCrossBonus[];
-}
-
-export interface ActiveCrossBonus {
-  type: 'freelance_mult' | 'energy' | 'motivation';
-  value: number;
-}
-
-export interface CrossCollectionsConfig {
-  collections: CrossCollectionBonus[];
-}
 
 // ---- Daily challenge ----
 

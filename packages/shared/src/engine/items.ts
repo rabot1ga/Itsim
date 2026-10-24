@@ -39,10 +39,7 @@ export function itemEnergyCostChance(owned: string[], defs: ItemEffectSource[]):
 }
 
 /** Daily motivation/health drip from owned items */
-export function itemDailyBonuses(
-  owned: string[],
-  defs: ItemEffectSource[]
-): { motivation: number; health: number } {
+export function itemDailyBonuses(owned: string[], defs: ItemEffectSource[]): { motivation: number; health: number } {
   return {
     motivation: itemBonusSum(owned, defs, 'motivationBonus'),
     health: itemBonusSum(owned, defs, 'healthBonus'),

@@ -296,6 +296,9 @@ select {
   border: 1px solid var(--line);
   box-shadow: var(--shadow-card);
 }
+.hud-portrait img {
+  object-fit: cover;
+}
 .hud-portrait {
   width: 56px;
   height: 56px;
@@ -602,6 +605,13 @@ select {
   font-weight: 600;
   color: var(--text-mute);
   white-space: nowrap;
+  /* Мета обязана ужиматься с многоточием на уровне блока: inline-span
+     `truncate max-w-[140px]` игнорирует max-width/overflow (так заголовок
+     экрана схлопывался до 0px на 320px — e2e это ловит). */
+  min-width: 0;
+  max-width: 46%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .eyebrow,
@@ -1106,6 +1116,19 @@ select {
   image-rendering: pixelated;
   border-block: 1px solid var(--line);
 }
+/* Миниатюра комнаты на «Главной»: тот же пиксельный контракт, что у баннеров
+   событий, но в карточке поменьше. Нет файла — onError прячет <img>. */
+.room-thumb {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  image-rendering: pixelated;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
 /* Иллюстрация финала (public/art/endings/*.webp): полноэкранный баннер поверх
    карточки «Финалы», 5:3 как исходник; нет файла — onError прячет <img>. */
 .ending-art {
@@ -1670,27 +1693,19 @@ select {
 
 /* ── Profile ─────────────────────────────────────────────────────────────── */
 
-.profile-hero {
-  display: grid;
-  justify-items: center;
-  gap: 8px;
-  text-align: center;
-  padding: 18px 16px;
+/* Баннер «карточки жизни»: портрет настроения кропом по груди. */
+.profile-banner img {
+  display: block;
+  width: 100%;
+  height: 176px;
+  object-fit: cover;
+  object-position: 50% 32%;
 }
-.profile-hero h3 {
-  font-size: 20px;
-  font-weight: 700;
-}
-.profile-hero p {
-  font-size: 13px;
-  color: var(--text-dim);
-}
-.profile-portrait-button {
-  flex-shrink: 0;
-  width: 56px;
-  height: 56px;
-  border-radius: var(--radius-tile);
-  overflow: hidden;
+.profile-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
 }
 .profile-card {
   border: 1px solid var(--line);
@@ -2265,6 +2280,214 @@ select {
   animation: numPop 0.24s ease-out;
 }
 
+/* Торговая площадка питомцев: витрина дня */
+.market-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+.market-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+}
+.market-emoji {
+  font-size: 28px;
+  line-height: 1;
+}
+.market-copy {
+  flex: 1;
+  min-width: 0;
+}
+.market-name {
+  font-size: 14px;
+  color: var(--text-primary);
+}
+.market-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.market-sub {
+  margin-top: 14px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.market-sell {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.market-input {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 13px;
+  padding: 8px 10px;
+  min-width: 0;
+  flex: 1 1 120px;
+}
+.market-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 8px 0;
+}
+.market-chips {
+  display: inline-flex;
+  gap: 6px;
+}
+.chip {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-chip);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+}
+.chip-active {
+  background: rgba(var(--rgb-green) / 0.15);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Питомец в комнате: оверлей-эмоудзи на сцене + контролы скинов/позиций */
+.room-pet-stage {
+  position: relative;
+  line-height: 0;
+}
+.room-pet {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  font-size: 28px;
+  line-height: 1;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.45));
+}
+.room-pet-emoji {
+  display: inline-block;
+}
+.room-pet-badges {
+  font-size: 14px;
+  margin-left: 2px;
+  vertical-align: super;
+}
+/* Анимации питомца: idle — покачивание, happy — подпрыгивание, sleep — дыхание */
+.room-pet--idle .room-pet-emoji {
+  animation: pet-bob 3.2s ease-in-out infinite;
+}
+.room-pet--happy .room-pet-emoji {
+  animation: pet-hop 1.1s ease-in-out infinite;
+}
+.room-pet--sleep .room-pet-emoji {
+  animation: pet-breathe 4s ease-in-out infinite;
+}
+.room-pet-zzz {
+  font-size: 13px;
+  position: absolute;
+  top: -10px;
+  right: -12px;
+  animation: pet-zzz 2.4s ease-in-out infinite;
+}
+.room-pet-spark {
+  font-size: 13px;
+  position: absolute;
+  top: -10px;
+  right: -12px;
+  animation: pet-zzz 1.6s ease-in-out infinite;
+}
+@keyframes pet-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+@keyframes pet-hop {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-7px) rotate(-4deg);
+  }
+  60% {
+    transform: translateY(-2px) rotate(3deg);
+  }
+}
+@keyframes pet-breathe {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(0.94);
+  }
+}
+@keyframes pet-zzz {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-4px);
+  }
+}
+.pet-room-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin: var(--space-2) 0 var(--space-1);
+}
+.pet-room-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* Лента вех (автопостинг): пост + кнопка «Поделиться» */
+.milestone-feed {
+  margin-top: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  list-style: none;
+}
+.milestone-post {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+}
+.milestone-body {
+  flex: 1;
+  min-width: 0;
+}
+.milestone-caption {
+  font-size: 14px;
+  color: var(--text-primary);
+}
+.milestone-day {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-in,
   .animate-pop-in,
@@ -2282,5 +2505,13 @@ select {
   .meter > span,
   .hud-xp > i {
     transition: none;
+  }
+  .room-pet,
+  .room-pet--idle .room-pet-emoji,
+  .room-pet--happy .room-pet-emoji,
+  .room-pet--sleep .room-pet-emoji,
+  .room-pet-zzz,
+  .room-pet-spark {
+    animation: none;
   }
 }

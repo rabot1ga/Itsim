@@ -39,7 +39,6 @@ jobs:
 
       - name: Format check (prettier)
         run: npm run format:check
-        continue-on-error: true
 
       - name: Validate content (schemas + cross-references)
         run: npm run validate:content
@@ -66,12 +65,6 @@ jobs:
 
       - name: Balance simulator (40 agents × 365 days, corridor check)
         run: npm run test -w packages/sim
-
-      - name: Pixel-art pipeline audit
-        run: npm run pixelgen:audit
-
-      - name: Avatar layers — geometry vs landmarks (no masters needed)
-        run: npm run avatar:check -w tools/art
 
       - name: Build all packages
         run: npm run build

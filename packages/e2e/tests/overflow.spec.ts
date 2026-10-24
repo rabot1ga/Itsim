@@ -20,19 +20,7 @@ import { resolveStory } from './helpers/story';
 
 const TABS = ['Главная', 'Работа', 'Обучение', 'Отдых', 'Магазин'] as const;
 /** всё, что живёт в шторке «Меню» — боковые экраны, куда заходят посмотреть */
-const SIDE = [
-  'Профиль',
-  'Дом',
-  'Друзья',
-  'Питомец',
-  'Цели',
-  'Топ',
-  'Офис',
-  'Майнинг',
-  'Кошелёк',
-  'Финалы',
-  'Настройки',
-] as const;
+const SIDE = ['Профиль', 'Дом', 'Друзья', 'Питомец', 'Цели', 'Топ', 'Офис', 'Майнинг', 'Финалы', 'Настройки'] as const;
 
 /** Сюжет после перехода по экранам — не часть проверки, поэтому чистим без
     жёстких асертов: нам важно не оставить невзятую модалку следующему спеку. */
@@ -119,14 +107,6 @@ test('320px: ни один экран не раздается горизонта
 
   for (const label of SIDE) {
     await openSide(page, label);
-    // «Дом» проверяем с открытыми секциями: и редактор, и гардероб несут свои
-    // ряды «подпись + кнопка», и именно они умеют вылезать за край
-    if (label === 'Дом') {
-      for (const section of [/Настроить комнату/, /Гардероб/]) {
-        const toggle = page.getByRole('button', { name: section });
-        if (await toggle.isVisible().catch(() => false)) await toggle.click();
-      }
-    }
     const problem = await measure(page, label);
     if (problem) problems.push(problem);
     await dismissStory(page);

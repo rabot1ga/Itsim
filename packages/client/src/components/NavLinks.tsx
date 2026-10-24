@@ -1,7 +1,7 @@
+import { t } from '../lib/i18n';
 import React from 'react';
 import { useGameStore } from '../store/gameStore';
 import { SectionTitle } from './ui';
-
 /**
  * Contextual doors to the screens that used to hide behind «⋮».
  *
@@ -14,8 +14,10 @@ export interface NavLink {
   label: string;
   hint: string;
 }
-
-export const NavLinks: React.FC<{ title?: string; links: NavLink[] }> = ({ title = 'Куда дальше', links }) => {
+export const NavLinks: React.FC<{
+  title?: string;
+  links: NavLink[];
+}> = ({ title = t('Куда дальше'), links }) => {
   const setView = useGameStore((s) => s.setView);
   if (links.length === 0) return null;
   return (

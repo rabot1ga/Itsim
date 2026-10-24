@@ -16,13 +16,14 @@ for (const width of [320, 390, 480]) {
       'Магазин',
     ]);
     await expect(page.getByRole('region', { name: 'Персонаж и состояние' })).toBeVisible();
-    const room = page.getByRole('region', { name: 'Твоя комната' });
-    // Слои комнаты/фигуры вместо одного эскиза: alt="" → getByRole('img') их не видит
-    const layers = room.locator('img[src^="/layers/"]');
-    await expect(layers.first()).toBeVisible();
-    expect(
-      await layers.evaluateAll((imgs) => (imgs as HTMLImageElement[]).every((i) => i.complete && i.naturalWidth > 0))
-    ).toBe(true);
+    // Комната на «Главной» — миниатюра тира (редизайн 22.10.2026): слоёв
+    // room/avatar больше нет (идентичность снята), только сцена /art/room/.
+    // alt="" → getByRole('img') её не видит, локатор по классу.
+    const roomThumb = page.locator('img.room-thumb');
+    await expect(roomThumb).toBeVisible();
+    await expect(roomThumb).toHaveAttribute('src', /^\/art\/room\/(start|cozy|work|dream)\.webp$/);
+    expect(await roomThumb.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0)).toBe(true);
+    expect(await page.locator('img[src^="/layers/"]').count()).toBe(0);
     for (const name of ['Работа', 'Обучение', 'Отдых', 'Магазин']) {
       await nav.getByRole('button', { name, exact: true }).click();
       await expect(nav.getByRole('button', { name, exact: true })).toHaveAttribute('aria-current', 'true');
@@ -43,7 +44,7 @@ for (const width of [320, 390, 480]) {
     await sheet.getByRole('button', { name: /Профиль/ }).click();
     await expect(page.getByRole('heading', { name: 'Профиль' })).toBeVisible();
     await page.getByRole('button', { name: 'На главную', exact: true }).click();
-    await expect(room).toBeVisible();
+    await expect(roomThumb).toBeVisible();
   });
 }
 

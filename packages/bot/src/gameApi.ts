@@ -11,8 +11,20 @@ export interface NudgeCandidate {
   userId: string;
   name: string;
   bankedDays: number;
+  /** купленные слоты банка дней (0–3) — ёмкость банка 7 + слоты */
+  bankSlots?: number;
   currentDay: number;
   grade: string;
+}
+
+/** Позиция Stars-каталога для инвойса в чате. */
+export interface BotProduct {
+  id: string;
+  title: string;
+  description: string;
+  stars: number;
+  /** витринная метка (support/utility/cosmetic/seasonal), если есть */
+  tag?: string;
 }
 
 export class GameApiClient implements GameApi {
@@ -67,5 +79,11 @@ export class GameApiClient implements GameApi {
       body: JSON.stringify({ minBankedDays, limit }),
     });
     return result?.nudges ?? [];
+  }
+
+  /** Stars-каталог (GET /api/admin/products) для sendInvoice из чата. */
+  async listProducts(): Promise<BotProduct[] | null> {
+    const result = await this.request<{ products: BotProduct[] }>('/api/admin/products');
+    return result?.products ?? null;
   }
 }
