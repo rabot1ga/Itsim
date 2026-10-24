@@ -31,7 +31,13 @@ export interface GameApi {
   /** DELETE /api/admin/users/:id */
   deleteUser(userId: string): Promise<boolean>;
   /** GET /api/admin/products — Stars-каталог для инвойсов */
-  listProducts(): Promise<Array<{ id: string; title: string; description: string; stars: number }> | null>;
+  listProducts(): Promise<Array<{
+    id: string;
+    title: string;
+    description: string;
+    stars: number;
+    tag?: string;
+  }> | null>;
   /** whether the admin API is usable at all */
   readonly available: boolean;
 }
@@ -96,6 +102,13 @@ export function parseCommand(text: string | undefined): { command: string; arg?:
   return { command, arg: rest.length ? rest.join(' ') : undefined };
 }
 
+/** Витринные метки каталога Stars (RU-only бот). */
+const PRODUCT_TAG_LABEL: Record<string, string> = {
+  support: 'поддержка',
+  utility: 'банк дней',
+  cosmetic: 'косметика',
+  seasonal: 'сезонный набор',
+};
 const HELP = [
   '📖 <b>Как играть</b>',
   '',
@@ -145,7 +158,10 @@ export async function handleCommand(ctx: CommandContext, command: string): Promi
           text: [
             `🤔 Товар «${escapeHtml(wanted)}» не найден. Вот что есть:`,
             '',
-            ...products.map((p) => `• <code>${p.id}</code> — ${escapeHtml(p.title)} · ${p.stars}⭐`),
+            ...products.map(
+              (p) =>
+                `• <code>${p.id}</code> — ${escapeHtml(p.title)} · ${p.stars}⭐${p.tag && PRODUCT_TAG_LABEL[p.tag] ? ` · ${PRODUCT_TAG_LABEL[p.tag]}` : ''}`
+            ),
             '',
             'Купить: <code>/buy &lt;id&gt;</code>',
           ].join('\n'),
@@ -170,7 +186,8 @@ export async function handleCommand(ctx: CommandContext, command: string): Promi
           '🪙 <b>Магазин Stars</b> — только косметика, слоты банка дней и поддержка. Никакого pay-to-win.',
           '',
           ...products.map(
-            (p) => `• <code>${p.id}</code> — ${escapeHtml(p.title)} · ${p.stars}⭐\n  ${escapeHtml(p.description)}`
+            (p) =>
+              `• <code>${p.id}</code> — ${escapeHtml(p.title)} · ${p.stars}⭐${p.tag && PRODUCT_TAG_LABEL[p.tag] ? ` · ${PRODUCT_TAG_LABEL[p.tag]}` : ''}\n  ${escapeHtml(p.description)}`
           ),
           '',
           'Купить: <code>/buy &lt;id&gt;</code>',

@@ -35,8 +35,15 @@ function api(overrides: Partial<GameApi> = {}): GameApi {
     getSummary: async () => SUMMARY,
     deleteUser: async () => true,
     listProducts: async () => [
-      { id: 'bank_slot', title: '🪟 Слот банка дней', description: '+1 к ёмкости банка', stars: 120 },
+      { id: 'bank_slot', title: '🪟 Слот банка дней', description: '+1 к ёмкости банка', stars: 120, tag: 'utility' },
       { id: 'support_coffee', title: '☕ Кофе разработчику', description: 'Поддержать разработку', stars: 25 },
+      {
+        id: 'winter_pack',
+        title: '❄️ Зимний набор',
+        description: 'Сезонная косметика',
+        stars: 200,
+        tag: 'seasonal',
+      },
     ],
     ...overrides,
   } as GameApi;
@@ -210,6 +217,14 @@ describe('/buy — магазин Stars из чата', () => {
     expect(reply.text).toContain('не найден');
     expect(reply.text).toContain('support_coffee');
     expect(reply.invoice).toBeUndefined();
+  });
+
+  it('витринные метки видны в каталоге (банк дней/сезонный набор)', async () => {
+    const reply = await handleCommand(ctx({ arg: 'gold_money' }), 'buy');
+    expect(reply.text).toContain('банк дней');
+    expect(reply.text).toContain('сезонный набор');
+    // без метки — просто без суффикса, не пустая метка
+    expect(reply.text).toContain('☕ Кофе разработчику · 25⭐');
   });
 
   it('сервер недоступен — вежливый отказ', async () => {

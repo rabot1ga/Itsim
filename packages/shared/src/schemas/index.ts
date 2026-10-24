@@ -632,6 +632,8 @@ export const ProductSchema = z.object({
   dailyLimit: z.number().int().min(1).optional(),
   /** lifetime purchase cap (e.g. at most 3 bank slots ever) */
   totalLimit: z.number().int().min(1).optional(),
+  /** витринная метка: как показывать позицию в каталоге (механики не меняет) */
+  tag: z.enum(['support', 'utility', 'cosmetic', 'seasonal']).optional(),
   grants: ProductGrantsSchema,
 });
 

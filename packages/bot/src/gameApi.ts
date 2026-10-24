@@ -23,6 +23,8 @@ export interface BotProduct {
   title: string;
   description: string;
   stars: number;
+  /** витринная метка (support/utility/cosmetic/seasonal), если есть */
+  tag?: string;
 }
 
 export class GameApiClient implements GameApi {

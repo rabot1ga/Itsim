@@ -45,6 +45,15 @@ const PRODUCTS = [
     repeatable: false,
     grants: { cosmetics: ['pet_halo'], badge: 'fashionista' },
   },
+  {
+    id: 'winter_pack',
+    title: 'Зимний набор',
+    description: 'Сезонная косметика',
+    stars: 200,
+    repeatable: false,
+    tag: 'seasonal',
+    grants: { cosmetics: ['pet_santa', 'pet_mitten', 'pet_snowflake'], badge: 'winter' },
+  },
 ];
 
 async function buildApp() {
@@ -111,7 +120,7 @@ describe('payments: catalogue and invoices', () => {
     expect(res.statusCode).toBe(200);
     const body = res.json();
     expect(body.currency).toBe('XTR');
-    expect(body.products).toHaveLength(3);
+    expect(body.products).toHaveLength(4);
     expect(body.products[0].owned).toBe(false);
     expect(body.mock).toBe(true);
   });
@@ -216,6 +225,23 @@ describe('payments: granting', () => {
     // Косметика видима: грант кладёт её и в items (питомец читает items).
     expect(state.items).toContain('pet_halo');
     expect(state.badges).toContain('fashionista');
+  });
+
+  it('сезонный набор выдаёт весь комплект косметики и значок разом', async () => {
+    const { app, store } = await buildApp();
+    await app.inject({
+      method: 'POST',
+      url: '/api/payments/webhook',
+      headers: { 'x-telegram-bot-api-secret-token': WEBHOOK_SECRET },
+      payload: successfulPayment('charge_bundle', 'itsim:v1:1:winter_pack:abcd'),
+    });
+
+    const state = await store.loadState('1');
+    for (const id of ['pet_santa', 'pet_mitten', 'pet_snowflake']) {
+      expect(state.entitlements).toContain(id);
+      expect(state.items).toContain(id);
+    }
+    expect(state.badges).toContain('winter');
   });
 
   it('is idempotent: a retried webhook does not grant twice', async () => {

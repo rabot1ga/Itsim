@@ -4267,9 +4267,30 @@ Object.assign(en, {
   Спонсор: 'Sponsor',
   Модник: 'Fashionista',
   Кибер: 'Cyber',
+  Меценат: 'Patron',
+  Зимний: 'Winter',
+  Летний: 'Summer',
   '🪟 Слот банка дней': '🪟 Bank day slot',
   '+1 к ёмкости банка офлайн-дней навсегда (7 → 10, всего 3 слота).':
     '+1 to the offline-day bank capacity forever (7 → 10, 3 slots max).',
   '+1 день в банк офлайн-энергии (сверх обычного накопления, в пределах ёмкости банка).':
     '+1 day in the offline-energy bank (on top of natural accrual, within the bank capacity).',
+  // --- Stars-каталог: новые позиции и сезонные наборы ---
+  '🍕 Обед разработчику': '🍕 Lunch for the developer',
+  'Поддержать разработку по-крупному. Тот же значок «Спонсор», но автор точно пообедает.':
+    'Support the game in a bigger way. The same «Sponsor» badge, but the author will definitely have lunch.',
+  '👑 Меценат': '👑 Patron',
+  'Значок «Меценат» и огромное спасибо за поддержку игры. Только поддержка — без игровых преимуществ.':
+    'The «Patron» badge and a huge thank you for backing the game. Support only — no gameplay advantages.',
+  '❄️ Зимний набор': '❄️ Winter set',
+  'Новогодний колпак, варежки и снежинка для питомца — сезонная коллекция, навсегда. Чистая косметика.':
+    'A festive hat, mittens and a snowflake for your pet — the seasonal collection, forever. Pure cosmetics.',
+  '🌞 Летний набор': '🌞 Summer set',
+  'Цветок, мороженое и солнышко для питомца — сезонная коллекция, навсегда. Чистая косметика.':
+    'A flower, an ice cream and a sun for your pet — the seasonal collection, forever. Pure cosmetics.',
+  // --- чипы витринных меток (StarsShop) ---
+  '💜 поддержка': '💜 support',
+  '⚙️ банк дней': '⚙️ bank days',
+  '✨ косметика': '✨ cosmetics',
+  '🎁 сезонный набор': '🎁 seasonal set',
 });

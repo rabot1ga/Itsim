@@ -28,6 +28,7 @@ async function buildApp() {
           description: 'Описание',
           stars: 120,
           repeatable: true,
+          tag: 'utility',
           grants: { bankSlots: 1 },
         },
       ],
@@ -51,7 +52,7 @@ describe('admin products', () => {
     });
     expect(res.statusCode).toBe(200);
     const products = res.json().products;
-    expect(products).toEqual([{ id: 'bank_slot', title: 'Слот', description: 'Описание', stars: 120 }]);
+    expect(products).toEqual([{ id: 'bank_slot', title: 'Слот', description: 'Описание', stars: 120, tag: 'utility' }]);
     expect(products[0].grants).toBeUndefined();
   });
 

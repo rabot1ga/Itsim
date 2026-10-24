@@ -43,6 +43,7 @@ export async function adminRoutes(app: FastifyInstance) {
         title: p.title,
         description: p.description,
         stars: p.stars,
+        ...(p.tag ? { tag: p.tag } : {}),
       })),
     };
   });

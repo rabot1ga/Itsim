@@ -30,6 +30,9 @@ const BADGE_LABEL: Record<string, string> = {
   supporter: 'Спонсор',
   fashionista: 'Модник',
   neon: 'Кибер',
+  patron: 'Меценат',
+  winter: 'Зимний',
+  summer: 'Летний',
 };
 export const ProfileView: React.FC = () => {
   const player = useGameStore((s) => s.player);

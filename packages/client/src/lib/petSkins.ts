@@ -33,6 +33,13 @@ export const PET_ACCESSORY_BADGE: Record<string, string> = {
   pet_wings: '🪽',
   pet_visor: '🥽',
   pet_scarf: '🧣',
+  // Сезонные наборы Stars (зима/лето)
+  pet_santa: '🎅',
+  pet_mitten: '🧤',
+  pet_snowflake: '❄️',
+  pet_flower: '🌸',
+  pet_icecream: '🍦',
+  pet_sun: '🌞',
 };
 
 export function petEmoji(skin: string | null | undefined): string | null {

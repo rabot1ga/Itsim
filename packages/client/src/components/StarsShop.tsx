@@ -19,9 +19,18 @@ interface StarsProduct {
   stars: number;
   repeatable: boolean;
   dailyLimit?: number;
+  /** витринная метка из каталога (support/utility/cosmetic/seasonal) */
+  tag?: 'support' | 'utility' | 'cosmetic' | 'seasonal';
   owned: boolean;
   blocked: string | null;
 }
+/** Чип витринной метки: сезонные наборы и т.п. — только подача, не механика. */
+const TAG_LABEL: Record<NonNullable<StarsProduct['tag']>, string> = {
+  support: '💜 поддержка',
+  utility: '⚙️ банк дней',
+  cosmetic: '✨ косметика',
+  seasonal: '🎁 сезонный набор',
+};
 export const StarsShop: React.FC = () => {
   const refreshState = useGameStore((s) => s.refreshState);
   const [products, setProducts] = useState<StarsProduct[]>([]);
@@ -108,7 +117,12 @@ export const StarsShop: React.FC = () => {
               className={`card card-sm flex items-center gap-3 ${product.owned ? 'panel-note panel-note-moss' : ''}`}
             >
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-ink-100">{product.title}</div>
+                <div className="text-sm font-medium text-ink-100">
+                  {product.title}
+                  {product.tag && (
+                    <span className="chip !text-ink-500 ml-2 align-middle">{t(TAG_LABEL[product.tag])}</span>
+                  )}
+                </div>
                 <div className="text-xs text-ink-500 leading-relaxed">{product.description}</div>
                 {product.blocked && <div className="text-2xs text-ochre-400 mt-0.5">{product.blocked}</div>}
               </div>
