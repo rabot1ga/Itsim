@@ -242,6 +242,9 @@
           "eventId": "toxic_chain_final_neutral",
           "afterDays": 5,
           "chance": 1.0
+        },
+        "requires": {
+          "energy": 2
         }
       },
       {
@@ -305,7 +308,10 @@
         "followup": "Ты отказался. Но теперь у тебя есть уважение коллеги."
       }
     ],
-    "chainOnly": true
+    "chainOnly": true,
+    "conditions": {
+      "hasJob": true
+    }
   },
   {
     "id": "toxic_chain_final_neutral",
@@ -343,6 +349,9 @@
         "followup": "Жалоба ушла в HR. Ответ пришёл через месяц: «Принято к сведению»."
       }
     ],
-    "chainOnly": true
+    "chainOnly": true,
+    "conditions": {
+      "hasJob": true
+    }
   }
 ]

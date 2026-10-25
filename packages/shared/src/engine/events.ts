@@ -1,6 +1,8 @@
 import { PlayerState, GameEvent, EventChoice } from '../types';
 import { clamp, weightedPick } from './utils';
 import { applyXp, applySoftXp } from './skills';
+import { absorbJobWarning } from './relationships';
+import { addContacts } from './contacts';
 
 /** Soft skills that live in PlayerState.softSkills (not .skills) */
 const SOFT_SKILL_IDS = new Set([
@@ -15,6 +17,17 @@ const SOFT_SKILL_IDS = new Set([
 /**
  * Event engine — sections 9.2, 9.4
  */
+
+/**
+ * Рабочие теги: событие с ними требует работы, иначе безработный получает
+ * «прод упал на работе». Исключения (внешние предложения рекрутеров,
+ * импостор-синдром и т.п.) помечаются `allowWithoutJob`.
+ */
+const WORK_TAGS = new Set(['work', 'office', 'sprint', 'project']);
+export function eventNeedsJob(e: Pick<GameEvent, 'tags' | 'allowWithoutJob'>): boolean {
+  if (e.allowWithoutJob) return false;
+  return e.tags.some((tg) => WORK_TAGS.has(tg));
+}
 
 /**
  * Check if event conditions match player state
@@ -92,7 +105,8 @@ export function pickEvent(p: PlayerState, pool: GameEvent[], rng: () => number):
   const pending = p.pendingEvents.find((e) => e.triggerDay <= p.currentDay);
   if (pending) {
     const event = pool.find((e) => e.id === pending.eventId);
-    if (event) return event;
+    // Рабочая цепочка без работы не стреляет (ждёт возвращения на работу)
+    if (event && !(eventNeedsJob(event) && !p.job)) return event;
   }
 
   // 2. Filter eligible events (chain-only and action-triggered events are
@@ -100,6 +114,7 @@ export function pickEvent(p: PlayerState, pool: GameEvent[], rng: () => number):
   const eligible = pool.filter((e) => {
     if (e.chainOnly) return false;
     if (e.actionTrigger) return false;
+    if (eventNeedsJob(e) && !p.job) return false;
 
     const hist = p.eventHistory[e.id];
     const lastDay = hist?.lastDay ?? -999;
@@ -170,14 +185,20 @@ export function applyEventEffects(p: PlayerState, choice: EventChoice): PlayerSt
     }
   }
 
-  // Job warnings
+  // Job warnings (D1: тимлид ≥ 60 гасит одно предупреждение)
   if (e.jobWarnings !== undefined) {
-    next.jobWarnings = (next.jobWarnings ?? 0) + e.jobWarnings;
+    const absorbed = absorbJobWarning(next, e.jobWarnings);
+    next.jobWarnings = (next.jobWarnings ?? 0) + absorbed;
   }
 
   // Burnout days
   if (e.burnoutDays !== undefined) {
     next.burnoutDays = Math.max(0, (next.burnoutDays ?? 0) + e.burnoutDays);
+  }
+
+  // D2: связи (мероприятия/знакомые) — с капом
+  if (e.contacts !== undefined) {
+    addContacts(next, e.contacts);
   }
 
   return next;
@@ -218,6 +239,7 @@ export function maybeTriggerActionEvent(
     if (hist && p.currentDay - hist.lastDay < cooldown) return false;
     if ((hist?.count ?? 0) >= (e.maxOccurrences ?? Infinity)) return false;
     if (p.currentDay < (e.minGameDay ?? 0)) return false;
+    if (eventNeedsJob(e) && !p.job) return false;
 
     return checkConditions(e.conditions, p);
   });

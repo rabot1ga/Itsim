@@ -41,7 +41,7 @@ test('первый запуск: слайды показываются, «Про
   // повторный запуск — сразу игра, без обучения
   await page.reload();
   await expect(page.locator('.onboard')).toHaveCount(0);
-  // сразу игра: «Главная» с живой карточкой комнаты (design.md §5, строка 1) —
+  // сразу игра: «Сегодня» с живой карточкой комнаты (design.md §5, строка 1) —
   // миниатюра тира (HomeRoomCard); действия комнаты — только во вкладке «Дом»
   await expect(page.locator('img.room-thumb')).toBeVisible();
 

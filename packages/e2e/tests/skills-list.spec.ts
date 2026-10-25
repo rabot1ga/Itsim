@@ -1,14 +1,14 @@
 import { test, expect, type Page } from '@playwright/test';
 
 /**
- * «Обучение» на экране — это и тайл быстрого действия на «Главной», и таб
+ * «Развитие» — таб нижней навигации (A2; прежний «Обучение» переименован)
  * внизу: без скоупа по навигации Playwright падает strict-mode violation'ом
  * ещё до первого асерта.
  */
 async function openLearning(page: Page) {
   await page
     .getByRole('navigation', { name: 'Основная навигация' })
-    .getByRole('button', { name: 'Обучение', exact: true })
+    .getByRole('button', { name: 'Развитие', exact: true })
     .click();
 }
 

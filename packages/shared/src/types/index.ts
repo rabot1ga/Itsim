@@ -228,6 +228,20 @@ export interface PlayerState {
   /** last check-in day, YYYY-MM-DD in the game-day timezone */
   lastCheckInDate?: string;
 
+  // Friends (D1, 25.10.2026): «Провести время с другом» — once a day per NPC
+  /** npcId → the game day time was last spent together (relation action) */
+  friendTimeDays?: Record<string, number>;
+
+  // Contacts (D2, 25.10.2026): «связи как ресурс» — мероприятие/знакомые → траты
+  /** accumulated networking contacts, 0..CONTACTS_CAP */
+  contacts?: number;
+  /** armed: the current interview ends in an offer without the roll */
+  recommendation?: boolean;
+  /** armed: the next freelance bid gets +FREELANCE_LEAD_BONUS chance */
+  freelanceLead?: boolean;
+  /** armed: the next P2P purchase gets P2P_DISCOUNT_RATE off */
+  p2pDiscount?: boolean;
+
   // Meta layer (P1.1 «Новая жизнь»): the only thing that survives a reset
   /** prestige ledger — persists across lives, never resets */
   meta?: MetaLife;
@@ -250,6 +264,10 @@ export interface MetaLife {
   deepestDay?: number;
   /** lifetime total actions across all lives */
   lifetimeActions?: number;
+  /** friends invited by this player who actually claimed the referral bonus */
+  referralCount?: number;
+  /** true once THIS player claimed a welcome bonus for someone else's invite */
+  referralClaimed?: boolean;
 }
 
 export interface SkillLevel {
@@ -449,6 +467,8 @@ export interface GameEvent {
   chainOnly?: boolean;
   /** Triggered by a player action with a probability (never in the day pool) */
   actionTrigger?: ActionEventTrigger;
+  /** Рабочие теги требуют работы; эти события — исключения (внешние предложения и т.п.) */
+  allowWithoutJob?: boolean;
   choices: EventChoice[];
 }
 
@@ -496,6 +516,8 @@ export interface EventChoiceRequires {
   skill?: Record<SkillId, number>;
   npcPresent?: NPCId;
   minRelation?: Record<NPCId, number>;
+  /** D2: сколько связей нужно, чтобы открыть этот выбор */
+  minContacts?: number;
 }
 
 export interface EventEffects {
@@ -509,6 +531,8 @@ export interface EventEffects {
   relation?: Record<NPCId, number>;
   jobWarnings?: number;
   burnoutDays?: number;
+  /** D2: networking contacts (мероприятия/знакомые) */
+  contacts?: number;
 }
 
 export interface ChainEventRef {

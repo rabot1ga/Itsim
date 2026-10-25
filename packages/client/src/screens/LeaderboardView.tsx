@@ -33,7 +33,7 @@ const GRADE_LABELS: Record<string, string> = {
   cto: 'CTO',
 };
 /** Podium medals; everybody else gets a quiet number. */
-const MEDAL: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
+const MEDAL: Record<number, string> = { 1: '', 2: '', 3: '' };
 /**
  * Вкладки — четыре метрики из ТЗ плюс «Рейтинг», потому что им отвечает сервер
  * по умолчанию и именно это число показывает шапка. `id` типизированы
@@ -48,7 +48,7 @@ const TABS: {
   label: string;
   unit: string;
 }[] = [
-  { id: 'rating', label: t('Рейтинг'), unit: '⭐' },
+  { id: 'rating', label: t('Рейтинг'), unit: '' },
   { id: 'career', label: t('Карьера'), unit: '/100' },
   { id: 'skills', label: t('Навыки'), unit: '/100' },
   { id: 'money', label: t('Деньги'), unit: '/100' },
@@ -87,7 +87,7 @@ export const LeaderboardView: React.FC = () => {
   const [honestOnly, setHonestOnly] = useState(false);
   const [metric, setMetric] = useState<RatingMetric>('rating');
   const [loaded, setLoaded] = useState(false);
-  const unit = TABS.find((t) => t.id === metric)?.unit ?? '⭐';
+  const unit = TABS.find((t) => t.id === metric)?.unit ?? '';
   useEffect(() => {
     let cancelled = false;
     setLoaded(false);
@@ -107,9 +107,12 @@ export const LeaderboardView: React.FC = () => {
   const youOutsidePage = you && !rows.some((r) => r.isYou);
   return (
     <div className="space-y-4 animate-fade-in">
+      <button onClick={() => useGameStore.getState().setView('progress')} className="link-back">
+        {t('← Прогресс')}
+      </button>
       <ScreenTitle
-        emoji="🏆"
-        meta={player?.ratingScore !== undefined ? t('твой рейтинг {p0} ⭐', { p0: player.ratingScore }) : undefined}
+        icon="trophy"
+        meta={player?.ratingScore !== undefined ? t('твой рейтинг {p0}', { p0: player.ratingScore }) : undefined}
       >
         {t('Топ игроков')}
       </ScreenTitle>
@@ -155,7 +158,7 @@ export const LeaderboardView: React.FC = () => {
           </>
         )}
         {loaded && rows.length === 0 && (
-          <EmptyState emoji="📊" title={t('Пока пусто')} hint={t('Сыграй первый день — и попадёшь в топ.')} />
+          <EmptyState icon="trophy" title={t('Пока пусто')} hint={t('Сыграй первый день — и попадёшь в топ.')} />
         )}
       </div>
     </div>

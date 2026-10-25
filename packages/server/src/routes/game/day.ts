@@ -12,6 +12,12 @@ import { getContent } from '../../services/contentService.js';
 import { loadState, saveState } from '../../services/gameStore.js';
 import {
   applyEventEffects,
+  applyXp,
+  mentorXpDue,
+  toxicConflictActive,
+  teamleadSurplusBonus,
+  MENTOR_XP,
+  TOXIC_MOTIVATION_HIT,
   applyMotivationDrift,
   consolationPayment,
   resolveBid,
@@ -36,7 +42,7 @@ import {
   type GameEvent,
   type Offer,
 } from '@itsim/shared';
-import { clamp } from '@itsim/shared';
+import { clamp, contactsOf } from '@itsim/shared';
 import {
   branchOfMap,
   careerGatesOf,
@@ -84,7 +90,7 @@ export function advanceDay(state: StoredState, content: any, messages: string[])
   if (state.motivation <= 0) {
     state.burnoutDays += 1;
     if (state.burnoutDays === 3) {
-      messages.push(t('🔥 Ты на грани выгорания. Срочно отдохни!'));
+      messages.push(t('Ты на грани выгорания. Срочно отдохни!'));
     }
   } else if (state.motivation >= 50) {
     state.burnoutDays = 0;
@@ -99,11 +105,11 @@ export function advanceDay(state: StoredState, content: any, messages: string[])
     state.job.daysWorked += 1;
     state.job.daysSinceLastPromotion += 1;
     if (state.jobWarnings >= 3) {
-      messages.push(t('💀 Три предупреждения — тебя уволили из {p0}. Свобода!', { p0: company?.name ?? 'компании' }));
+      messages.push(t('Три предупреждения — тебя уволили из {p0}. Свобода!', { p0: company?.name ?? 'компании' }));
       state.job = null;
       loseCtoSeat(state, content, messages, t('Борд не стал ждать третьего предупреждения'));
     } else if (company && rng() < (company.culture?.layoffRisk ?? 0)) {
-      messages.push(t('📉 Сокращение в «{p0}». Ты в списке. Рынок, держись!', { p0: company.name }));
+      messages.push(t('Сокращение в «{p0}». Ты в списке. Рынок, держись!', { p0: company.name }));
       state.job = null;
       loseCtoSeat(state, content, messages, t('Сокращение дошло до верхнего этажа'));
     } else {
@@ -111,23 +117,38 @@ export function advanceDay(state: StoredState, content: any, messages: string[])
       tryPromote(state, company, content, messages);
     }
   }
+  // 4b. Friends (D1): пассивные эффекты порогов отношений
+  if (mentorXpDue(state)) {
+    const mainId = state.mainSkillId ?? Object.keys(state.skills)[0];
+    const skill = state.skills[mainId];
+    if (skill) {
+      state.skills = { ...state.skills, [mainId]: applyXp(skill, MENTOR_XP, state.motivation) };
+      messages.push(t('Маша пришла с вопросом: объясняя, разобрался сам (+{p0} XP)', { p0: MENTOR_XP }));
+    }
+  }
+  if (toxicConflictActive(state)) {
+    state.motivation = clamp(state.motivation - TOXIC_MOTIVATION_HIT, 0, 100);
+    messages.push(
+      t('Дмитрий Борисович опять свёл дискуссию к лекции — настроение −{p0}', { p0: TOXIC_MOTIVATION_HIT })
+    );
+  }
   // 5. Weekly salary
   if (state.job && state.currentDay % 7 === 0) {
     const salary = weeklySalary(state.job.salary);
     state.money += salary;
-    messages.push(t('💰 Зарплата: +{p0}', { p0: fmtMoney(salary) }));
+    messages.push(t('Зарплата: +{p0}', { p0: fmtMoney(salary) }));
   }
   // 6. Monthly rent
   if (state.currentDay % 30 === 0) {
     const cost = HOUSING_COSTS[state.housingLevel] ?? 0;
     if (state.money >= cost) {
       state.money -= cost;
-      messages.push(t('🏠 Оплачено жильё: {p0}', { p0: fmtMoney(cost) }));
+      messages.push(t('Оплачено жильё: {p0}', { p0: fmtMoney(cost) }));
     } else {
       state.money = 0;
       state.motivation = clamp(state.motivation - 8, 0, 100);
       messages.push(
-        t('⚠️ Не хватило денег на жильё ({p0}). Мотивация упала. Срочно нужен доход!', { p0: fmtMoney(cost) })
+        t('Не хватило денег на жильё ({p0}). Мотивация упала. Срочно нужен доход!', { p0: fmtMoney(cost) })
       );
     }
   }
@@ -162,13 +183,13 @@ export function advanceDay(state: StoredState, content: any, messages: string[])
       state.health = clamp(state.health - 3, 0, 100);
       state.motivation = clamp(state.motivation - 3, 0, 100);
       messages.push(
-        t('🍜 На еду не хватило (нужно {p0}) — день на гречке: здоровье −3, мотивация −3', {
+        t('На еду не хватило (нужно {p0}) — день на гречке: здоровье −3, мотивация −3', {
           p0: fmtMoney(lc.amount),
         })
       );
       if (state.hungryDays >= 3) {
         state.health = clamp(state.health - 4, 0, 100);
-        messages.push(t('⚠️ Уже {p0} дн. без нормальной еды: истощение, здоровье ещё −4', { p0: state.hungryDays }));
+        messages.push(t('Уже {p0} дн. без нормальной еды: истощение, здоровье ещё −4', { p0: state.hungryDays }));
       }
     }
     state.lastLivingCost = livingToday;
@@ -179,7 +200,7 @@ export function advanceDay(state: StoredState, content: any, messages: string[])
         const paid = Math.min(state.money, tax);
         state.money -= paid;
         messages.push(
-          t('🏦 Налог на состояние и образ жизни: −{p0}. Деньги «под матрасом» обесцениваются — реинвестируй', {
+          t('Налог на состояние и образ жизни: −{p0}. Деньги «под матрасом» обесцениваются — реинвестируй', {
             p0: fmtMoney(paid),
           })
         );
@@ -192,9 +213,7 @@ export function advanceDay(state: StoredState, content: any, messages: string[])
     if (state.burnoutDays >= (endings.burnoutDays ?? 7)) {
       state.careerEnding = 'burnout';
       state.job = null;
-      messages.push(
-        t('🔥 Выгорание. Ты ушёл в отпуск длиной в жизнь: ноутбук в ящик, тикеты чужие. Финал: «Пчеловод»')
-      );
+      messages.push(t('Выгорание. Ты ушёл в отпуск длиной в жизнь: ноутбук в ящик, тикеты чужие. Финал: «Пчеловод»'));
     } else {
       // «15 дней без денег и без работы»: цепочка растёт только пока держатся
       // оба условия; любая работа или деньги обрывают её. Раньше счётчик шёл и
@@ -204,7 +223,7 @@ export function advanceDay(state: StoredState, content: any, messages: string[])
       if ((state.brokeDays ?? 0) >= (endings.brokeDaysToQuit ?? 15) && !state.job) {
         state.careerEnding = 'left_it';
         messages.push(
-          t('💀 {p0} дней без денег и без работы. Ты ушёл из IT — в деревню, за теплицы. Финал: «Ушёл из IT»', {
+          t('{p0} дней без денег и без работы. Ты ушёл из IT — в деревню, за теплицы. Финал: «Ушёл из IT»', {
             p0: endings.brokeDaysToQuit ?? 15,
           })
         );
@@ -226,7 +245,7 @@ export function advanceDay(state: StoredState, content: any, messages: string[])
   if (expired.length > 0) {
     state.pendingOffers = state.pendingOffers.filter((o) => o.expiresInDays > 0);
     messages.push(
-      t('⏳ Оффер{p0} истек{p1}: {p2}', {
+      t('Оффер{p0} истек{p1}: {p2}', {
         p0: expired.length > 1 ? 'ы' : '',
         p1: expired.length > 1 ? 'ли' : '',
         p2: expired.map((o) => o.position).join(', '),
@@ -240,17 +259,17 @@ export function advanceDay(state: StoredState, content: any, messages: string[])
       state.money += mining.net;
       state.miningEarned = (state.miningEarned ?? 0) + mining.net;
       messages.push(
-        t('⛏ Ферма намайнила: +{p0} (электричество −{p1})', {
+        t('Ферма намайнила: +{p0} (электричество −{p1})', {
           p0: fmtMoney(mining.net),
           p1: fmtMoney(mining.electricity),
         })
       );
     } else if (state.money >= -mining.net) {
       state.money += mining.net;
-      messages.push(t('⛏ Курс упал: ферма ушла в минус на {p0}', { p0: fmtMoney(-mining.net) }));
+      messages.push(t('Курс упал: ферма ушла в минус на {p0}', { p0: fmtMoney(-mining.net) }));
     } else {
       state.money = 0;
-      messages.push(t('⛏ Не хватило на электричество — ферма стояла весь день'));
+      messages.push(t('Не хватило на электричество — ферма стояла весь день'));
     }
   }
   // 8c. Daily item bonuses (pets, plants, coffee maker...)
@@ -267,15 +286,15 @@ export function advanceDay(state: StoredState, content: any, messages: string[])
     state.freelanceBid = null;
     const def = findProject(content.projects?.projects, bid.projectId);
     if (!def) {
-      messages.push(t('📭 Заказ сняли с биржи ещё до ответа. Бывает'));
+      messages.push(t('Заказ сняли с биржи ещё до ответа. Бывает'));
     } else if (state.activeProject) {
-      messages.push(t('📭 «{p0}»: пока ты ждал, взялся другой проект — заказчик ушёл', { p0: def.title }));
+      messages.push(t('«{p0}»: пока ты ждал, взялся другой проект — заказчик ушёл', { p0: def.title }));
     } else {
       const outcome = resolveBid(bid.chance, rng());
       if (outcome === 'won') {
         state.activeProject = startProject(def, state.currentDay);
         messages.push(
-          t('📁 Заказчик выбрал тебя: «{p0}». Дедлайн — день {p1}', {
+          t('Заказчик выбрал тебя: «{p0}». Дедлайн — день {p1}', {
             p0: def.title,
             p1: state.activeProject.deadlineDay,
           })
@@ -286,10 +305,10 @@ export function advanceDay(state: StoredState, content: any, messages: string[])
         state.money += pay;
         state.freelanceLastPayment = pay;
         messages.push(
-          t('🛠 «{p0}» ушёл другому, но тестовое задание оплатили: +{p1}', { p0: def.title, p1: fmtMoney(pay) })
+          t('«{p0}» ушёл другому, но тестовое задание оплатили: +{p1}', { p0: def.title, p1: fmtMoney(pay) })
         );
       } else {
-        messages.push(t('📭 «{p0}»: заказчик выбрал исполнителя опытнее. Попробуй ещё раз', { p0: def.title }));
+        messages.push(t('«{p0}»: заказчик выбрал исполнителя опытнее. Попробуй ещё раз', { p0: def.title }));
       }
     }
   }
@@ -346,7 +365,7 @@ function loseCtoSeat(state: StoredState, content: any, messages: string[], reaso
   delete state.ctoSinceDay;
   messages.push(
     t(
-      '🪑 {reason}: кресло CTO занял кто-то другой. Ты снова архитектор (в кресле было {held} дн. из {p0}) — выборы можно пройти заново',
+      '{reason}: кресло CTO занял кто-то другой. Ты снова архитектор (в кресле было {held} дн. из {p0}) — выборы можно пройти заново',
       { reason: reason, held: held, p0: ctoHoldDays(content) }
     )
   );
@@ -369,11 +388,12 @@ function tryPromote(state: StoredState, company: any, content: any, messages: st
   if ((state.job!.daysSinceLastPromotion ?? 0) < reviewInterval(gates, state.job!.grade)) return;
   const progress = gateProgress(state, gate, { branchOf: branchOfMap(content) });
   if (!progress.ok) return;
-  const surplus = gateSurplus(progress);
+  // D1: тимлид ≥ 60 заступается — ревью проходит легче
+  const surplus = gateSurplus(progress) + teamleadSurplusBonus(state);
   if (!promotionChance(surplus, gate.competition ?? 1, rng)) {
     // No spam: tell the player only on the day the review happened
     messages.push(
-      t('📋 Ревью на {p0}: место пока занято. Ты у уреза — качай глубину, не ширину', { p0: gate.label ?? gate.grade })
+      t('Ревью на {p0}: место пока занято. Ты у уреза — качай глубину, не ширину', { p0: gate.label ?? gate.grade })
     );
     return;
   }
@@ -390,7 +410,7 @@ function tryPromote(state: StoredState, company: any, content: any, messages: st
   state.lastPromotionDay = state.currentDay;
   state.reputation = clamp(state.reputation + 3, 0, 100);
   messages.push(
-    t('🚀 Повышение! Теперь ты {p0} ({p1}/мес). Поздравляем, тебя ждёт ещё больше созвонов', {
+    t('Повышение! Теперь ты {p0} ({p1}/мес). Поздравляем, тебя ждёт ещё больше созвонов', {
       p0: GRADE_POSITIONS[gate.grade],
       p1: fmtMoney(newSalary),
     })
@@ -431,7 +451,7 @@ function resolveInterview(state: StoredState, app: Application, content: any, me
     app.status = 'accepted';
     app.result = 'accepted';
     messages.push(
-      t('🎉 Собеседование в «{p0}» пройдено! Оффер: {p1}, {p2}/мес. Действует 5 дней — принять в «Карьере»', {
+      t('Собеседование в «{p0}» пройдено! Оффер: {p1}, {p2}/мес. Действует 5 дней — принять в «Карьере»', {
         p0: company.name,
         p1: app.position,
         p2: fmtMoney(salary),
@@ -442,7 +462,7 @@ function resolveInterview(state: StoredState, app: Application, content: any, me
     app.result = 'rejected';
     messages.push(
       t(
-        '😔 «{p0}»: мы впечатлены вашим резюме, но решили двигаться с другим кандидатом. Не расстраивайся — попробуй ещё раз через пару дней',
+        '«{p0}»: мы впечатлены вашим резюме, но решили двигаться с другим кандидатом. Не расстраивайся — попробуй ещё раз через пару дней',
         { p0: company.name }
       )
     );
@@ -495,11 +515,11 @@ export async function dayRoutes(app: FastifyInstance) {
     // Achievements
     const earned = checkAchievements(state, content.achievements);
     for (const a of earned) {
-      messages.push(t('🏆 Достижение: {p0} {p1} — {p2}', { p0: a.icon, p1: a.name, p2: a.description }));
+      messages.push(t('Достижение: {p0} {p1} — {p2}', { p0: a.icon, p1: a.name, p2: a.description }));
     }
     // Автопостинг вех: промоушен/миллион/год — пост в ленту профиля
     for (const m of recordMilestones(state, content.balance)) {
-      messages.push(t('🌟 Веха: {p0}', { p0: t(m.key, m.params) }));
+      messages.push(t('Веха: {p0}', { p0: t(m.key, m.params) }));
     }
     await saveState(userId, state);
     return {
@@ -558,6 +578,10 @@ export async function dayRoutes(app: FastifyInstance) {
           }
         }
       }
+      // D2: связи открывают двери
+      if (req.minContacts && contactsOf(state) < req.minContacts) {
+        return reply.status(400).send({ error: t('Мало связей для этого выбора') });
+      }
     }
     // Apply effects (returns a new state object)
     const updated = applyEventEffects(state, choice);
@@ -576,9 +600,9 @@ export async function dayRoutes(app: FastifyInstance) {
     }
     const earned = checkAchievements(state, content.achievements);
     const followup = choice.followup ?? '';
-    const extra = earned.map((a) => t('🏆 Достижение: {p0} {p1}', { p0: a.icon, p1: a.name })).join('\n');
+    const extra = earned.map((a) => t('Достижение: {p0} {p1}', { p0: a.icon, p1: a.name })).join('\n');
     const milestones = recordMilestones(state, content.balance)
-      .map((m) => t('🌟 Веха: {p0}', { p0: t(m.key, m.params) }))
+      .map((m) => t('Веха: {p0}', { p0: t(m.key, m.params) }))
       .join('\n');
     const message = [followup, extra, milestones].filter(Boolean).join('\n') || undefined;
     state.maxEnergy = recalcMaxEnergy(state, content);

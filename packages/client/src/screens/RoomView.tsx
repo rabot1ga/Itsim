@@ -41,7 +41,7 @@ function zoneChips(zone: Zone): string[] {
   if (zone.chip) return [zone.chip];
   const def = ACTIONS.find((a) => a.id === zone.action);
   const chips: string[] = [];
-  if (def?.energy) chips.push(`−${def.energy}⚡`);
+  if (def?.energy) chips.push(`−${def.energy}`);
   if (def?.cost) chips.push(`−${def.cost} ₽`);
   return chips;
 }
@@ -77,7 +77,7 @@ export const RoomView: React.FC = () => {
   };
   return (
     <div className="space-y-4 animate-fade-in">
-      <ScreenTitle emoji="🏠" meta={<span className="num">{meta.tagline}</span>}>
+      <ScreenTitle icon="house" meta={<span className="num">{meta.tagline}</span>}>
         {t('Дом')}
       </ScreenTitle>
 

@@ -57,17 +57,17 @@ describe('requestLocale', () => {
       (async () => {
         await new Promise((r) => setTimeout(r, 5));
         return runWithLocale('en', () => {
-          const first = t('Новая жизнь началась! 💻');
+          const first = t('Новая жизнь началась!');
           return first;
         });
       })(),
       (async () => {
         await new Promise((r) => setTimeout(r, 1));
-        return runWithLocale('ru', () => t('Новая жизнь началась! 💻'));
+        return runWithLocale('ru', () => t('Новая жизнь началась!'));
       })(),
     ]);
-    expect(seen[1]).toBe('Новая жизнь началась! 💻'); // ru — ключ
-    expect(seen[0]).toBe('A new life has begun! 💻'); // en — из словаря
+    expect(seen[1]).toBe('Новая жизнь началась!'); // ru — ключ
+    expect(seen[0]).toBe('A new life has begun!'); // en — из словаря
   });
 });
 
@@ -95,7 +95,7 @@ describe('HTTP: сообщения ответа под языком запрос
       headers: { authorization: tma({ id: 77, first_name: '', language_code: 'ru' }), 'X-Locale': 'en' },
     });
     expect(res.statusCode).toBe(200);
-    expect(res.json().state._lastEvent).toBe('A new life has begun! 💻');
+    expect(res.json().state._lastEvent).toBe('A new life has begun!');
     expect(res.json().state.firstName).toBe('Player');
   });
 
@@ -106,7 +106,7 @@ describe('HTTP: сообщения ответа под языком запрос
       headers: { authorization: tma({ id: 78, first_name: '', language_code: 'en' }) },
     });
     expect(res.statusCode).toBe(200);
-    expect(res.json().state._lastEvent).toBe('A new life has begun! 💻');
+    expect(res.json().state._lastEvent).toBe('A new life has begun!');
   });
 
   it('дефолт — русский: ключ возвращается как есть', async () => {
@@ -116,7 +116,7 @@ describe('HTTP: сообщения ответа под языком запрос
       headers: { authorization: tma({ id: 79, first_name: '' }) },
     });
     expect(res.statusCode).toBe(200);
-    expect(res.json().state._lastEvent).toBe('Новая жизнь началась! 💻');
+    expect(res.json().state._lastEvent).toBe('Новая жизнь началась!');
     expect(res.json().state.firstName).toBe('Игрок');
   });
 });

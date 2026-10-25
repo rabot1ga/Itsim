@@ -5,14 +5,17 @@ import { HomeRoomCard } from '../components/HomeRoomCard';
 import { CareerPressureCard } from '../components/CareerPressureCard';
 import { SprintCard } from '../components/SprintCard';
 import { SectionTitle, accordionBodyRef } from '../components/ui';
+import { PixelIcon } from '../components/pixel/PixelIcon';
 import { formatMoney } from './actionCatalogue';
 import { tipForDay } from './dayTips';
-/** The four places a day is spent — the home screen only points at them. */
+/**
+ * Where a day goes outside the tabs (A2): работа и обучение — табы, а быт и
+ * траты остаются дверями с «Сегодня».
+ */
 const DESTINATIONS = [
-  { view: 'career', emoji: '💼', label: t('Работа'), hint: t('задачи, проекты, подработки') },
-  { view: 'skills', emoji: '📚', label: t('Обучение'), hint: t('направления и учебные действия') },
-  { view: 'rest', emoji: '🌿', label: t('Отдых'), hint: t('сон, спорт, люди') },
-  { view: 'shop', emoji: '🛍', label: t('Магазин'), hint: t('техника, еда, апгрейды') },
+  { view: 'rest', icon: 'walk', label: t('Отдых'), hint: t('сон, спорт, люди') },
+  { view: 'shop', icon: 'bag', label: t('Магазин'), hint: t('техника, еда, апгрейды') },
+  { view: 'room', icon: 'house', label: t('Дом'), hint: t('комната, декор, гардероб') },
 ] as const;
 const CHALLENGE_TEXT: Record<string, string> = {
   ch_study_3: t('Выполни 3 учебных действия'),
@@ -44,9 +47,7 @@ const YesterdayLog: React.FC<{
         aria-expanded={open}
         className="w-full flex items-center gap-2 text-left touch-target"
       >
-        <span className="shrink-0" aria-hidden="true">
-          🕘
-        </span>
+        <PixelIcon name="clock" size={12} />
         <span className="text-xs font-bold uppercase tracking-[0.06em] text-ink-500 shrink-0">{t('Вчера')}</span>
         {!open && <span className="flex-1 min-w-0 truncate text-xs text-ink-400">{text.replace(/\n/g, ' · ')}</span>}
         <span aria-hidden="true" className={`accordion-chevron shrink-0 ${open ? 'is-open' : ''}`}>
@@ -88,7 +89,7 @@ const OnboardingTip: React.FC<{
     <section className="card panel-note panel-note-sky animate-pop-in">
       <div className="flex items-start gap-2">
         <span className="text-base leading-none mt-0.5 shrink-0" aria-hidden="true">
-          {tip.icon}
+          <PixelIcon name="star" size={16} />
         </span>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-ink-100 leading-tight">{tip.title}</p>
@@ -128,7 +129,7 @@ const CheckInBanner: React.FC<{
     <section className="card panel-note panel-note-gold animate-pop-in">
       <div className="flex items-start gap-2">
         <span className="text-base leading-none mt-0.5 shrink-0" aria-hidden="true">
-          🔥
+          <PixelIcon name="flame" size={16} />
         </span>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-white leading-tight">
@@ -171,7 +172,7 @@ export const DayView: React.FC = () => {
       {error && (
         <button onClick={clearError} className="card panel-note panel-note-clay w-full text-left animate-pop-in">
           <p className="flex items-start gap-2 text-sm text-clay-300">
-            <span aria-hidden="true">⚠️</span>
+            <PixelIcon name="warn" size={14} />
             <span>{error}</span>
           </p>
           <p className="text-2xs text-ink-500 mt-1 pl-5">{t('Нажми, чтобы скрыть')}</p>
@@ -189,12 +190,12 @@ export const DayView: React.FC = () => {
         <section className={`card panel-note ${player.dailyChallenge.done ? 'panel-note-moss' : 'panel-note-sky'}`}>
           <div className="flex items-center justify-between gap-2 mb-1">
             <span className="flex items-center gap-1.5 text-2xs font-bold uppercase tracking-[0.09em] text-ink-400">
-              <span aria-hidden="true">🎯</span>
+              <PixelIcon name="target" size={12} />
               {t('Задание дня')}
             </span>
             {player.dailyChallenge.done ? (
               <span className="flex items-center gap-1 text-2xs font-bold text-moss-300 uppercase tracking-[0.06em]">
-                <span aria-hidden="true">✅</span>
+                <PixelIcon name="check" size={12} />
                 {t('выполнено')}
               </span>
             ) : (
@@ -224,7 +225,7 @@ export const DayView: React.FC = () => {
           {DESTINATIONS.map((d) => (
             <button key={d.view} onClick={() => setView(d.view)} className="tile tile-action" aria-label={d.label}>
               <span className="tile-icon" aria-hidden="true">
-                {d.emoji}
+                <PixelIcon name={d.icon} size={18} />
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block text-sm font-semibold text-ink-100 leading-tight">{d.label}</span>
@@ -239,7 +240,7 @@ export const DayView: React.FC = () => {
         {player.energy <= 2 && (
           <p className="flex items-center gap-2 text-xs text-ochre-300 leading-tight mt-2 px-0.5">
             <span className="shrink-0" aria-hidden="true">
-              ⚡
+              <PixelIcon name="bolt" size={12} />
             </span>
             {t('Энергия на исходе. «Поспать» на вкладке «Отдых» вернёт её — сон доступен даже при нуле.')}
           </p>
@@ -261,7 +262,7 @@ export const DayView: React.FC = () => {
         >
           <div className="flex items-center justify-between mb-1.5">
             <span className="flex items-center gap-1.5 text-sm font-semibold text-ink-100">
-              <span aria-hidden="true">⛏</span>
+              <PixelIcon name="chip" size={14} />
               {t('Майнинг-ферма')}
             </span>
             <span className="num text-2xs text-ink-500">{mining.hashrate} MH/s</span>
@@ -285,7 +286,7 @@ export const DayView: React.FC = () => {
       {/* Banked offline days */}
       {(player.bankedDays ?? 0) > 0 && (
         <button onClick={() => performAction('use_banked_day')} className="btn btn-secondary w-full text-sm">
-          <span aria-hidden="true">🕒</span>
+          <PixelIcon name="clock" size={14} />
           <span>
             {t('Банк офлайн-дней:')} <span className="num">{player.bankedDays}</span> {t('— использовать')}
           </span>

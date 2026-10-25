@@ -9,10 +9,8 @@ test('shop recovers after HTTP failure and career has reachable vacancies', asyn
     else await route.continue();
   });
   await page.goto('/');
-  await page
-    .getByRole('navigation', { name: 'Основная навигация' })
-    .getByRole('button', { name: 'Магазин', exact: true })
-    .click();
+  // «Магазин» ушёл из навигации (A2): это дверь на «Сегодня»
+  await page.getByRole('button', { name: 'Магазин', exact: true }).click();
   await expect(page.getByText('Магазин недоступен', { exact: true })).toBeVisible();
   fail = false;
   await page.getByRole('button', { name: 'Повторить загрузку' }).click();

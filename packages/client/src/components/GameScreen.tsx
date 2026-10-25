@@ -11,9 +11,8 @@ import { RestView } from '../screens/RestView';
 import { CareerView } from '../screens/CareerView';
 import { ShopView } from '../screens/ShopView';
 import { RoomView } from '../screens/RoomView';
-import { AchievementsView } from '../screens/AchievementsView';
+import { ProgressView } from '../screens/ProgressView';
 import { LeaderboardView } from '../screens/LeaderboardView';
-import { EndingView } from '../screens/EndingView';
 import { MiningView } from '../screens/MiningView';
 import { PetView } from '../screens/PetView';
 import { SettingsView } from '../screens/SettingsView';
@@ -22,37 +21,16 @@ import { GainStream } from './GainStream';
 import { EventCard, EventOutcomeCard, type EventChoice } from './EventCard';
 import { DayEndDock } from './DayEndDock';
 /**
- * Five destinations stay visible; everything else lives in «⋮».
- *
- * «Отдых» took the fifth slot from «Друзья»: rest is a daily decision, the
- * friends roster is a place you visit — it opens from «Отдых» and from «⋮».
+ * Новая IA (A2, 25.10.2026): четыре таба — Сегодня / Работа / Развитие /
+ * Прогресс. «Мир» (дом, питомец, друзья, офис, майнинг, магазин) живёт в
+ * контекстных дверях внутри экранов (NavLinks), лист «⋮» упразднён — один и
+ * тот же экран больше не достигается тремя путями.
  */
 const TABS = [
-  { view: 'main', icon: 'house', label: t('Главная') },
+  { view: 'main', icon: 'calendar', label: t('Сегодня') },
   { view: 'career', icon: 'briefcase', label: t('Работа') },
-  { view: 'skills', icon: 'book', label: t('Обучение') },
-  { view: 'rest', icon: 'heart', label: t('Отдых') },
-  { view: 'shop', icon: 'bag', label: t('Магазин') },
-] as const;
-/**
- * «⋮» — an index, not a home for orphans.
- *
- * Every destination below also has a contextual door: офис и финалы — на
- * «Работе», майнинг — в «Магазине», питомец и дом — на «Отдыхе»,
- * цели и топ — в «Профиле», профиль — по портрету в HUD. The sheet stays as a
- * compact grid for the times you know where you want to go.
- */
-const MORE = [
-  { view: 'profile', emoji: '👤', label: t('Профиль') },
-  { view: 'room', emoji: '🏠', label: t('Дом') },
-  { view: 'friends', emoji: '👥', label: t('Друзья') },
-  { view: 'pet', emoji: '🐾', label: t('Питомец') },
-  { view: 'achievements', emoji: '🎯', label: t('Цели') },
-  { view: 'leaderboard', emoji: '🏆', label: t('Топ') },
-  { view: 'office', emoji: '🖥', label: t('Офис') },
-  { view: 'mining', emoji: '⛏', label: t('Майнинг') },
-  { view: 'endings', emoji: '🏁', label: t('Финалы') },
-  { view: 'settings', emoji: '⚙️', label: t('Настройки') },
+  { view: 'skills', icon: 'book', label: t('Развитие') },
+  { view: 'progress', icon: 'chart', label: t('Прогресс') },
 ] as const;
 /**
  * Tabs where a day is being spent, so the «Завершить день» dock belongs there.
@@ -61,7 +39,7 @@ const MORE = [
  */
 const DOCK_VIEWS = new Set<string>(['main', 'career', 'skills', 'rest', 'shop', 'office', 'pet']);
 export const GameScreen: React.FC = () => {
-  const { currentView, setView, moreOpen, setMoreOpen } = useGameStore();
+  const { currentView, setView } = useGameStore();
   const player = useGameStore((s) => s.player);
   const activeEvent = useGameStore((s) => s.activeEvent);
   const chooseEvent = useGameStore((s) => s.chooseEvent);
@@ -129,12 +107,13 @@ export const GameScreen: React.FC = () => {
         return <ShopView />;
       case 'room':
         return <RoomView />;
+      case 'progress':
       case 'achievements':
-        return <AchievementsView />;
+      case 'endings':
+        // Старые адреса ведут в «Прогресс»: финалы и цели больше не отдельные экраны
+        return <ProgressView />;
       case 'leaderboard':
         return <LeaderboardView />;
-      case 'endings':
-        return <EndingView />;
       case 'office':
         return <OfficeView />;
       case 'mining':
@@ -162,38 +141,6 @@ export const GameScreen: React.FC = () => {
         {renderView()}
       </div>
 
-      {/* «⋮» sheet — a navigation detour, never a state you can get stuck in. */}
-      {moreOpen && (
-        <>
-          <button
-            aria-label={t('Закрыть меню')}
-            onClick={() => setMoreOpen(false)}
-            className="sheet-backdrop animate-fade-in"
-          />
-          <div role="dialog" aria-modal="true" aria-label={t('Меню')} className="sheet animate-slide-up safe-area-pb">
-            <div className="sheet-grip" />
-            <div className="menu-grid">
-              {MORE.map((item) => {
-                const isCurrent = currentView === item.view;
-                return (
-                  <button
-                    key={item.view}
-                    onClick={() => nav(item.view)}
-                    aria-current={isCurrent ? 'true' : undefined}
-                    className="menu-tile"
-                  >
-                    <span className="emoji" aria-hidden="true">
-                      {item.emoji}
-                    </span>
-                    <span className="menu-tile-label">{item.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </>
-      )}
-
       {/* End of the turn — docked above the nav so it never needs scrolling to */}
       <DayEndDock visible={DOCK_VIEWS.has(currentView) && !activeEvent && !outcome} />
 
@@ -204,7 +151,7 @@ export const GameScreen: React.FC = () => {
             key={tab.view}
             icon={tab.icon}
             label={tab.label}
-            active={currentView === tab.view && !moreOpen}
+            active={currentView === tab.view}
             dot={tab.view === 'career' && offerWaiting}
             onClick={() => nav(tab.view)}
           />

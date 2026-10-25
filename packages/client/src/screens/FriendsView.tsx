@@ -1,8 +1,16 @@
 import { t } from '../lib/i18n';
 import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
-import { ScreenTitle, SectionTitle, EmptyState, Spinner } from '../components/ui';
+import { ScreenTitle, SectionTitle, EmptyState, Spinner, ResChip } from '../components/ui';
 import { inviteLink, openTelegramLink, haptic } from '../lib/telegram';
+import { PixelIcon } from '../components/pixel/PixelIcon';
+import {
+  relationEffectLabelKey,
+  spentTimeToday,
+  RECOMMENDATION_COST,
+  FREELANCE_LEAD_COST,
+  P2P_DISCOUNT_COST,
+} from '@itsim/shared';
 interface Friend {
   id: string;
   name: string;
@@ -47,9 +55,34 @@ export const FriendsView: React.FC = () => {
     haptic('medium');
     openTelegramLink(inviteLink(BOT_NAME, player?.telegramId ?? 'player'));
   };
+  /** D1: «Провести время с другом» — энергия → отношения, раз в день на NPC. */
+  const [spending, setSpending] = useState<string | null>(null);
+  const spendTime = async (npcId: string) => {
+    haptic('tap');
+    setSpending(npcId);
+    try {
+      await useGameStore.getState().performAction('spend_time_with_friend', { npcId });
+    } finally {
+      setSpending(null);
+    }
+  };
+  /** D2: связи как ресурс — одноразовые баффы за contacts. */
+  const [using, setUsing] = useState<string | null>(null);
+  const armContact = async (actionId: string) => {
+    haptic('tap');
+    setUsing(actionId);
+    try {
+      await useGameStore.getState().performAction(actionId, {});
+    } finally {
+      setUsing(null);
+    }
+  };
   return (
     <div className="space-y-4 animate-fade-in">
-      <ScreenTitle emoji="👥" meta={status === 'ready' ? `${people.length} / 50` : undefined}>
+      <button onClick={() => useGameStore.getState().setView('career')} className="link-back">
+        {t('← Работа')}
+      </button>
+      <ScreenTitle icon="people" meta={status === 'ready' ? `${people.length} / 50` : undefined}>
         {t('Друзья')}
       </ScreenTitle>
 
@@ -61,6 +94,45 @@ export const FriendsView: React.FC = () => {
           'За каждого приглашённого друга — бонус к деньгам и лимиту друзей. Отношения с персонажами меняют прогулки, общение и события.'
         )}
       </p>
+
+      {/* D2: связи как ресурс — стат и три одноразовые траты */}
+      <div className="card space-y-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <SectionTitle>{t('Связи')}</SectionTitle>
+          <ResChip tone="blue">
+            {t('Связи')}: {player?.contacts ?? 0}
+          </ResChip>
+          {!!player?.recommendation && <ResChip tone="gold">{t('Рекомендация активна')}</ResChip>}
+          {!!player?.freelanceLead && <ResChip tone="gold">{t('Лид активен')}</ResChip>}
+          {!!player?.p2pDiscount && <ResChip tone="gold">{t('Скидка активна')}</ResChip>}
+        </div>
+        <p className="subtle">
+          {t('Знакомства и мероприятия дают связи. Связи открываются в нужный момент: собеседование, заказ, покупка.')}
+        </p>
+        <div className="grid grid-cols-3 gap-1.5">
+          <button
+            className="btn btn-sm btn-secondary"
+            disabled={using !== null || !!player?.recommendation || (player?.contacts ?? 0) < RECOMMENDATION_COST}
+            onClick={() => armContact('use_recommendation')}
+          >
+            <PixelIcon name="briefcase" size={11} /> {t('Рекомендация')} · {RECOMMENDATION_COST}
+          </button>
+          <button
+            className="btn btn-sm btn-secondary"
+            disabled={using !== null || !!player?.freelanceLead || (player?.contacts ?? 0) < FREELANCE_LEAD_COST}
+            onClick={() => armContact('use_freelance_lead')}
+          >
+            <PixelIcon name="target" size={11} /> {t('Лид')} · {FREELANCE_LEAD_COST}
+          </button>
+          <button
+            className="btn btn-sm btn-secondary"
+            disabled={using !== null || !!player?.p2pDiscount || (player?.contacts ?? 0) < P2P_DISCOUNT_COST}
+            onClick={() => armContact('use_p2p_discount')}
+          >
+            <PixelIcon name="bag" size={11} /> {t('Скидка')} · {P2P_DISCOUNT_COST}
+          </button>
+        </div>
+      </div>
 
       {status === 'loading' && <Spinner label={t('Загрузка знакомых…')} />}
 
@@ -75,7 +147,7 @@ export const FriendsView: React.FC = () => {
 
       {status === 'ready' && people.length === 0 && (
         <EmptyState
-          emoji="😶"
+          icon="people"
           title={t('Пока никого нет')}
           hint={t('Приглашай друзей и получай бонусы — вместе карьера растёт быстрее.')}
         >
@@ -110,9 +182,7 @@ export const FriendsView: React.FC = () => {
                       }}
                     />
                   ) : (
-                    <span className="friend-avatar" aria-hidden="true">
-                      🧑‍💻
-                    </span>
+                    <PixelIcon name="code" size={14} />
                   )}
                   <div className="friend-copy">
                     <h3>{person.name}</h3>
@@ -123,7 +193,27 @@ export const FriendsView: React.FC = () => {
                         {relation}
                       </span>
                     </p>
+                    {/* D1.4: чип показывает ЭФФЕКТ порога, а не только слово «Друг» */}
+                    {relationEffectLabelKey(person.id, relation) !== '' && (
+                      <p className="mt-1">
+                        <ResChip tone={relation >= 30 ? 'positive' : relation < 0 ? 'negative' : 'neutral'}>
+                          {t(relationEffectLabelKey(person.id, relation))}
+                        </ResChip>
+                      </p>
+                    )}
                     {open && <p className="mt-1 text-ink-400">{person.description}</p>}
+                    {/* D1: действие живёт в колонке копии — на 320px колонка кнопок распирает ряд */}
+                    <button
+                      className="btn btn-sm btn-primary w-full mt-1.5"
+                      title={t('3 энергии')}
+                      disabled={
+                        spending !== null || spentTimeToday(player ?? {}, person.id) || (player?.energy ?? 0) < 3
+                      }
+                      onClick={() => spendTime(person.id)}
+                    >
+                      <PixelIcon name="bolt" size={11} />{' '}
+                      {spentTimeToday(player ?? {}, person.id) ? t('Виделись сегодня') : t('Провести время')}
+                    </button>
                   </div>
                   <div className="friend-actions">
                     <button className="btn btn-sm btn-secondary" onClick={() => setOpenId(open ? null : person.id)}>

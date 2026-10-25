@@ -6,6 +6,7 @@ import { ScreenTitle, SectionTitle, StatBar } from '../components/ui';
 import { NavLinks } from '../components/NavLinks';
 import { actionsOf } from './actionCatalogue';
 import { inviteLink, openTelegramLink, haptic } from '../lib/telegram';
+import { PixelIcon } from '../components/pixel/PixelIcon';
 /**
  * Отдых — recovery and people on one screen.
  *
@@ -52,14 +53,14 @@ export const RestView: React.FC = () => {
   const money = player.money ?? 0;
   return (
     <div className="space-y-4 animate-fade-in">
-      <ScreenTitle emoji="🌿" meta={`${Math.round(player.energy ?? 0)} / ${player.maxEnergy ?? 10} ⚡`}>
+      <ScreenTitle icon="walk" meta={`${Math.round(player.energy ?? 0)} / ${player.maxEnergy ?? 10} `}>
         {t('Отдых')}
       </ScreenTitle>
 
       {error && (
         <button onClick={clearError} className="card panel-note panel-note-clay w-full text-left animate-pop-in">
           <p className="flex items-start gap-2 text-sm text-clay-300">
-            <span aria-hidden="true">⚠️</span>
+            <PixelIcon name="warn" size={14} />
             <span>{error}</span>
           </p>
           <p className="text-2xs text-ink-500 mt-1 pl-5">{t('Нажми, чтобы скрыть')}</p>
@@ -75,9 +76,7 @@ export const RestView: React.FC = () => {
         </div>
         {(player.energy ?? 0) <= 2 && (
           <p className="flex items-center gap-2 text-xs text-ochre-300 leading-tight mt-3">
-            <span className="shrink-0" aria-hidden="true">
-              ⚡
-            </span>
+            <PixelIcon name="bolt" size={14} />
             {t('Энергия на исходе. «Поспать» восстановит её — сон доступен даже при нуле.')}
           </p>
         )}
@@ -116,15 +115,15 @@ export const RestView: React.FC = () => {
           disabled={busy || Boolean(player.petFedToday)}
           className="btn btn-secondary w-full text-sm"
         >
-          <span aria-hidden="true">🐾</span>
+          <PixelIcon name="bone" size={14} />
           {player.petFedToday ? t('Питомец сыт до завтра') : t('Покормить питомца · 500 ₽')}
         </button>
       )}
 
       <NavLinks
         links={[
-          { view: 'room', emoji: '🏠', label: t('Дом'), hint: t('комната, декор, гардероб') },
-          { view: 'pet', emoji: '🐾', label: t('Питомец'), hint: t('еда, настроение, аксессуары') },
+          { view: 'room', icon: 'house', label: t('Дом'), hint: t('комната, декор, гардероб') },
+          { view: 'pet', icon: 'bone', label: t('Питомец'), hint: t('еда, настроение, аксессуары') },
         ]}
       />
 
@@ -136,7 +135,7 @@ export const RestView: React.FC = () => {
         </p>
         <div className="flex flex-wrap gap-2 mt-3">
           <button className="btn btn-primary flex-1" onClick={invite}>
-            <span aria-hidden="true">🎁</span>
+            <PixelIcon name="box" size={14} />
             {t('Пригласить друга')}
           </button>
           <button className="btn btn-secondary flex-1" onClick={() => setView('friends')}>

@@ -40,8 +40,12 @@ function boardRequests(page: Page) {
 
 async function openBoard(page: Page): Promise<void> {
   await act(page, async () => {
-    await page.getByRole('button', { name: 'Меню' }).click();
-    await page.getByRole('dialog', { name: 'Меню' }).getByRole('button', { name: 'Топ', exact: true }).click();
+    // «Топ» живёт дверью на «Прогрессе» (A2), а не в листе «Меню»
+    await page
+      .getByRole('navigation', { name: 'Основная навигация' })
+      .getByRole('button', { name: 'Прогресс', exact: true })
+      .click();
+    await page.getByRole('button', { name: /^Топ игроков/ }).click();
     await expect(metricGroup(page)).toBeVisible();
   });
 }
@@ -72,7 +76,7 @@ test('вкладки метрик = компоненты движка, и чис
   const myRow = page.locator('.lb-row.is-me');
   await expect(myRow).toBeVisible();
   // Итоговая вкладка показывает ровно тот рейтинг, что лежит в состоянии.
-  await expect(myRow.locator('.lb-score')).toHaveText(`${state.ratingScore} ⭐`);
+  await expect(myRow.locator('.lb-score')).toHaveText(`${state.ratingScore}`);
 
   const money = Math.round(ratingMetricOf(state as any, 'money'));
   await act(page, () => metricGroup(page).getByRole('button', { name: 'Деньги' }).click());

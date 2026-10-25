@@ -2,6 +2,7 @@ import { t, fmtNumber } from '../lib/i18n';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { Spinner, EmptyState, ScreenTitle, SectionTitle } from '../components/ui';
+import { PixelIcon } from '../components/pixel/PixelIcon';
 /**
  * Mining — пассивный доход от майнинг-фермы.
  *
@@ -89,8 +90,11 @@ export const MiningView: React.FC = () => {
   if (!player) return null;
   return (
     <div className="space-y-4 animate-fade-in">
+      <button onClick={() => useGameStore.getState().setView('shop')} className="link-back">
+        {t('← Магазин')}
+      </button>
       <ScreenTitle
-        emoji="⛏"
+        icon="chip"
         meta={
           <span className="num" aria-label={t('Хешрейт')}>
             {hashrate > 0 ? `${hashrate} MH/s` : t('нет фермы')}
@@ -103,9 +107,7 @@ export const MiningView: React.FC = () => {
       {/* Live summary — same numbers as the main screen card, so the two never disagree */}
       {mining ? (
         <article className="card shop-product" aria-label={t('Доход фермы')}>
-          <span className="shop-product-art" aria-hidden="true">
-            🪙
-          </span>
+          <PixelIcon name="coin" size={14} />
           <div className="shop-product-copy">
             <h3>{t('Сегодня')}</h3>
             <p className="shop-product-effects">
@@ -130,7 +132,7 @@ export const MiningView: React.FC = () => {
         <div className="card">
           <EmptyState
             bare
-            emoji="⛏"
+            icon="chip"
             title={t('Ферма не запущена')}
             hint={t(
               'Купи GPU/риг/асик в магазине, чтобы получать пассивный доход. Чем больше хешрейт — тем выше валовый доход, но и счёт за свет.'
@@ -204,7 +206,7 @@ export const MiningView: React.FC = () => {
                   <p className={`text-sm ${f.owned ? 'text-moss-300 font-medium' : 'text-ink-200'}`}>{f.name}</p>
                   <p className="text-2xs text-ink-500">
                     {f.hashrate} MH/s
-                    {f.electricitySave ? t(' · −{p0}% свет', { p0: Math.round(f.electricitySave * 100) }) : ''}
+                    {f.electricitySave ? t('· −{p0}% свет', { p0: Math.round(f.electricitySave * 100) }) : ''}
                   </p>
                 </div>
                 <span className={`text-2xs shrink-0 ${f.owned ? 'text-moss-300' : 'text-ink-500'}`}>

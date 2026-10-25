@@ -102,7 +102,7 @@ describe('POST /api/game/advance-day: вехи пишутся на дне', () =
     const senior = posts.find((m) => m.id === 'grade:senior')!;
     expect(senior.key).toBe('Стал {p0} за {p1} {p2}!');
     expect(senior.params?.p0).toBe('сеньор');
-    expect((body.messages ?? []).join('\n')).toContain('🌟 Веха: Стал сеньор');
+    expect((body.messages ?? []).join('\n')).toContain('Веха: Стал сеньор');
 
     // следующий день ничего не дублирует
     const next = await app.inject({

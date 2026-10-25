@@ -6,7 +6,7 @@ import { ResourceBar } from './components/ResourceBar';
 import { showBackButton, hideBackButton, applyTelegramChrome } from './lib/telegram';
 import { OnboardingView, ONBOARDING_KEY } from './screens/OnboardingView';
 const App: React.FC = () => {
-  const { initialized, screen, currentView, moreOpen, setView, setMoreOpen, initGame } = useGameStore();
+  const { initialized, screen, currentView, setView, initGame } = useGameStore();
   const [onboarded, setOnboarded] = useState(() => {
     try {
       return localStorage.getItem(ONBOARDING_KEY) === '1';
@@ -28,17 +28,12 @@ const App: React.FC = () => {
     // Auth happens exactly once per mount — initGame is stable in the store.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  // Native back: close overflow first, office → career, other tabs → home.
+  // Native back: office → career, other tabs → home.
   // Home has no intermediate landing page and can close normally in Telegram.
   useEffect(() => {
     if (!initialized || screen !== 'game') {
       hideBackButton();
       return;
-    }
-    if (moreOpen) {
-      const closeSheet = () => setMoreOpen(false);
-      showBackButton(closeSheet);
-      return () => hideBackButton(closeSheet);
     }
     if (currentView === 'main') {
       hideBackButton();
@@ -52,7 +47,7 @@ const App: React.FC = () => {
     const toMain = () => setView('main');
     showBackButton(toMain);
     return () => hideBackButton(toMain);
-  }, [initialized, screen, currentView, moreOpen, setView, setMoreOpen]);
+  }, [initialized, screen, currentView, setView]);
   const finishOnboarding = () => {
     try {
       localStorage.setItem(ONBOARDING_KEY, '1');
@@ -88,7 +83,7 @@ const App: React.FC = () => {
     );
   }
   return (
-    <div className="app-container" data-ui-revision="09">
+    <div className="app-container" data-ui-revision="10">
       {(screen === 'game' || screen === 'menu') && (
         <>
           <ResourceBar />

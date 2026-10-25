@@ -11,6 +11,8 @@ export const EventChoiceRequiresSchema = z.object({
   skill: z.record(z.string(), z.number()).optional(),
   npcPresent: z.string().optional(),
   minRelation: z.record(z.string(), z.number()).optional(),
+  /** D2: сколько связей нужно, чтобы открыть этот выбор */
+  minContacts: z.number().int().min(0).optional(),
 });
 
 export const EventEffectsSchema = z.object({
@@ -24,6 +26,8 @@ export const EventEffectsSchema = z.object({
   relation: z.record(z.string(), z.number()).optional(),
   jobWarnings: z.number().int().optional(),
   burnoutDays: z.number().int().optional(),
+  /** D2: networking contacts (мероприятия/знакомые) */
+  contacts: z.number().int().optional(),
 });
 
 export const ChainEventRefSchema = z.object({
@@ -83,6 +87,9 @@ export const EventSchema = z.object({
   // Action-triggered events never enter the random pool either —
   // they roll after the matching player action
   actionTrigger: ActionEventTriggerSchema.optional(),
+  // Рабочие теги (work/office/sprint/project) требуют работы; исключения
+  // (внешние предложения, импостор-синдром и т.п.) помечаются этим флагом
+  allowWithoutJob: z.boolean().default(false),
   choices: z.array(EventChoiceSchema).min(2).max(4),
 });
 

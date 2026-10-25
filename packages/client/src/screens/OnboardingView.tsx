@@ -1,4 +1,5 @@
 import { t } from '../lib/i18n';
+import { PixelIcon } from '../components/pixel/PixelIcon';
 import React, { useRef, useState } from 'react';
 /**
  * First-run onboarding — four cards between the splash screen and day one.
@@ -10,32 +11,32 @@ import React, { useRef, useState } from 'react';
  */
 export const ONBOARDING_KEY = 'itsim_onboarded_v1';
 interface Slide {
-  emoji: string;
+  icon: string;
   art?: string;
   title: string;
   body: string;
 }
 const SLIDES: Slide[] = [
   {
-    emoji: '💻',
+    icon: 'star',
     art: '/art/story-v1/portrait.webp',
     title: t('Симулятор жизни айтишника'),
     body: t('Живи, работай, развивайся. Каждый день — новый выбор и новые последствия.'),
   },
   {
-    emoji: '🎓',
+    icon: 'house',
     art: '/art/story-v1/room.webp',
     title: t('Ты только закончил универ'),
     body: t('10 000 ₽ на счету и пустое резюме. Дальше — только твои решения.'),
   },
   {
-    emoji: '⚡',
+    icon: 'bolt',
     art: '/art/story-v1/night.webp',
     title: t('Каждый день — это энергия'),
     body: t('Учёба, работа и отдых тратят энергию. Настроение и здоровье решают, сколько ты выдержишь.'),
   },
   {
-    emoji: '🚀',
+    icon: 'rocket',
     art: '/art/story-v1/offer.webp',
     title: t('Собеседования, баги, дедлайны'),
     body: t('Повышения, офферы, случайные события — всё как в жизни, только быстрее.'),
@@ -73,7 +74,7 @@ export const OnboardingView: React.FC<{
           <img className="onboard-art animate-pop-in" src={slide.art} alt="" width={320} height={240} />
         ) : (
           <span className="onboard-emoji" aria-hidden="true">
-            {slide.emoji}
+            <PixelIcon name={slide.icon} size={18} />
           </span>
         )}
         <h2>{slide.title}</h2>

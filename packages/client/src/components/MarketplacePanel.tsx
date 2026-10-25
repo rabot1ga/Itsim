@@ -119,7 +119,7 @@ export const MarketplacePanel: React.FC = () => {
       body: JSON.stringify({ itemId: listing.itemId }),
     });
     setBusy(null);
-    if (ok) await after(data.state?._lastEvent ?? t('🐾 Питомец куплен'));
+    if (ok) await after(data.state?._lastEvent ?? t('Питомец куплен'));
     else {
       haptic('error');
       setNote(data?.error ?? t('Не получилось купить'));
@@ -183,7 +183,7 @@ export const MarketplacePanel: React.FC = () => {
             {listings.map((l) => (
               <div key={l.itemId} className="market-row">
                 <span className="market-emoji" aria-hidden="true">
-                  {PET_SKIN_EMOJI[l.itemId] ?? '🐾'}
+                  {PET_SKIN_EMOJI[l.itemId] ?? ''}
                 </span>
                 <div className="market-copy">
                   <p className="market-name">
@@ -250,14 +250,14 @@ export const MarketplacePanel: React.FC = () => {
               {visibleOffers.map((o) => (
                 <div key={o.id} className="market-row">
                   <span className="market-emoji" aria-hidden="true">
-                    {PET_SKIN_EMOJI[o.itemId] ?? '🐾'}
+                    {PET_SKIN_EMOJI[o.itemId] ?? ''}
                   </span>
                   <div className="market-copy">
                     <p className="market-name">
                       {o.name}{' '}
                       {(o.rep ?? 0) > 0 && (
                         <span className="res-chip">
-                          ⭐ {o.rating != null ? `${fmtNumber(Math.round(o.rating * 10) / 10)} · ` : ''}
+                          {o.rating != null ? `${fmtNumber(Math.round(o.rating * 10) / 10)} · ` : ''}
                           {t(dealCountWord(o.rep ?? 0), { p0: o.rep })}
                         </span>
                       )}
@@ -285,7 +285,7 @@ export const MarketplacePanel: React.FC = () => {
                 {mine.map((o) => (
                   <div key={o.id} className="market-row">
                     <span className="market-emoji" aria-hidden="true">
-                      {PET_SKIN_EMOJI[o.itemId] ?? '🐾'}
+                      {PET_SKIN_EMOJI[o.itemId] ?? ''}
                     </span>
                     <div className="market-copy">
                       <p className="market-name">{o.name}</p>
@@ -326,7 +326,7 @@ export const MarketplacePanel: React.FC = () => {
                 {t('История сделок')}{' '}
                 {myRep > 0 && (
                   <span className="res-chip">
-                    ⭐ {myRating != null ? `${fmtNumber(Math.round(myRating * 10) / 10)} · ` : ''}
+                    {myRating != null ? `${fmtNumber(Math.round(myRating * 10) / 10)} · ` : ''}
                     {t(dealCountWord(myRep), { p0: myRep })}
                   </span>
                 )}
@@ -335,7 +335,7 @@ export const MarketplacePanel: React.FC = () => {
                 {history.map((h) => (
                   <div key={h.id} className="market-row">
                     <span className="market-emoji" aria-hidden="true">
-                      {PET_SKIN_EMOJI[h.itemId] ?? '🐾'}
+                      {PET_SKIN_EMOJI[h.itemId] ?? ''}
                     </span>
                     <div className="market-copy">
                       <p className="market-name">{h.name}</p>
@@ -343,7 +343,7 @@ export const MarketplacePanel: React.FC = () => {
                         {h.role === 'sold' ? t('продано') : t('куплено')} · {shortDate(h.at)}
                         {h.role === 'sold' && !h.settled ? ` · ${t('деньги в эскроу')}` : ''}
                         {h.rating != null &&
-                          ` · ${h.role === 'sold' ? t('оценка покупателя') : t('твоя оценка')} ${'⭐'.repeat(h.rating)}`}
+                          ` · ${h.role === 'sold' ? t('оценка покупателя') : t('твоя оценка')} ${''.repeat(h.rating)}`}
                       </p>
                       {h.role === 'bought' && h.rating == null && (
                         <div className="market-chips" role="group" aria-label={t('Оценить продавца')}>
@@ -355,7 +355,7 @@ export const MarketplacePanel: React.FC = () => {
                               disabled={busy !== null}
                               onClick={() => void rate(h, s)}
                             >
-                              {'⭐'.repeat(s)}
+                              {''.repeat(s)}
                             </button>
                           ))}
                         </div>

@@ -35,6 +35,8 @@ interface TelegramWebApp {
   expand: () => void;
   /** Raw init data for server-side validation (empty in plain browsers). */
   initData?: string;
+  /** Launch payload: `start_param` from a `t.me/<bot>?start=` deep link. */
+  initDataUnsafe?: { start_param?: string };
   /** 'ios' | 'android' | 'tdesktop' | … — 'unknown' when the SDK runs outside Telegram. */
   platform?: string;
   viewportHeight?: number;
@@ -283,6 +285,21 @@ export function openTelegramLink(url: string): void {
     }
   }
   window.open(url, '_blank', 'noopener');
+}
+/**
+ * Referral payload from the launch deep link (`ref_<telegramId>`), or null.
+ *
+ * Путь бывает два: Telegram кладёт `start_param` в `initDataUnsafe`, а
+ * `startapp=`-ссылка из share/url дополнительно светится в query страницы —
+ * читаем оба, чтобы бонус за приглашение не терялся.
+ */
+export function referralFromStartParam(): string | null {
+  const raw =
+    getTelegram()?.initDataUnsafe?.start_param ??
+    new URLSearchParams(window.location.search).get('tgWebAppStartParam') ??
+    new URLSearchParams(window.location.search).get('startapp') ??
+    '';
+  return raw.startsWith('ref_') && raw.length > 4 && raw.length <= 70 ? raw.slice(4) : null;
 }
 /** Invite deep link for the referral flow: `startapp=ref_<telegramId>`. */
 export function inviteLink(botName: string, telegramId: string | number): string {

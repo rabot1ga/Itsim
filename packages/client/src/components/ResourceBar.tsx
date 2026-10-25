@@ -4,15 +4,15 @@ import { useGameStore } from '../store/gameStore';
 import { xpToNext } from '@itsim/shared';
 import { profileArtwork, profileMoodOf } from '../lib/profileArt';
 import { StatBar } from './ui';
+import { PixelIcon } from './pixel/PixelIcon';
 import { skillName } from '../lib/playerLabels';
 /**
  * Top chrome — deliberately shallow so the screen below gets the pixels.
  *
- * On «Главной» there is exactly one plaque: the money, the day and the «⋮»
- * menu moved inside the HUD card, next to the portrait, level, XP and vitals.
- * Two stacked strips ate ~140px before the first real card; the merged one
- * costs ~90px and still says the same things. Other screens keep the plain
- * strip — there the back arrow and the energy pill are the whole HUD.
+ * On «Сегодня» there is exactly one plaque: the money, the day and the
+ * portrait, level, XP and vitals inside the HUD card. Other screens keep the
+ * plain strip — there the back arrow and the energy pill are the whole HUD.
+ * Листа «⋮» больше нет (A2): навигация — табы + контекстные двери.
  */
 const GRADE_LABEL: Record<string, string> = {
   unemployed: t('без работы'),
@@ -42,8 +42,6 @@ export const ResourceBar: React.FC = () => {
   const activeEvent = useGameStore((s) => s.activeEvent);
   const currentView = useGameStore((s) => s.currentView);
   const setView = useGameStore((s) => s.setView);
-  const setMoreOpen = useGameStore((s) => s.setMoreOpen);
-  const moreOpen = useGameStore((s) => s.moreOpen);
   const moneyPop = usePop(player?.money ?? 0);
   if (!player) return null;
   const home = (!currentView || currentView === 'main') && !activeEvent;
@@ -61,12 +59,12 @@ export const ResourceBar: React.FC = () => {
             ‹
           </button>
           <span className={`wallet-pill num ${moneyPop ? 'num-pop' : ''}`} aria-label={t('Деньги')}>
-            <span aria-hidden="true">💰</span>
+            <PixelIcon name="coin" size={12} />
             {fmtNumber(Math.round(player.money ?? 0))} ₽
           </span>
           {coins > 0 && (
             <span className="wallet-pill is-gold num" aria-label={t('Монеты')}>
-              <span aria-hidden="true">🪙</span>
+              <PixelIcon name="coin" size={12} />
               {fmtNumber(coins)}
             </span>
           )}
@@ -76,20 +74,12 @@ export const ResourceBar: React.FC = () => {
             aria-label={t('Энергия')}
             title={t('Энергия: {p0}/{p1}', { p0: Math.round(player.energy ?? 0), p1: player.maxEnergy ?? 10 })}
           >
-            <span aria-hidden="true">⚡</span>
+            <PixelIcon name="bolt" size={12} />
             {Math.round(player.energy ?? 0)} / {player.maxEnergy ?? 10}
           </span>
           <span className="wallet-pill is-dim num">
             {t('День')} {player.currentDay ?? 1}
           </span>
-          <button
-            className="topbar-btn"
-            aria-label={t('Меню')}
-            aria-expanded={Boolean(moreOpen)}
-            onClick={() => setMoreOpen(!moreOpen)}
-          >
-            ⋮
-          </button>
         </div>
       )}
 
@@ -106,26 +96,18 @@ export const ResourceBar: React.FC = () => {
               </span>
               <span className="wallet-spacer" />
               <span className={`wallet-pill num ${moneyPop ? 'num-pop' : ''}`} aria-label={t('Деньги')}>
-                <span aria-hidden="true">💰</span>
+                <PixelIcon name="coin" size={12} />
                 {fmtNumber(Math.round(player.money ?? 0))} ₽
               </span>
               {coins > 0 && (
                 <span className="wallet-pill is-gold num" aria-label={t('Монеты')}>
-                  <span aria-hidden="true">🪙</span>
+                  <PixelIcon name="coin" size={12} />
                   {fmtNumber(coins)}
                 </span>
               )}
               <span className="wallet-pill is-dim num">
                 {t('День')} {player.currentDay ?? 1}
               </span>
-              <button
-                className="topbar-btn hud-menu"
-                aria-label={t('Меню')}
-                aria-expanded={Boolean(moreOpen)}
-                onClick={() => setMoreOpen(!moreOpen)}
-              >
-                ⋮
-              </button>
             </div>
             <div
               className="hud-xp"

@@ -23,9 +23,9 @@ test('fresh run: three actions → end of day → buy cosmetics → telemetry', 
   // state loads with the daily check-in (+300 ₽); HUD shows a full battery
   await expect(energyMeter(page)).toHaveAttribute('title', /^Энергия: 10\/10$/);
 
-  // Study actions moved from «Главная» to the «Обучение» tab.
+  // Study actions live on the «Развитие» tab (A2: было «Обучение»).
   const nav = page.getByRole('navigation', { name: 'Основная навигация' });
-  await nav.getByRole('button', { name: 'Обучение', exact: true }).click();
+  await nav.getByRole('button', { name: 'Развитие', exact: true }).click();
 
   // Real random events may interrupt any action, not only end-of-day.
   for (const [name, energyCost] of [
@@ -41,7 +41,7 @@ test('fresh run: three actions → end of day → buy cosmetics → telemetry', 
   }
 
   // ── end of day: the CTA is docked above the nav, so it works from any
-  //    working tab without scrolling to the bottom of «Главная» ────────────
+  //    working tab without scrolling to the bottom of «Сегодня» ────────────
   await expect(page.getByRole('button', { name: /^Завершить день / })).toBeVisible();
   const beforeEndTitle = await energyMeter(page).getAttribute('title');
   const beforeEnd = Number(beforeEndTitle?.match(/Энергия: (\d+)/)?.[1]);
@@ -54,7 +54,9 @@ test('fresh run: three actions → end of day → buy cosmetics → telemetry', 
   await expect(page.getByRole('button', { name: /^Завершить день 2/ })).toBeVisible();
 
   // ── shop: buy a cheap decor item (Кактус на стол, 500 ₽) ────────────────
-  await nav.getByRole('button', { name: 'Магазин', exact: true }).click();
+  // «Магазин» — дверь на «Сегодня» (A2), не таб
+  await nav.getByRole('button', { name: 'Сегодня', exact: true }).click();
+  await page.getByRole('button', { name: 'Магазин', exact: true }).click();
   await page
     .getByRole('group', { name: 'Категории товаров' })
     .getByRole('button', { name: 'Для дома', exact: true })

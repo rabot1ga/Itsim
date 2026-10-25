@@ -4293,4 +4293,309 @@ Object.assign(en, {
   '⚙️ банк дней': '⚙️ bank days',
   '✨ косметика': '✨ cosmetics',
   '🎁 сезонный набор': '🎁 seasonal set',
+  '. Заказчик отвечает утром: контракт, оплаченное тестовое или отказ.':
+    '. The client replies in the morning: a contract, a paid trial, or a rejection.',
+  '\\n Путь {titles} пройден — забери бонус в карточке пути':
+    '\\n Path {titles} cleared — claim the bonus in the path card',
+  '\\n Спринт недели выполнен — награда ждёт в карточке спринта':
+    '\\n Weekly sprint done — the reward waits in the sprint card',
+  '{p0} выставлен на продажу за {p1}': '{p0} listed for sale at {p1}',
+  '{p0} дней без денег и без работы. Ты ушёл из IT — в деревню, за теплицы. Финал: «Ушёл из IT»':
+    '{p0} days with no money and no job. You left IT — to the village, to the greenhouses. Ending: «Left IT»',
+  '{p0} теперь живёт у тебя дома': '{p0} now lives with you',
+  '{p0}. Все задачи готовы — можно сдавать проект': '{p0}. All tasks are done — you can submit the project',
+  '{p0}. Осталось задач: {left}': '{p0}. Tasks left: {left}',
+  '{reason}: кресло CTO занял кто-то другой. Ты снова архитектор (в кресле было {held} дн. из {p0}) — выборы можно пройти заново':
+    '{reason}: someone else took the CTO chair. You are an architect again (held it for {held} of {p0} days) — you can run in the elections again',
+  '«{p0}» сдан в срок: +{p1}, +{p2} репутации': '«{p0}» delivered on time: +{p1}, +{p2} reputation',
+  '«{p0}» сдан с опозданием: {p1} вместо {p2}': '«{p0}» delivered late: {p1} instead of {p2}',
+  '«{p0}» ушёл другому, но тестовое задание оплатили: +{p1}':
+    '«{p0}» went to someone else, but the trial task was paid: +{p1}',
+  '«{p0}»: заказчик выбрал исполнителя опытнее. Попробуй ещё раз':
+    '«{p0}»: the client picked a more experienced developer. Try again',
+  '«{p0}»: мы впечатлены вашим резюме, но решили двигаться с другим кандидатом. Не расстраивайся — попробуй ещё раз через пару дней':
+    '«{p0}»: we are impressed with your CV, but decided to go with another candidate. Do not worry — try again in a couple of days',
+  '«{p0}»: пока ты ждал, взялся другой проект — заказчик ушёл':
+    '«{p0}»: while you waited, another project took it — the client left',
+  '· мест на двоих: {p0} претендента': '· seats for two: {p0} candidates',
+  '· −{p0}% свет': '· −{p0}% power',
+  'Английский: бесплатные уроки с котиками. Уровень {p0}': 'English: free lessons with cats. Level {p0}',
+  'Бар с друзьями: обсудили дженерики, легаси и почему всё горит':
+    'Bar with friends: generics, legacy and why everything is on fire',
+  'Борд проголосовал за тебя (шанс был {p0}%). Ты CTO — отныне ты отвечаешь за чужие карьеры и за свой сон. Финал «Корпоративный бог» откроется, когда продержишься в кресле {hold} дн. (сейчас 0)':
+    'The board voted for you (the chance was {p0}%). You are the CTO — from now on you answer for other careers and your own sleep. The «Corporate god» ending opens after you hold the chair for {hold} days (0 now)',
+  'Верно! Интервьюер кивает.': 'Correct! The interviewer nods.',
+  'Верно.': 'Correct.',
+  'Веха: {p0}': 'Milestone: {p0}',
+  'Выборы проиграны ({p0}% было). Борд выбрал «человека системы». Минус 4 репутации, минус 10 мотивации':
+    'Elections lost ({p0}% was). The board picked «a man of the system». Minus 4 reputation, minus 10 motivation',
+  'Выгорание. Ты ушёл в отпуск длиной в жизнь: ноутбук в ящик, тикеты чужие. Финал: «Пчеловод»':
+    'Burnout. You went on a vacation called life: laptop in the drawer, tickets someone else’s. Ending: «Beekeeper»',
+  Выполнено: 'Completed',
+  'Добро пожаловать в IT Life Simulator!': 'Welcome to IT Life Simulator!',
+  'Достижение: {p0} {p1}': 'Achievement: {p0} {p1}',
+  'Достижение: {p0} {p1} — {p2}': 'Achievement: {p0} {p1} — {p2}',
+  'Жизнь {lives} началась с чистого листа.': 'Life {lives} starts with a clean slate.',
+  'Жизнь {lives} началась с чистого листа. Ачивки и покупки с тобой — и навсегда +{pct}% к XP.':
+    'Life {lives} starts with a clean slate. Achievements and purchases stay with you — and a permanent +{pct}% XP.',
+  'За Telegram Stars': 'For Telegram Stars',
+  'Задание дня выполнено: {p0}': 'Daily challenge done: {p0}',
+  'Задачи + разбор чужого кода. Растёшь не только ты':
+    'Tasks + reviewing someone else’s code. You are not the only one growing',
+  'Заказ сняли с биржи ещё до ответа. Бывает': 'The order was pulled from the market before the reply. It happens',
+  'Заказчик выбрал тебя: «{p0}». Дедлайн — день {p1}': 'The client picked you: «{p0}». Deadline — day {p1}',
+  'Закрыл рабочие задачи. Ретроспектива отменена, все свободны':
+    'Closed the work tasks. Retro cancelled, everyone is free',
+  'Зарплата: +{p0}': 'Salary: +{p0}',
+  'Знаковые события': 'Milestones',
+  'Интенсивный курс английского: уровень {p0}. Now you can ask for a raise':
+    'Intensive English course: level {p0}. Now you can ask for a raise',
+  'Качалка. Мышцы болят, зато деплой не страшен': 'Gym. Muscles ache, but deploys do not scare you',
+  'Коллеги и знакомые': 'Colleagues and acquaintances',
+  Корм: 'Food',
+  'Куплено: {p0}': 'Bought: {p0}',
+  'Курс упал: ферма ушла в минус на {p0}': 'The rate fell: the rig went {p0} into the red',
+  'Мимо. Зато теперь точно запомнишь.': 'Missed. But now you will definitely remember.',
+  'Митап: новые знакомства (+{p0} в контактах). Доклад был скучный, пицца — нет':
+    'Meetup: new contacts (+{p0}). The talk was boring, the pizza was not',
+  'Митап: раздал визитки, собрал 40 стикеров. Репутация растёт':
+    'Meetup: handed out cards, collected 40 stickers. Reputation grows',
+  'На еду не хватило (нужно {p0}) — день на гречке: здоровье −3, мотивация −3':
+    'Not enough for food (need {p0}) — buckwheat day: health −3, motivation −3',
+  'Налог на состояние и образ жизни: −{p0}. Деньги «под матрасом» обесцениваются — реинвестируй':
+    'Wealth and lifestyle tax: −{p0}. Money under the mattress loses value — reinvest it',
+  Направления: 'Tracks',
+  'Начать жизнь {p0}': 'Start life {p0}',
+  'Начать новую жизнь': 'Start a new life',
+  'Не совсем.': 'Not quite.',
+  'Не хватило денег на жильё ({p0}). Мотивация упала. Срочно нужен доход!':
+    'Not enough money for housing ({p0}). Motivation dropped. Income needed now!',
+  'Не хватило на электричество — ферма стояла весь день': 'Not enough money for electricity — the rig sat idle all day',
+  'Новая жизнь началась!': 'A new life has begun!',
+  'Нормально поел: здоровье +5, мотивация +3. Гречка — не приговор':
+    'A proper meal: health +5, motivation +3. Buckwheat is not a sentence',
+  'Нужно {BID_ENERGY}': '{BID_ENERGY} required',
+  'Оплачено жильё: {p0}': 'Housing paid: {p0}',
+  'Оплачено — награда уже в игре': 'Paid — the reward is already in the game',
+  'Основной навык: {p0}': 'Main skill: {p0}',
+  'Отклик в «{p0}» отправлен. {p1} Собеседование через 2 дня': 'Application to «{p0}» sent. {p1} Interview in 2 days',
+  'Отклик на «{p0}» отправлен. Заказчик ответит утром — шанс {p1}%':
+    'Application for «{p0}» sent. The client replies in the morning — chance {p1}%',
+  'Офлайн-день использован: полная энергия и +10 мотивации. В банке осталось {p0}':
+    'Offline day used: full energy and +10 motivation. {p0} left in the bank',
+  'Оффер{p0} истек{p1}: {p2}': 'Offer{p0} expired{p1}: {p2}',
+  'Переезд! Теперь твой дом — «{p0}». Запах картонных коробок — запах свободы':
+    'Moving day! Your home is now “{p0}”. Cardboard boxes smell like freedom',
+  'Переработка. Начальник доволен (+{p0}), спина — нет': 'Overtime. The boss is happy (+{p0}), your back is not',
+  'Перк открыт: {p0} — {p1}': 'Perk unlocked: {p0} — {p1}',
+  'Пет-проект: ещё один TODO-трекер в портфолио. Репутация растёт':
+    'Pet project: one more TODO-tracker for the portfolio. Reputation grows',
+  'Питомец куплен': 'Pet purchased',
+  'Питомец сыт и счастлив. Урчит, мурчит, виляет (+3 )': 'The pet is fed and happy. Purring, chirping, wagging (+3 )',
+  'Повышение! Теперь ты {p0} ({p1}/мес). Поздравляем, тебя ждёт ещё больше созвонов':
+    'Promotion! You are now {p0} ({p1}/mo). Congratulations, even more calls await',
+  'Пока пусто — проживи ещё пару дней.': 'Nothing yet — live a couple more days.',
+  Покормить: 'Feed',
+  'Поспал как человек. Или как айтишник: 10 часов': 'Slept like a human. Or like a techie: 10 hours',
+  Прогресс: 'Progress',
+  'Прогулка. Впервые за неделю увидел солнце': 'Walk. Saw the sun for the first time in a week',
+  'Продажа «{p0}»: +{p1}': 'Sold “{p0}”: +{p1}',
+  'Проект брошен. Заказчик расстроен: −{penalty} репутации':
+    'Project abandoned. The client is upset: −{penalty} reputation',
+  'Путь «{p0}» выбран — следуй вехам на карте': 'Path «{p0}» chosen — follow the milestones on the map',
+  'Путь «{p0}» пройден до конца: {p1}': 'Path «{p0}» completed to the end: {p1}',
+  Развитие: 'Development',
+  'Ревью на {p0}: место пока занято. Ты у уреза — качай глубину, не ширину':
+    'Review for {p0}: the seat is taken for now. You are at the cut — train depth, not breadth',
+  'Собеседование ({correct}/{total}): «мы впечатлены, но решили двигаться с другим кандидатом». Подтяни навыки и пробуй снова!':
+    'Interview ({correct}/{total}): «we are impressed, but decided to go with another candidate». Train your skills and try again!',
+  'Собеседование в «{p0}» началось!': 'Interview at «{p0}» has started!',
+  'Собеседование в «{p0}» пройдено! Оффер: {p1}, {p2}/мес. Действует 5 дней — принять в «Карьере»':
+    'Interview at «{p0}» passed! Offer: {p1}, {p2}/mo. Valid for 5 days — accept in «Career»',
+  'Собеседование пройдено ({correct}/{total})! Оффер: {p0}, {p1}/мес — прими его в «Карьере»':
+    'Interview passed ({correct}/{total})! Offer: {p0}, {p1}/mo — accept it in «Career»',
+  'Сокращение в «{p0}». Ты в списке. Рынок, держись!': 'Layoffs at «{p0}». You are on the list. Market, hold on!',
+  'Спасибо! Покупка «{p0}» активирована.\\n{p1}': 'Thank you! Purchase «{p0}» activated.\\n{p1}',
+  'Спринт «{p0}» закрыт: {p1}': 'Sprint «{p0}» closed: {p1}',
+  'Три предупреждения — тебя уволили из {p0}. Свобода!': 'Three warnings — you were fired from {p0}. Freedom!',
+  'Ты на грани выгорания. Срочно отдохни!': 'You are on the edge of burnout. Rest now!',
+  'Ты принят в «{p0}» на позицию {p1}! Зарплата: {p2}/мес': 'You are hired at «{p0}» as {p1}! Salary: {p2}/mo',
+  'Уже {p0} дн. без нормальной еды: истощение, здоровье ещё −4':
+    '{p0} days without proper food: exhaustion, health −4 more',
+  'Учёба: {skillId}{leveled}': 'Studying: {skillId}{leveled}',
+  'Ферма намайнила: +{p0} (электричество −{p1})': 'The rig mined: +{p0} (electricity −{p1})',
+  'Финал зафиксирован: {p0}': 'Ending sealed: {p0}',
+  'Финалы, цели и знаковые события — всё, что ты уже прожил и заработал.':
+    'Endings, goals and milestones — everything you have lived through and earned.',
+  'Хобби-вечер. Да, сборка лего — это тоже хобби': 'Hobby evening. Yes, building LEGO is a hobby too',
+  'их курс не сгорает при «новой жизни».': 'their rate does not burn on a «new life».',
+  'кто как живёт': 'how everyone is doing',
+  'отношения, события и помощь': 'relationships, events and help',
+  'сначала нужна работа': 'you need a job first',
+  'твой рейтинг {p0}': 'your rating {p0}',
+  '← Магазин': '← Shop',
+  '← Отдых': '← Rest',
+  '← Прогресс': '← Progress',
+  '← Профиль': '← Profile',
+  '← Работа': '← Work',
+  '↩ «{p0}» снят с продажи и вернулся к тебе': '↩ “{p0}” delisted and back with you',
+  'Открой «Развитие» и тапни по языку/направлению — он станет основным, и учёба будет качать именно его. Затем начни с YouTube-туториалов: бесплатный опыт без риска.':
+    'Open «Development» and tap a language/track — it becomes your main skill and learning will train it. Then start with YouTube tutorials: free XP, no risk.',
+  'Открой «Прогресс» и «Задание дня». Если деньги кончаются — «Подработки» вне IT спасают от минуса. Дальше игра раскроется сама: события, майнинг, питомцы и офис.':
+    'Open «Progress» and «Daily challenge». If money runs out, non-IT «Side jobs» save you from going negative. Then the game opens up on its own: events, mining, pets and the office.',
+  'Бонус за приглашение уже получен': 'The invite bonus has already been claimed',
+  'Виделись сегодня': 'Met up today',
+  'Время с другом: {p0} — и отношения крепче (+{p1}). Хороший день':
+    'Time well spent with {p0} — (+{p1}) rapport. A good day',
+  'Вы уже виделись сегодня. Завтра вновь — и будет новый разговор':
+    'You already met today. Tomorrow brings a new conversation',
+  'Дмитрий Борисович опять свёл дискуссию к лекции — настроение −{p0}':
+    'Dmitry Borisovich turned the discussion into a lecture again — motivation −{p0}',
+  'Маша пришла с вопросом: объясняя, разобрался сам (+{p0} XP)':
+    'Masha came with a question: explaining it taught you too (+{p0} XP)',
+  'Пригласивший ещё не начал игру': 'Your inviter has not started the game yet',
+  'Приглашение не распознано': 'Invite not recognized',
+  'Провести время': 'Spend time',
+  '3 энергии': '3 energy',
+  'Такого друга у тебя нет': 'No such friend',
+  'Ты пришёл по приглашению: +{p0} ₽ и день в банке. Спасибо другу!':
+    'You joined by invite: +{p0} ₽ and a banked day. Thank your friend!',
+  'заступается за тебя': 'covers for you',
+  'друг ≥ 60 — заступится': 'friend ≥ 60 — will cover',
+  'наставник: +15 XP': 'mentor: +15 XP',
+  'наставник ≥ 40': 'mentoring ≥ 40',
+  'конфликт: −3/день': 'conflict: −3/day',
+  'спокойно > −30': 'calm > −30',
+  '🛡️ Тимлид заступился': '🛡️ The team lead covered for you',
+  'На планёрке ты пропустил срок, но Алексей Петрович взял удар на себя: «Команда — это не соло-перформанс». Коллеги заметили, как он тебя прикрыл.':
+    'You missed a deadline at standup, but Alexey Petrovich took the hit: "A team is not a solo performance." The others noticed him covering for you.',
+  'Поблагодарить лично 🤝': 'Thank him in person 🤝',
+  'Одно предупреждение снято. Тимлид кивнул: «Работаем дальше».':
+    'One warning is gone. The team lead nodded: "Back to work."',
+  'Купить ему кофе ☕': 'Buy him a coffee ☕',
+  'Кофе, короткий разговор о системном дизайне — и одно предупреждение испарилось.':
+    'Coffee, a quick chat about system design — and one warning evaporated.',
+  '☕ Кофе с тимлидом': '☕ Coffee with the team lead',
+  'Алексей Петрович зовёт на кофе: «Хочу обсудить, куда ты растёшь». Такие разговоры обычно открываются словами «давай поговорим о твоей карьере».':
+    'Alexey Petrovich invites you for coffee: "Let us talk about where you are growing." Such talks usually open with "let us discuss your career".',
+  'Слушать и задавать вопросы 🎯': 'Listen and ask questions 🎯',
+  'Разговор о карьере и твоих сильных сторонах. Приятно, когда тебя видят.':
+    'A talk about your career and strengths. It feels good to be seen.',
+  'Рассказать о своих проектах 🚀': 'Tell him about your side projects 🚀',
+  'Он записал пару твоих идей в свой блокнот. Это либо похвала, либо делегирование.':
+    'He jotted down a couple of your ideas. Either praise or delegation.',
+  '💡 Маша принесла задачу': '💡 Masha brought a task',
+  'Маша залипла на баге и пришла к тебе: «Объясни, пожалуйста, я третий час смотрю в этот код». Объясняя чужое, понимаешь своё.':
+    'Masha is stuck on a bug and came to you: "Please explain, I have been staring at this code for three hours." Teaching teaches the teacher.',
+  'Объяснить с нуля 📖': 'Explain from scratch 📖',
+  '«Ааа, поняла!» — её глаза загорелись. Ты сам понял эту тему глубже.':
+    '"Ahh, got it!" — her eyes lit up. You understood the topic deeper yourself.',
+  'Решить за неё 🧩': 'Just fix it for her 🧩',
+  'Баг починен. Маша рада, но учиться на чужих руках — не самый быстрый путь.':
+    'Bug fixed. Masha is glad, but learning from others’ hands is a slow path.',
+  '🎀 Маша вспомнила': '🎀 Masha remembered',
+  'Маша вспомнила, что ты упоминал этот день, и принесла маленький подарок. «Спасибо, что помогаешь мне расти», — сказала она.':
+    'Masha remembered you mentioned this day and brought a small gift. "Thank you for helping me grow," she said.',
+  'Принять с благодарностью 🌟': 'Accept it with gratitude 🌟',
+  'Иногда подарок — это не вещь, а внимание.': 'Sometimes a gift is not a thing, but attention.',
+  'Купить ей книгу в ответ 📚': 'Buy her a book in return 📚',
+  '«Ти-ри-ри... Clean Code!» — Маша заулыбалась. Теперь у неё есть настольная книга.':
+    '"Ta-da... Clean Code!" Masha beamed. She has a desk book now.',
+  '🔥 Разбор от Дмитрия Борисовича': '🔥 A review by Dmitry Borisovich',
+  'Токсичный сеньор устроил публичный разбор твоего кода: «Я бы так не писал. Но я же не ты». Часовая лекция вместо код-ревью.':
+    'The toxic senior gave your code a public roasting: "I would not write it this way. But then, I am not you." An hour-long lecture instead of a review.',
+  'Вытерпеть молча 😤': 'Bear it in silence 😤',
+  'Коллеги отвели взгляды. Предупреждение влетело — «за конфликтность».':
+    'Colleagues looked away. A warning landed — "for being difficult".',
+  'Попросить конкретные замечания 🛡️': 'Ask for concrete notes 🛡️',
+  'Половина лекции рассыпалась, когда попросили показать дифф. Но осадок остался.':
+    'Half the lecture collapsed when you asked to see the diff. The aftertaste stayed.',
+  '🧠 Дмитрий Борисович делится знанием': '🧠 Dmitry Borisovich shares knowledge',
+  'Неожиданно: токсичный сеньор позвал к себе «на разбор инцидента». Хамить он мастер, но разбирать прод-инциденты — тоже.':
+    'Surprise: the toxic senior invited you "to review an incident". He is a master of rudeness, but also of prod incidents.',
+  'Разобрать инцидент вместе 🔍': 'Walk the incident together 🔍',
+  'Час за его монитором стоил недели документации. Если подружиться — кладезь знаний.':
+    'An hour at his monitor beat a week of docs. Befriend him — and he is a well of knowledge.',
+  'Записать разбор в конспект 📝': 'Write the review into notes 📝',
+  'Теперь у тебя есть конспект, к которому можно вернуться. А у него — кто-то, кто слушает.':
+    'Now you have notes to revisit. And he has someone who listens.',
+  '🍻 Саня зовёт в бар': '🍻 Sanya invites you to the bar',
+  'Друг из универа пишет: «Пятница, наш бар, старый состав». Ты помнишь эти вечера: дешёвые бургеры и разговоры ни о чём.':
+    'Your uni friend texts: "Friday, our bar, the old crew." You remember those evenings: cheap burgers and talks about nothing.',
+  'Пойти — старые друзья дороже 🎉': 'Go — old friends are worth it 🎉',
+  'Вечер как в студенческие годы. Голова завтра скажет спасибо — или нет.':
+    'An evening like in your student years. Your head will thank you tomorrow — or not.',
+  'Заплатить за обоих 💳': 'Pay for both 💳',
+  'Ты закрыл счёт. Саня был впечатлён: «Ты не изменился». Отношения крепче.':
+    'You covered the bill. Sanya was impressed: "You have not changed." Closer than ever.',
+  'Саня написал: «Ну ты и скучный стал». Иногда работа забирает то, что важнее.':
+    'Sanya texted: "You have gotten so boring." Sometimes work takes what matters more.',
+  '💼 Анна подсказала вакансию': '💼 Anna tipped you about a vacancy',
+  'Анна из HR пишет в личку: «У нас открылась позиция, о которой ещё не знают даже агрегаторы. Дать твой контакт?»':
+    'Anna from HR texts you: "A position just opened that even the job boards do not know about. Shall I pass on your contact?"',
+  'Согласиться на контакт 📇': 'Agree to share your contact 📇',
+  'Твой контакт у рекрутера, который звонит первым. Рынок узнает о тебе раньше других.':
+    'Your contact is with the recruiter who calls first. The market hears about you before the rest.',
+  'Попросить рассказать подробнее 🧐': 'Ask for details first 🧐',
+  'Разговор о зарплатных вилках и рынке затянулся — и оказался полезнее любого курса.':
+    'The talk about salary bands and the market dragged on — and beat any course.',
+  'Знакомства и мероприятия дают связи. Связи открываются в нужный момент: собеседование, заказ, покупка.':
+    'Meetups and friends give you contacts. Contacts open doors at the right moment: an interview, a gig, a deal.',
+  'Знакомый продавец ждёт: следующая покупка у игрока — на {p0}% дешевле. Потрачено {p1} связей':
+    'A seller you know is waiting: your next player-to-player buy is {p0}% cheaper. Spent {p1} contacts',
+  Лид: 'Lead',
+  'Лид активен': 'Lead armed',
+  'Лид уже в кармане — ищи заказ на бирже': 'You already have a lead — go find a gig on the board',
+  'По тёплой рекомендации тебя взяли без долгих разговоров. Оффер: {p0}, {p1}/мес — прими его в «Карьере»':
+    'A warm recommendation did the trick — no tough questions. Offer: {p0}, {p1}/mo — accept it in Career',
+  Рекомендация: 'Recommendation',
+  'Рекомендация активна': 'Recommendation armed',
+  'Рекомендация уже на руках — иди на собеседование': 'You already hold a recommendation — go ace that interview',
+  Связи: 'Contacts',
+  Скидка: 'Discount',
+  'Скидка активна': 'Discount armed',
+  'Скидка уже выторгована — трати на барахолке': 'You already bargained a discount — spend it at the market',
+  'Столько знакомств нет. Больше общайся — связи не растут на дереве':
+    'Not enough contacts. Mingle more — connections do not grow on trees',
+  'Торг удался: {p0} теперь у тебя дома — по знакомству на {p1}% дешевле':
+    'Haggled: {p0} is now yours — {p1}% cheaper through a connection',
+  'Тёплая рекомендация на руках: следующее собеседование закончится оффером. Потрачено {p0} связей':
+    'Warm recommendation in hand: your next interview ends with an offer. Spent {p0} contacts',
+  'Тёплый лид получен: следующий отклик на заказ — на {p0} п.п. выше. Потрачено {p1} связей':
+    'Warm lead secured: your next gig bid gets +{p0} pp. Spent {p1} contacts',
+  'В городе проходит конференция твоего стека: доклады, кофе-брейки и правильные люди в фойе. Вход платный, но говорят, что билет окупается знакомствами.':
+    "Your stack's conference is in town: talks, coffee breaks and the right people in the lobby. Tickets cost money — they say the networking pays for them.",
+  'Вечер удался: два новых контакта, разговор про твои проекты и лёгкое чувство, что мир меньше, чем кажется.':
+    'The evening worked: two new contacts, talk about your projects, and a pleasant feeling that the world is smaller than it seems.',
+  'Доклады полезные, но нетворк по стриму — как вода без градуса.':
+    'Useful talks, but networking over a stream is like flat soda.',
+  'Заказ достался тебе: быстрый старт, честные деньги и «давай ещё» на выходе.':
+    'The gig went to you: a quick start, honest money, and a "let us do more" on the way out.',
+  'Знакомый зовёт на ужин для отраслевиков: вход строго по рекомендации, за столом — люди из правильных компаний. Такие вечера потом вспоминают годами.':
+    'An acquaintance invites you to an industry dinner: entry strictly by recommendation, the table full of people from the right companies. You remember evenings like this for years.',
+  'Иногда спокойствие дороже подработки. Иногда — нет.':
+    'Sometimes peace of mind beats a side gig. Sometimes it does not.',
+  'Конференция прошла без тебя. Была ещё одна — в следующем году.':
+    'The conference happened without you. There is always one more — next year.',
+  'Маша в восторге: опыт, деньги и вера в тебя. Отношения крепче.':
+    'Masha is thrilled: experience, money and faith in you. Your bond is stronger.',
+  'Остался дома. Тишина — тоже ресурс, но знакомства без тебя завязывались сами.':
+    'You stayed home. Quiet is a resource too — but connections formed without you.',
+  'Отказаться: устал от людей': 'Decline: tired of people',
+  'Отправить джуна — пускай растёт': 'Send the junior — let them grow',
+  Поехать: 'Go there',
+  'Пойти по приглашению': 'Attend on the invite',
+  'Порекомендовать себя': 'Recommend yourself',
+  'Пропустить: не до того': 'Skip: not in the mood',
+  Скипнуть: 'Skip it',
+  'Смотреть стрим дома': 'Watch the stream at home',
+  'Твой друг прислал сообщение: его команда ищет человека на подработку, и он вспомнил о тебе. Правда, очередь у них длинная — пройти мимо неё можно только по знакомству.':
+    'Your friend messaged you: his team needs a freelancer, and he remembered you. The queue is long though — only a connection gets you past it.',
+  'Три новых знакомства, парочка докладов «в тему» и имя, которое теперь помнят.':
+    'Three new contacts, a couple of on-point talks, and a name people now remember.',
+  '🍽️ Закрытый нетворк-ужин': '🍽️ Closed networking dinner',
+  '🎤 Отраслевая конференция': '🎤 Industry conference',
+  '🤝 Друг друга ищет разработчика': '🤝 A friend of a friend needs a developer',
+  'Мало связей для этого выбора': 'Not enough contacts for this choice',
+  'Нужно связей: {p0}': 'Contacts needed: {p0}',
 });

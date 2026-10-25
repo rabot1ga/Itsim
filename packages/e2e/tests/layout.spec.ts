@@ -12,8 +12,8 @@ for (const width of [320, 390, 480]) {
       await expect(meter).toBeVisible();
       expect(Number(await meter.getAttribute('aria-valuenow'))).toBeGreaterThanOrEqual(0);
     }
-    // Комната на «Главной» — миниатюра тира (HomeRoomCard, редизайн 22.10.2026):
-    // сцена `/art/room/<тир>.webp`, действия — только во вкладке «Дом». У картинки
+    // Комната на «Сегодня» — миниатюра тира (HomeRoomCard, редизайн 22.10.2026):
+    // сцена `/art/room/<тир>.webp`, действия — за дверью «Дом». У картинки
     // alt="" и роли нет, поэтому локатор по классу, а не getByRole('img').
     const roomThumb = page.locator('img.room-thumb');
     await expect(roomThumb).toBeVisible();
@@ -25,10 +25,8 @@ for (const width of [320, 390, 480]) {
       })
     ).toBe(false);
 
-    await page
-      .getByRole('navigation', { name: 'Основная навигация' })
-      .getByRole('button', { name: 'Магазин', exact: true })
-      .click();
+    // «Магазин» — дверь на «Сегодня» (A2), не таб
+    await page.getByRole('button', { name: 'Магазин', exact: true }).click();
     await expect(roomThumb).toHaveCount(0);
     const filters = page.getByRole('group', { name: 'Категории товаров' });
     await expect(filters).toBeVisible();
@@ -43,14 +41,14 @@ for (const width of [320, 390, 480]) {
         return scroll.scrollWidth > scroll.clientWidth;
       })
     ).toBe(false);
-    await page.getByRole('button', { name: 'Главная', exact: true }).click();
+    await page
+      .getByRole('navigation', { name: 'Основная навигация' })
+      .getByRole('button', { name: 'Сегодня', exact: true })
+      .click();
     await expect(roomThumb).toBeVisible();
-    // Конструктор комнаты удалён (редизайн 22.10.2026): на «Дом» ведёт меню,
-    // там — карточка события с зонами-действиями.
-    await page.getByRole('button', { name: 'Меню' }).click();
-    const dialog = page.getByRole('dialog', { name: 'Меню' });
-    await dialog.getByRole('button', { name: 'Дом', exact: true }).click();
-    await expect(dialog).toHaveCount(0);
+    // Конструктор комнаты удалён (редизайн 22.10.2026): на «Дом» ведёт дверь
+    // на «Сегодня», там — карточка события с зонами-действиями.
+    await page.getByRole('button', { name: 'Дом', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Дом' })).toBeVisible();
     await expect(page.getByLabel('Твоя комната').locator('.story-choice').first()).toBeVisible();
   });
@@ -62,10 +60,8 @@ test('профиль — карточка жизни: баннер настро�
   await expect(page.getByLabel('Деньги')).toBeVisible();
   await resolveStory(page);
 
-  await page.getByRole('button', { name: 'Меню' }).click();
-  const dialog = page.getByRole('dialog', { name: 'Меню' });
-  await dialog.getByRole('button', { name: 'Профиль', exact: true }).click();
-  await expect(dialog).toHaveCount(0);
+  // Профиль открывается из HUD-портрета (A2: листа «Меню» больше нет)
+  await page.getByRole('button', { name: 'Открыть профиль' }).click();
 
   // Баннер — портрет одного из трёх настроений, а не слоистая фигура
   const banner = page.locator('.profile-banner img');

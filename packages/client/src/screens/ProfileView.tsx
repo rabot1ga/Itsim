@@ -1,29 +1,16 @@
 import { t, LOCALES, LOCALE_NAMES, currentLocale, type Locale, fmtNumber } from '../lib/i18n';
 import React from 'react';
 import { useGameStore } from '../store/gameStore';
-import { haptic, openTelegramLink, shareLink } from '../lib/telegram';
+import { haptic } from '../lib/telegram';
 import { ScreenTitle, SectionTitle, StatBar } from '../components/ui';
-import { xpToNext, type Milestone } from '@itsim/shared';
+import { PixelIcon } from '../components/pixel/PixelIcon';
+import { xpToNext } from '@itsim/shared';
 import { gradeLabel, skillName } from '../lib/playerLabels';
 import { profileArtwork, profileMoodOf, PROFILE_MOOD_META } from '../lib/profileArt';
-const BOT_NAME = 'itlife_simulator_bot';
-const LINKS: Array<{
-  view: string;
-  emoji: string;
-  label: string;
-}> = [
-  { view: 'achievements', emoji: '🎯', label: t('Цели и достижения') },
-  { view: 'leaderboard', emoji: '🏆', label: t('Топ игроков') },
-  { view: 'room', emoji: '🏠', label: t('Комната') },
-  { view: 'friends', emoji: '👥', label: t('Друзья и знакомые') },
-  { view: 'career', emoji: '💼', label: t('Карьерный рост') },
-  { view: 'endings', emoji: '🏁', label: t('Финалы') },
-  { view: 'settings', emoji: '⚙️', label: t('Настройки') },
-];
 /**
- * Профиль = «карточка жизни» (решение 22.10.2026, вариант A): баннер-портрет
- * протагониста с настроением по состоянию + чипы ключевых ресурсов. Слоистой
- * фигуры и гардероба больше нет — внешность не кастомизируется.
+ * Профиль = «карточка жизни» (A2, 25.10.2026): баннер-портрет протагониста,
+ * показатели, значки и язык. Финалы/цели/вехи переехали в таб «Прогресс» —
+ * здесь они дублировались списками и ссылками.
  */
 /** Значки Stars-покупок («кофе разработчику» и др.) — обещаны в профиле. */
 const BADGE_LABEL: Record<string, string> = {
@@ -54,7 +41,7 @@ export const ProfileView: React.FC = () => {
     [t('Основной навык'), skillName(mainId)],
     [t('Уровень'), String(skill.level)],
     [t('Опыт'), skill.level >= 100 ? t('Максимум') : `${skill.xp} / ${need} XP`],
-    [t('Репутация'), `${fmtNumber(Math.round(player.reputation ?? 0))} ⭐`],
+    [t('Репутация'), `${fmtNumber(Math.round(player.reputation ?? 0))}`],
     [t('Достижения'), String((player.achievements ?? []).length)],
     [t('Навыков изучено'), String(skills.filter((s) => s.level > 0).length)],
     [t('Предметы'), String((player.items ?? []).length)],
@@ -66,16 +53,14 @@ export const ProfileView: React.FC = () => {
     [t('Прожито жизней'), String(player.meta?.lives ?? 0)],
   ];
   const chips: Array<[string, string]> = [
-    ['⚡', `${player.energy ?? 0}/${player.maxEnergy ?? 0}`],
-    ['🔥', String(Math.round(player.motivation ?? 0))],
-    ['⭐', String(Math.round(player.reputation ?? 0))],
-    ['💰', `${fmtNumber(Math.round(player.money ?? 0))} ₽`],
+    ['bolt', `${player.energy ?? 0}/${player.maxEnergy ?? 0}`],
+    ['flame', String(Math.round(player.motivation ?? 0))],
+    ['trophy', String(Math.round(player.reputation ?? 0))],
+    ['coin', `${fmtNumber(Math.round(player.money ?? 0))} ₽`],
   ];
-  // Автопостинг вех: лента авто-постов «Стал сеньор за 78 дней!»
-  const milestones: Milestone[] = (player.milestones ?? []) as Milestone[];
   return (
     <div className="space-y-4 animate-fade-in">
-      <ScreenTitle emoji="👤">{t('Профиль')}</ScreenTitle>
+      <ScreenTitle icon="person">{t('Профиль')}</ScreenTitle>
 
       <section className="card story-card" aria-label={t('Профиль персонажа')}>
         <p className="story-card-kicker">
@@ -89,9 +74,9 @@ export const ProfileView: React.FC = () => {
           <p>{moodMeta.line}</p>
         </div>
         <div className="profile-chips" aria-label={t('Ключевые показатели')}>
-          {chips.map(([emoji, value]) => (
-            <span key={emoji} className="res-chip num">
-              <span aria-hidden="true">{emoji}</span> {value}
+          {chips.map(([icon, value]) => (
+            <span key={icon} className="res-chip num">
+              <PixelIcon name={icon} size={12} /> {value}
             </span>
           ))}
         </div>
@@ -99,7 +84,7 @@ export const ProfileView: React.FC = () => {
           <div className="profile-chips" aria-label={t('Значки')}>
             {(player.badges ?? []).map((b: string) => (
               <span key={b} className="res-chip">
-                🏅 {t(BADGE_LABEL[b] ?? b)}
+                <PixelIcon name="star" size={12} /> {t(BADGE_LABEL[b] ?? b)}
               </span>
             ))}
           </div>
@@ -136,47 +121,12 @@ export const ProfileView: React.FC = () => {
         </dl>
       </section>
 
-      {/* Автопостинг вех (README «В процессе»): авто-посты карьеры и жизни
-          «Стал сеньор за 78 дней!» — лента + шаринг в Telegram. */}
-      {milestones.length > 0 && (
-        <section className="card">
-          <SectionTitle>{t('Вехи')}</SectionTitle>
-          <ul className="milestone-feed">
-            {milestones.map((m) => {
-              const caption = t(m.key, m.params);
-              return (
-                <li key={m.id} className="milestone-post">
-                  <div className="milestone-body">
-                    <p className="milestone-caption">{caption}</p>
-                    <p className="milestone-day">
-                      {t('День')} {m.day}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    className="btn btn-ghost"
-                    onClick={() => {
-                      haptic('selection');
-                      openTelegramLink(shareLink(caption, BOT_NAME, (player as any).telegramId ?? 'player'));
-                    }}
-                  >
-                    {t('Поделиться')}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
-      )}
-
       {/* Поле языка профиля (P2.5, этап 3): выбор живёт в сейве — новый девайс
           подхватывает его, запросы по-прежнему несут X-Locale. */}
       <section className="card">
         <SectionTitle>{t('Язык')}</SectionTitle>
         <div className="settings-row">
-          <span className="emoji" aria-hidden="true">
-            🌍
-          </span>
+          <PixelIcon name="globe" size={18} />
           <span className="settings-row-label">{t('Язык интерфейса')}</span>
           <div className="settings-row-value" role="group" aria-label={t('Язык интерфейса')}>
             {LOCALES.map((l: Locale) => (
@@ -199,12 +149,10 @@ export const ProfileView: React.FC = () => {
       </section>
 
       <div className="profile-links">
-        {LINKS.map((link) => (
-          <button key={link.view} className="btn btn-secondary justify-start" onClick={() => setView(link.view)}>
-            <span aria-hidden="true">{link.emoji}</span>
-            {link.label}
-          </button>
-        ))}
+        <button className="btn btn-secondary justify-start" onClick={() => setView('settings')}>
+          <PixelIcon name="gear" size={16} />
+          {t('Настройки')}
+        </button>
       </div>
     </div>
   );

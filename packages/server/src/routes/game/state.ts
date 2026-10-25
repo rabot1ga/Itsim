@@ -105,7 +105,7 @@ export async function stateRoutes(app: FastifyInstance) {
     }
     await saveState(userId, state);
     return {
-      state: respondState(state, isNew ? t('Добро пожаловать в IT Life Simulator! 💻') : undefined),
+      state: respondState(state, isNew ? t('Добро пожаловать в IT Life Simulator!') : undefined),
       isNew,
       offlineDaysEarned: banked,
       checkIn,
