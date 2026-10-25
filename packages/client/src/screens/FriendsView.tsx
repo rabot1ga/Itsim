@@ -4,7 +4,14 @@ import { useGameStore } from '../store/gameStore';
 import { ScreenTitle, SectionTitle, EmptyState, Spinner, ResChip } from '../components/ui';
 import { inviteLink, openTelegramLink, haptic } from '../lib/telegram';
 import { PixelIcon } from '../components/pixel/PixelIcon';
-import { relationEffectLabelKey, spentTimeToday, SPEND_TIME_RELATION } from '@itsim/shared';
+import {
+  relationEffectLabelKey,
+  spentTimeToday,
+  SPEND_TIME_RELATION,
+  RECOMMENDATION_COST,
+  FREELANCE_LEAD_COST,
+  P2P_DISCOUNT_COST,
+} from '@itsim/shared';
 interface Friend {
   id: string;
   name: string;
@@ -60,6 +67,17 @@ export const FriendsView: React.FC = () => {
       setSpending(null);
     }
   };
+  /** D2: связи как ресурс — одноразовые баффы за contacts. */
+  const [using, setUsing] = useState<string | null>(null);
+  const useContact = async (actionId: string) => {
+    haptic('tap');
+    setUsing(actionId);
+    try {
+      await useGameStore.getState().performAction(actionId, {});
+    } finally {
+      setUsing(null);
+    }
+  };
   return (
     <div className="space-y-4 animate-fade-in">
       <button onClick={() => useGameStore.getState().setView('career')} className="link-back">
@@ -77,6 +95,45 @@ export const FriendsView: React.FC = () => {
           'За каждого приглашённого друга — бонус к деньгам и лимиту друзей. Отношения с персонажами меняют прогулки, общение и события.'
         )}
       </p>
+
+      {/* D2: связи как ресурс — стат и три одноразовые траты */}
+      <div className="card space-y-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <SectionTitle>{t('Связи')}</SectionTitle>
+          <ResChip tone="blue">
+            {t('Связи')}: {player?.contacts ?? 0}
+          </ResChip>
+          {!!player?.recommendation && <ResChip tone="gold">{t('Рекомендация активна')}</ResChip>}
+          {!!player?.freelanceLead && <ResChip tone="gold">{t('Лид активен')}</ResChip>}
+          {!!player?.p2pDiscount && <ResChip tone="gold">{t('Скидка активна')}</ResChip>}
+        </div>
+        <p className="subtle">
+          {t('Знакомства и мероприятия дают связи. Связи открываются в нужный момент: собеседование, заказ, покупка.')}
+        </p>
+        <div className="grid grid-cols-3 gap-1.5">
+          <button
+            className="btn btn-sm btn-secondary"
+            disabled={using !== null || !!player?.recommendation || (player?.contacts ?? 0) < RECOMMENDATION_COST}
+            onClick={() => useContact('use_recommendation')}
+          >
+            <PixelIcon name="briefcase" size={11} /> {t('Рекомендация')} · {RECOMMENDATION_COST}
+          </button>
+          <button
+            className="btn btn-sm btn-secondary"
+            disabled={using !== null || !!player?.freelanceLead || (player?.contacts ?? 0) < FREELANCE_LEAD_COST}
+            onClick={() => useContact('use_freelance_lead')}
+          >
+            <PixelIcon name="target" size={11} /> {t('Лид')} · {FREELANCE_LEAD_COST}
+          </button>
+          <button
+            className="btn btn-sm btn-secondary"
+            disabled={using !== null || !!player?.p2pDiscount || (player?.contacts ?? 0) < P2P_DISCOUNT_COST}
+            onClick={() => useContact('use_p2p_discount')}
+          >
+            <PixelIcon name="bag" size={11} /> {t('Скидка')} · {P2P_DISCOUNT_COST}
+          </button>
+        </div>
+      </div>
 
       {status === 'loading' && <Spinner label={t('Загрузка знакомых…')} />}
 

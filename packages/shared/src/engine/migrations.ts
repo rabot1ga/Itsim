@@ -247,6 +247,8 @@ export function normalizeState(state: any): void {
 
   state.currentDay = Math.max(1, Math.floor(num(state.currentDay, 1)));
   state.money = Math.max(0, Math.round(num(state.money, 0)));
+  // D2: связи — с капом, чтобы старые/кривые сейвы не уезжали за потолок
+  state.contacts = clamp(Math.round(num(state.contacts, 0)), 0, 20);
   state.health = clamp(num(state.health, 80), 0, 100);
   state.motivation = clamp(num(state.motivation, 50), 0, 100);
   state.reputation = clamp(num(state.reputation, 0), 0, 100);

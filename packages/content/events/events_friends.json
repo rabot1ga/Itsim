@@ -3,19 +3,27 @@
     "id": "friend_teamlead_cover",
     "title": "🛡️ Тимлид заступился",
     "description": "На планёрке ты пропустил срок, но Алексей Петрович взял удар на себя: «Команда — это не соло-перформанс». Коллеги заметили, как он тебя прикрыл.",
-    "tags": ["work", "social", "mentoring"],
+    "tags": [
+      "work",
+      "social",
+      "mentoring"
+    ],
     "weight": 6,
     "cooldownDays": 45,
     "minGameDay": 25,
     "conditions": {
       "hasJob": true,
-      "minRelation": { "teamlead": 60 }
+      "minRelation": {
+        "teamlead": 60
+      }
     },
     "choices": [
       {
         "text": "Поблагодарить лично 🤝",
         "effects": {
-          "relation": { "teamlead": 3 },
+          "relation": {
+            "teamlead": 3
+          },
           "jobWarnings": -1,
           "motivation": 3
         },
@@ -25,10 +33,14 @@
         "text": "Купить ему кофе ☕",
         "effects": {
           "money": -500,
-          "relation": { "teamlead": 5 },
+          "relation": {
+            "teamlead": 5
+          },
           "jobWarnings": -1
         },
-        "requires": { "money": 500 },
+        "requires": {
+          "money": 500
+        },
         "followup": "Кофе, короткий разговор о системном дизайне — и одно предупреждение испарилось."
       }
     ]
@@ -37,20 +49,30 @@
     "id": "friend_teamlead_coffee",
     "title": "☕ Кофе с тимлидом",
     "description": "Алексей Петрович зовёт на кофе: «Хочу обсудить, куда ты растёшь». Такие разговоры обычно открываются словами «давай поговорим о твоей карьере».",
-    "tags": ["work", "social", "mentoring"],
+    "tags": [
+      "work",
+      "social",
+      "mentoring"
+    ],
     "weight": 7,
     "cooldownDays": 30,
     "minGameDay": 15,
     "conditions": {
       "hasJob": true,
-      "minRelation": { "teamlead": 25 }
+      "minRelation": {
+        "teamlead": 25
+      }
     },
     "choices": [
       {
         "text": "Слушать и задавать вопросы 🎯",
         "effects": {
-          "skill": { "javascript": 20 },
-          "relation": { "teamlead": 3 },
+          "skill": {
+            "javascript": 20
+          },
+          "relation": {
+            "teamlead": 3
+          },
           "motivation": 2
         },
         "followup": "Разговор о карьере и твоих сильных сторонах. Приятно, когда тебя видят."
@@ -59,7 +81,9 @@
         "text": "Рассказать о своих проектах 🚀",
         "effects": {
           "reputation": 3,
-          "relation": { "teamlead": 2 }
+          "relation": {
+            "teamlead": 2
+          }
         },
         "followup": "Он записал пару твоих идей в свой блокнот. Это либо похвала, либо делегирование."
       }
@@ -69,20 +93,30 @@
     "id": "friend_masha_question",
     "title": "💡 Маша принесла задачу",
     "description": "Маша залипла на баге и пришла к тебе: «Объясни, пожалуйста, я третий час смотрю в этот код». Объясняя чужое, понимаешь своё.",
-    "tags": ["social", "mentoring", "study"],
+    "tags": [
+      "social",
+      "mentoring",
+      "study"
+    ],
     "weight": 7,
     "cooldownDays": 25,
     "minGameDay": 10,
     "conditions": {
-      "minRelation": { "junior_colleague": 40 },
+      "minRelation": {
+        "junior_colleague": 40
+      },
       "npcPresent": "junior_colleague"
     },
     "choices": [
       {
         "text": "Объяснить с нуля 📖",
         "effects": {
-          "skill": { "javascript": 15 },
-          "relation": { "junior_colleague": 4 },
+          "skill": {
+            "javascript": 15
+          },
+          "relation": {
+            "junior_colleague": 4
+          },
           "motivation": 2
         },
         "followup": "«Ааа, поняла!» — её глаза загорелись. Ты сам понял эту тему глубже."
@@ -90,8 +124,12 @@
       {
         "text": "Решить за неё 🧩",
         "effects": {
-          "skill": { "javascript": 8 },
-          "relation": { "junior_colleague": 2 }
+          "skill": {
+            "javascript": 8
+          },
+          "relation": {
+            "junior_colleague": 2
+          }
         },
         "followup": "Баг починен. Маша рада, но учиться на чужих руках — не самый быстрый путь."
       }
@@ -101,12 +139,17 @@
     "id": "friend_masha_gift",
     "title": "🎀 Маша вспомнила",
     "description": "Маша вспомнила, что ты упоминал этот день, и принесла маленький подарок. «Спасибо, что помогаешь мне расти», — сказала она.",
-    "tags": ["social", "family"],
+    "tags": [
+      "social",
+      "family"
+    ],
     "weight": 5,
     "cooldownDays": 60,
     "minGameDay": 20,
     "conditions": {
-      "minRelation": { "junior_colleague": 25 },
+      "minRelation": {
+        "junior_colleague": 25
+      },
       "npcPresent": "junior_colleague"
     },
     "choices": [
@@ -114,7 +157,9 @@
         "text": "Принять с благодарностью 🌟",
         "effects": {
           "motivation": 8,
-          "relation": { "junior_colleague": 3 }
+          "relation": {
+            "junior_colleague": 3
+          }
         },
         "followup": "Иногда подарок — это не вещь, а внимание."
       },
@@ -122,10 +167,14 @@
         "text": "Купить ей книгу в ответ 📚",
         "effects": {
           "money": -1500,
-          "relation": { "junior_colleague": 6 },
+          "relation": {
+            "junior_colleague": 6
+          },
           "motivation": 4
         },
-        "requires": { "money": 1500 },
+        "requires": {
+          "money": 1500
+        },
         "followup": "«Ти-ри-ри... Clean Code!» — Маша заулыбалась. Теперь у неё есть настольная книга."
       }
     ]
@@ -134,13 +183,18 @@
     "id": "friend_toxic_review",
     "title": "🔥 Разбор от Дмитрия Борисовича",
     "description": "Токсичный сеньор устроил публичный разбор твоего кода: «Я бы так не писал. Но я же не ты». Часовая лекция вместо код-ревью.",
-    "tags": ["work", "social"],
+    "tags": [
+      "work",
+      "social"
+    ],
     "weight": 6,
     "cooldownDays": 30,
     "minGameDay": 10,
     "conditions": {
       "hasJob": true,
-      "maxRelation": { "toxic_senior": -30 }
+      "maxRelation": {
+        "toxic_senior": -30
+      }
     },
     "choices": [
       {
@@ -155,7 +209,9 @@
         "text": "Попросить конкретные замечания 🛡️",
         "effects": {
           "motivation": -4,
-          "skill": { "javascript": 5 }
+          "skill": {
+            "javascript": 5
+          }
         },
         "followup": "Половина лекции рассыпалась, когда попросили показать дифф. Но осадок остался."
       }
@@ -165,29 +221,43 @@
     "id": "friend_toxic_knowledge",
     "title": "🧠 Дмитрий Борисович делится знанием",
     "description": "Неожиданно: токсичный сеньор позвал к себе «на разбор инцидента». Хамить он мастер, но разбирать прод-инциденты — тоже.",
-    "tags": ["work", "social", "mentoring"],
+    "tags": [
+      "work",
+      "social",
+      "mentoring"
+    ],
     "weight": 5,
     "cooldownDays": 40,
     "minGameDay": 20,
     "conditions": {
       "hasJob": true,
-      "minRelation": { "toxic_senior": 30 }
+      "minRelation": {
+        "toxic_senior": 30
+      }
     },
     "choices": [
       {
         "text": "Разобрать инцидент вместе 🔍",
         "effects": {
-          "skill": { "javascript": 25 },
-          "relation": { "toxic_senior": 3 }
+          "skill": {
+            "javascript": 25
+          },
+          "relation": {
+            "toxic_senior": 3
+          }
         },
         "followup": "Час за его монитором стоил недели документации. Если подружиться — кладезь знаний."
       },
       {
         "text": "Записать разбор в конспект 📝",
         "effects": {
-          "skill": { "javascript": 15 },
+          "skill": {
+            "javascript": 15
+          },
           "motivation": 3,
-          "relation": { "toxic_senior": 2 }
+          "relation": {
+            "toxic_senior": 2
+          }
         },
         "followup": "Теперь у тебя есть конспект, к которому можно вернуться. А у него — кто-то, кто слушает."
       }
@@ -197,12 +267,17 @@
     "id": "friend_uni_bar",
     "title": "🍻 Саня зовёт в бар",
     "description": "Друг из универа пишет: «Пятница, наш бар, старый состав». Ты помнишь эти вечера: дешёвые бургеры и разговоры ни о чём.",
-    "tags": ["social", "rest"],
+    "tags": [
+      "social",
+      "rest"
+    ],
     "weight": 6,
     "cooldownDays": 21,
     "minGameDay": 5,
     "conditions": {
-      "minRelation": { "uni_friend": 20 },
+      "minRelation": {
+        "uni_friend": 20
+      },
       "npcPresent": "uni_friend"
     },
     "choices": [
@@ -210,8 +285,11 @@
         "text": "Пойти — старые друзья дороже 🎉",
         "effects": {
           "motivation": 12,
-          "relation": { "uni_friend": 5 },
-          "health": -2
+          "relation": {
+            "uni_friend": 5
+          },
+          "health": -2,
+          "contacts": 2
         },
         "followup": "Вечер как в студенческие годы. Голова завтра скажет спасибо — или нет."
       },
@@ -220,16 +298,23 @@
         "effects": {
           "money": -4000,
           "motivation": 10,
-          "relation": { "uni_friend": 8 },
-          "reputation": 2
+          "relation": {
+            "uni_friend": 8
+          },
+          "reputation": 2,
+          "contacts": 3
         },
-        "requires": { "money": 4000 },
+        "requires": {
+          "money": 4000
+        },
         "followup": "Ты закрыл счёт. Саня был впечатлён: «Ты не изменился». Отношения крепче."
       },
       {
         "text": "Отказаться: «дедлайн» 💻",
         "effects": {
-          "relation": { "uni_friend": -3 },
+          "relation": {
+            "uni_friend": -3
+          },
           "motivation": -3
         },
         "followup": "Саня написал: «Ну ты и скучный стал». Иногда работа забирает то, что важнее."
@@ -240,12 +325,17 @@
     "id": "friend_hr_tip",
     "title": "💼 Анна подсказала вакансию",
     "description": "Анна из HR пишет в личку: «У нас открылась позиция, о которой ещё не знают даже агрегаторы. Дать твой контакт?»",
-    "tags": ["social", "career"],
+    "tags": [
+      "social",
+      "career"
+    ],
     "weight": 5,
     "cooldownDays": 45,
     "minGameDay": 15,
     "conditions": {
-      "minRelation": { "hr_anna": 40 },
+      "minRelation": {
+        "hr_anna": 40
+      },
       "npcPresent": "hr_anna"
     },
     "choices": [
@@ -253,7 +343,9 @@
         "text": "Согласиться на контакт 📇",
         "effects": {
           "reputation": 4,
-          "relation": { "hr_anna": 3 },
+          "relation": {
+            "hr_anna": 3
+          },
           "motivation": 3
         },
         "followup": "Твой контакт у рекрутера, который звонит первым. Рынок узнает о тебе раньше других."
@@ -261,8 +353,12 @@
       {
         "text": "Попросить рассказать подробнее 🧐",
         "effects": {
-          "relation": { "hr_anna": 2 },
-          "skill": { "english": 8 }
+          "relation": {
+            "hr_anna": 2
+          },
+          "skill": {
+            "english": 8
+          }
         },
         "followup": "Разговор о зарплатных вилках и рынке затянулся — и оказался полезнее любого курса."
       }

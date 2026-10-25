@@ -57,7 +57,8 @@
             "communication": 10
           },
           "reputation": 1,
-          "motivation": 2
+          "motivation": 2,
+          "contacts": 2
         },
         "followup": "Три доклада и двадцать знакомств. Шутка про null зашла."
       },

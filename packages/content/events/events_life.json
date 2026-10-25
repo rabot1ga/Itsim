@@ -751,7 +751,8 @@
           "motivation": 5,
           "skill": {
             "public_speaking": 20
-          }
+          },
+          "contacts": 2
         },
         "followup": "Овации! Правда, половина зала пришла за мерчем."
       },

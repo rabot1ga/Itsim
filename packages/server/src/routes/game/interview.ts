@@ -191,7 +191,9 @@ export async function interviewRoutes(app: FastifyInstance) {
       companyBar: company?.interviewBar ?? 1,
       answerScore,
     });
-    const passed = rollInterview(chance, balanceRng(state));
+    const usedRecommendation = !!state.recommendation; // D2: рекомендация — гарантированный исход
+    const passed = usedRecommendation ? true : rollInterview(chance, balanceRng(state));
+    if (usedRecommendation) state.recommendation = false; // рекомендация сгорает
     let resultMessage: string;
     if (passed) {
       const salary = Math.round((GRADE_SALARIES[app.grade] * (company?.salaryMult ?? 1)) / 1000) * 1000;
@@ -208,12 +210,17 @@ export async function interviewRoutes(app: FastifyInstance) {
       state.pendingOffers = [...state.pendingOffers, offer];
       app.status = 'accepted';
       app.result = 'accepted';
-      resultMessage = t('Собеседование пройдено ({correct}/{total})! Оффер: {p0}, {p1}/мес — прими его в «Карьере»', {
-        correct: correct,
-        total: total,
-        p0: app.position,
-        p1: fmtMoney(salary),
-      });
+      resultMessage = usedRecommendation
+        ? t('По тёплой рекомендации тебя взяли без долгих разговоров. Оффер: {p0}, {p1}/мес — прими его в «Карьере»', {
+            p0: app.position,
+            p1: fmtMoney(salary),
+          })
+        : t('Собеседование пройдено ({correct}/{total})! Оффер: {p0}, {p1}/мес — прими его в «Карьере»', {
+            correct: correct,
+            total: total,
+            p0: app.position,
+            p1: fmtMoney(salary),
+          });
     } else {
       app.status = 'rejected';
       app.result = 'rejected';
@@ -231,6 +238,7 @@ export async function interviewRoutes(app: FastifyInstance) {
       correct,
       total,
       chance: Math.round(chance),
+      recommended: usedRecommendation,
       xp: xpGains,
       state: respondState(state, resultMessage),
     };

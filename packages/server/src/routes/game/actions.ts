@@ -36,6 +36,15 @@ import {
   markSpentTime,
   SPEND_TIME_RELATION,
   SPEND_TIME_MOTIVATION,
+  addContacts,
+  spendContacts,
+  CONTACTS_FRIEND_TIME,
+  RECOMMENDATION_COST,
+  FREELANCE_LEAD_COST,
+  P2P_DISCOUNT_COST,
+  FREELANCE_LEAD_BONUS,
+  FREELANCE_LEAD_CAP,
+  P2P_DISCOUNT_RATE,
   type Application,
   type PlayerState,
 } from '@itsim/shared';
@@ -333,14 +342,18 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       });
       if (blocked) return { error: blocked };
       const chance = bidChance(def, { skillLevel, reputation: state.reputation });
-      state.freelanceBid = { projectId: def.id, day: state.currentDay, chance };
+      // D2: тёплый лид — разовый бонус к отклику
+      const leadUsed = !!state.freelanceLead;
+      const finalChance = leadUsed ? Math.min(FREELANCE_LEAD_CAP, chance + FREELANCE_LEAD_BONUS) : chance;
+      if (leadUsed) state.freelanceLead = false;
+      state.freelanceBid = { projectId: def.id, day: state.currentDay, chance: finalChance };
       state.freelanceDoneToday = true;
       state.lastFreelanceDay = state.currentDay;
       delta.freelanceBid = state.freelanceBid;
       return {
         message: t('Отклик на «{p0}» отправлен. Заказчик ответит утром — шанс {p1}%', {
           p0: def.title,
-          p1: Math.round(chance * 100),
+          p1: Math.round(finalChance * 100),
         }),
         delta,
       };
@@ -407,12 +420,57 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
         [npcId]: clamp(before + SPEND_TIME_RELATION, -100, 100),
       };
       state.motivation = clamp(state.motivation + SPEND_TIME_MOTIVATION, 0, 100);
+      // D2: в кругу друга завязываются и новые знакомства
+      addContacts(state, CONTACTS_FRIEND_TIME);
       delta.motivation = SPEND_TIME_MOTIVATION;
       delta.relation = { [npcId]: SPEND_TIME_RELATION };
+      delta.contacts = CONTACTS_FRIEND_TIME;
       return {
         message: t('Время с другом: {p0} — и отношения крепче (+{p1}). Хороший день', {
           p0: npc.name,
           p1: SPEND_TIME_RELATION,
+        }),
+      };
+    }
+    // ---- D2: связи как ресурс — одноразовые баффы ----
+    case 'use_recommendation': {
+      if (state.recommendation) return { error: t('Рекомендация уже на руках — иди на собеседование') };
+      if (!spendContacts(state, RECOMMENDATION_COST)) {
+        return { error: t('Столько знакомств нет. Больше общайся — связи не растут на дереве') };
+      }
+      state.recommendation = true;
+      delta.contacts = -RECOMMENDATION_COST;
+      return {
+        message: t('Тёплая рекомендация на руках: следующее собеседование закончится оффером. Потрачено {p0} связей', {
+          p0: RECOMMENDATION_COST,
+        }),
+      };
+    }
+    case 'use_freelance_lead': {
+      if (state.freelanceLead) return { error: t('Лид уже в кармане — ищи заказ на бирже') };
+      if (!spendContacts(state, FREELANCE_LEAD_COST)) {
+        return { error: t('Столько знакомств нет. Больше общайся — связи не растут на дереве') };
+      }
+      state.freelanceLead = true;
+      delta.contacts = -FREELANCE_LEAD_COST;
+      return {
+        message: t('Тёплый лид получен: следующий отклик на заказ — на {p0} п.п. выше. Потрачено {p1} связей', {
+          p0: Math.round(FREELANCE_LEAD_BONUS * 100),
+          p1: FREELANCE_LEAD_COST,
+        }),
+      };
+    }
+    case 'use_p2p_discount': {
+      if (state.p2pDiscount) return { error: t('Скидка уже выторгована — трати на барахолке') };
+      if (!spendContacts(state, P2P_DISCOUNT_COST)) {
+        return { error: t('Столько знакомств нет. Больше общайся — связи не растут на дереве') };
+      }
+      state.p2pDiscount = true;
+      delta.contacts = -P2P_DISCOUNT_COST;
+      return {
+        message: t('Знакомый продавец ждёт: следующая покупка у игрока — на {p0}% дешевле. Потрачено {p1} связей', {
+          p0: Math.round(P2P_DISCOUNT_RATE * 100),
+          p1: P2P_DISCOUNT_COST,
         }),
       };
     }

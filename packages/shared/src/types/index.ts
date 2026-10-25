@@ -232,6 +232,16 @@ export interface PlayerState {
   /** npcId → the game day time was last spent together (relation action) */
   friendTimeDays?: Record<string, number>;
 
+  // Contacts (D2, 25.10.2026): «связи как ресурс» — мероприятие/знакомые → траты
+  /** accumulated networking contacts, 0..CONTACTS_CAP */
+  contacts?: number;
+  /** armed: the current interview ends in an offer without the roll */
+  recommendation?: boolean;
+  /** armed: the next freelance bid gets +FREELANCE_LEAD_BONUS chance */
+  freelanceLead?: boolean;
+  /** armed: the next P2P purchase gets P2P_DISCOUNT_RATE off */
+  p2pDiscount?: boolean;
+
   // Meta layer (P1.1 «Новая жизнь»): the only thing that survives a reset
   /** prestige ledger — persists across lives, never resets */
   meta?: MetaLife;
@@ -519,6 +529,8 @@ export interface EventEffects {
   relation?: Record<NPCId, number>;
   jobWarnings?: number;
   burnoutDays?: number;
+  /** D2: networking contacts (мероприятия/знакомые) */
+  contacts?: number;
 }
 
 export interface ChainEventRef {

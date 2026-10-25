@@ -31,6 +31,7 @@ import {
 } from '@itsim/shared';
 import type { OfferRecord } from '../../services/storeTypes.js';
 import { respondState, StoredState, MUTATION_RATE_LIMIT } from './shared.js';
+import { P2P_DISCOUNT_RATE } from '@itsim/shared';
 
 function listingsOf(userId: string) {
   const content = getContent();
@@ -255,11 +256,16 @@ export async function marketplaceRoutes(app: FastifyInstance) {
     if ((state.items ?? []).includes(offer.itemId)) {
       return reply.status(400).send({ error: t('Уже в твоей коллекции') });
     }
-    if ((state.money ?? 0) < offer.price) {
+    // D2: скидка по связям — торг только для покупателя; продавцу из эскроу
+    // уходит полная цена (разницу компенсирует игра, сделка не обманывает продавца).
+    const usedDiscount = !!state.p2pDiscount;
+    const payPrice = usedDiscount ? Math.ceil((offer.price * (1 - P2P_DISCOUNT_RATE)) / 10) * 10 : offer.price;
+    if ((state.money ?? 0) < payPrice) {
       return reply.status(400).send({ error: t('Не хватает денег') });
     }
     const item = (getContent().items as any[]).find((i) => i.id === offer.itemId);
-    state.money = (state.money ?? 0) - offer.price;
+    if (usedDiscount) state.p2pDiscount = false;
+    state.money = (state.money ?? 0) - payPrice;
     state.items = [...(state.items ?? []), offer.itemId];
     await saveState(userId, state);
     // Деньги остаются в записи объявления (эскроу) до payout продавца.
@@ -268,7 +274,15 @@ export async function marketplaceRoutes(app: FastifyInstance) {
     offer.soldAt = Date.now();
     await store.put(offer);
     return {
-      state: respondState(state, t('{p0} теперь живёт у тебя дома', { p0: item?.name ?? offer.itemId })),
+      state: respondState(
+        state,
+        usedDiscount
+          ? t('Торг удался: {p0} теперь у тебя дома — по знакомству на {p1}% дешевле', {
+              p0: item?.name ?? offer.itemId,
+              p1: Math.round(P2P_DISCOUNT_RATE * 100),
+            })
+          : t('{p0} теперь живёт у тебя дома', { p0: item?.name ?? offer.itemId })
+      ),
     };
   });
 

@@ -4539,4 +4539,28 @@ Object.assign(en, {
   'Попросить рассказать подробнее 🧐': 'Ask for details first 🧐',
   'Разговор о зарплатных вилках и рынке затянулся — и оказался полезнее любого курса.':
     'The talk about salary bands and the market dragged on — and beat any course.',
+  'Знакомства и мероприятия дают связи. Связи открываются в нужный момент: собеседование, заказ, покупка.':
+    'Meetups and friends give you contacts. Contacts open doors at the right moment: an interview, a gig, a deal.',
+  'Знакомый продавец ждёт: следующая покупка у игрока — на {p0}% дешевле. Потрачено {p1} связей':
+    'A seller you know is waiting: your next player-to-player buy is {p0}% cheaper. Spent {p1} contacts',
+  Лид: 'Lead',
+  'Лид активен': 'Lead armed',
+  'Лид уже в кармане — ищи заказ на бирже': 'You already have a lead — go find a gig on the board',
+  'По тёплой рекомендации тебя взяли без долгих разговоров. Оффер: {p0}, {p1}/мес — прими его в «Карьере»':
+    'A warm recommendation did the trick — no tough questions. Offer: {p0}, {p1}/mo — accept it in Career',
+  Рекомендация: 'Recommendation',
+  'Рекомендация активна': 'Recommendation armed',
+  'Рекомендация уже на руках — иди на собеседование': 'You already hold a recommendation — go ace that interview',
+  Связи: 'Contacts',
+  Скидка: 'Discount',
+  'Скидка активна': 'Discount armed',
+  'Скидка уже выторгована — трати на барахолке': 'You already bargained a discount — spend it at the market',
+  'Столько знакомств нет. Больше общайся — связи не растут на дереве':
+    'Not enough contacts. Mingle more — connections do not grow on trees',
+  'Торг удался: {p0} теперь у тебя дома — по знакомству на {p1}% дешевле':
+    'Haggled: {p0} is now yours — {p1}% cheaper through a connection',
+  'Тёплая рекомендация на руках: следующее собеседование закончится оффером. Потрачено {p0} связей':
+    'Warm recommendation in hand: your next interview ends with an offer. Spent {p0} contacts',
+  'Тёплый лид получен: следующий отклик на заказ — на {p0} п.п. выше. Потрачено {p1} связей':
+    'Warm lead secured: your next gig bid gets +{p0} pp. Spent {p1} contacts',
 });

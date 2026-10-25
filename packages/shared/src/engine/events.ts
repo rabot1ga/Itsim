@@ -2,6 +2,7 @@ import { PlayerState, GameEvent, EventChoice } from '../types';
 import { clamp, weightedPick } from './utils';
 import { applyXp, applySoftXp } from './skills';
 import { absorbJobWarning } from './relationships';
+import { addContacts } from './contacts';
 
 /** Soft skills that live in PlayerState.softSkills (not .skills) */
 const SOFT_SKILL_IDS = new Set([
@@ -193,6 +194,11 @@ export function applyEventEffects(p: PlayerState, choice: EventChoice): PlayerSt
   // Burnout days
   if (e.burnoutDays !== undefined) {
     next.burnoutDays = Math.max(0, (next.burnoutDays ?? 0) + e.burnoutDays);
+  }
+
+  // D2: связи (мероприятия/знакомые) — с капом
+  if (e.contacts !== undefined) {
+    addContacts(next, e.contacts);
   }
 
   return next;

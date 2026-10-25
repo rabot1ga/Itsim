@@ -24,6 +24,8 @@ export const EventEffectsSchema = z.object({
   relation: z.record(z.string(), z.number()).optional(),
   jobWarnings: z.number().int().optional(),
   burnoutDays: z.number().int().optional(),
+  /** D2: networking contacts (мероприятия/знакомые) */
+  contacts: z.number().int().optional(),
 });
 
 export const ChainEventRefSchema = z.object({
