@@ -13,7 +13,6 @@ import {
 } from '../lib/roomArt';
 import { PET_SKIN_EMOJI, petEmoji, petBadges, petAnimState } from '../lib/petSkins';
 import type { PetRoomPosition } from '@itsim/shared';
-import { PixelIcon } from '../components/pixel/PixelIcon';
 /**
  * «Дом» — комната как карточка события (решение 22.10.2026, вариант B):
  * сцена-баннер текущего тира + строки-зоны поверх общего каталога действий.

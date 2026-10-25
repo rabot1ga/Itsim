@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { haptic } from '../lib/telegram';
 import { canUnlockPerk, archetypeToView, type ArchetypeDef } from '@itsim/shared';
-import { EmojiToken, ScreenTitle, SectionTitle, Spinner, ResChip } from '../components/ui';
+import { ScreenTitle, SectionTitle, Spinner, ResChip } from '../components/ui';
 import { ActionGrid, toTile } from '../components/ActionGrid';
 import { STUDY_ACTIONS } from './actionCatalogue';
 import { SkillList, BRANCH_META, type SkillInfo } from './SkillList';

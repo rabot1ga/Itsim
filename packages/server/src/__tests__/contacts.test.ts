@@ -89,7 +89,7 @@ describe('D2: траты связей', () => {
     await patch(722, { contacts: 10 });
     const ok = await act(722, 'use_recommendation');
     expect(ok.status).toBe(200);
-    let state = (await loadState('722')) as any;
+    const state = (await loadState('722')) as any;
     expect(state.contacts).toBe(0);
     expect(state.recommendation).toBe(true);
 

@@ -7,7 +7,6 @@ import { PixelIcon } from '../components/pixel/PixelIcon';
 import {
   relationEffectLabelKey,
   spentTimeToday,
-  SPEND_TIME_RELATION,
   RECOMMENDATION_COST,
   FREELANCE_LEAD_COST,
   P2P_DISCOUNT_COST,
@@ -69,7 +68,7 @@ export const FriendsView: React.FC = () => {
   };
   /** D2: связи как ресурс — одноразовые баффы за contacts. */
   const [using, setUsing] = useState<string | null>(null);
-  const useContact = async (actionId: string) => {
+  const armContact = async (actionId: string) => {
     haptic('tap');
     setUsing(actionId);
     try {
@@ -114,21 +113,21 @@ export const FriendsView: React.FC = () => {
           <button
             className="btn btn-sm btn-secondary"
             disabled={using !== null || !!player?.recommendation || (player?.contacts ?? 0) < RECOMMENDATION_COST}
-            onClick={() => useContact('use_recommendation')}
+            onClick={() => armContact('use_recommendation')}
           >
             <PixelIcon name="briefcase" size={11} /> {t('Рекомендация')} · {RECOMMENDATION_COST}
           </button>
           <button
             className="btn btn-sm btn-secondary"
             disabled={using !== null || !!player?.freelanceLead || (player?.contacts ?? 0) < FREELANCE_LEAD_COST}
-            onClick={() => useContact('use_freelance_lead')}
+            onClick={() => armContact('use_freelance_lead')}
           >
             <PixelIcon name="target" size={11} /> {t('Лид')} · {FREELANCE_LEAD_COST}
           </button>
           <button
             className="btn btn-sm btn-secondary"
             disabled={using !== null || !!player?.p2pDiscount || (player?.contacts ?? 0) < P2P_DISCOUNT_COST}
-            onClick={() => useContact('use_p2p_discount')}
+            onClick={() => armContact('use_p2p_discount')}
           >
             <PixelIcon name="bag" size={11} /> {t('Скидка')} · {P2P_DISCOUNT_COST}
           </button>
