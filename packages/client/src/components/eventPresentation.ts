@@ -11,6 +11,8 @@ export interface EventEffects {
   jobWarnings?: number;
   skill?: Record<string, number>;
   relation?: Record<string, number>;
+  /** D2: связи */
+  contacts?: number;
 }
 export interface EventRequirements {
   energy?: number;
@@ -18,6 +20,8 @@ export interface EventRequirements {
   skill?: Record<string, number>;
   minRelation?: Record<string, number>;
   npcPresent?: string;
+  /** D2: сколько связей нужно, чтобы открыть этот выбор */
+  minContacts?: number;
 }
 export interface EventPlayer {
   energy: number;
@@ -29,6 +33,8 @@ export interface EventPlayer {
     }
   >;
   relationships?: Record<string, number>;
+  /** D2: связи (contacts) */
+  contacts?: number;
 }
 export interface EffectRow {
   key: string;
@@ -52,6 +58,7 @@ const RESOURCES: Array<[keyof EventEffects, string, string, string, boolean]> = 
   ['health', t('Здоровье'), 'heart', '', false],
   ['reputation', t('Репутация'), 'star', '', false],
   ['karma', t('Карма'), 'dice', '', false],
+  ['contacts', t('Связи'), 'people', '', false],
   ['burnoutDays', t('Дни выгорания'), 'warn', t('дн.'), true],
   ['jobWarnings', t('Замечания на работе'), 'warn', '', true],
 ];
@@ -93,6 +100,8 @@ export function unmetRequirements(req: EventRequirements | undefined, player?: E
   for (const [id, value] of Object.entries(req.minRelation ?? {}))
     if ((player.relationships?.[id] ?? 0) < value)
       missing.push(t('Отношения с {p0}: {value}', { p0: PEOPLE[id] ?? id, value: value }));
+  if (req.minContacts !== undefined && (player.contacts ?? 0) < req.minContacts)
+    missing.push(t('Нужно связей: {p0}', { p0: req.minContacts }));
   // npcPresent has no supplied presence context. Do not invent a client-side lock.
   return missing;
 }

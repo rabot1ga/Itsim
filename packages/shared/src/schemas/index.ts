@@ -11,6 +11,8 @@ export const EventChoiceRequiresSchema = z.object({
   skill: z.record(z.string(), z.number()).optional(),
   npcPresent: z.string().optional(),
   minRelation: z.record(z.string(), z.number()).optional(),
+  /** D2: сколько связей нужно, чтобы открыть этот выбор */
+  minContacts: z.number().int().min(0).optional(),
 });
 
 export const EventEffectsSchema = z.object({

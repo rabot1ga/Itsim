@@ -238,3 +238,34 @@ describe('D2: баффы работают по назначению', () => {
     expect(state.pendingOffers).toHaveLength(1);
   });
 });
+
+describe('D2: связи открывают двери (minContacts у выбора)', () => {
+  it('выбор с requires.minContacts закрыт без связей и открыт с ними', async () => {
+    await reset(729);
+    // network_dinner: «Пойти по приглашению» требует 8 связей (индекс 0)
+    await patch(729, { contacts: 3, activeEventId: 'network_dinner' });
+
+    const poor = await app.inject({
+      method: 'POST',
+      url: '/api/game/event-choice',
+      headers: { authorization: tma(729) },
+      payload: { eventId: 'network_dinner', choiceIndex: 0 },
+    });
+    expect(poor.statusCode).toBe(400);
+    expect(poor.json().error).toContain('Мало связей');
+    expect(((await loadState('729')) as any).activeEventId).toBe('network_dinner'); // событие живо
+
+    await patch(729, { contacts: 8 });
+    const rich = await app.inject({
+      method: 'POST',
+      url: '/api/game/event-choice',
+      headers: { authorization: tma(729) },
+      payload: { eventId: 'network_dinner', choiceIndex: 0 },
+    });
+    expect(rich.statusCode).toBe(200);
+    const state = (await loadState('729')) as any;
+    expect(state.contacts).toBe(0); // 8 − 8 по цене выбора
+    expect(state.activeEventId).toBe(null);
+    expect(state.reputation).toBeGreaterThan(0); // +4 репутации за вечер
+  });
+});

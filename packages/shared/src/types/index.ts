@@ -516,6 +516,8 @@ export interface EventChoiceRequires {
   skill?: Record<SkillId, number>;
   npcPresent?: NPCId;
   minRelation?: Record<NPCId, number>;
+  /** D2: сколько связей нужно, чтобы открыть этот выбор */
+  minContacts?: number;
 }
 
 export interface EventEffects {

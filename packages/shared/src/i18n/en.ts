@@ -4563,4 +4563,39 @@ Object.assign(en, {
     'Warm recommendation in hand: your next interview ends with an offer. Spent {p0} contacts',
   'Тёплый лид получен: следующий отклик на заказ — на {p0} п.п. выше. Потрачено {p1} связей':
     'Warm lead secured: your next gig bid gets +{p0} pp. Spent {p1} contacts',
+  'В городе проходит конференция твоего стека: доклады, кофе-брейки и правильные люди в фойе. Вход платный, но говорят, что билет окупается знакомствами.':
+    "Your stack's conference is in town: talks, coffee breaks and the right people in the lobby. Tickets cost money — they say the networking pays for them.",
+  'Вечер удался: два новых контакта, разговор про твои проекты и лёгкое чувство, что мир меньше, чем кажется.':
+    'The evening worked: two new contacts, talk about your projects, and a pleasant feeling that the world is smaller than it seems.',
+  'Доклады полезные, но нетворк по стриму — как вода без градуса.':
+    'Useful talks, but networking over a stream is like flat soda.',
+  'Заказ достался тебе: быстрый старт, честные деньги и «давай ещё» на выходе.':
+    'The gig went to you: a quick start, honest money, and a "let us do more" on the way out.',
+  'Знакомый зовёт на ужин для отраслевиков: вход строго по рекомендации, за столом — люди из правильных компаний. Такие вечера потом вспоминают годами.':
+    'An acquaintance invites you to an industry dinner: entry strictly by recommendation, the table full of people from the right companies. You remember evenings like this for years.',
+  'Иногда спокойствие дороже подработки. Иногда — нет.':
+    'Sometimes peace of mind beats a side gig. Sometimes it does not.',
+  'Конференция прошла без тебя. Была ещё одна — в следующем году.':
+    'The conference happened without you. There is always one more — next year.',
+  'Маша в восторге: опыт, деньги и вера в тебя. Отношения крепче.':
+    'Masha is thrilled: experience, money and faith in you. Your bond is stronger.',
+  'Остался дома. Тишина — тоже ресурс, но знакомства без тебя завязывались сами.':
+    'You stayed home. Quiet is a resource too — but connections formed without you.',
+  'Отказаться: устал от людей': 'Decline: tired of people',
+  'Отправить джуна — пускай растёт': 'Send the junior — let them grow',
+  Поехать: 'Go there',
+  'Пойти по приглашению': 'Attend on the invite',
+  'Порекомендовать себя': 'Recommend yourself',
+  'Пропустить: не до того': 'Skip: not in the mood',
+  Скипнуть: 'Skip it',
+  'Смотреть стрим дома': 'Watch the stream at home',
+  'Твой друг прислал сообщение: его команда ищет человека на подработку, и он вспомнил о тебе. Правда, очередь у них длинная — пройти мимо неё можно только по знакомству.':
+    'Your friend messaged you: his team needs a freelancer, and he remembered you. The queue is long though — only a connection gets you past it.',
+  'Три новых знакомства, парочка докладов «в тему» и имя, которое теперь помнят.':
+    'Three new contacts, a couple of on-point talks, and a name people now remember.',
+  '🍽️ Закрытый нетворк-ужин': '🍽️ Closed networking dinner',
+  '🎤 Отраслевая конференция': '🎤 Industry conference',
+  '🤝 Друг друга ищет разработчика': '🤝 A friend of a friend needs a developer',
+  'Мало связей для этого выбора': 'Not enough contacts for this choice',
+  'Нужно связей: {p0}': 'Contacts needed: {p0}',
 });

@@ -42,7 +42,7 @@ import {
   type GameEvent,
   type Offer,
 } from '@itsim/shared';
-import { clamp } from '@itsim/shared';
+import { clamp, contactsOf } from '@itsim/shared';
 import {
   branchOfMap,
   careerGatesOf,
@@ -577,6 +577,10 @@ export async function dayRoutes(app: FastifyInstance) {
             return reply.status(400).send({ error: t('Отношения недостаточно хорошие для этого выбора') });
           }
         }
+      }
+      // D2: связи открывают двери
+      if (req.minContacts && contactsOf(state) < req.minContacts) {
+        return reply.status(400).send({ error: t('Мало связей для этого выбора') });
       }
     }
     // Apply effects (returns a new state object)
