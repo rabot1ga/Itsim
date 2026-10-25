@@ -12,6 +12,12 @@ import { getContent } from '../../services/contentService.js';
 import { loadState, saveState } from '../../services/gameStore.js';
 import {
   applyEventEffects,
+  applyXp,
+  mentorXpDue,
+  toxicConflictActive,
+  teamleadSurplusBonus,
+  MENTOR_XP,
+  TOXIC_MOTIVATION_HIT,
   applyMotivationDrift,
   consolationPayment,
   resolveBid,
@@ -110,6 +116,21 @@ export function advanceDay(state: StoredState, content: any, messages: string[])
       // Review cadence is per-gate (minDaysInGrade) and lives inside tryPromote
       tryPromote(state, company, content, messages);
     }
+  }
+  // 4b. Friends (D1): пассивные эффекты порогов отношений
+  if (mentorXpDue(state)) {
+    const mainId = state.mainSkillId ?? Object.keys(state.skills)[0];
+    const skill = state.skills[mainId];
+    if (skill) {
+      state.skills = { ...state.skills, [mainId]: applyXp(skill, MENTOR_XP, state.motivation) };
+      messages.push(t('Маша пришла с вопросом: объясняя, разобрался сам (+{p0} XP)', { p0: MENTOR_XP }));
+    }
+  }
+  if (toxicConflictActive(state)) {
+    state.motivation = clamp(state.motivation - TOXIC_MOTIVATION_HIT, 0, 100);
+    messages.push(
+      t('Дмитрий Борисович опять свёл дискуссию к лекции — настроение −{p0}', { p0: TOXIC_MOTIVATION_HIT })
+    );
   }
   // 5. Weekly salary
   if (state.job && state.currentDay % 7 === 0) {
@@ -367,7 +388,8 @@ function tryPromote(state: StoredState, company: any, content: any, messages: st
   if ((state.job!.daysSinceLastPromotion ?? 0) < reviewInterval(gates, state.job!.grade)) return;
   const progress = gateProgress(state, gate, { branchOf: branchOfMap(content) });
   if (!progress.ok) return;
-  const surplus = gateSurplus(progress);
+  // D1: тимлид ≥ 60 заступается — ревью проходит легче
+  const surplus = gateSurplus(progress) + teamleadSurplusBonus(state);
   if (!promotionChance(surplus, gate.competition ?? 1, rng)) {
     // No spam: tell the player only on the day the review happened
     messages.push(

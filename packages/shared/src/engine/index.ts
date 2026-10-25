@@ -22,3 +22,4 @@ export * from './milestones';
 export * from './marketplace';
 export * from './anomaly';
 export * from './payments';
+export * from './relationships';

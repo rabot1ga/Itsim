@@ -228,6 +228,10 @@ export interface PlayerState {
   /** last check-in day, YYYY-MM-DD in the game-day timezone */
   lastCheckInDate?: string;
 
+  // Friends (D1, 25.10.2026): «Провести время с другом» — once a day per NPC
+  /** npcId → the game day time was last spent together (relation action) */
+  friendTimeDays?: Record<string, number>;
+
   // Meta layer (P1.1 «Новая жизнь»): the only thing that survives a reset
   /** prestige ledger — persists across lives, never resets */
   meta?: MetaLife;
@@ -250,6 +254,10 @@ export interface MetaLife {
   deepestDay?: number;
   /** lifetime total actions across all lives */
   lifetimeActions?: number;
+  /** friends invited by this player who actually claimed the referral bonus */
+  referralCount?: number;
+  /** true once THIS player claimed a welcome bonus for someone else's invite */
+  referralClaimed?: boolean;
 }
 
 export interface SkillLevel {

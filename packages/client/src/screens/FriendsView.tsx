@@ -1,9 +1,10 @@
 import { t } from '../lib/i18n';
 import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
-import { ScreenTitle, SectionTitle, EmptyState, Spinner } from '../components/ui';
+import { ScreenTitle, SectionTitle, EmptyState, Spinner, ResChip } from '../components/ui';
 import { inviteLink, openTelegramLink, haptic } from '../lib/telegram';
 import { PixelIcon } from '../components/pixel/PixelIcon';
+import { relationEffectLabelKey, spentTimeToday, SPEND_TIME_RELATION } from '@itsim/shared';
 interface Friend {
   id: string;
   name: string;
@@ -47,6 +48,17 @@ export const FriendsView: React.FC = () => {
   const invite = () => {
     haptic('medium');
     openTelegramLink(inviteLink(BOT_NAME, player?.telegramId ?? 'player'));
+  };
+  /** D1: «Провести время с другом» — энергия → отношения, раз в день на NPC. */
+  const [spending, setSpending] = useState<string | null>(null);
+  const spendTime = async (npcId: string) => {
+    haptic('tap');
+    setSpending(npcId);
+    try {
+      await useGameStore.getState().performAction('spend_time_with_friend', { npcId });
+    } finally {
+      setSpending(null);
+    }
   };
   return (
     <div className="space-y-4 animate-fade-in">
@@ -125,9 +137,28 @@ export const FriendsView: React.FC = () => {
                         {relation}
                       </span>
                     </p>
+                    {/* D1.4: чип показывает ЭФФЕКТ порога, а не только слово «Друг» */}
+                    {relationEffectLabelKey(person.id, relation) !== '' && (
+                      <p className="mt-1">
+                        <ResChip tone={relation >= 30 ? 'positive' : relation < 0 ? 'negative' : 'neutral'}>
+                          {t(relationEffectLabelKey(person.id, relation))}
+                        </ResChip>
+                      </p>
+                    )}
                     {open && <p className="mt-1 text-ink-400">{person.description}</p>}
                   </div>
                   <div className="friend-actions">
+                    <button
+                      className="btn btn-sm btn-primary"
+                      title={t('3 энергии')}
+                      disabled={
+                        spending !== null || spentTimeToday(player ?? {}, person.id) || (player?.energy ?? 0) < 3
+                      }
+                      onClick={() => spendTime(person.id)}
+                    >
+                      <PixelIcon name="bolt" size={11} />{' '}
+                      {spentTimeToday(player ?? {}, person.id) ? t('Виделись сегодня') : t('Провести время')}
+                    </button>
                     <button className="btn btn-sm btn-secondary" onClick={() => setOpenId(open ? null : person.id)}>
                       {open ? t('Скрыть') : t('Профиль')}
                     </button>

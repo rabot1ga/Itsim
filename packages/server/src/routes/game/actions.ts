@@ -32,6 +32,10 @@ import {
   weeklySalary,
   bumpSprintProgress,
   clamp,
+  spentTimeToday,
+  markSpentTime,
+  SPEND_TIME_RELATION,
+  SPEND_TIME_MOTIVATION,
   type Application,
   type PlayerState,
 } from '@itsim/shared';
@@ -102,6 +106,8 @@ function getActionMoneyCost(actionId: string, params: any, state: PlayerState, c
       return 3000;
     case 'feed_pet':
       return 500;
+    case 'spend_time_with_friend':
+      return 0;
     case 'claim_ending':
       return 0;
     case 'buy_item': {
@@ -385,6 +391,30 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       state.motivation = clamp(state.motivation + 3, 0, 100);
       delta.motivation = 3;
       return { message: t('Питомец сыт и счастлив. Урчит, мурчит, виляет (+3 )'), delta };
+    }
+    // ---- Friends (D1) ----
+    case 'spend_time_with_friend': {
+      const npcId = String(params?.npcId ?? '');
+      const npc = (content.npcs as any[]).find((n) => n.id === npcId);
+      if (!npc) return { error: t('Такого друга у тебя нет') };
+      if (spentTimeToday(state, npcId)) {
+        return { error: t('Вы уже виделись сегодня. Завтра вновь — и будет новый разговор') };
+      }
+      markSpentTime(state, npcId);
+      const before = state.relationships[npcId] ?? 0;
+      state.relationships = {
+        ...state.relationships,
+        [npcId]: clamp(before + SPEND_TIME_RELATION, -100, 100),
+      };
+      state.motivation = clamp(state.motivation + SPEND_TIME_MOTIVATION, 0, 100);
+      delta.motivation = SPEND_TIME_MOTIVATION;
+      delta.relation = { [npcId]: SPEND_TIME_RELATION };
+      return {
+        message: t('Время с другом: {p0} — и отношения крепче (+{p1}). Хороший день', {
+          p0: npc.name,
+          p1: SPEND_TIME_RELATION,
+        }),
+      };
     }
     // ---- Rest ----
     case 'rest_sleep':

@@ -101,6 +101,7 @@ export const EXTRA_ENERGY_COSTS: Record<string, number> = {
   study_english_course: 3,
   use_banked_day: 0,
   feed_pet: 1,
+  spend_time_with_friend: 3,
   customize_room: 0,
   customize_avatar: 0,
   claim_ending: 0,

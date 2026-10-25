@@ -227,6 +227,55 @@ export async function miscRoutes(app: FastifyInstance) {
     };
   });
   /**
+   * POST /api/game/referral — D1: бонус обоим при первом входе приглашённого.
+   *
+   * Ссылка «Пригласить друга» ведёт на бота с `startapp=ref_<telegramId>`; бот
+   * прокидывает её в мини-апп, клиент приносит сюда. Деньги и день банка — не
+   * Stars (политика: за Stars только косметика/слоты/поддержка). Каждый
+   * приглашённый может отметить бонус ровно один раз; приглашённый — тот, у
+   * кого ещё нет `meta.referralClaimed`.
+   */
+  app.post('/referral', async (request, reply) => {
+    const user = (request as any).telegramUser;
+    const userId = String(user.id);
+    const state = (await loadState(userId)) as StoredState | null;
+    if (!state) {
+      return reply.status(404).send({ error: 'Game not started' });
+    }
+    const rawRef = String(((request.body ?? {}) as { referrerTelegramId?: unknown }).referrerTelegramId ?? '');
+    const refId = rawRef.trim();
+    if (!refId || refId.length > 64 || refId === userId) {
+      return reply.status(400).send({ error: t('Приглашение не распознано') });
+    }
+    if (state.meta?.referralClaimed) {
+      return reply.status(409).send({ error: t('Бонус за приглашение уже получен') });
+    }
+    const referrer = (await loadState(refId)) as StoredState | null;
+    if (!referrer) {
+      return reply.status(404).send({ error: t('Пригласивший ещё не начал игру') });
+    }
+    // Бонус приглашённому: деньги + день банка; пригласившему — больше денег + день.
+    const INVITEE_MONEY = 1500;
+    const REFERRER_MONEY = 2500;
+    state.money = (state.money ?? 0) + INVITEE_MONEY;
+    state.bankedDays = (state.bankedDays ?? 0) + 1;
+    state.meta = { ...(state.meta ?? { lives: 0, memories: [] }), referralClaimed: true };
+    referrer.money = (referrer.money ?? 0) + REFERRER_MONEY;
+    referrer.bankedDays = (referrer.bankedDays ?? 0) + 1;
+    referrer.meta = {
+      ...(referrer.meta ?? { lives: 0, memories: [] }),
+      referralCount: (referrer.meta?.referralCount ?? 0) + 1,
+    };
+    await saveState(userId, state);
+    await saveState(refId, referrer);
+    return {
+      state: respondState(
+        state,
+        t('Ты пришёл по приглашению: +{p0} ₽ и день в банке. Спасибо другу!', { p0: INVITEE_MONEY })
+      ),
+    };
+  });
+  /**
    * POST /api/game/reset — start over (dev convenience)
    */
   app.post('/reset', async (request) => {

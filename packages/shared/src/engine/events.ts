@@ -1,6 +1,7 @@
 import { PlayerState, GameEvent, EventChoice } from '../types';
 import { clamp, weightedPick } from './utils';
 import { applyXp, applySoftXp } from './skills';
+import { absorbJobWarning } from './relationships';
 
 /** Soft skills that live in PlayerState.softSkills (not .skills) */
 const SOFT_SKILL_IDS = new Set([
@@ -183,9 +184,10 @@ export function applyEventEffects(p: PlayerState, choice: EventChoice): PlayerSt
     }
   }
 
-  // Job warnings
+  // Job warnings (D1: тимлид ≥ 60 гасит одно предупреждение)
   if (e.jobWarnings !== undefined) {
-    next.jobWarnings = (next.jobWarnings ?? 0) + e.jobWarnings;
+    const absorbed = absorbJobWarning(next, e.jobWarnings);
+    next.jobWarnings = (next.jobWarnings ?? 0) + absorbed;
   }
 
   // Burnout days

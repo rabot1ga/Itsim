@@ -1,6 +1,6 @@
 import { t, currentLocale, setLocale, isLocale, hasStoredLocale, type Locale, fmtNumber } from '../lib/i18n';
 import { create } from 'zustand';
-import { haptic } from '../lib/telegram';
+import { haptic, referralFromStartParam } from '../lib/telegram';
 import type { PetRoomPosition } from '@itsim/shared';
 export type Screen = 'menu' | 'game' | 'loading';
 const API_BASE = '/api';
@@ -187,6 +187,17 @@ export const useGameStore = create<GameState>((set, get) => ({
         sprint: stateRes.data.sprint ?? null,
         screen: 'game',
       });
+      // D1: реферальный бонус — один раз за аккаунт, огонь и забыл
+      const refId = referralFromStartParam();
+      if (refId && !stateRes.data.state?.meta?.referralClaimed) {
+        api('/game/referral', { method: 'POST', body: JSON.stringify({ referrerTelegramId: refId }) })
+          .then((res) => {
+            if (res.ok && res.data?.state) {
+              set({ player: res.data.state, gains: [...get().gains, ...(res.data.gains ?? [])] });
+            }
+          })
+          .catch(() => undefined);
+      }
       // Язык в профиле (P2.5): на свежем устройстве без локального выбора
       // подхватываем сохранённый в сейве; после setLocale — перезагрузка.
       const savedLang = stateRes.data.state?.language;

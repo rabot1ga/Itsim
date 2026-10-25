@@ -4443,4 +4443,100 @@ Object.assign(en, {
     'Open «Development» and tap a language/track — it becomes your main skill and learning will train it. Then start with YouTube tutorials: free XP, no risk.',
   'Открой «Прогресс» и «Задание дня». Если деньги кончаются — «Подработки» вне IT спасают от минуса. Дальше игра раскроется сама: события, майнинг, питомцы и офис.':
     'Open «Progress» and «Daily challenge». If money runs out, non-IT «Side jobs» save you from going negative. Then the game opens up on its own: events, mining, pets and the office.',
+  'Бонус за приглашение уже получен': 'The invite bonus has already been claimed',
+  'Виделись сегодня': 'Met up today',
+  'Время с другом: {p0} — и отношения крепче (+{p1}). Хороший день':
+    'Time well spent with {p0} — (+{p1}) rapport. A good day',
+  'Вы уже виделись сегодня. Завтра вновь — и будет новый разговор':
+    'You already met today. Tomorrow brings a new conversation',
+  'Дмитрий Борисович опять свёл дискуссию к лекции — настроение −{p0}':
+    'Dmitry Borisovich turned the discussion into a lecture again — motivation −{p0}',
+  'Маша пришла с вопросом: объясняя, разобрался сам (+{p0} XP)':
+    'Masha came with a question: explaining it taught you too (+{p0} XP)',
+  'Пригласивший ещё не начал игру': 'Your inviter has not started the game yet',
+  'Приглашение не распознано': 'Invite not recognized',
+  'Провести время': 'Spend time',
+  '3 энергии': '3 energy',
+  'Такого друга у тебя нет': 'No such friend',
+  'Ты пришёл по приглашению: +{p0} ₽ и день в банке. Спасибо другу!':
+    'You joined by invite: +{p0} ₽ and a banked day. Thank your friend!',
+  'заступается: +к повышению, гасит предупреждение': 'covers for you: easier promotion, absorbs a warning',
+  'друг (≥ 60) — заступается за тебя': 'friend (≥ 60) — will cover for you',
+  'наставник: +15 XP раз в 3 дня': 'mentor: +15 XP every 3 days',
+  'наставничество (≥ 40) — менторский XP': 'mentoring (≥ 40) — mentor XP',
+  'конфликт: −3 мотивации каждый день': 'conflict: −3 motivation every day',
+  'без конфликта (>−30) — без стресс-штрафов': 'no conflict (>−30) — no stress penalty',
+  '🛡️ Тимлид заступился': '🛡️ The team lead covered for you',
+  'На планёрке ты пропустил срок, но Алексей Петрович взял удар на себя: «Команда — это не соло-перформанс». Коллеги заметили, как он тебя прикрыл.':
+    'You missed a deadline at standup, but Alexey Petrovich took the hit: "A team is not a solo performance." The others noticed him covering for you.',
+  'Поблагодарить лично 🤝': 'Thank him in person 🤝',
+  'Одно предупреждение снято. Тимлид кивнул: «Работаем дальше».':
+    'One warning is gone. The team lead nodded: "Back to work."',
+  'Купить ему кофе ☕': 'Buy him a coffee ☕',
+  'Кофе, короткий разговор о системном дизайне — и одно предупреждение испарилось.':
+    'Coffee, a quick chat about system design — and one warning evaporated.',
+  '☕ Кофе с тимлидом': '☕ Coffee with the team lead',
+  'Алексей Петрович зовёт на кофе: «Хочу обсудить, куда ты растёшь». Такие разговоры обычно открываются словами «давай поговорим о твоей карьере».':
+    'Alexey Petrovich invites you for coffee: "Let us talk about where you are growing." Such talks usually open with "let us discuss your career".',
+  'Слушать и задавать вопросы 🎯': 'Listen and ask questions 🎯',
+  'Разговор о карьере и твоих сильных сторонах. Приятно, когда тебя видят.':
+    'A talk about your career and strengths. It feels good to be seen.',
+  'Рассказать о своих проектах 🚀': 'Tell him about your side projects 🚀',
+  'Он записал пару твоих идей в свой блокнот. Это либо похвала, либо делегирование.':
+    'He jotted down a couple of your ideas. Either praise or delegation.',
+  '💡 Маша принесла задачу': '💡 Masha brought a task',
+  'Маша залипла на баге и пришла к тебе: «Объясни, пожалуйста, я третий час смотрю в этот код». Объясняя чужое, понимаешь своё.':
+    'Masha is stuck on a bug and came to you: "Please explain, I have been staring at this code for three hours." Teaching teaches the teacher.',
+  'Объяснить с нуля 📖': 'Explain from scratch 📖',
+  '«Ааа, поняла!» — её глаза загорелись. Ты сам понял эту тему глубже.':
+    '"Ahh, got it!" — her eyes lit up. You understood the topic deeper yourself.',
+  'Решить за неё 🧩': 'Just fix it for her 🧩',
+  'Баг починен. Маша рада, но учиться на чужих руках — не самый быстрый путь.':
+    'Bug fixed. Masha is glad, but learning from others’ hands is a slow path.',
+  '🎀 Маша вспомнила': '🎀 Masha remembered',
+  'Маша вспомнила, что ты упоминал этот день, и принесла маленький подарок. «Спасибо, что помогаешь мне расти», — сказала она.':
+    'Masha remembered you mentioned this day and brought a small gift. "Thank you for helping me grow," she said.',
+  'Принять с благодарностью 🌟': 'Accept it with gratitude 🌟',
+  'Иногда подарок — это не вещь, а внимание.': 'Sometimes a gift is not a thing, but attention.',
+  'Купить ей книгу в ответ 📚': 'Buy her a book in return 📚',
+  '«Ти-ри-ри... Clean Code!» — Маша заулыбалась. Теперь у неё есть настольная книга.':
+    '"Ta-da... Clean Code!" Masha beamed. She has a desk book now.',
+  '🔥 Разбор от Дмитрия Борисовича': '🔥 A review by Dmitry Borisovich',
+  'Токсичный сеньор устроил публичный разбор твоего кода: «Я бы так не писал. Но я же не ты». Часовая лекция вместо код-ревью.':
+    'The toxic senior gave your code a public roasting: "I would not write it this way. But then, I am not you." An hour-long lecture instead of a review.',
+  'Вытерпеть молча 😤': 'Bear it in silence 😤',
+  'Коллеги отвели взгляды. Предупреждение влетело — «за конфликтность».':
+    'Colleagues looked away. A warning landed — "for being difficult".',
+  'Попросить конкретные замечания 🛡️': 'Ask for concrete notes 🛡️',
+  'Половина лекции рассыпалась, когда попросили показать дифф. Но осадок остался.':
+    'Half the lecture collapsed when you asked to see the diff. The aftertaste stayed.',
+  '🧠 Дмитрий Борисович делится знанием': '🧠 Dmitry Borisovich shares knowledge',
+  'Неожиданно: токсичный сеньор позвал к себе «на разбор инцидента». Хамить он мастер, но разбирать прод-инциденты — тоже.':
+    'Surprise: the toxic senior invited you "to review an incident". He is a master of rudeness, but also of prod incidents.',
+  'Разобрать инцидент вместе 🔍': 'Walk the incident together 🔍',
+  'Час за его монитором стоил недели документации. Если подружиться — кладезь знаний.':
+    'An hour at his monitor beat a week of docs. Befriend him — and he is a well of knowledge.',
+  'Записать разбор в конспект 📝': 'Write the review into notes 📝',
+  'Теперь у тебя есть конспект, к которому можно вернуться. А у него — кто-то, кто слушает.':
+    'Now you have notes to revisit. And he has someone who listens.',
+  '🍻 Саня зовёт в бар': '🍻 Sanya invites you to the bar',
+  'Друг из универа пишет: «Пятница, наш бар, старый состав». Ты помнишь эти вечера: дешёвые бургеры и разговоры ни о чём.':
+    'Your uni friend texts: "Friday, our bar, the old crew." You remember those evenings: cheap burgers and talks about nothing.',
+  'Пойти — старые друзья дороже 🎉': 'Go — old friends are worth it 🎉',
+  'Вечер как в студенческие годы. Голова завтра скажет спасибо — или нет.':
+    'An evening like in your student years. Your head will thank you tomorrow — or not.',
+  'Заплатить за обоих 💳': 'Pay for both 💳',
+  'Ты закрыл счёт. Саня был впечатлён: «Ты не изменился». Отношения крепче.':
+    'You covered the bill. Sanya was impressed: "You have not changed." Closer than ever.',
+  'Саня написал: «Ну ты и скучный стал». Иногда работа забирает то, что важнее.':
+    'Sanya texted: "You have gotten so boring." Sometimes work takes what matters more.',
+  '💼 Анна подсказала вакансию': '💼 Anna tipped you about a vacancy',
+  'Анна из HR пишет в личку: «У нас открылась позиция, о которой ещё не знают даже агрегаторы. Дать твой контакт?»':
+    'Anna from HR texts you: "A position just opened that even the job boards do not know about. Shall I pass on your contact?"',
+  'Согласиться на контакт 📇': 'Agree to share your contact 📇',
+  'Твой контакт у рекрутера, который звонит первым. Рынок узнает о тебе раньше других.':
+    'Your contact is with the recruiter who calls first. The market hears about you before the rest.',
+  'Попросить рассказать подробнее 🧐': 'Ask for details first 🧐',
+  'Разговор о зарплатных вилках и рынке затянулся — и оказался полезнее любого курса.':
+    'The talk about salary bands and the market dragged on — and beat any course.',
 });
