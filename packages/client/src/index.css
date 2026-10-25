@@ -1835,6 +1835,8 @@ select {
   display: flex;
   gap: 6px;
   flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 /* ── Goals & achievements ────────────────────────────────────────────────── */

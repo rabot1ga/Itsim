@@ -86,20 +86,18 @@ export function markSpentTime(state: Pick<PlayerState, 'friendTimeDays' | 'curre
 }
 
 /**
- * Чип-эффект для карточки друга (D1.4): что именно даёт текущий/следующий
- * порог. Пустая строка — у персонажа нет пассивных порогов, чип не показываем.
+ * Чип-эффект для карточки друга (D1.4): короткий эффект порога, а не только
+ * слово «Друг». Пустая строка — у персонажа нет пассивных порогов, чип не
+ * показываем. Подписи намеренно короткие: чип живёт в строке друга на 320px.
  */
 export function relationEffectLabelKey(npcId: string, rel: number): string {
   switch (npcId) {
     case 'teamlead':
-      if (rel >= TEAMLEAD_REL) return 'заступается: +к повышению, гасит предупреждение';
-      return `друг (≥ ${TEAMLEAD_REL}) — заступается за тебя`;
+      return rel >= TEAMLEAD_REL ? 'заступается за тебя' : 'друг ≥ 60 — заступится';
     case 'junior_colleague':
-      if (rel >= MENTOR_REL) return `наставник: +${MENTOR_XP} XP раз в ${MENTOR_EVERY_DAYS} дня`;
-      return `наставничество (≥ ${MENTOR_REL}) — менторский XP`;
+      return rel >= MENTOR_REL ? 'наставник: +15 XP' : 'наставник ≥ 40';
     case 'toxic_senior':
-      if (rel <= TOXIC_REL) return 'конфликт: −3 мотивации каждый день';
-      return `без конфликта (>${TOXIC_REL}) — без стресс-штрафов`;
+      return rel <= TOXIC_REL ? 'конфликт: −3/день' : 'спокойно > −30';
     default:
       return '';
   }

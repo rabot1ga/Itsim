@@ -146,10 +146,9 @@ export const FriendsView: React.FC = () => {
                       </p>
                     )}
                     {open && <p className="mt-1 text-ink-400">{person.description}</p>}
-                  </div>
-                  <div className="friend-actions">
+                    {/* D1: действие живёт в колонке копии — на 320px колонка кнопок распирает ряд */}
                     <button
-                      className="btn btn-sm btn-primary"
+                      className="btn btn-sm btn-primary w-full mt-1.5"
                       title={t('3 энергии')}
                       disabled={
                         spending !== null || spentTimeToday(player ?? {}, person.id) || (player?.energy ?? 0) < 3
@@ -159,6 +158,8 @@ export const FriendsView: React.FC = () => {
                       <PixelIcon name="bolt" size={11} />{' '}
                       {spentTimeToday(player ?? {}, person.id) ? t('Виделись сегодня') : t('Провести время')}
                     </button>
+                  </div>
+                  <div className="friend-actions">
                     <button className="btn btn-sm btn-secondary" onClick={() => setOpenId(open ? null : person.id)}>
                       {open ? t('Скрыть') : t('Профиль')}
                     </button>

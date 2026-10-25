@@ -4460,12 +4460,12 @@ Object.assign(en, {
   'Такого друга у тебя нет': 'No such friend',
   'Ты пришёл по приглашению: +{p0} ₽ и день в банке. Спасибо другу!':
     'You joined by invite: +{p0} ₽ and a banked day. Thank your friend!',
-  'заступается: +к повышению, гасит предупреждение': 'covers for you: easier promotion, absorbs a warning',
-  'друг (≥ 60) — заступается за тебя': 'friend (≥ 60) — will cover for you',
-  'наставник: +15 XP раз в 3 дня': 'mentor: +15 XP every 3 days',
-  'наставничество (≥ 40) — менторский XP': 'mentoring (≥ 40) — mentor XP',
-  'конфликт: −3 мотивации каждый день': 'conflict: −3 motivation every day',
-  'без конфликта (>−30) — без стресс-штрафов': 'no conflict (>−30) — no stress penalty',
+  'заступается за тебя': 'covers for you',
+  'друг ≥ 60 — заступится': 'friend ≥ 60 — will cover',
+  'наставник: +15 XP': 'mentor: +15 XP',
+  'наставник ≥ 40': 'mentoring ≥ 40',
+  'конфликт: −3/день': 'conflict: −3/day',
+  'спокойно > −30': 'calm > −30',
   '🛡️ Тимлид заступился': '🛡️ The team lead covered for you',
   'На планёрке ты пропустил срок, но Алексей Петрович взял удар на себя: «Команда — это не соло-перформанс». Коллеги заметили, как он тебя прикрыл.':
     'You missed a deadline at standup, but Alexey Petrovich took the hit: "A team is not a solo performance." The others noticed him covering for you.',
