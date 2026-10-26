@@ -112,7 +112,7 @@ function getActionMoneyCost(actionId: string, params: any, state: PlayerState, c
     case 'rest_gym':
       return 3000;
     case 'study_english_course':
-      return 3000;
+      return content.balance.xpSources?.['study_english_course']?.cost ?? 3000;
     case 'feed_pet':
       return 500;
     case 'spend_time_with_friend':
@@ -166,8 +166,13 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
   switch (actionId) {
     // ---- English (soft skill, gates foreign companies) ----
     case 'study_english': {
+      // Единая правда — balance.xpSources (A3 из ANALYSIS-2026-10-25-balance)
+      const src = content.balance.xpSources?.['study_english'];
       const eng = state.softSkills['english'] ?? { level: 0, xp: 0 };
-      state.softSkills = { ...state.softSkills, english: applySoftXp(eng, 10, softOpts(content)) };
+      state.softSkills = {
+        ...state.softSkills,
+        english: applySoftXp(eng, src?.xp ?? 10, softOpts(content)),
+      };
       delta.softSkills = { english: { from: eng.level, to: state.softSkills['english'].level } };
       return {
         message: t('Английский: бесплатные уроки с котиками. Уровень {p0}', {
@@ -177,8 +182,12 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       };
     }
     case 'study_english_course': {
+      const src = content.balance.xpSources?.['study_english_course'];
       const eng = state.softSkills['english'] ?? { level: 0, xp: 0 };
-      state.softSkills = { ...state.softSkills, english: applySoftXp(eng, 25, softOpts(content)) };
+      state.softSkills = {
+        ...state.softSkills,
+        english: applySoftXp(eng, src?.xp ?? 40, softOpts(content)),
+      };
       delta.softSkills = { english: { from: eng.level, to: state.softSkills['english'].level } };
       return {
         message: t('Интенсивный курс английского: уровень {p0}. Now you can ask for a raise', {
@@ -526,7 +535,8 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
         return { error: t('Нетворкинг на сегодня закончился: митапы не резиновые. Завтра — новый барак') };
       }
       const comm = state.softSkills['communication'] ?? { level: 0, xp: 0 };
-      state.softSkills = { ...state.softSkills, communication: applySoftXp(comm, net.commXp) };
+      // A5: единый демпф из balance.softSkills (было без softOpts — 0.5 вместо 0.4)
+      state.softSkills = { ...state.softSkills, communication: applySoftXp(comm, net.commXp, softOpts(content)) };
       state.reputation = clamp(state.reputation + net.repGain, 0, 100);
       delta.reputation = net.repGain;
       // Networking is where soft career skills grow: communication, reputation and —

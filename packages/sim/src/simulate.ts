@@ -120,8 +120,8 @@ const MILESTONES: Record<string, { target: number; tolerance: number }> = {
   senior: { target: 150, tolerance: 0.2 },
   teamlead: { target: 205, tolerance: 0.15 },
   architect: { target: 285, tolerance: 0.15 },
-  housing_1: { target: 203, tolerance: 0.25 },
-  housing_2: { target: 286, tolerance: 0.25 },
+  housing_1: { target: 105, tolerance: 0.25 },
+  housing_2: { target: 210, tolerance: 0.25 },
 };
 
 const TRACKED_GRADES: Grade[] = ['junior', 'middle', 'senior', 'teamlead', 'architect', 'cto'];
@@ -240,7 +240,7 @@ function eligibleGradeLegacy(p: PlayerState): Grade | null {
  * among the sources that are affordable (keeping the safety net intact).
  * Falls back to free YouTube when broke.
  */
-function pickStudySource(money: number, level: number): keyof typeof XP_SOURCES {
+function pickStudySource(money: number, level: number, reserve = 0): keyof typeof XP_SOURCES {
   const candidates: Array<keyof typeof XP_SOURCES> = [
     'study_youtube',
     'study_book',
@@ -254,7 +254,7 @@ function pickStudySource(money: number, level: number): keyof typeof XP_SOURCES 
   for (const id of candidates) {
     const def = XP_SOURCES[id];
     if (level >= def.maxLevel) continue; // source exhausted at this level
-    if (money - def.cost < MONEY_FLOOR) continue; // keep the safety net
+    if (money - def.cost < Math.max(MONEY_FLOOR, reserve)) continue; // safety net + housing goal
     const value = def.xp / def.energy;
     if (value > bestValue) {
       best = id;
@@ -262,6 +262,22 @@ function pickStudySource(money: number, level: number): keyof typeof XP_SOURCES 
     }
   }
   return best;
+}
+
+/**
+ * Housing savings goal of the "reasonable player" (A1, ANALYSIS-2026-10-25):
+ * once more than halfway to the next purchase threshold (cost × saveMult),
+ * stop draining money on paid study and hold the line until the upgrade
+ * completes. Without this the policy burns every surplus on courses and the
+ * housing milestones never fire.
+ */
+function housingReserve(a: Agent): number {
+  const p = a.p;
+  const next = (p.housingLevel + 1) as 0 | 1 | 2 | 3 | 4;
+  const goal = (HOUSING_COSTS[next] ?? 0) * (HOUSING_DEFS[next]?.saveMult ?? HOUSING_SAVE_MULT);
+  // Держим 20% запаса над целью: жирные дни сбиваются любым счётом
+  // (аренда/еда), если висеть ровно на пороге покупки.
+  return goal > 0 && p.money >= goal * 0.55 ? goal * 1.2 : 0;
 }
 
 function simulate(random: () => number, days: number = DAYS): Agent {
@@ -606,7 +622,11 @@ function agentAction(a: Agent, _random: () => number): boolean {
   }
 
   // 4. Train communication toward the career gate
-  if (gate && comm < gate.comm) {
+  // A1 (ANALYSIS-2026-10-25-balance): тот же дневной лимит нетворкинга, что и
+  // на сервере (dailyCap). Раньше сим мог качать comm 7 раз в день и рисовал
+  // лестницу, которую реальный игрок не проходит.
+  if (gate && comm < gate.comm && !a.networkedToday) {
+    a.networkedToday = true;
     p.energy -= NETWORKING.energy;
     addCommXp(p, NETWORKING.commXp);
     p.reputation = clamp(p.reputation + NETWORKING.repGain, 0, 100);
@@ -630,13 +650,20 @@ function agentAction(a: Agent, _random: () => number): boolean {
   }
 
   // 5a. English, when the gate asks for it (companies gate on it too)
+  // A2/A4: числа — из balance.xpSources (единая правда с сервером), демпф — SOFT_OPTS.
   if (gate?.english && english < gate.english) {
     const def = XP_SOURCES.study_english_course;
-    const cost = def?.cost ?? 0;
-    if (p.energy >= 2 && p.money - cost >= MONEY_FLOOR) {
-      p.energy -= 2;
+    const cost = def?.cost ?? 3000;
+    const energy = def?.energy ?? 3;
+    const xp = def?.xp ?? 40;
+    const reserve = housingReserve(a);
+    if (p.energy >= energy && p.money - cost >= Math.max(MONEY_FLOOR, reserve)) {
+      p.energy -= energy;
       if (cost) p.money -= cost;
-      p.softSkills = { ...p.softSkills, english: applySoftXp(p.softSkills['english'] ?? { level: 0, xp: 0 }, 10) };
+      p.softSkills = {
+        ...p.softSkills,
+        english: applySoftXp(p.softSkills['english'] ?? { level: 0, xp: 0 }, xp, SOFT_OPTS),
+      };
       return true;
     }
   }
@@ -654,7 +681,7 @@ function agentAction(a: Agent, _random: () => number): boolean {
         sibling ?? Object.keys(BRANCH_OF).find((id) => BRANCH_OF[id] === BRANCH_OF[a.mainSkill] && id !== a.mainSkill)!;
       const have2 = p.skills[target]?.level ?? 0;
       if (have2 <= level) {
-        const source = pickStudySource(p.money, have2);
+        const source = pickStudySource(p.money, have2, housingReserve(a));
         const def = XP_SOURCES[source];
         if (p.energy >= def.energy && p.money - def.cost >= MONEY_FLOOR) {
           p.energy -= def.energy;
@@ -666,8 +693,8 @@ function agentAction(a: Agent, _random: () => number): boolean {
     }
   }
 
-  // 6. Study — best value source for the current level
-  const source = pickStudySource(p.money, level);
+  // 6. Study — best value source for the current level (housing reserve holds)
+  const source = pickStudySource(p.money, level, housingReserve(a));
   const def = XP_SOURCES[source];
   if (p.energy < def.energy) return false;
   p.energy -= def.energy;
