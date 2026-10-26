@@ -27,6 +27,7 @@ import {
   recalcMaxEnergy,
   resetDailyChallenge,
   respondState,
+  seedRelationships,
   sprintView,
   StoredState,
 } from './shared.js';
@@ -54,6 +55,9 @@ export async function stateRoutes(app: FastifyInstance) {
       } as StoredState;
       resetDailyChallenge(state, getContent());
     }
+    // E2 (ANALYSIS-2026-10-27): досеваем стартовые отношения NPC для ключей,
+    // которых игрок ещё не касался; старые сейвы лечатся тем же вызовом.
+    seedRelationships(state, getContent());
     // Offline energy banking (1 game day / 3.5 real hours; capacity 7 + purchased slots)
     const banked = calculateOfflineBankedDays(state.lastTickAt, Date.now(), bankCap(state.bankSlots));
     if (banked > 0) {

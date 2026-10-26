@@ -286,6 +286,11 @@ export const CareerView: React.FC = () => {
               {t('Оффер получен — прими его в блоке «Офферы» выше.')}
             </p>
           )}
+          {['pending', 'interview_scheduled'].includes(application.status) && (
+            <button className="btn btn-secondary mt-2 text-sm" onClick={() => void performAction('cancel_application')}>
+              {t('Отменить отклик')}
+            </button>
+          )}
         </div>
       )}
 

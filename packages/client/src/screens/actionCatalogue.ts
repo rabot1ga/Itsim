@@ -45,6 +45,24 @@ export const ACTIONS: ActionDef[] = [
   },
   { id: 'study_english', icon: 'globe', name: t('Английский'), energy: 2, cost: 0, category: 'study' },
   { id: 'study_english_course', icon: 'chat', name: t('Курс английского'), energy: 3, cost: 3000, category: 'study' },
+  {
+    id: 'study_advanced_course',
+    icon: 'laptop',
+    name: t('Продвинутый курс'),
+    energy: 3,
+    cost: 60000,
+    category: 'study',
+    hint: t('для верхних уровней'),
+  },
+  {
+    id: 'study_mentor',
+    icon: 'people',
+    name: t('Личный ментор'),
+    energy: 3,
+    cost: 120000,
+    category: 'study',
+    hint: t('дорого и очень эффективно'),
+  },
   // ── Работа ───────────────────────────────────────────────────────────────
   {
     id: 'work_task',
@@ -84,7 +102,7 @@ export const ACTIONS: ActionDef[] = [
   { id: 'rest_gym', icon: 'dumbbell', name: t('Качалка'), energy: 2, cost: 3000, category: 'rest' },
   // ── Люди ─────────────────────────────────────────────────────────────────
   { id: 'rest_bar', icon: 'mug', name: t('Бар с друзьями'), energy: 2, cost: 2000, category: 'social' },
-  { id: 'networking', icon: 'people', name: t('Нетворкинг'), energy: 2, cost: 0, category: 'social' },
+  { id: 'networking', icon: 'people', name: t('Нетворкинг'), energy: 1, cost: 0, category: 'social' },
 ];
 export const actionsOf = (...categories: ActionDef['category'][]): ActionDef[] =>
   ACTIONS.filter((action) => categories.includes(action.category));

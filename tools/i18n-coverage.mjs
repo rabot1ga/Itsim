@@ -37,6 +37,15 @@ for (const file of files) {
     if (CYRILLIC.test(key)) keys.add(key);
   }
 }
+// Shared-движок зовёт свои строки через dt(...) (endings/interview): раньше тул
+// их не видел и новые ключи могли молча потеряться (ANALYSIS-2026-10-27 §4.3).
+for (const file of walk('packages/shared/src')) {
+  const src = readFileSync(file, 'utf-8');
+  for (const m of src.matchAll(/\bdt\(\s*(['"])((?:[^'"\\]|\\.)*?)\1/g)) {
+    const key = m[2].replace(/\\(['"\\])/g, '$1');
+    if (CYRILLIC.test(key)) keys.add(key);
+  }
+}
 
 // Контент-ключи (P2.5, этап 3): значения контент-JSON, включая pixel/
 // (метки пиксель-билдера — в общем словаре с 2026-10-24).

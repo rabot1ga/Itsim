@@ -22,7 +22,7 @@ import {
   PET_ROOM_POSITIONS,
   type PetRoomPosition,
 } from '@itsim/shared';
-import { recalcMaxEnergy, respondState, resetDailyChallenge, StoredState } from './shared.js';
+import { recalcMaxEnergy, respondState, resetDailyChallenge, seedRelationships, StoredState } from './shared.js';
 function describePerkRequires(requires: Record<string, number>, content: any): string {
   const skillName = (id: string) => (content.skills as any[]).find((s) => s.id === id)?.name ?? id;
   const softNames: Record<string, string> = {
@@ -296,6 +296,7 @@ export async function miscRoutes(app: FastifyInstance) {
       firstName: user.first_name || t('Игрок'),
       mainSkillId: 'javascript',
     } as StoredState;
+    seedRelationships(state, getContent());
     resetDailyChallenge(state, getContent());
     await saveState(userId, state);
     return { state: respondState(state, t('Новая жизнь началась!')), activeEvent: null };

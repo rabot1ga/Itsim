@@ -42,7 +42,6 @@ export function createNewPlayer(): PlayerState {
 
     housingLevel: 0,
     items: [],
-    activeCourses: [],
 
     pendingEvents: [],
     eventHistory: {},

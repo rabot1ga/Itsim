@@ -530,7 +530,6 @@ function createAgentPlayer(): PlayerState {
     currentApplication: null,
     housingLevel: 0,
     items: [],
-    activeCourses: [],
     pendingEvents: [],
     eventHistory: {},
     recentEventTags: [],

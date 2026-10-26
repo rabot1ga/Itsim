@@ -303,6 +303,7 @@ export function advanceDay(state: StoredState, content: any, messages: string[])
         const perkMult = Math.max(0, perkEffectSum(state, content, 'freelancePaymentMult') - 1);
         const pay = Math.round(consolationPayment(def) * (1 + perkMult));
         state.money += pay;
+        state.freelanceEarned = (state.freelanceEarned ?? 0) + pay;
         state.freelanceLastPayment = pay;
         messages.push(
           t('«{p0}» ушёл другому, но тестовое задание оплатили: +{p1}', { p0: def.title, p1: fmtMoney(pay) })
@@ -425,7 +426,7 @@ function resolveInterview(state: StoredState, app: Application, content: any, me
   }
   const skillLevels = Object.fromEntries(Object.entries(state.skills).map(([k, v]) => [k, v.level]));
   const communication = state.softSkills['communication']?.level ?? 0;
-  const answerScore = 0.6 + rng() * 0.4; // mini-game result, 0.6..1.0
+  const answerScore = 0.4 + rng() * 0.3; // 0.4..0.7: не пришёл — так себе выступление; квиз даёт 0.4..1.0
   const chance = interviewChance({
     skills: skillLevels,
     requirements: app.requirements,
@@ -451,20 +452,22 @@ function resolveInterview(state: StoredState, app: Application, content: any, me
     app.status = 'accepted';
     app.result = 'accepted';
     messages.push(
-      t('Собеседование в «{p0}» пройдено! Оффер: {p1}, {p2}/мес. Действует 5 дней — принять в «Карьере»', {
-        p0: company.name,
-        p1: app.position,
-        p2: fmtMoney(salary),
-      })
+      t(
+        'Ты пропустил собеседование в «{p0}» — но резюме так понравилось, что прислали оффер: {p1}, {p2}/мес. Действует 5 дней — принять в «Карьере»',
+        {
+          p0: company.name,
+          p1: app.position,
+          p2: fmtMoney(salary),
+        }
+      )
     );
   } else {
     app.status = 'rejected';
     app.result = 'rejected';
     messages.push(
-      t(
-        '«{p0}»: мы впечатлены вашим резюме, но решили двигаться с другим кандидатом. Не расстраивайся — попробуй ещё раз через пару дней',
-        { p0: company.name }
-      )
+      t('Ты пропустил собеседование в «{p0}» — без кандидата решили не рисковать. Попробуй ещё раз через пару дней', {
+        p0: company.name,
+      })
     );
   }
 }
