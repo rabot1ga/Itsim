@@ -408,7 +408,8 @@
         "effects": {
           "money": -3000,
           "skill": {
-            "javascript": 15
+            "javascript": 15,
+            "english": 6
           }
         },
         "followup": "Курс куплен. Пройден на 12%. Как обычно.",

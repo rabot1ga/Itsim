@@ -32,6 +32,7 @@ import {
   weeklySalary,
   bumpSprintProgress,
   clamp,
+  checkAchievements,
   spentTimeToday,
   markSpentTime,
   SPEND_TIME_RELATION,
@@ -49,6 +50,7 @@ import {
   type PlayerState,
 } from '@itsim/shared';
 import {
+  ACTION_MONEY_COSTS,
   branchOfMap,
   branchShareXp,
   careerLevelIndex,
@@ -105,16 +107,13 @@ function getActionMoneyCost(actionId: string, params: any, state: PlayerState, c
     case 'study_advanced_course':
     case 'study_mentor':
       return content.balance.xpSources?.[actionId]?.cost ?? 0;
-    case 'rest_bar':
-      return 2000;
-    case 'rest_lunch':
-      return 700;
-    case 'rest_gym':
-      return 3000;
     case 'study_english_course':
-      return 3000;
+      return content.balance.xpSources?.[actionId]?.cost ?? ACTION_MONEY_COSTS.study_english_course;
+    case 'rest_bar':
+    case 'rest_lunch':
+    case 'rest_gym':
     case 'feed_pet':
-      return 500;
+      return ACTION_MONEY_COSTS[actionId] ?? 0;
     case 'spend_time_with_friend':
       return 0;
     case 'claim_ending':
@@ -166,8 +165,13 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
   switch (actionId) {
     // ---- English (soft skill, gates foreign companies) ----
     case 'study_english': {
+      // Единая правда — balance.xpSources (A3 из ANALYSIS-2026-10-25-balance)
+      const src = content.balance.xpSources?.['study_english'];
       const eng = state.softSkills['english'] ?? { level: 0, xp: 0 };
-      state.softSkills = { ...state.softSkills, english: applySoftXp(eng, 10, softOpts(content)) };
+      state.softSkills = {
+        ...state.softSkills,
+        english: applySoftXp(eng, src?.xp ?? 10, softOpts(content)),
+      };
       delta.softSkills = { english: { from: eng.level, to: state.softSkills['english'].level } };
       return {
         message: t('Английский: бесплатные уроки с котиками. Уровень {p0}', {
@@ -177,8 +181,12 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       };
     }
     case 'study_english_course': {
+      const src = content.balance.xpSources?.['study_english_course'];
       const eng = state.softSkills['english'] ?? { level: 0, xp: 0 };
-      state.softSkills = { ...state.softSkills, english: applySoftXp(eng, 25, softOpts(content)) };
+      state.softSkills = {
+        ...state.softSkills,
+        english: applySoftXp(eng, src?.xp ?? 40, softOpts(content)),
+      };
       delta.softSkills = { english: { from: eng.level, to: state.softSkills['english'].level } };
       return {
         message: t('Интенсивный курс английского: уровень {p0}. Now you can ask for a raise', {
@@ -297,6 +305,7 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       if (!projectComplete(def, active)) return { error: t('Сначала закрой все задачи проекта') };
       const payout = projectPayout(def, active, state.currentDay);
       state.money += payout.money;
+      state.freelanceEarned = (state.freelanceEarned ?? 0) + payout.money;
       state.reputation = clamp(state.reputation + payout.reputation, 0, 100);
       state.projectsDone = [...(state.projectsDone ?? []), def.id];
       state.activeProject = null;
@@ -526,7 +535,8 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
         return { error: t('Нетворкинг на сегодня закончился: митапы не резиновые. Завтра — новый барак') };
       }
       const comm = state.softSkills['communication'] ?? { level: 0, xp: 0 };
-      state.softSkills = { ...state.softSkills, communication: applySoftXp(comm, net.commXp) };
+      // A5: единый демпф из balance.softSkills (было без softOpts — 0.5 вместо 0.4)
+      state.softSkills = { ...state.softSkills, communication: applySoftXp(comm, net.commXp, softOpts(content)) };
       state.reputation = clamp(state.reputation + net.repGain, 0, 100);
       delta.reputation = net.repGain;
       // Networking is where soft career skills grow: communication, reputation and —
@@ -811,6 +821,10 @@ export async function actionRoutes(app: FastifyInstance) {
         const titles = finished.map((a) => `«${a.title}»`).join(', ');
         finalMessage += t('\n Путь {titles} пройден — забери бонус в карточке пути', { titles: titles });
       }
+    }
+    // E5: достижения проверяются в момент действия, а не ждут конца дня
+    for (const a of checkAchievements(state, content.achievements)) {
+      finalMessage += `\n${t('Достижение: {p0} {p1} — {p2}', { p0: a.icon, p1: a.name, p2: a.description })}`;
     }
     state.totalActions += 1;
     state.maxEnergy = recalcMaxEnergy(state, content);

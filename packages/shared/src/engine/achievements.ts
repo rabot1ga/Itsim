@@ -41,6 +41,9 @@ export function isAchievementEarned(p: PlayerState, cond: AchievementCondition):
           return (p.miningEarned ?? 0) >= 100000;
         case 'mining_1m':
           return (p.miningEarned ?? 0) >= 1000000;
+        case 'freelance_500k':
+          // E4: «заработать 500 000 на фрилансе» — именно фриланс, не общий баланс
+          return (p.freelanceEarned ?? 0) >= 500000;
         default:
           return false;
       }

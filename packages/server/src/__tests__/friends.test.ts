@@ -69,6 +69,15 @@ async function act(
 }
 
 describe('«Провести время с другом»', () => {
+  it('стартовые отношения NPC сидируются из npcs.json (E2)', async () => {
+    await reset(700);
+    const state = (await loadState('700')) as any;
+    // npcs.json: uni_friend 40, toxic_senior −10, junior_colleague 10
+    expect(state.relationships.uni_friend).toBe(40);
+    expect(state.relationships.toxic_senior).toBe(-10);
+    expect(state.relationships.junior_colleague).toBe(10);
+  });
+
   it('тратит энергию, поднимает отношения, второй раз в день закрыт', async () => {
     await reset(701);
     await patch(701, { energy: 10, relationships: { uni_friend: 20 } });

@@ -107,6 +107,18 @@ export const EXTRA_ENERGY_COSTS: Record<string, number> = {
   claim_ending: 0,
 };
 /**
+ * Денежные цены действий (E4, ANALYSIS-2026-10-27). Единственная правда для
+ * не-study действий: её читает `getActionMoneyCost`, её сверяет инвариант-тест
+ * с каталогом клиента. study_* живут в `balance.xpSources`.
+ */
+export const ACTION_MONEY_COSTS: Record<string, number> = {
+  rest_bar: 2000,
+  rest_lunch: 700,
+  rest_gym: 3000,
+  study_english_course: 3000,
+  feed_pet: 500,
+};
+/**
  * Серверный RNG баланса (P2.4, docs/PROPOSALS-2026-10-23-rng.md).
  *
  * Каждый бросок — `seededRng(telegramId:rngSalt:rngSeq++)`: клиент не влияет,
@@ -326,6 +338,21 @@ export function perkEnergyBonus(state: StoredState, content: any): number {
   return perkEffectSum(state, content, 'energyBonus');
 }
 /** Recalculate max energy including owned perk bonuses */
+/**
+ * Seed NPC starting relationships for keys the player has never touched
+ * (ANALYSIS-2026-10-27 §2.1: `initialRelation` из npcs.json раньше жил только
+ * в клиентском фолбэке — сервер считал от нуля, и чип «Друг +40» превращался
+ * в «Знакомый +8» после первого совместного вечера). Заполняем только
+ * отсутствующие ключи: любое уже записанное отношение священно.
+ */
+export function seedRelationships(state: StoredState, content: any): void {
+  const npcs = (content.npcs ?? []) as any[];
+  for (const npc of npcs) {
+    if (state.relationships[npc.id] === undefined && typeof npc.initialRelation === 'number') {
+      state.relationships[npc.id] = npc.initialRelation;
+    }
+  }
+}
 export function recalcMaxEnergy(state: StoredState, content: any): number {
   return calculateMaxEnergy(state, perkEnergyBonus(state, content), content.items);
 }

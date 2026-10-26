@@ -4598,4 +4598,19 @@ Object.assign(en, {
   '🤝 Друг друга ищет разработчика': '🤝 A friend of a friend needs a developer',
   'Мало связей для этого выбора': 'Not enough contacts for this choice',
   'Нужно связей: {p0}': 'Contacts needed: {p0}',
+  'для верхних уровней': 'for high levels',
+  'дорого и очень эффективно': 'pricey and very effective',
+  'Онлайн-курс с сертификатом. Компании любят, а мозг — тем более: +3% ко всему опыту.':
+    'An online course with a certificate. Companies love it, and so does your brain: +3% to all XP.',
+  'Полноценный курс с ментором. Дорого, но эффективно: +6% ко всему опыту.':
+    'A full course with a mentor. Pricey but effective: +6% to all XP.',
+  'Для тех, кто хочет стать сеньором вчера: +10% ко всему опыту.':
+    'For those who want to become a senior yesterday: +10% to all XP.',
+  'Один на один с профи. Дорого, но результат гарантирован: +15% ко всему опыту.':
+    'One-on-one with a pro. Pricey but guaranteed results: +15% to all XP.',
+  'Ты пропустил собеседование в «{p0}» — но резюме так понравилось, что прислали оффер: {p1}, {p2}/мес. Действует 5 дней — принять в «Карьере»':
+    'You skipped the interview at «{p0}» — but they loved the resume and sent an offer anyway: {p1}, {p2}/mo. Valid for 5 days — accept in «Career»',
+  'Ты пропустил собеседование в «{p0}» — без кандидата решили не рисковать. Попробуй ещё раз через пару дней':
+    'You skipped the interview at «{p0}» — without the candidate they decided not to risk it. Try again in a couple of days',
+  'Отменить отклик': 'Withdraw application',
 });

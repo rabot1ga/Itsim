@@ -102,7 +102,8 @@
         "text": "Читать книгу всю смену 📖",
         "effects": {
           "skill": {
-            "javascript": 10
+            "javascript": 10,
+            "english": 5
           },
           "money": 2000
         },
@@ -147,7 +148,8 @@
         "text": "Следовать пометкам 🧭",
         "effects": {
           "skill": {
-            "javascript": 15
+            "javascript": 15,
+            "english": 5
           },
           "motivation": 1
         },

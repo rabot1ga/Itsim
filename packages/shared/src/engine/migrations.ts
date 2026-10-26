@@ -1,6 +1,7 @@
 import { PlayerState } from '../types';
 import { clamp, makeRngSalt } from './utils';
 import { bankCap, MAX_BANK_SLOTS } from './energy';
+import { CONTACTS_CAP } from './contacts';
 
 /**
  * Save-state migrations.
@@ -71,7 +72,6 @@ const MIGRATIONS: Migration[] = [
       if (!Array.isArray(state.achievements)) state.achievements = [];
       if (!Array.isArray(state.pendingEvents)) state.pendingEvents = [];
       if (!Array.isArray(state.pendingOffers)) state.pendingOffers = [];
-      if (!Array.isArray(state.activeCourses)) state.activeCourses = [];
       if (!state.eventHistory || typeof state.eventHistory !== 'object') state.eventHistory = {};
       if (!state.relationships || typeof state.relationships !== 'object') state.relationships = {};
       if (!state.skills || typeof state.skills !== 'object') state.skills = {};
@@ -229,7 +229,6 @@ export function normalizeState(state: any): void {
     'achievements',
     'pendingEvents',
     'pendingOffers',
-    'activeCourses',
     'recentEventTags',
     'entitlements',
     'badges',
@@ -248,7 +247,7 @@ export function normalizeState(state: any): void {
   state.currentDay = Math.max(1, Math.floor(num(state.currentDay, 1)));
   state.money = Math.max(0, Math.round(num(state.money, 0)));
   // D2: связи — с капом, чтобы старые/кривые сейвы не уезжали за потолок
-  state.contacts = clamp(Math.round(num(state.contacts, 0)), 0, 20);
+  state.contacts = clamp(Math.round(num(state.contacts, 0)), 0, CONTACTS_CAP);
   state.health = clamp(num(state.health, 80), 0, 100);
   state.motivation = clamp(num(state.motivation, 50), 0, 100);
   state.reputation = clamp(num(state.reputation, 0), 0, 100);

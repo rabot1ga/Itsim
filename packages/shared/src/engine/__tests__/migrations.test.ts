@@ -39,7 +39,6 @@ function legacySave(): any {
     currentApplication: null,
     housingLevel: 1,
     items: ['cheap_headphones'],
-    activeCourses: [],
     pendingEvents: [],
     eventHistory: {},
     relationships: {},

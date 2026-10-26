@@ -115,8 +115,8 @@
     "description": "Заработать 500 000 ₽ на фрилансе",
     "icon": "freelance.png",
     "condition": {
-      "type": "money_made",
-      "target": 500000
+      "type": "special",
+      "target": "freelance_500k"
     }
   },
   {

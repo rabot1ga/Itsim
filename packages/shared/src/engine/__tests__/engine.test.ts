@@ -361,6 +361,23 @@ describe('achievements', () => {
     ];
     expect(checkAchievements(p, defs as any).map((e) => e.id)).toEqual(['ev']);
   });
+
+  it('freelance_500k считает именно фриланс, а не общий баланс (E4)', () => {
+    const p = createNewPlayer();
+    p.money = 600_000; // баланс большой…
+    const defs = [
+      {
+        id: 'fs',
+        name: '',
+        description: '',
+        icon: '',
+        condition: { type: 'special', target: 'freelance_500k' } as const,
+      },
+    ];
+    expect(checkAchievements(p, defs as any)).toEqual([]); // …но фриланса не было
+    p.freelanceEarned = 500_000;
+    expect(checkAchievements(p, defs as any).map((e) => e.id)).toEqual(['fs']);
+  });
 });
 
 describe('player', () => {

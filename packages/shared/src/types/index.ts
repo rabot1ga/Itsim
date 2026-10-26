@@ -135,6 +135,8 @@ export interface PlayerState {
   hungryDays?: number;
   /** last freelance payout — landlord income estimate for players without a job */
   freelanceLastPayment?: number;
+  /** E4: заработано на фрилансе (достижение «Фриланс-звезда») */
+  freelanceEarned?: number;
   /**
    * Лидерство. Игра растит `softSkills.leadership.level`, а это поле не пишет
    * никто — движок (`leadershipLevel` в engine/endings.ts) читает softSkills
@@ -174,7 +176,6 @@ export interface PlayerState {
   // Inventory
   housingLevel: HousingLevel;
   items: ItemId[];
-  activeCourses: ActiveCourse[];
 
   // Events & relationships
   pendingEvents: PendingChainEvent[];
@@ -313,16 +314,6 @@ export interface Application {
   answerScore?: number;
   resultDay?: number;
   result?: 'accepted' | 'rejected';
-}
-
-export interface ActiveCourse {
-  courseId: string;
-  skillId: SkillId;
-  daysRemaining: number;
-  totalDays: number;
-  sessionsCompleted: number;
-  xpPerSession: number;
-  cost: number;
 }
 
 export interface FreelanceJob {

@@ -3,20 +3,31 @@
     "id": "network_dinner",
     "title": "🍽️ Закрытый нетворк-ужин",
     "description": "Знакомый зовёт на ужин для отраслевиков: вход строго по рекомендации, за столом — люди из правильных компаний. Такие вечера потом вспоминают годами.",
-    "tags": ["social", "networking"],
+    "tags": [
+      "social",
+      "networking"
+    ],
     "weight": 5,
     "cooldownDays": 40,
     "minGameDay": 15,
     "choices": [
       {
         "text": "Пойти по приглашению",
-        "requires": { "minContacts": 8 },
-        "effects": { "contacts": -8, "reputation": 4, "motivation": 4 },
+        "requires": {
+          "minContacts": 8
+        },
+        "effects": {
+          "contacts": -8,
+          "reputation": 4,
+          "motivation": 4
+        },
         "followup": "Вечер удался: два новых контакта, разговор про твои проекты и лёгкое чувство, что мир меньше, чем кажется."
       },
       {
         "text": "Отказаться: устал от людей",
-        "effects": { "motivation": -1 },
+        "effects": {
+          "motivation": -1
+        },
         "followup": "Остался дома. Тишина — тоже ресурс, но знакомства без тебя завязывались сами."
       }
     ]
@@ -25,20 +36,34 @@
     "id": "network_referral",
     "title": "🤝 Друг друга ищет разработчика",
     "description": "Твой друг прислал сообщение: его команда ищет человека на подработку, и он вспомнил о тебе. Правда, очередь у них длинная — пройти мимо неё можно только по знакомству.",
-    "tags": ["social", "networking"],
+    "tags": [
+      "social",
+      "networking"
+    ],
     "weight": 6,
     "cooldownDays": 35,
     "minGameDay": 10,
     "choices": [
       {
         "text": "Порекомендовать себя",
-        "requires": { "minContacts": 5 },
-        "effects": { "contacts": -5, "money": 25000, "reputation": 2 },
+        "requires": {
+          "minContacts": 5
+        },
+        "effects": {
+          "contacts": -5,
+          "money": 25000,
+          "reputation": 2
+        },
         "followup": "Заказ достался тебе: быстрый старт, честные деньги и «давай ещё» на выходе."
       },
       {
         "text": "Отправить джуна — пускай растёт",
-        "effects": { "relation": { "junior_colleague": 4 }, "contacts": 1 },
+        "effects": {
+          "relation": {
+            "junior_colleague": 4
+          },
+          "contacts": 1
+        },
         "followup": "Маша в восторге: опыт, деньги и вера в тебя. Отношения крепче."
       },
       {
@@ -52,20 +77,36 @@
     "id": "network_conference",
     "title": "🎤 Отраслевая конференция",
     "description": "В городе проходит конференция твоего стека: доклады, кофе-брейки и правильные люди в фойе. Вход платный, но говорят, что билет окупается знакомствами.",
-    "tags": ["social", "networking"],
+    "tags": [
+      "social",
+      "networking"
+    ],
     "weight": 6,
     "cooldownDays": 50,
     "minGameDay": 12,
     "choices": [
       {
         "text": "Поехать",
-        "requires": { "money": 5000 },
-        "effects": { "money": -5000, "contacts": 3, "reputation": 2, "motivation": 2 },
+        "requires": {
+          "money": 5000
+        },
+        "effects": {
+          "money": -5000,
+          "contacts": 3,
+          "reputation": 2,
+          "motivation": 2
+        },
         "followup": "Три новых знакомства, парочка докладов «в тему» и имя, которое теперь помнят."
       },
       {
         "text": "Смотреть стрим дома",
-        "effects": { "contacts": 1, "skill": { "communication": 5 } },
+        "effects": {
+          "contacts": 1,
+          "skill": {
+            "communication": 5,
+            "english": 5
+          }
+        },
         "followup": "Доклады полезные, но нетворк по стриму — как вода без градуса."
       },
       {
