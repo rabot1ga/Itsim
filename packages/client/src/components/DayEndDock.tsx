@@ -74,13 +74,17 @@ export const DayEndDock: React.FC<DayEndDockProps> = ({ visible }) => {
   if (!shown || useNativeCta || !player) return null;
   const energy = player.energy ?? 0;
   const spent = energy <= 0;
+  // Умный док (F, 28.10): подсказка говорит, пора ли закрывать день.
+  const hint = spent
+    ? t('Энергия кончилась — день пора закрыть')
+    : t('Осталось ~{p0} действий (по 3⚡)', { p0: Math.max(1, Math.ceil(energy / 3)) });
   return (
     <div className="day-dock">
       <button
         onClick={() => void finishDay()}
         disabled={finishing}
-        className="btn btn-primary btn-lg w-full"
-        aria-describedby={spent ? 'day-dock-hint' : undefined}
+        className={`btn btn-lg w-full ${spent ? 'btn-primary' : 'btn-secondary'}`}
+        aria-describedby="day-dock-hint"
       >
         {finishing ? (
           t('Считаем день…')
@@ -90,9 +94,9 @@ export const DayEndDock: React.FC<DayEndDockProps> = ({ visible }) => {
           </>
         )}
       </button>
-      {spent && !finishing && (
-        <p id="day-dock-hint" className="day-dock-hint">
-          {t('Энергия кончилась — день пора закрыть')}
+      {!finishing && (
+        <p id="day-dock-hint" className={`day-dock-hint${spent ? ' is-urgent' : ''}`}>
+          {hint}
         </p>
       )}
     </div>

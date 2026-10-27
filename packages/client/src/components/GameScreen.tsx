@@ -19,6 +19,8 @@ import { SettingsView } from '../screens/SettingsView';
 import { PixelIcon } from './pixel/PixelIcon';
 import { GainStream } from './GainStream';
 import { EventCard, EventOutcomeCard, type EventChoice } from './EventCard';
+import { DaySummaryCard } from './DaySummaryCard';
+import { ErrorToast } from './ErrorToast';
 import { DayEndDock } from './DayEndDock';
 /**
  * Новая IA (A2, 25.10.2026): четыре таба — Сегодня / Работа / Развитие /
@@ -42,6 +44,8 @@ export const GameScreen: React.FC = () => {
   const { currentView, setView } = useGameStore();
   const player = useGameStore((s) => s.player);
   const activeEvent = useGameStore((s) => s.activeEvent);
+  const daySummary = useGameStore((s) => s.daySummary);
+  const dismissDaySummary = useGameStore((s) => s.dismissDaySummary);
   const chooseEvent = useGameStore((s) => s.chooseEvent);
   const error = useGameStore((s) => s.error);
   /** the choice just made, kept on screen as a receipt until dismissed */
@@ -65,6 +69,11 @@ export const GameScreen: React.FC = () => {
   /** an offer on the table is the one thing worth a marker in the nav */
   const offerWaiting = Boolean(player?.pendingOffers?.length);
   const renderView = () => {
+    // Сводка дня — первый экран после хода: «чем закончился мой день?».
+    // Ждущее событие откроется сразу за ней (у карточки есть «Далее»).
+    if (daySummary) {
+      return <DaySummaryCard summary={daySummary} onDismiss={dismissDaySummary} />;
+    }
     if (activeEvent && player) {
       return (
         <EventCard
@@ -136,13 +145,16 @@ export const GameScreen: React.FC = () => {
       {/* Whatever the last action paid out, on its way up the screen */}
       <GainStream />
 
+      {/* Ошибки — один тост на все экраны; событие показывает свою инлайн-ошибку */}
+      {!activeEvent && <ErrorToast />}
+
       {/* Content area */}
       <div id="game-scroll" className="flex-1 overflow-y-auto space-y-3">
         {renderView()}
       </div>
 
       {/* End of the turn — docked above the nav so it never needs scrolling to */}
-      <DayEndDock visible={DOCK_VIEWS.has(currentView) && !activeEvent && !outcome} />
+      <DayEndDock visible={DOCK_VIEWS.has(currentView) && !activeEvent && !outcome && !daySummary} />
 
       {/* Bottom navigation */}
       <nav className="tabbar" aria-label={t('Основная навигация')}>

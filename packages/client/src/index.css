@@ -2572,3 +2572,55 @@ select {
 [data-contrast='high'] .btn {
   border: 1px solid var(--line-strong);
 }
+
+/* Сводка дня (DaySummaryCard): лог сообщений сервера внутри story-card */
+.day-summary-log {
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.day-summary-log li {
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--text-dim);
+  padding-left: 0.9rem;
+  position: relative;
+}
+.day-summary-log li::before {
+  content: '·';
+  position: absolute;
+  left: 0.25rem;
+  color: var(--text-faint);
+}
+
+/* Единый тост ошибок (G): виден на любом экране, тап — скрыть */
+.error-toast {
+  position: absolute;
+  left: 0.75rem;
+  right: 0.75rem;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 5.5rem);
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--red);
+  border-radius: 12px;
+  background: #1b1214;
+  color: var(--red);
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  text-align: left;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+.error-toast-x {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+.day-dock-hint.is-urgent {
+  color: var(--red);
+  font-weight: 600;
+}

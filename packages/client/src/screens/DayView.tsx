@@ -2,7 +2,8 @@ import { t } from '../lib/i18n';
 import React, { useEffect, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { HomeRoomCard } from '../components/HomeRoomCard';
-import { CareerPressureCard } from '../components/CareerPressureCard';
+import { ActionGrid, toTile } from '../components/ActionGrid';
+import { challengeDelegate, pickDayPlan } from './dayPlan';
 import { SprintCard } from '../components/SprintCard';
 import { SectionTitle, accordionBodyRef } from '../components/ui';
 import { PixelIcon } from '../components/pixel/PixelIcon';
@@ -16,6 +17,7 @@ const DESTINATIONS = [
   { view: 'rest', icon: 'walk', label: t('Отдых'), hint: t('сон, спорт, люди') },
   { view: 'shop', icon: 'bag', label: t('Магазин'), hint: t('техника, еда, апгрейды') },
   { view: 'room', icon: 'house', label: t('Дом'), hint: t('комната, декор, гардероб') },
+  { view: 'profile', icon: 'person', label: t('Профиль'), hint: t('цели, достижения, настройки') },
 ] as const;
 const CHALLENGE_TEXT: Record<string, string> = {
   ch_study_3: t('Выполни 3 учебных действия'),
@@ -31,36 +33,6 @@ const CHALLENGE_TEXT: Record<string, string> = {
   ch_gym_1: t('Сходи в зал'),
   ch_walk_2: t('Погуляй 2 раза'),
   ch_feed_pet_1: t('Покорми питомца'),
-};
-/**
- * Yesterday's narration is context, not a decision — so it is one quiet line
- * that opens on tap instead of a tall panel pushing today's choices down.
- */
-const YesterdayLog: React.FC<{
-  text: string;
-}> = ({ text }) => {
-  const [open, setOpen] = useState(false);
-  return (
-    <section className="card">
-      <button
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        className="w-full flex items-center gap-2 text-left touch-target"
-      >
-        <PixelIcon name="clock" size={12} />
-        <span className="text-xs font-bold uppercase tracking-[0.06em] text-ink-500 shrink-0">{t('Вчера')}</span>
-        {!open && <span className="flex-1 min-w-0 truncate text-xs text-ink-400">{text.replace(/\n/g, ' · ')}</span>}
-        <span aria-hidden="true" className={`accordion-chevron shrink-0 ${open ? 'is-open' : ''}`}>
-          ▾
-        </span>
-      </button>
-      <div className={`accordion-body ${open ? 'open' : ''}`} ref={accordionBodyRef(open)}>
-        <div className="accordion-inner">
-          <p className="text-sm text-ink-300 leading-relaxed whitespace-pre-line pt-1">{text}</p>
-        </div>
-      </div>
-    </section>
-  );
 };
 /** localStorage key: the last day whose tip the player dismissed */
 const ONBOARD_DISMISS_KEY = 'itsim_tip_dismissed_day';
@@ -154,35 +126,22 @@ const CheckInBanner: React.FC<{
 };
 export const DayView: React.FC = () => {
   const player = useGameStore((s) => s.player);
-  const error = useGameStore((s) => s.error);
-  const clearError = useGameStore((s) => s.clearError);
   const performAction = useGameStore((s) => s.performAction);
   const setView = useGameStore((s) => s.setView);
   const checkIn = useGameStore((s) => s.checkIn);
   const mining = useGameStore((s) => s.mining);
   const currentDay = player?.currentDay ?? 1;
+  const [busy, setBusy] = useState(false);
   if (!player) return null;
+  // План дня (B): детерминированный подбор быстрых действий — см. dayPlan.ts
+  const dayPlan = pickDayPlan(player);
   return (
     <div className="space-y-4 animate-fade-in">
       <HomeRoomCard />
       {/* Daily check-in reward — once per real day */}
       {checkIn && <CheckInBanner checkIn={checkIn} />}
 
-      {/* Error */}
-      {error && (
-        <button onClick={clearError} className="card panel-note panel-note-clay w-full text-left animate-pop-in">
-          <p className="flex items-start gap-2 text-sm text-clay-300">
-            <PixelIcon name="warn" size={14} />
-            <span>{error}</span>
-          </p>
-          <p className="text-2xs text-ink-500 mt-1 pl-5">{t('Нажми, чтобы скрыть')}</p>
-        </button>
-      )}
-
       <OnboardingTip day={currentDay} />
-
-      {/* Yesterday's log — one line, expandable */}
-      {player._lastEvent && <YesterdayLog text={player._lastEvent} />}
 
       {/* Goal of the day — a target above the toolbox reads as direction,
             a target buried under it reads as homework */}
@@ -206,21 +165,76 @@ export const DayView: React.FC = () => {
           </div>
           <p className="text-sm text-ink-200">{CHALLENGE_TEXT[player.dailyChallenge.id] ?? t('Выполни задание')}</p>
           {!player.dailyChallenge.done && (
-            <div className="meter mt-2">
-              <span
-                style={{
-                  width: `${Math.min(100, (player.dailyChallenge.progress / Math.max(1, player.dailyChallenge.count)) * 100)}%`,
-                  background: 'var(--sky)',
-                }}
-              />
-            </div>
+            <>
+              <div className="meter mt-2">
+                <span
+                  style={{
+                    width: `${Math.min(100, (player.dailyChallenge.progress / Math.max(1, player.dailyChallenge.count)) * 100)}%`,
+                    background: 'var(--sky)',
+                  }}
+                />
+              </div>
+              {(() => {
+                // Клик по заданию запускает действие-подсказку или открывает нужный экран
+                const delegate = challengeDelegate(
+                  {
+                    action: (player.dailyChallenge as any).action ?? '',
+                    match: (player.dailyChallenge as any).match,
+                  },
+                  player.money ?? 0
+                );
+                if (!delegate) return null;
+                return (
+                  <button
+                    className="btn btn-secondary w-full text-sm mt-2"
+                    disabled={busy}
+                    onClick={() => {
+                      if (delegate.kind === 'action') {
+                        if (busy) return;
+                        setBusy(true);
+                        void performAction(delegate.action.id, {
+                          skillId: player.mainSkillId || 'javascript',
+                        }).finally(() => setBusy(false));
+                      } else {
+                        setView(delegate.view);
+                      }
+                    }}
+                  >
+                    {delegate.label} →
+                  </button>
+                );
+              })()}
+            </>
           )}
         </section>
       )}
 
-      {/* Where the day is actually spent — each module now lives in its tab */}
-      <section aria-label={t('Чем займёшься')}>
-        <SectionTitle className="mb-2">{t('Чем займёшься')}</SectionTitle>
+      {/* План дня: быстрые действия прямо здесь — без прыжков по табам (B, 28.10) */}
+      <section aria-label={t('План дня')}>
+        <SectionTitle className="mb-2">{t('План дня')}</SectionTitle>
+        <ActionGrid
+          label={t('Быстрые действия')}
+          actions={dayPlan.map((a) => toTile(a, Boolean(player.job)))}
+          energy={player.energy ?? 0}
+          money={player.money ?? 0}
+          onRun={(id) => {
+            if (busy) return;
+            setBusy(true);
+            void performAction(id, { skillId: player.mainSkillId || 'javascript' }).finally(() => setBusy(false));
+          }}
+        />
+        <div className="flex gap-2 mt-2">
+          <button onClick={() => setView('career')} className="btn btn-ghost flex-1 text-xs">
+            {t('Все рабочие')} →
+          </button>
+          <button onClick={() => setView('skills')} className="btn btn-ghost flex-1 text-xs">
+            {t('Всё обучение')} →
+          </button>
+        </div>
+      </section>
+
+      {/* Doors: быт и траты — туда, где действия требуют контекста */}
+      <section aria-label={t('Переходы')}>
         <div className="action-grid">
           {DESTINATIONS.map((d) => (
             <button key={d.view} onClick={() => setView(d.view)} className="tile tile-action" aria-label={d.label}>
@@ -249,9 +263,6 @@ export const DayView: React.FC = () => {
 
       {/* Weekly season sprint — the real-time target for the whole week */}
       <SprintCard />
-
-      {/* Career pressure: living costs + what the next gate really needs */}
-      <CareerPressureCard />
 
       {/* Mining farm (passive income) */}
       {mining && (

@@ -95,6 +95,23 @@ export function diffGains(prev: any, next: any): Gain[] {
   if (up > 0) out.push({ id: ++gainId, icon: 'book', text: t('+{up} ур.', { up: up }), tone: 'good' });
   return out;
 }
+/** Итоги завершённого дня (D, 28.10.2026): сообщения сервера + дельты. */
+export interface DaySummary {
+  /** день, который завершили (currentDay до advance-day) */
+  day: number;
+  /** строки из messages ответа /game/advance-day: зарплата, выгорание, вехи */
+  messages: string[];
+  deltas: {
+    money: number;
+    motivation: number;
+    health: number;
+    energy: number;
+    levelsUp: number;
+  };
+  /** событие ждёт ответа — после сводки показать его */
+  hasEvent: boolean;
+}
+
 interface GameState {
   initialized: boolean;
   screen: Screen;
@@ -109,6 +126,9 @@ interface GameState {
   mining: any;
   /** numbers that just changed, rendered as floating labels */
   gains: Gain[];
+  /** итоги хода: карточка после «Завершить день», пока не закрыта */
+  daySummary: DaySummary | null;
+  dismissDaySummary: () => void;
   // Actions
   initGame: (initData: string) => Promise<void>;
   /** daily check-in result from the server: { claimed, streak, money, nextMoney } | null */
@@ -161,6 +181,8 @@ export const useGameStore = create<GameState>((set, get) => ({
   checkIn: null,
   sprint: null,
   gains: [],
+  daySummary: null,
+  dismissDaySummary: () => set({ daySummary: null }),
   initGame: async (initData: string) => {
     try {
       authInitData = initData;
@@ -307,14 +329,30 @@ export const useGameStore = create<GameState>((set, get) => ({
     try {
       const res = await api('/game/advance-day', { method: 'POST' });
       if (res.data?.state) {
+        const after = res.data.state;
+        const levels = (st: any) =>
+          Object.values(st?.skills ?? {}).reduce((sum: number, sk: any) => sum + (sk?.level ?? 0), 0);
+        const summary: DaySummary = {
+          day: before?.currentDay ?? 1,
+          messages: res.data.messages ?? [],
+          deltas: {
+            money: Math.round((after.money ?? 0) - (before.money ?? 0)),
+            motivation: Math.round((after.motivation ?? 0) - (before.motivation ?? 0)),
+            health: Math.round((after.health ?? 0) - (before.health ?? 0)),
+            energy: Math.round((after.energy ?? 0) - (before.energy ?? 0)),
+            levelsUp: levels(after) - levels(before),
+          },
+          hasEvent: Boolean(res.data.activeEvent),
+        };
         set((s) => ({
-          gains: [...s.gains, ...diffGains(before, res.data.state)].slice(-6),
-          player: res.data.state,
+          gains: [...s.gains, ...diffGains(before, after)].slice(-6),
+          player: after,
           activeEvent: res.data.activeEvent ?? null,
           mining: res.data.mining ?? null,
           careerOutlook: res.data.careerOutlook ?? null,
           costOfDay: res.data.costOfDay ?? null,
           error: null,
+          daySummary: summary,
         }));
       }
       if (!res.ok) {
