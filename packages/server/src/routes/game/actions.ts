@@ -53,6 +53,7 @@ import {
   ACTION_MONEY_COSTS,
   branchOfMap,
   branchShareXp,
+  careerGatesOf,
   careerLevelIndex,
   EXTRA_ENERGY_COSTS,
   fmtMoney,
@@ -588,7 +589,11 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       }
       const req = GRADE_REQUIREMENTS[grade];
       const skillId = state.mainSkillId;
-      const requirements = { [skillId]: req.skill };
+      // D (ANALYSIS-2026-10-27 §3.4): одна лестница — требования интервью
+      // равны гейту продвижения (как их считает симулятор). GRADE_REQUIREMENTS
+      // остаётся легаси-фолбэком для сейвов без careerGates в контенте.
+      const gate = careerGatesOf(content).find((g) => g.grade === grade);
+      const requirements = { [skillId]: gate?.skill ?? req.skill };
       const matchScore = preScreenMatch(
         Object.fromEntries(Object.entries(state.skills).map(([k, v]) => [k, v.level])),
         requirements
