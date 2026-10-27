@@ -660,6 +660,10 @@ export interface DailyChallengeState {
   progress: number;
   count: number;
   done: boolean;
+  /** действие-триггер из challenges.json (для клика по заданию на клиенте) */
+  action?: string;
+  /** exact | prefix; старые сейвы без поля считаются exact */
+  match?: string;
 }
 
 // ---- Weekly season sprint (P1.2) ----

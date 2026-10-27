@@ -15,7 +15,16 @@ export function resetDailyChallenge(state: StoredState, content: any): void {
   // Соль серверного RNG (P2.4): челлендж дня не пересчитать офлайн.
   const rng = seededRng(`${state.telegramId}:${state.rngSalt}:challenge:${state.currentDay}`);
   const def = list[Math.floor(rng() * list.length)];
-  state.dailyChallenge = { day: state.currentDay, id: def.id, progress: 0, count: def.count, done: false };
+  // action/match едут клиенту: план дня и клик по заданию делегируют реальное действие
+  state.dailyChallenge = {
+    day: state.currentDay,
+    id: def.id,
+    action: def.action,
+    match: def.match ?? 'exact',
+    progress: 0,
+    count: def.count,
+    done: false,
+  };
 }
 /**
  * Bump challenge progress after a successful action; returns a message
