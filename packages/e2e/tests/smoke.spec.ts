@@ -50,6 +50,8 @@ test('fresh run: three actions → end of day → buy cosmetics → telemetry', 
   // (packages/server/src/game/day.ts:293), а не делает полный refill. Жёсткое
   // «10/10» проходило только при тратах ровно 5 ⚡ за день и флапало иначе.
   await expect(energyMeter(page)).toHaveAttribute('title', new RegExp(`^Энергия: ${Math.min(10, beforeEnd + 5)}/10$`));
+  // Сводка дня (D) приезжает первой; ждущий сюжет — сразу за ней.
+  await page.getByRole('button', { name: /^(Далее|Готово)$/ }).click();
   await resolveStory(page);
   await expect(page.getByRole('button', { name: /^Завершить день 2/ })).toBeVisible();
 

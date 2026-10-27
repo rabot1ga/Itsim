@@ -52,6 +52,8 @@ async function endDay(page: Page): Promise<void> {
   const before = await dayNumber(page);
   await page.getByRole('button', { name: /^Завершить день / }).click();
   await expect(dayPill(page)).toHaveText(`День ${before + 1}`, { timeout: 30_000 });
+  // Сводка дня (D) перекрывает вкладку — закрываем её до сюжета и доски.
+  await page.getByRole('button', { name: /^(Далее|Готово)$/ }).click();
   // Порядок важен: событие дня приезжает в том же ответе, что и новый день,
   // поэтому карточка к этому моменту уже в DOM. Обратно (сначала сюжет, потом
   // день) — гонка: карточка, вставшая позже проверки, уезжала по сьюту

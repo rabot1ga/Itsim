@@ -42,7 +42,9 @@ const visibleSoon = (locator: Locator, timeout: number) =>
  */
 export async function resolveStory(page: Page, opts: { strict?: boolean } = {}): Promise<void> {
   const { strict = true } = opts;
-  const card = page.locator('.story-card');
+  // Сводка дня тоже .story-card (те же стили), но это чек хода, а не сюжет:
+  // у неё своя кнопка «Далее/Готово» и свой порядок (D, 28.10.2026).
+  const card = page.locator('.story-card:not(.day-summary-card)');
   const cont = page.getByRole('button', { name: 'Продолжить' });
 
   for (let pass = 0; pass < MAX_PASSES; pass++) {
@@ -82,7 +84,7 @@ export async function resolveStory(page: Page, opts: { strict?: boolean } = {}):
  * `winContract`, где отклик — один в день).
  */
 export async function act(page: Page, step: () => Promise<void>, retries = 2): Promise<void> {
-  const card = page.locator('.story-card');
+  const card = page.locator('.story-card:not(.day-summary-card)');
   for (let i = 0; ; i++) {
     try {
       return await step();

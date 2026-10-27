@@ -115,114 +115,6 @@ export const CareerView: React.FC = () => {
     <div className="space-y-4 animate-fade-in">
       <ScreenTitle icon="briefcase">{t('Работа')}</ScreenTitle>
 
-      {error && (
-        <p role="alert" className="card card-sm text-sm text-clay-300">
-          {error}
-        </p>
-      )}
-
-      {/* Current job */}
-      <div className={`card panel-note ${player.job ? 'panel-note-moss' : 'panel-note-ochre'}`}>
-        {player.job ? (
-          <>
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="eyebrow !text-moss-300">{t('Работаешь')}</span>
-              <span className="num text-xs text-ink-500 shrink-0">
-                {player.job.daysWorked ?? 0} {t('дн.')}
-              </span>
-            </div>
-            <p className="text-white font-medium">{player.job.position}</p>
-            <p className="num text-xs text-ink-400 mt-0.5">
-              {formatMoney(player.job.salary)} {t('₽/мес')}
-            </p>
-          </>
-        ) : (
-          <>
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="eyebrow !text-ochre-300">{t('Без работы')}</span>
-              <span className="num text-xs text-ink-500 shrink-0">
-                {t('день')} {player.currentDay ?? 1}
-              </span>
-            </div>
-            <p className="text-ink-400 text-sm leading-relaxed">
-              {t(
-                'Выбери компанию ниже. Навыки и коммуникация помогут пройти собеседование; требования к росту — в справочнике грейдов.'
-              )}
-            </p>
-          </>
-        )}
-      </div>
-
-      <ProjectBoard />
-
-      <section aria-label={t('Рабочие действия')}>
-        <SectionTitle className="mb-2">{t('Действия')}</SectionTitle>
-        <ActionGrid
-          label={t('Рабочие действия')}
-          actions={WORK_ACTIONS.map((a) => toTile(a, Boolean(player.job)))}
-          energy={player.energy ?? 0}
-          money={player.money ?? 0}
-          busy={busy}
-          onRun={(id) => act(() => performAction(id, { skillId: player.mainSkillId || 'javascript' }))}
-        />
-      </section>
-
-      {/* Non-IT gigs: money now, at the price of health and mood */}
-      {Object.keys(sideJobs).length > 0 && (
-        <section aria-label={t('Подработки не в IT')}>
-          <SectionTitle className="mb-2">{t('Подработки не в IT')}</SectionTitle>
-          <ActionGrid
-            label={t('Подработки')}
-            energy={player.energy ?? 0}
-            money={player.money ?? 0}
-            busy={busy}
-            onRun={(jobId) => act(() => performAction('side_job', { jobId }))}
-            actions={Object.entries(sideJobs).map(([jobId, job]) => {
-              const skillLevel = player.skills?.[player.mainSkillId ?? 'javascript']?.level ?? 0;
-              const tooEarly = (player.currentDay ?? 0) < (job.minDay ?? 1);
-              const minSkillMet = skillLevel >= (job.minSkill ?? 0);
-              const payout = job.payment + (job.paymentPerSkill ? Math.round(skillLevel * job.paymentPerSkill) : 0);
-              return {
-                id: jobId,
-                icon: SIDE_JOB_ICON[jobId] ?? 'box',
-                name: job.name,
-                energy: job.energy,
-                locked: !minSkillMet || tooEarly,
-                lockLabel: !minSkillMet ? t('навык {p0}+', { p0: job.minSkill }) : t('с {p0} дня', { p0: job.minDay }),
-                gain: (
-                  <ResChip tone="positive">
-                    +{formatCash(payout)}
-                    {job.paymentVar ? '±' : ''} ₽
-                  </ResChip>
-                ),
-              };
-            })}
-          />
-          <p className="text-2xs text-ink-600 mt-1.5">
-            {t('Одна подработка в день. Здоровье и настроение — по курсу.')}
-          </p>
-        </section>
-      )}
-
-      {/* The rest of the career lives one tap away, not in a menu */}
-      <NavLinks
-        title={t('Карьера дальше')}
-        links={[
-          {
-            view: 'office',
-            icon: 'screen',
-            label: t('Мой офис'),
-            hint: player.job
-              ? t('{p0} · команда, задачи и настроение дня', { p0: player.job.position })
-              : t('сначала нужна работа'),
-          },
-          { view: 'friends', icon: 'people', label: t('Коллеги и знакомые'), hint: t('отношения, события и помощь') },
-        ]}
-      />
-
-      {/* Promotion pressure: cost of the day + what the next grade really needs */}
-      <CareerPressureCard />
-
       {/* Job offers */}
       {offers.length > 0 && (
         <div className="card panel-note panel-note-moss animate-pop-in">
@@ -348,6 +240,92 @@ export const CareerView: React.FC = () => {
           })}
         </div>
       </div>
+      {/* Current job */}
+      <div className={`card panel-note ${player.job ? 'panel-note-moss' : 'panel-note-ochre'}`}>
+        {player.job ? (
+          <>
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="eyebrow !text-moss-300">{t('Работаешь')}</span>
+              <span className="num text-xs text-ink-500 shrink-0">
+                {player.job.daysWorked ?? 0} {t('дн.')}
+              </span>
+            </div>
+            <p className="text-white font-medium">{player.job.position}</p>
+            <p className="num text-xs text-ink-400 mt-0.5">
+              {formatMoney(player.job.salary)} {t('₽/мес')}
+            </p>
+          </>
+        ) : (
+          <>
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="eyebrow !text-ochre-300">{t('Без работы')}</span>
+              <span className="num text-xs text-ink-500 shrink-0">
+                {t('день')} {player.currentDay ?? 1}
+              </span>
+            </div>
+            <p className="text-ink-400 text-sm leading-relaxed">
+              {t(
+                'Выбери компанию ниже. Навыки и коммуникация помогут пройти собеседование; требования к росту — в справочнике грейдов.'
+              )}
+            </p>
+          </>
+        )}
+      </div>
+
+      <ProjectBoard />
+
+      <section aria-label={t('Рабочие действия')}>
+        <SectionTitle className="mb-2">{t('Действия')}</SectionTitle>
+        <ActionGrid
+          label={t('Рабочие действия')}
+          actions={WORK_ACTIONS.map((a) => toTile(a, Boolean(player.job)))}
+          energy={player.energy ?? 0}
+          money={player.money ?? 0}
+          busy={busy}
+          onRun={(id) => act(() => performAction(id, { skillId: player.mainSkillId || 'javascript' }))}
+        />
+      </section>
+
+      {/* Non-IT gigs: money now, at the price of health and mood */}
+      {Object.keys(sideJobs).length > 0 && (
+        <section aria-label={t('Подработки не в IT')}>
+          <SectionTitle className="mb-2">{t('Подработки не в IT')}</SectionTitle>
+          <ActionGrid
+            label={t('Подработки')}
+            energy={player.energy ?? 0}
+            money={player.money ?? 0}
+            busy={busy}
+            onRun={(jobId) => act(() => performAction('side_job', { jobId }))}
+            actions={Object.entries(sideJobs).map(([jobId, job]) => {
+              const skillLevel = player.skills?.[player.mainSkillId ?? 'javascript']?.level ?? 0;
+              const tooEarly = (player.currentDay ?? 0) < (job.minDay ?? 1);
+              const minSkillMet = skillLevel >= (job.minSkill ?? 0);
+              const payout = job.payment + (job.paymentPerSkill ? Math.round(skillLevel * job.paymentPerSkill) : 0);
+              return {
+                id: jobId,
+                icon: SIDE_JOB_ICON[jobId] ?? 'box',
+                name: job.name,
+                energy: job.energy,
+                locked: !minSkillMet || tooEarly,
+                lockLabel: !minSkillMet ? t('навык {p0}+', { p0: job.minSkill }) : t('с {p0} дня', { p0: job.minDay }),
+                gain: (
+                  <ResChip tone="positive">
+                    +{formatCash(payout)}
+                    {job.paymentVar ? '±' : ''} ₽
+                  </ResChip>
+                ),
+              };
+            })}
+          />
+          <p className="text-2xs text-ink-600 mt-1.5">
+            {t('Одна подработка в день. Здоровье и настроение — по курсу.')}
+          </p>
+        </section>
+      )}
+
+      {/* Promotion pressure: cost of the day + what the next grade really needs */}
+      <CareerPressureCard />
+
       {/* Grade progress — real content gates, not a hardcoded copy */}
       <details className="card career-grades">
         <summary className="flex items-center justify-between mb-2">
@@ -410,6 +388,22 @@ export const CareerView: React.FC = () => {
           )}
         </div>
       </details>
+
+      {/* The rest of the career lives one tap away, not in a menu */}
+      <NavLinks
+        title={t('Карьера дальше')}
+        links={[
+          {
+            view: 'office',
+            icon: 'screen',
+            label: t('Мой офис'),
+            hint: player.job
+              ? t('{p0} · команда, задачи и настроение дня', { p0: player.job.position })
+              : t('сначала нужна работа'),
+          },
+          { view: 'friends', icon: 'people', label: t('Коллеги и знакомые'), hint: t('отношения, события и помощь') },
+        ]}
+      />
     </div>
   );
 };
