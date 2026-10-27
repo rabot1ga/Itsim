@@ -2378,19 +2378,30 @@ select {
 .room-pet-emoji {
   display: inline-block;
 }
+.room-pet-img {
+  display: inline-block;
+  width: 38px;
+  height: 38px;
+  vertical-align: bottom;
+  image-rendering: pixelated;
+  image-rendering: -webkit-optimize-contrast; /* Safari: чёткая пиксельная сетка */
+}
 .room-pet-badges {
   font-size: 14px;
   margin-left: 2px;
   vertical-align: super;
 }
 /* Анимации питомца: idle — покачивание, happy — подпрыгивание, sleep — дыхание */
-.room-pet--idle .room-pet-emoji {
+.room-pet--idle .room-pet-emoji,
+.room-pet--idle .room-pet-img {
   animation: pet-bob 3.2s ease-in-out infinite;
 }
-.room-pet--happy .room-pet-emoji {
+.room-pet--happy .room-pet-emoji,
+.room-pet--happy .room-pet-img {
   animation: pet-hop 1.1s ease-in-out infinite;
 }
-.room-pet--sleep .room-pet-emoji {
+.room-pet--sleep .room-pet-emoji,
+.room-pet--sleep .room-pet-img {
   animation: pet-breathe 4s ease-in-out infinite;
 }
 .room-pet-zzz {
@@ -2512,6 +2523,9 @@ select {
   .room-pet--idle .room-pet-emoji,
   .room-pet--happy .room-pet-emoji,
   .room-pet--sleep .room-pet-emoji,
+  .room-pet--idle .room-pet-img,
+  .room-pet--happy .room-pet-img,
+  .room-pet--sleep .room-pet-img,
   .room-pet-zzz,
   .room-pet-spark {
     animation: none;
