@@ -4613,4 +4613,6 @@ Object.assign(en, {
   'Ты пропустил собеседование в «{p0}» — без кандидата решили не рисковать. Попробуй ещё раз через пару дней':
     'You skipped the interview at «{p0}» — without the candidate they decided not to risk it. Try again in a couple of days',
   'Отменить отклик': 'Withdraw application',
+  'Высокий контраст': 'High contrast',
+  'Чёткие границы и чистый текст для слабого зрения': 'Crisp borders and clean text for low vision',
 });

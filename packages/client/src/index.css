@@ -2517,3 +2517,44 @@ select {
     animation: none;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Высокий контраст (долг «режим высокого контраста», docs/TODO.md §5).
+   Тумблер в «Настройках» пишет data-contrast="high" на <html>; перекрываем
+   палитру, а не отдельные компоненты: дом остаётся тёмным, но текст — чистый
+   белый, границы — явные, акценты — максимально различимые.
+   ═══════════════════════════════════════════════════════════════════════════ */
+[data-contrast='high'] {
+  --bg: #000000;
+  --bg-raise: #050505;
+  --surface: #000000;
+  --surface-alt: #0a0a0a;
+  --well: #000000;
+  --line: #ffffff;
+  --line-strong: #ffffff;
+
+  --text: #ffffff;
+  --text-dim: #f2f2f2;
+  --text-mute: #d6d6d6;
+  --text-faint: #b3b3b3;
+
+  --green: #5cff9d;
+  --green-dark: #2be07c;
+  --green-deep: #0f7a45;
+  --orange: #ffc14d;
+  --red: #ff7a7a;
+  --purple: #c9a8ff;
+  --blue: #8fd3ff;
+  --gold: #ffe066;
+  --gold-deep: #d4a800;
+}
+
+[data-contrast='high'] .card,
+[data-contrast='high'] .panel-note {
+  border: 1px solid var(--line);
+  box-shadow: none;
+}
+
+[data-contrast='high'] .btn {
+  border: 1px solid var(--line-strong);
+}

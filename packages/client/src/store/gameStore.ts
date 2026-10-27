@@ -1,6 +1,7 @@
 import { t, currentLocale, setLocale, isLocale, hasStoredLocale, type Locale, fmtNumber } from '../lib/i18n';
 import { create } from 'zustand';
 import { haptic, referralFromStartParam } from '../lib/telegram';
+import { playSfx } from '../lib/sfx';
 import type { PetRoomPosition } from '@itsim/shared';
 export type Screen = 'menu' | 'game' | 'loading';
 const API_BASE = '/api';
@@ -273,19 +274,30 @@ export const useGameStore = create<GameState>((set, get) => ({
       }
       if (!res.ok) {
         haptic('error');
+        playSfx('error');
         set({ error: res.data?.error || t('Действие не выполнено') });
         return false;
       }
       // Feel the action: purchases thud, offers celebrate, the rest just tap.
-      if (actionId === 'accept_offer') haptic('success');
-      else if (actionId === 'buy_item' || actionId === 'upgrade_housing') haptic('medium');
-      else if (actionId === 'customize_room' || actionId === 'customize_avatar') haptic('selection');
-      else haptic('tap');
+      if (actionId === 'accept_offer') {
+        haptic('success');
+        playSfx('levelup');
+      } else if (actionId === 'buy_item' || actionId === 'upgrade_housing') {
+        haptic('medium');
+        playSfx('coin');
+      } else if (actionId === 'customize_room' || actionId === 'customize_avatar') {
+        haptic('selection');
+        playSfx('tap');
+      } else {
+        haptic('tap');
+        playSfx('tap');
+      }
       track('action', { actionId });
       return true;
     } catch (err) {
       console.error('Action error:', err);
       haptic('error');
+      playSfx('error');
       set({ error: t('Сервер недоступен') });
       return false;
     }
@@ -404,6 +416,7 @@ export const useGameStore = create<GameState>((set, get) => ({
       });
       if (res.data?.state) {
         haptic('selection');
+        playSfx('event');
         set((s) => ({
           player: res.data.state,
           activeEvent: null,
@@ -414,11 +427,13 @@ export const useGameStore = create<GameState>((set, get) => ({
       }
       if (!res.ok) {
         haptic('error');
+        playSfx('error');
         set({ error: res.data?.error || t('Выбор не принят') });
       }
     } catch (err) {
       console.error('Event choice error:', err);
       haptic('error');
+      playSfx('error');
       set({ error: t('Сервер недоступен') });
     }
   },
