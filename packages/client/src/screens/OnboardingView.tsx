@@ -2,12 +2,11 @@ import { t } from '../lib/i18n';
 import { PixelIcon } from '../components/pixel/PixelIcon';
 import React, { useRef, useState } from 'react';
 /**
- * First-run onboarding — four cards between the splash screen and day one.
+ * First-run onboarding — a short splash before day one (B, аудит 28.10).
  *
- * The game asks the player to spend energy every day; that contract has to be
- * explained before the first tap, not discovered by trial and error. Swipe or
- * tap «Дальше»; «Пропустить» is always available, because a returning player
- * who reinstalled should not be held hostage by a tutorial.
+ * Учим деланием, а не лекциями: после заставки игрок сразу попадает в
+ * чек-лист «Первые шаги» на «Сегодня» (действие → завершить день → сводка).
+ * «Пропустить» всегда доступен — вернувшийся игрок не заложник туториала.
  */
 export const ONBOARDING_KEY = 'itsim_onboarded_v1';
 interface Slide {
@@ -24,23 +23,12 @@ const SLIDES: Slide[] = [
     body: t('Живи, работай, развивайся. Каждый день — новый выбор и новые последствия.'),
   },
   {
-    icon: 'house',
-    art: '/art/story-v1/room.webp',
-    title: t('Ты только закончил универ'),
-    body: t('10 000 ₽ на счету и пустое резюме. Дальше — только твои решения.'),
-  },
-  {
     icon: 'bolt',
     art: '/art/story-v1/night.webp',
     title: t('Каждый день — это энергия'),
     body: t('Учёба, работа и отдых тратят энергию. Настроение и здоровье решают, сколько ты выдержишь.'),
   },
-  {
-    icon: 'rocket',
-    art: '/art/story-v1/offer.webp',
-    title: t('Собеседования, баги, дедлайны'),
-    body: t('Повышения, офферы, случайные события — всё как в жизни, только быстрее.'),
-  },
+  // B (аудит 28.10): остальное обучение — деланием, чек-лист «Первые шаги» на «Сегодня»
 ];
 export const OnboardingView: React.FC<{
   onDone: () => void;

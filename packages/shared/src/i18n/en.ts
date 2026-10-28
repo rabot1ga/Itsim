@@ -4656,4 +4656,20 @@ Object.assign(en, {
   '«{p0}»: заказчик выбрал исполнителя опытнее. Попробуй ещё раз — следующая попытка +{p1}%': '“{p0}”: the client picked someone more senior. Try again — next attempt +{p1}%',
   'Ты пропустил собеседование в «{p0}» — без кандидата решили не рисковать. Попробуй ещё раз через пару дней (следующее +{p1}%)': 'You missed the interview at “{p0}” — they would not risk it without a candidate. Try again in a couple of days (next one +{p1}%)',
   'Собеседование ({correct}/{total}): «мы впечатлены, но решили двигаться с другим кандидатом». Подтяни навыки и пробуй снова! (следующее +{p0}%)': 'Interview ({correct}/{total}): “we are impressed but decided to move on with another candidate”. Sharpen your skills and try again! (next one +{p0}%)',
+
+  // B+G (аудит 28.10): «Первые шаги» + утренняя сводка «Что почти готово»
+  'Оффер «{p0}» сгорает через {p1} дн. — прими его в «Карьере»': 'The “{p0}” offer expires in {p1} d. — accept it in “Career”',
+  'Проект сдать сегодня — закрой задачи в «Карьере»': 'The project is due today — close its tasks in “Career”',
+  'Проект: {p0} дн. до дедлайна': 'Project: {p0} d. to the deadline',
+  'Ревью на «{p0}» — сегодня': 'The “{p0}” review is today',
+  'Ревью на «{p0}» через {p1} дн.': 'The “{p0}” review is in {p1} d.',
+  'Отклик на бирже: заказчик ответит утром': 'A board application is pending — the client answers in the morning',
+  'Сегодня зарплата': 'Payday is today',
+  'Зарплата через {p0} дн.': 'Payday in {p0} d.',
+  'Почти готово': 'Almost ready',
+  'Что почти готово': 'What is almost ready',
+  'Первые шаги': 'First steps',
+  'Выполни любое действие из плана дня': 'Complete any action from the day plan',
+  'Заверши день и посмотри сводку': 'Wrap up the day and check the summary',
+  'Выбери основной навык во вкладке «Развитие»': 'Pick your main skill in the “Study” tab',
 });

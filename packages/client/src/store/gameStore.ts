@@ -2,6 +2,7 @@ import { t, currentLocale, setLocale, isLocale, hasStoredLocale, type Locale, fm
 import { create } from 'zustand';
 import { haptic, referralFromStartParam } from '../lib/telegram';
 import { playSfx } from '../lib/sfx';
+import { markFirstStep } from '../lib/firstSteps';
 import type { PetRoomPosition } from '@itsim/shared';
 export type Screen = 'menu' | 'game' | 'loading';
 const API_BASE = '/api';
@@ -283,6 +284,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         }),
       });
       if (res.data?.state) {
+        markFirstStep('action'); // B: чек-лист «Первые шаги»
         set((s) => ({
           player: res.data.state,
           activeEvent: res.data.activeEvent ?? null,
@@ -511,6 +513,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         body: JSON.stringify({ skillId }),
       });
       if (res.data?.state) {
+        markFirstStep('focus'); // B: чек-лист «Первые шаги»
         haptic('selection');
         set({ player: res.data.state, error: null });
         track('skill_pick', { skillId });
