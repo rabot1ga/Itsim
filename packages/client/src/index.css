@@ -2624,3 +2624,25 @@ select {
   color: var(--red);
   font-weight: 600;
 }
+
+/* A (аудит 28.10): виталы на всех табах — тонкая полоса под верхней строкой */
+.topbar-vitals {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.15rem 0.75rem 0.35rem;
+}
+.topbar-vitals .stat-bar {
+  flex: 1;
+  min-width: 0;
+}
+.topbar-mult {
+  flex-shrink: 0;
+  font-size: 0.625rem;
+  letter-spacing: 0.02em;
+  color: var(--text-faint);
+}
+.hud-mult {
+  padding: 0 1.35rem;
+  text-align: right;
+}

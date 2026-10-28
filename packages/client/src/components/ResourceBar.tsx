@@ -51,6 +51,9 @@ export const ResourceBar: React.FC = () => {
   const need = xpToNext(skill.level);
   const pct = maxed ? 100 : Math.max(0, Math.min(100, (skill.xp / need) * 100));
   const coins = Math.round(player.meta?.coins ?? player.metaCoins ?? 0);
+  // A (аудит 28.10): мотивация — скрытый множитель опыта (applyXp 0.7..1.3).
+  // Показываем его рядом с полосой, иначе штраф непонятен.
+  const xpMult = 0.7 + 0.006 * (player.motivation ?? 0);
   return (
     <header className={`topbar ${home ? 'is-home' : ''}`}>
       {!home && (
@@ -79,6 +82,17 @@ export const ResourceBar: React.FC = () => {
           </span>
           <span className="wallet-pill is-dim num">
             {t('День')} {player.currentDay ?? 1}
+          </span>
+        </div>
+      )}
+
+      {/* A: виталы видны на каждом табе, а не только на «Сегодня» */}
+      {!home && (
+        <div className="topbar-vitals" aria-label={t('Состояние')}>
+          <StatBar compact resource="mood" value={player.motivation} max={100} label={t('Мотивация')} />
+          <StatBar compact resource="health" value={player.health} max={100} label={t('Здоровье')} />
+          <span className="topbar-mult num" title={t('Мотивация умножает весь опыт: ×{p0}', { p0: xpMult.toFixed(2) })}>
+            {t('опыт ×{p0}', { p0: xpMult.toFixed(1) })}
           </span>
         </div>
       )}
@@ -124,8 +138,12 @@ export const ResourceBar: React.FC = () => {
             </div>
             <div className="hud-vitals">
               <StatBar compact resource="energy" value={player.energy} max={player.maxEnergy || 10} />
+              {/* ярлык «Настроение» стабилен для a11y; множитель — подписью */}
               <StatBar compact resource="mood" value={player.motivation} max={100} />
               <StatBar compact resource="health" value={player.health} max={100} />
+            </div>
+            <div className="topbar-mult hud-mult num" title={t('Мотивация умножает весь опыт: ×{p0}', { p0: xpMult.toFixed(2) })}>
+              {t('Мотивация · опыт ×{p0}', { p0: xpMult.toFixed(1) })}
             </div>
           </div>
         </section>

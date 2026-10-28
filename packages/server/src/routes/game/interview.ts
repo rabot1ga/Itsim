@@ -192,8 +192,11 @@ export async function interviewRoutes(app: FastifyInstance) {
       answerScore,
     });
     const usedRecommendation = !!state.recommendation; // D2: рекомендация — гарантированный исход
-    const passed = usedRecommendation ? true : rollInterview(chance, balanceRng(state));
+    // F: pity — серия отказов поднимает шанс (потолок +28%)
+    const pity = Math.min(4, state.interviewRejectStreak ?? 0) * 0.07;
+    const passed = usedRecommendation ? true : rollInterview(chance + pity, balanceRng(state));
     if (usedRecommendation) state.recommendation = false; // рекомендация сгорает
+    if (passed) state.interviewRejectStreak = 0;
     let resultMessage: string;
     if (passed) {
       const salary = Math.round((GRADE_SALARIES[app.grade] * (company?.salaryMult ?? 1)) / 1000) * 1000;
@@ -224,9 +227,11 @@ export async function interviewRoutes(app: FastifyInstance) {
     } else {
       app.status = 'rejected';
       app.result = 'rejected';
+      const streak = Math.min(4, (state.interviewRejectStreak ?? 0) + 1);
+      state.interviewRejectStreak = streak;
       resultMessage = t(
-        'Собеседование ({correct}/{total}): «мы впечатлены, но решили двигаться с другим кандидатом». Подтяни навыки и пробуй снова!',
-        { correct: correct, total: total }
+        'Собеседование ({correct}/{total}): «мы впечатлены, но решили двигаться с другим кандидатом». Подтяни навыки и пробуй снова! (следующее +{p0}%)',
+        { correct: correct, total: total, p0: Math.round(streak * 7) }
       );
     }
     state.interviewSession = undefined;

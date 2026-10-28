@@ -293,6 +293,7 @@ export function advanceDay(state: StoredState, content: any, messages: string[])
       const outcome = resolveBid(bid.chance, rng());
       if (outcome === 'won') {
         state.activeProject = startProject(def, state.currentDay);
+        state.freelanceRejectStreak = 0;
         messages.push(
           t('Заказчик выбрал тебя: «{p0}». Дедлайн — день {p1}', {
             p0: def.title,
@@ -300,6 +301,7 @@ export function advanceDay(state: StoredState, content: any, messages: string[])
           })
         );
       } else if (outcome === 'consolation') {
+        state.freelanceRejectStreak = 0;
         const perkMult = Math.max(0, perkEffectSum(state, content, 'freelancePaymentMult') - 1);
         const pay = Math.round(consolationPayment(def) * (1 + perkMult));
         state.money += pay;
@@ -309,7 +311,16 @@ export function advanceDay(state: StoredState, content: any, messages: string[])
           t('«{p0}» ушёл другому, но тестовое задание оплатили: +{p1}', { p0: def.title, p1: fmtMoney(pay) })
         );
       } else {
-        messages.push(t('«{p0}»: заказчик выбрал исполнителя опытнее. Попробуй ещё раз', { p0: def.title }));
+        // F: pity — серия отказов видимо поднимает шанс следующей ставки
+        const streak = Math.min(4, (state.freelanceRejectStreak ?? 0) + 1);
+        state.freelanceRejectStreak = streak;
+        const pity = Math.round(streak * 7);
+        messages.push(
+          t('«{p0}»: заказчик выбрал исполнителя опытнее. Попробуй ещё раз — следующая попытка +{p1}%', {
+            p0: def.title,
+            p1: pity,
+          })
+        );
       }
     }
   }
@@ -435,8 +446,11 @@ function resolveInterview(state: StoredState, app: Application, content: any, me
     companyBar: company.interviewBar ?? 1,
     answerScore,
   });
-  const passed = rollInterview(chance, rng);
+  // F: pity — серия отказов поднимает шанс (потолок +28%)
+  const pity = Math.min(4, state.interviewRejectStreak ?? 0) * 0.07;
+  const passed = rollInterview(chance + pity, rng);
   if (passed) {
+    state.interviewRejectStreak = 0;
     const salary = Math.round((GRADE_SALARIES[app.grade] * (company.salaryMult ?? 1)) / 1000) * 1000;
     const offer: Offer = {
       companyId: company.id,
@@ -464,9 +478,12 @@ function resolveInterview(state: StoredState, app: Application, content: any, me
   } else {
     app.status = 'rejected';
     app.result = 'rejected';
+    const streak = Math.min(4, (state.interviewRejectStreak ?? 0) + 1);
+    state.interviewRejectStreak = streak;
     messages.push(
-      t('Ты пропустил собеседование в «{p0}» — без кандидата решили не рисковать. Попробуй ещё раз через пару дней', {
+      t('Ты пропустил собеседование в «{p0}» — без кандидата решили не рисковать. Попробуй ещё раз через пару дней (следующее +{p1}%)', {
         p0: company.name,
+        p1: Math.round(streak * 7),
       })
     );
   }

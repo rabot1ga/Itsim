@@ -190,6 +190,10 @@ export interface PlayerState {
   activeProject?: PlayerProject | null;
   /** отклик на заказ, отправленный сегодня; ответ приходит при смене дня */
   freelanceBid?: FreelanceBid | null;
+  /** F (аудит 28.10): серия отказов на бирже — pity поднимает шанс следующей ставки */
+  freelanceRejectStreak?: number;
+  /** F: серия отказов на собеседованиях — pity поднимает шанс следующего интервью */
+  interviewRejectStreak?: number;
   /** ids of projects delivered in this life */
   projectsDone?: string[];
 

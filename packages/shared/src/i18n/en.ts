@@ -4641,4 +4641,19 @@ Object.assign(en, {
   'День 2 — цепочка: действие → завершить': 'Day 2 — the loop: act → wrap up',
   'Повтори вчерашний ритм: 2–3 действия из плана (или из табов «Работа» и «Развитие»), затем «Завершить день». Пока зарплаты нет, деньги дают подработки на «Работе» — следи за строкой «Стоимость дня».':
     'Repeat yesterday’s rhythm: 2–3 actions from the plan (or the "Work" and "Study" tabs), then "Wrap up the day". No salary yet — side gigs on "Work" pay the bills; watch the "Cost of the day" line.',
+
+  // A–F (аудит 28.10): виталы на всех табах, раскрытие «Развития», pay-off работы, pity
+  'Состояние': 'Vitals',
+  'Мотивация · опыт ×{p0}': 'Motivation · ×{p0} XP',
+  'Мотивация умножает весь опыт: ×{p0}': 'Motivation multiplies all XP: ×{p0}',
+  'опыт ×{p0}': 'XP ×{p0}',
+  'Готовые маршруты развития — загляни, когда определишься с направлением': 'Ready-made growth routes — peek once you know your direction',
+  'Постоянные бонусы за развитие — открываются по мере роста': 'Permanent perks from growth — unlock as you level up',
+  'доступно': 'available',
+  'повезёт: {p0}% за серию отказов': 'luck bonus: {p0}% for the losing streak',
+  'Задачи + разбор чужого кода. Растёшь не только ты (+{p0})': 'Tickets done + code reviews. You are not the only one growing (+{p0})',
+  'Закрыл рабочие задачи. Ретроспектива отменена, все свободны (+{p0})': 'Work tickets closed. Retro cancelled, everyone is free (+{p0})',
+  '«{p0}»: заказчик выбрал исполнителя опытнее. Попробуй ещё раз — следующая попытка +{p1}%': '“{p0}”: the client picked someone more senior. Try again — next attempt +{p1}%',
+  'Ты пропустил собеседование в «{p0}» — без кандидата решили не рисковать. Попробуй ещё раз через пару дней (следующее +{p1}%)': 'You missed the interview at “{p0}” — they would not risk it without a candidate. Try again in a couple of days (next one +{p1}%)',
+  'Собеседование ({correct}/{total}): «мы впечатлены, но решили двигаться с другим кандидатом». Подтяни навыки и пробуй снова! (следующее +{p0}%)': 'Interview ({correct}/{total}): “we are impressed but decided to move on with another candidate”. Sharpen your skills and try again! (next one +{p0}%)',
 });
