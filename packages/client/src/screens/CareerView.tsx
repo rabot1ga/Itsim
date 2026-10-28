@@ -65,7 +65,6 @@ export const CareerView: React.FC = () => {
   const [attempt, setAttempt] = useState(0);
   const [busy, setBusy] = useState(false);
   const lock = useRef(false);
-  const error = useGameStore((s) => s.error);
   const act = async (action: () => Promise<unknown>) => {
     if (lock.current) return;
     lock.current = true;

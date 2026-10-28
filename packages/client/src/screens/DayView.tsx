@@ -5,7 +5,7 @@ import { HomeRoomCard } from '../components/HomeRoomCard';
 import { ActionGrid, toTile } from '../components/ActionGrid';
 import { challengeDelegate, pickDayPlan } from './dayPlan';
 import { SprintCard } from '../components/SprintCard';
-import { SectionTitle, accordionBodyRef } from '../components/ui';
+import { SectionTitle } from '../components/ui';
 import { PixelIcon } from '../components/pixel/PixelIcon';
 import { formatMoney } from './actionCatalogue';
 import { tipForDay } from './dayTips';
