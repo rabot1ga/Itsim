@@ -316,7 +316,9 @@ export const SkillsView: React.FC = () => {
           <Fold
             title={t('Пути-архетипы')}
             hint={t('Готовые маршруты развития — загляни, когда определишься с направлением')}
-            defaultOpen={Boolean(chosenArch) || (player.grade && player.grade !== 'unemployed' && player.grade !== 'intern')}
+            defaultOpen={
+              Boolean(chosenArch) || (player.grade && player.grade !== 'unemployed' && player.grade !== 'intern')
+            }
           >
             {archViews.length === 0 ? (
               <p className="subtle mt-2">
@@ -398,9 +400,14 @@ export const SkillsView: React.FC = () => {
           <Fold
             title={t('Перки')}
             hint={t('Постоянные бонусы за развитие — открываются по мере роста')}
-            defaultOpen={perks.length > 0 && ((player.perks ?? []).length > 0 || perks.some((perk) => canUnlockPerk(player, perk.requires, branchOf)))}
+            defaultOpen={
+              perks.length > 0 &&
+              ((player.perks ?? []).length > 0 || perks.some((perk) => canUnlockPerk(player, perk.requires, branchOf)))
+            }
             badge={
-              perks.some((perk) => !(player.perks ?? []).includes(perk.id) && canUnlockPerk(player, perk.requires, branchOf)) ? (
+              perks.some(
+                (perk) => !(player.perks ?? []).includes(perk.id) && canUnlockPerk(player, perk.requires, branchOf)
+              ) ? (
                 <ResChip tone="positive">{t('доступно')}</ResChip>
               ) : undefined
             }

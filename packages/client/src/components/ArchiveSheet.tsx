@@ -30,11 +30,7 @@ export const ArchiveSheet: React.FC<{ open: boolean; onClose: () => void }> = ({
   if (!open) return null;
   return (
     <div className="archive-backdrop" onClick={onClose}>
-      <nav
-        className="archive-sheet animate-pop-in"
-        aria-label={t('Архив')}
-        onClick={(e) => e.stopPropagation()}
-      >
+      <nav className="archive-sheet animate-pop-in" aria-label={t('Архив')} onClick={(e) => e.stopPropagation()}>
         <h2 className="archive-title">{t('Архив жизни')}</h2>
         <div className="archive-grid">
           {ARCHIVE_ENTRIES.map((e) => (

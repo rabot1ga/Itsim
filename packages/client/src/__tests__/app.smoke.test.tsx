@@ -99,7 +99,8 @@ describe('App', () => {
     // доходим «Пропустить»/«Дальше», последняя карточка — «Завершить день».
     // Между кликами ждём анимацию улёта (DeckCard ~160ms).
     for (let i = 0; i < 12 && !document.querySelector('[data-deck-id="end"]'); i++) {
-      const skip = screen.queryByRole('button', { name: 'Пропустить' }) ?? screen.queryByRole('button', { name: 'Дальше' });
+      const skip =
+        screen.queryByRole('button', { name: 'Пропустить' }) ?? screen.queryByRole('button', { name: 'Дальше' });
       if (!skip) break;
       fireEvent.click(skip);
       await act(async () => {

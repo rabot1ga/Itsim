@@ -2,46 +2,48 @@ import { test, expect } from '@playwright/test';
 import { resolveStory } from './helpers/story';
 
 /**
- * Онбординг (design.md §16/B: заставка + чек-лист «Первые шаги»).
+ * Онбординг = первые карточки стека (DESIGN-DECK §7.2, «Колода» B):
+ * заставка упразднена — интро живёт внутри дня, его нельзя пропустить мимо.
  *
- * Единственная защита от «я не понимаю, что делать» — и единственная часть
- * продукта, которая вообще объясняет, что день = энергия. При этом он не был
- * покрыт ни одним e2e: сломать его можно было молча.
- *
- * Ключ продублирован с ONBOARDING_KEY в `client/src/screens/OnboardingView.tsx`
+ * Ключ продублирован с ONBOARDING_KEY в `client/src/lib/firstSteps.ts`
  * специально: проверка после reload обязана упасть, если ключ разъедётся (иначе
- * онбординг снова начали бы показывать каждый день).
+ * интро снова начали бы показывать каждый день).
  */
 const ONBOARDED_KEY = 'itsim_onboarded_v1';
 
-test('первый запуск: слайды показываются, «Пропустить» возвращает в игру и не повторяется', async ({ page }) => {
+test('первый запуск: интро-карточки стека, «Пропустить»/«Начать жизнь», без повторов', async ({ page }) => {
   await page.goto('/');
   await page.evaluate(() => localStorage.clear());
   await page.reload();
 
-  const slide = (title: string) => expect(page.getByRole('heading', { level: 2, name: title })).toBeVisible();
-
-  await slide('Симулятор жизни айтишника');
+  // первая карточка стека — интро; заголовок-слайд тот же, что был на заставке
+  const intro1 = page.locator('[data-deck-id="intro-1"]');
+  await expect(intro1).toBeVisible();
+  await expect(intro1.getByRole('heading', { name: 'Симулятор жизни айтишника' })).toBeVisible();
   // «Пропустить» обязано быть доступно сразу, а не только на последнем слайде
-  await expect(page.getByRole('button', { name: 'Пропустить' })).toBeVisible();
+  await expect(intro1.getByRole('button', { name: 'Пропустить' })).toBeVisible();
 
-  // B (аудит 28.10): онбординг сокращён до заставки — учим деланием в «Первых шагах»
-  await page.getByRole('button', { name: 'Дальше' }).click();
-  await slide('Каждый день — это энергия');
+  await intro1.getByRole('button', { name: 'Дальше' }).click();
+  const intro2 = page.locator('[data-deck-id="intro-2"]');
+  await expect(intro2).toBeVisible();
+  await expect(intro2.getByRole('heading', { name: 'Каждый день — это энергия' })).toBeVisible();
 
-  // на последнем слайде «Дальше» превращается в «Начать жизнь»
-  await page.getByRole('button', { name: 'Начать жизнь' }).click();
-  await expect(page.locator('.onboard')).toHaveCount(0);
+  // на последнем слайде «Дальше» превращается в «Начать жизнь»;
+  // ждём исчезновения ИМЕННО intro-2 — иначе проверка успеет пройти до
+  // 160-мс анимации улёта, когда ключ ещё не записан
+  await intro2.getByRole('button', { name: 'Начать жизнь' }).click();
+  await expect(intro2).toHaveCount(0);
   await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toBeVisible();
-  expect(await page.evaluate((key) => localStorage.getItem(key), ONBOARDED_KEY)).toBeTruthy();
+  await expect.poll(() => page.evaluate((key) => localStorage.getItem(key), ONBOARDED_KEY)).toBeTruthy();
 
   // обучение деланием: чек-лист «Первые шаги» — карточка стека (после «Утро»)
   await page.locator('[data-deck-id="morning"]').getByRole('button', { name: 'Дальше' }).click();
   await expect(page.getByTestId('first-steps')).toBeVisible();
 
-  // повторный запуск — сразу игра, без обучения
+  // повторный запуск — сразу игра, без интро
   await page.reload();
-  await expect(page.locator('.onboard')).toHaveCount(0);
+  await expect(page.locator('[data-deck-id="intro-1"]')).toHaveCount(0);
+  await expect(page.locator('[data-deck-id="intro-2"]')).toHaveCount(0);
   // сразу игра: «Сегодня» с живой карточкой комнаты (design.md §5, строка 1) —
   // миниатюра тира (HomeRoomCard); действия комнаты — только во вкладке «Дом»
   await expect(page.locator('img.room-thumb')).toBeVisible();
@@ -50,5 +52,20 @@ test('первый запуск: слайды показываются, «Про
   // его сюжетом. Если его не закрыть, модалка уедет вместе с сейвом в следующий
   // спек: сервер отвергает действия при открытом событии, и сосед краснеет на
   // «краска не поменялась» / «отклик не отправлен».
+  await resolveStory(page, { strict: false });
+});
+
+test('«Пропустить» закрывает интро сразу и навсегда', async ({ page }) => {
+  await page.goto('/');
+  await page.evaluate(() => localStorage.clear());
+  await page.reload();
+
+  await page.locator('[data-deck-id="intro-1"]').getByRole('button', { name: 'Пропустить' }).click();
+  await expect(page.locator('[data-deck-id="intro-1"]')).toHaveCount(0);
+  await expect(page.locator('[data-deck-id="intro-2"]')).toHaveCount(0);
+  expect(await page.evaluate((key) => localStorage.getItem(key), ONBOARDED_KEY)).toBeTruthy();
+
+  await page.reload();
+  await expect(page.locator('[data-deck-id="intro-1"]')).toHaveCount(0);
   await resolveStory(page, { strict: false });
 });

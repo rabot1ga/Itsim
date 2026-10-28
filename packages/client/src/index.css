@@ -2671,14 +2671,28 @@ select {
   padding: 1rem 1.05rem 1.1rem;
   touch-action: pan-y;
   user-select: none;
-  transition: transform 0.18s ease, opacity 0.18s ease;
+  transition:
+    transform 0.18s ease,
+    opacity 0.18s ease;
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
 }
-.deck-card-day { border-color: rgba(120, 160, 255, 0.35); }
-.deck-card-hook { border-color: rgba(120, 220, 170, 0.32); }
-.deck-card-end { border-color: rgba(200, 160, 255, 0.4); }
-.deck-fly-right { transform: translateX(120%) rotate(10deg); opacity: 0; }
-.deck-fly-left { transform: translateX(-120%) rotate(-10deg); opacity: 0; }
+.deck-card-day {
+  border-color: rgba(120, 160, 255, 0.35);
+}
+.deck-card-hook {
+  border-color: rgba(120, 220, 170, 0.32);
+}
+.deck-card-end {
+  border-color: rgba(200, 160, 255, 0.4);
+}
+.deck-fly-right {
+  transform: translateX(120%) rotate(10deg);
+  opacity: 0;
+}
+.deck-fly-left {
+  transform: translateX(-120%) rotate(-10deg);
+  opacity: 0;
+}
 .deck-card-head {
   display: flex;
   align-items: center;
@@ -2691,14 +2705,20 @@ select {
   letter-spacing: -0.01em;
   color: var(--text-primary, #eef1f8);
 }
-.deck-card-meta { margin-bottom: 0.45rem; }
+.deck-card-meta {
+  margin-bottom: 0.45rem;
+}
 .deck-cost {
   font-size: 0.72rem;
   letter-spacing: 0.03em;
   color: var(--text-faint, #8b93a7);
 }
-.deck-reward { color: var(--accent-moss, #8fd6a8); }
-.deck-card-body { margin: 0.25rem 0; }
+.deck-reward {
+  color: var(--accent-moss, #8fd6a8);
+}
+.deck-card-body {
+  margin: 0.25rem 0;
+}
 .deck-card-flavor {
   margin-top: 0.55rem;
   font-size: 0.78rem;
@@ -2714,7 +2734,9 @@ select {
   flex: 1;
   min-height: 44px;
 }
-.deck-btn-spacer { flex: 1; }
+.deck-btn-spacer {
+  flex: 1;
+}
 .deck-rows {
   display: flex;
   flex-direction: column;
@@ -2729,7 +2751,9 @@ select {
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.04);
 }
-.deck-row[data-done='true'] { opacity: 0.6; }
+.deck-row[data-done='true'] {
+  opacity: 0.6;
+}
 .deck-footer {
   display: flex;
   align-items: center;
@@ -2773,4 +2797,32 @@ select {
 }
 .archive-item {
   text-align: left;
+}
+
+/* Варианты ответа карточек (квиз собеседования, события) */
+.deck-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+.deck-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.55rem;
+  width: 100%;
+  text-align: left;
+  padding: 0.65rem 0.75rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-soft, rgba(255, 255, 255, 0.1));
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 0.85rem;
+  color: var(--text-primary, #eef1f8);
+}
+.deck-option[data-state='correct'] {
+  border-color: rgba(120, 220, 170, 0.6);
+  background: rgba(120, 220, 170, 0.12);
+}
+.deck-option[data-state='dim'] {
+  opacity: 0.45;
 }

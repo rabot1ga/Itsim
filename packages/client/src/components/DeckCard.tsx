@@ -113,11 +113,7 @@ export const DeckCard: React.FC<{
 };
 
 /** Строка-мета: цена действия и награда видны ДО решения */
-export const DeckCost: React.FC<{ energy?: number; cost?: number; reward?: string }> = ({
-  energy,
-  cost,
-  reward,
-}) => (
+export const DeckCost: React.FC<{ energy?: number; cost?: number; reward?: string }> = ({ energy, cost, reward }) => (
   <span className="deck-cost num">
     {energy ? `−${energy} ${t('энергия')}` : ''}
     {energy && cost ? ' · ' : ''}

@@ -339,9 +339,16 @@ describe('events', () => {
     });
     // памятка — пост в ленту «Знаковые события» (id детерминирован, сим ходит тем же кодом)
     expect(updated.milestones).toHaveLength(1);
-    expect(updated.milestones![0]).toMatchObject({ id: 'mem:12:Победа на хакатоне:0', day: 12, key: 'Победа на хакатоне' });
+    expect(updated.milestones![0]).toMatchObject({
+      id: 'mem:12:Победа на хакатоне:0',
+      day: 12,
+      key: 'Победа на хакатоне',
+    });
     // исход без памятки ленту не трогает
-    const plain = applyEventEffects({ ...basePlayer, milestones: updated.milestones }, { text: 't', effects: { motivation: 1 } });
+    const plain = applyEventEffects(
+      { ...basePlayer, milestones: updated.milestones },
+      { text: 't', effects: { motivation: 1 } }
+    );
     expect(plain.milestones).toHaveLength(1);
   });
 });

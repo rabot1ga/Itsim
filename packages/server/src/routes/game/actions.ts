@@ -370,11 +370,11 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       state.lastFreelanceDay = state.currentDay;
       delta.freelanceBid = state.freelanceBid;
       return {
-        message: t('Отклик на «{p0}» отправлен. Заказчик ответит утром — шанс {p1}%', {
-          p0: def.title,
-          p1: Math.round(finalChance * 100),
-        }) +
-          (pity > 0 ? ' ' + t('повезёт: {p0}% за серию отказов', { p0: Math.round(pity * 100) }) : ''),
+        message:
+          t('Отклик на «{p0}» отправлен. Заказчик ответит утром — шанс {p1}%', {
+            p0: def.title,
+            p1: Math.round(finalChance * 100),
+          }) + (pity > 0 ? ' ' + t('повезёт: {p0}% за серию отказов', { p0: Math.round(pity * 100) }) : ''),
         delta,
       };
     }

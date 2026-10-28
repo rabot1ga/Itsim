@@ -208,10 +208,10 @@ export function applyEventEffects(p: PlayerState, choice: EventChoice): PlayerSt
   if (e.memory) {
     const feed = next.milestones ?? [];
     const id = `mem:${next.currentDay ?? 1}:${e.memory.key}:${feed.length}`;
-    next.milestones = [
-      { id, day: next.currentDay ?? 1, key: e.memory.key, params: e.memory.params },
-      ...feed,
-    ].slice(0, MAX_MILESTONES);
+    next.milestones = [{ id, day: next.currentDay ?? 1, key: e.memory.key, params: e.memory.params }, ...feed].slice(
+      0,
+      MAX_MILESTONES
+    );
   }
 
   return next;

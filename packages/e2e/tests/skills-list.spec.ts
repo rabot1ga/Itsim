@@ -7,7 +7,7 @@ import { openView, goToday } from './helpers/nav';
  * ещё до первого асерта.
  */
 async function openLearning(page: Page) {
-  await page
+  await page;
   await openView(page, 'Развитие');
 }
 

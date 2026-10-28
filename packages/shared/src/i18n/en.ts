@@ -4643,22 +4643,29 @@ Object.assign(en, {
     'Repeat yesterday’s rhythm: 2–3 actions from the plan (or the "Work" and "Study" tabs), then "Wrap up the day". No salary yet — side gigs on "Work" pay the bills; watch the "Cost of the day" line.',
 
   // A–F (аудит 28.10): виталы на всех табах, раскрытие «Развития», pay-off работы, pity
-  'Состояние': 'Vitals',
+  Состояние: 'Vitals',
   'Мотивация · опыт ×{p0}': 'Motivation · ×{p0} XP',
   'Мотивация умножает весь опыт: ×{p0}': 'Motivation multiplies all XP: ×{p0}',
   'опыт ×{p0}': 'XP ×{p0}',
-  'Готовые маршруты развития — загляни, когда определишься с направлением': 'Ready-made growth routes — peek once you know your direction',
+  'Готовые маршруты развития — загляни, когда определишься с направлением':
+    'Ready-made growth routes — peek once you know your direction',
   'Постоянные бонусы за развитие — открываются по мере роста': 'Permanent perks from growth — unlock as you level up',
-  'доступно': 'available',
+  доступно: 'available',
   'повезёт: {p0}% за серию отказов': 'luck bonus: {p0}% for the losing streak',
-  'Задачи + разбор чужого кода. Растёшь не только ты (+{p0})': 'Tickets done + code reviews. You are not the only one growing (+{p0})',
-  'Закрыл рабочие задачи. Ретроспектива отменена, все свободны (+{p0})': 'Work tickets closed. Retro cancelled, everyone is free (+{p0})',
-  '«{p0}»: заказчик выбрал исполнителя опытнее. Попробуй ещё раз — следующая попытка +{p1}%': '“{p0}”: the client picked someone more senior. Try again — next attempt +{p1}%',
-  'Ты пропустил собеседование в «{p0}» — без кандидата решили не рисковать. Попробуй ещё раз через пару дней (следующее +{p1}%)': 'You missed the interview at “{p0}” — they would not risk it without a candidate. Try again in a couple of days (next one +{p1}%)',
-  'Собеседование ({correct}/{total}): «мы впечатлены, но решили двигаться с другим кандидатом». Подтяни навыки и пробуй снова! (следующее +{p0}%)': 'Interview ({correct}/{total}): “we are impressed but decided to move on with another candidate”. Sharpen your skills and try again! (next one +{p0}%)',
+  'Задачи + разбор чужого кода. Растёшь не только ты (+{p0})':
+    'Tickets done + code reviews. You are not the only one growing (+{p0})',
+  'Закрыл рабочие задачи. Ретроспектива отменена, все свободны (+{p0})':
+    'Work tickets closed. Retro cancelled, everyone is free (+{p0})',
+  '«{p0}»: заказчик выбрал исполнителя опытнее. Попробуй ещё раз — следующая попытка +{p1}%':
+    '“{p0}”: the client picked someone more senior. Try again — next attempt +{p1}%',
+  'Ты пропустил собеседование в «{p0}» — без кандидата решили не рисковать. Попробуй ещё раз через пару дней (следующее +{p1}%)':
+    'You missed the interview at “{p0}” — they would not risk it without a candidate. Try again in a couple of days (next one +{p1}%)',
+  'Собеседование ({correct}/{total}): «мы впечатлены, но решили двигаться с другим кандидатом». Подтяни навыки и пробуй снова! (следующее +{p0}%)':
+    'Interview ({correct}/{total}): “we are impressed but decided to move on with another candidate”. Sharpen your skills and try again! (next one +{p0}%)',
 
   // B+G (аудит 28.10): «Первые шаги» + утренняя сводка «Что почти готово»
-  'Оффер «{p0}» сгорает через {p1} дн. — прими его в «Карьере»': 'The “{p0}” offer expires in {p1} d. — accept it in “Career”',
+  'Оффер «{p0}» сгорает через {p1} дн. — прими его в «Карьере»':
+    'The “{p0}” offer expires in {p1} d. — accept it in “Career”',
   'Проект сдать сегодня — закрой задачи в «Карьере»': 'The project is due today — close its tasks in “Career”',
   'Проект: {p0} дн. до дедлайна': 'Project: {p0} d. to the deadline',
   'Ревью на «{p0}» — сегодня': 'The “{p0}” review is today',
@@ -4674,8 +4681,10 @@ Object.assign(en, {
   'Выбери основной навык во вкладке «Развитие»': 'Pick your main skill in the “Study” tab',
 
   // D+H (аудит 28.10): живые уведомления + финальный темп
-  'Бот пришлёт сообщение, когда банк офлайн-дней заполнен. Выключено — напоминаний не будет': 'The bot pings you when the offline-day bank is full. Off — no nudges',
-  'Ты свежий архитектор — борд выдвинет кандидатуру после {p0} дн. в грейде (сейчас {p1})': 'You are a fresh architect — the board nominates after {p0} days in grade (now {p1})',
+  'Бот пришлёт сообщение, когда банк офлайн-дней заполнен. Выключено — напоминаний не будет':
+    'The bot pings you when the offline-day bank is full. Off — no nudges',
+  'Ты свежий архитектор — борд выдвинет кандидатуру после {p0} дн. в грейде (сейчас {p1})':
+    'You are a fresh architect — the board nominates after {p0} days in grade (now {p1})',
   'Премия за грейд: +{p0}': 'Grade bonus: +{p0}',
 
   // I (аудит 28.10): памятки об исходах событий — лента «Знаковые события»
@@ -4692,16 +4701,16 @@ Object.assign(en, {
   'Мейнтейнер популярного открытого проекта': 'Maintainer of a popular open-source project',
 
   // DESIGN-DECK (28.10.2026): стек дня и архив
-  'Архив': 'Archive',
+  Архив: 'Archive',
   'Архив жизни': 'Life archive',
   'Все детали дня': 'All day details',
   'День {p0}': 'Day {p0}',
-  'Завершить': 'Wrap up',
-  'Закрыть': 'Close',
+  Завершить: 'Wrap up',
+  Закрыть: 'Close',
   'Обзор дня': 'Day overview',
   'Осталось карточек: {p0}': 'Cards left: {p0}',
   'Сводка покажет, чем запомнился день': 'The summary shows what the day is remembered for',
-  'Сделать': 'Do it',
+  Сделать: 'Do it',
   'Спринт недели': 'Weekly sprint',
   'все детали: быт, майнинг, банк дней': 'every detail: chores, mining, day bank',
   'доход, курс, свет': 'income, exchange rate, power',
@@ -4716,4 +4725,31 @@ Object.assign(en, {
   'таблица игроков': 'leaderboard',
   'уход, игра, комнаты': 'care, play, rooms',
   'язык, звук, уведомления': 'language, sound, notifications',
+
+  // стадия 2 «Колода»: контент-карточки, квиз собеседования, pity-метки
+  '3 вопроса по специализации: правильные ответы повышают шанс оффера. Каждый ответ даёт XP':
+    '3 specialization questions: right answers raise the offer chance. Each answer gives XP',
+  'Game not started': 'Game not started',
+  '\n Путь {titles} пройден — забери бонус в карточке пути':
+    '\n Path {titles} complete — claim the bonus on the path card',
+  '\n Спринт недели выполнен — награда ждёт в карточке спринта':
+    '\n Weekly sprint done — the reward waits on the sprint card',
+  'Активный проект': 'Active project',
+  'В этот раз не вышло': 'Not this time',
+  'Верных ответов: {p0}/{p1}': 'Correct answers: {p0}/{p1}',
+  'Вопрос {p0} из {p1}': 'Question {p0} of {p1}',
+  'Все задачи готовы — можно сдавать': 'All tasks done — ready to submit',
+  'Задач: {p0}/{p1}': 'Tasks: {p0}/{p1}',
+  Начать: 'Start',
+  'Оффер получен!': 'Offer received!',
+  'Подтяни навыки: серия отказов повышает шанс следующего собеседования':
+    'Level up skills: a rejection streak raises the next interview chance',
+  Позже: 'Later',
+  'Прими оффер в «Карьере» — он сгорит через 5 дней': 'Accept the offer in «Career» — it expires in 5 days',
+  'Собеседование сегодня': 'Interview today',
+  'Спасибо! Покупка «{p0}» активирована.\n{p1}': 'Thanks! Purchase «{p0}» activated.\n{p1}',
+  'дедлайн через {p0} дн.': 'deadline in {p0} d',
+  'повезёт: следующее собеседование +{p0}%': 'luck: next interview +{p0}%',
+  'повезёт: следующий отклик +{p0}%': 'luck: next reply +{p0}%',
+  'шанс был {p0}%': 'chance was {p0}%',
 });

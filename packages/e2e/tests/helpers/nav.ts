@@ -12,5 +12,8 @@ export async function openView(page: Page, name: string | RegExp): Promise<void>
 }
 
 export async function goToday(page: Page): Promise<void> {
-  await page.getByRole('navigation', { name: 'Основная навигация' }).getByRole('button', { name: 'Сегодня', exact: true }).click();
+  await page
+    .getByRole('navigation', { name: 'Основная навигация' })
+    .getByRole('button', { name: 'Сегодня', exact: true })
+    .click();
 }

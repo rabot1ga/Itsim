@@ -6,6 +6,8 @@
  * реальными обработчиками действий и выбора навыка.
  */
 export const FIRST_STEPS_KEY = 'itsim_first_steps_v1';
+/** Флаг «интро-карточки стека показаны» (B, DESIGN-DECK §7.2) */
+export const ONBOARDING_KEY = 'itsim_onboarded_v1';
 export interface FirstSteps {
   action: boolean;
   focus: boolean;

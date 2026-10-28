@@ -1,19 +1,11 @@
 import { t } from './lib/i18n';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useGameStore } from './store/gameStore';
 import { GameScreen } from './components/GameScreen';
 import { ResourceBar } from './components/ResourceBar';
 import { showBackButton, hideBackButton, applyTelegramChrome } from './lib/telegram';
-import { OnboardingView, ONBOARDING_KEY } from './screens/OnboardingView';
 const App: React.FC = () => {
   const { initialized, screen, currentView, setView, initGame } = useGameStore();
-  const [onboarded, setOnboarded] = useState(() => {
-    try {
-      return localStorage.getItem(ONBOARDING_KEY) === '1';
-    } catch {
-      return true;
-    }
-  });
   useEffect(() => {
     // Paint Telegram's own header/background in our ink so the app has no seams.
     applyTelegramChrome();
@@ -48,14 +40,6 @@ const App: React.FC = () => {
     showBackButton(toMain);
     return () => hideBackButton(toMain);
   }, [initialized, screen, currentView, setView]);
-  const finishOnboarding = () => {
-    try {
-      localStorage.setItem(ONBOARDING_KEY, '1');
-    } catch {
-      /* storage unavailable — the tour simply repeats next launch */
-    }
-    setOnboarded(true);
-  };
   if (!initialized) {
     return (
       <div className="app-container">
@@ -72,13 +56,6 @@ const App: React.FC = () => {
             ))}
           </div>
         </div>
-      </div>
-    );
-  }
-  if (!onboarded) {
-    return (
-      <div className="app-container">
-        <OnboardingView onDone={finishOnboarding} />
       </div>
     );
   }

@@ -481,10 +481,13 @@ function resolveInterview(state: StoredState, app: Application, content: any, me
     const streak = Math.min(4, (state.interviewRejectStreak ?? 0) + 1);
     state.interviewRejectStreak = streak;
     messages.push(
-      t('Ты пропустил собеседование в «{p0}» — без кандидата решили не рисковать. Попробуй ещё раз через пару дней (следующее +{p1}%)', {
-        p0: company.name,
-        p1: Math.round(streak * 7),
-      })
+      t(
+        'Ты пропустил собеседование в «{p0}» — без кандидата решили не рисковать. Попробуй ещё раз через пару дней (следующее +{p1}%)',
+        {
+          p0: company.name,
+          p1: Math.round(streak * 7),
+        }
+      )
     );
   }
 }

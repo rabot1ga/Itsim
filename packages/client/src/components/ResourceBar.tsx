@@ -142,7 +142,10 @@ export const ResourceBar: React.FC = () => {
               <StatBar compact resource="mood" value={player.motivation} max={100} />
               <StatBar compact resource="health" value={player.health} max={100} />
             </div>
-            <div className="topbar-mult hud-mult num" title={t('Мотивация умножает весь опыт: ×{p0}', { p0: xpMult.toFixed(2) })}>
+            <div
+              className="topbar-mult hud-mult num"
+              title={t('Мотивация умножает весь опыт: ×{p0}', { p0: xpMult.toFixed(2) })}
+            >
               {t('Мотивация · опыт ×{p0}', { p0: xpMult.toFixed(1) })}
             </div>
           </div>
