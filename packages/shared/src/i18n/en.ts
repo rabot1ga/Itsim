@@ -4672,4 +4672,9 @@ Object.assign(en, {
   'Выполни любое действие из плана дня': 'Complete any action from the day plan',
   'Заверши день и посмотри сводку': 'Wrap up the day and check the summary',
   'Выбери основной навык во вкладке «Развитие»': 'Pick your main skill in the “Study” tab',
+
+  // D+H (аудит 28.10): живые уведомления + финальный темп
+  'Бот пришлёт сообщение, когда банк офлайн-дней заполнен. Выключено — напоминаний не будет': 'The bot pings you when the offline-day bank is full. Off — no nudges',
+  'Ты свежий архитектор — борд выдвинет кандидатуру после {p0} дн. в грейде (сейчас {p1})': 'You are a fresh architect — the board nominates after {p0} days in grade (now {p1})',
+  'Премия за грейд: +{p0}': 'Grade bonus: +{p0}',
 });

@@ -297,12 +297,18 @@
       "rep": 68,
       "english": 34,
       "leadership": 32,
-      "minDaysInGrade": 150,
+      "minDaysInGrade": 90,
       "competition": 8,
       "special": true,
-      "electionIntervalDays": 90
+      "electionIntervalDays": 60
     }
   ],
+  "milestoneGradeBonus": {
+    "senior": 25000,
+    "teamlead": 50000,
+    "architect": 80000,
+    "cto": 150000
+  },
   "livingCosts": {
     "foodBase": 350,
     "foodBroke": 180,

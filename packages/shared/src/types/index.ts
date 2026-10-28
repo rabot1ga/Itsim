@@ -76,6 +76,8 @@ export interface Milestone {
   key: string;
   /** параметры подписи; строковые значения t() авто-переводит */
   params?: Record<string, unknown>;
+  /** H: премия за веху (грейд senior+), уже начисленная на момент поста */
+  bonus?: number;
 }
 
 /** Якоря позиций питомца на сцене комнаты (роадмап: скины и позиции). */
@@ -194,6 +196,8 @@ export interface PlayerState {
   freelanceRejectStreak?: number;
   /** F: серия отказов на собеседованиях — pity поднимает шанс следующего интервью */
   interviewRejectStreak?: number;
+  /** D (аудит 28.10): серверная правда о push-нуджах бота (undefined = включены) */
+  notificationsEnabled?: boolean;
   /** ids of projects delivered in this life */
   projectsDone?: string[];
 

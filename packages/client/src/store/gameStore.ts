@@ -3,6 +3,7 @@ import { create } from 'zustand';
 import { haptic, referralFromStartParam } from '../lib/telegram';
 import { playSfx } from '../lib/sfx';
 import { markFirstStep } from '../lib/firstSteps';
+import { PREF_KEYS, writePref } from '../lib/prefs';
 import type { PetRoomPosition } from '@itsim/shared';
 export type Screen = 'menu' | 'game' | 'loading';
 const API_BASE = '/api';
@@ -161,6 +162,8 @@ interface GameState {
   dropGain: (id: number) => void;
   unlockPerk: (perkId: string) => Promise<boolean>;
   setMainSkill: (skillId: string) => Promise<boolean>;
+  /** D: тумблер «Уведомления» — серверная правда для бота-нуджей */
+  setNotifications: (enabled: boolean) => Promise<boolean>;
   /** pick (or clear, with '') the route highlighted on the skill map (P1.3) */
   chooseArchetype: (archetypeId: string) => Promise<boolean>;
   /** one-time-per-life bonus for walking a route to the end (P1.3) */
@@ -503,6 +506,23 @@ export const useGameStore = create<GameState>((set, get) => ({
     } catch (err) {
       console.error('unlockPerk error:', err);
       set({ error: t('Сервер недоступен') });
+      return false;
+    }
+  },
+  setNotifications: async (enabled) => {
+    writePref(PREF_KEYS.notifications, enabled); // мгновенный фидбек на устройстве
+    try {
+      const res = await api('/game/notifications', {
+        method: 'POST',
+        body: JSON.stringify({ enabled }),
+      });
+      if (res.data?.state) {
+        set({ player: res.data.state, error: null });
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error('setNotifications error:', err);
       return false;
     }
   },

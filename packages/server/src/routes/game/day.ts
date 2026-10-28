@@ -540,6 +540,7 @@ export async function dayRoutes(app: FastifyInstance) {
     // Автопостинг вех: промоушен/миллион/год — пост в ленту профиля
     for (const m of recordMilestones(state, content.balance)) {
       messages.push(t('Веха: {p0}', { p0: t(m.key, m.params) }));
+      if (m.bonus) messages.push(t('Премия за грейд: +{p0}', { p0: fmtMoney(m.bonus) }));
     }
     await saveState(userId, state);
     return {
