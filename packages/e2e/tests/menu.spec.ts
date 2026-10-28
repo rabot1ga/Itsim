@@ -1,22 +1,22 @@
 import { test, expect } from '@playwright/test';
+import { openView, goToday } from './helpers/nav';
 
 /**
- * Reference 1.png: игра открывается сразу в четырёхтабной навигации (A2,
- * 25.10.2026): «Сегодня / Работа / Развитие / Прогресс», а «мир» (дом, питомец,
- * друзья, офис, майнинг) живёт контекстными дверями внутри экранов. Листа
- * «⋮ / Меню» больше нет.
+ * Reference 1.png (IA «Колода», DESIGN-DECK §2): игра открывается сразу в
+ * стеке дня; нижняя панель — два контрока: «Сегодня» (стек) и «Архив»
+ * (шторка со всеми экранами). Таббар упразднён.
  */
 for (const width of [320, 390, 480]) {
-  test(`reference 1.png opens directly into four-tab game at ${width}px`, async ({ page }) => {
+  test(`reference 1.png opens directly into the deck game at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 844 });
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');
-    await expect(page.locator('[data-ui-revision="10"]')).toBeVisible();
+    await expect(page.locator('[data-ui-revision="11"]')).toBeVisible();
     await expect(page.getByRole('button', { name: /^(Начать игру|Продолжить)/ })).toHaveCount(0);
     const nav = page.getByRole('navigation', { name: 'Основная навигация' });
-    expect(await nav.getByRole('button').allTextContents()).toEqual(['Сегодня', 'Работа', 'Развитие', 'Прогресс']);
+    expect(await nav.getByRole('button').allTextContents()).toEqual(['Сегодня', 'Архив']);
     await expect(page.getByRole('region', { name: 'Персонаж и состояние' })).toBeVisible();
-    // Комната на «Сегодня» — миниатюра тира (редизайн 22.10.2026): слоёв
+    // Комната над стеком — миниатюра тира (редизайн 22.10.2026): слоёв
     // room/avatar больше нет (идентичность снята), только сцена /art/room/.
     // alt=\"\" → getByRole('img') её не видит, локатор по классу.
     const roomThumb = page.locator('img.room-thumb');
@@ -24,9 +24,12 @@ for (const width of [320, 390, 480]) {
     await expect(roomThumb).toHaveAttribute('src', /^\/art\/room\/(start|cozy|work|dream)\.webp$/);
     expect(await roomThumb.evaluate((i: HTMLImageElement) => i.complete && i.naturalWidth > 0)).toBe(true);
     expect(await page.locator('img[src^="/layers/"]').count()).toBe(0);
-    for (const name of ['Работа', 'Развитие', 'Прогресс', 'Сегодня']) {
-      await nav.getByRole('button', { name, exact: true }).click();
-      await expect(nav.getByRole('button', { name, exact: true })).toHaveAttribute('aria-current', 'true');
+    // Стек дня: верхняя карточка — решение с кнопками-дублёрами жеста
+    await expect(page.locator('[data-deck-id="morning"]')).toBeVisible();
+
+    // Архив открывается шторкой и ведёт на каждый экран без горизонтального скролла
+    for (const name of ['Работа', 'Развитие', 'Прогресс', 'Магазин', 'Настройки']) {
+      await openView(page, name);
       expect(
         await page.evaluate(() => {
           const area = document.getElementById('game-scroll')!;
@@ -34,19 +37,19 @@ for (const width of [320, 390, 480]) {
         })
       ).toBe(false);
     }
-    // «Мир» идёт дверями: «Прогресс» ведёт в «Топ игроков»
-    await nav.getByRole('button', { name: 'Прогресс', exact: true }).click();
+    // «Прогресс» ведёт в «Топ игроков»
+    await openView(page, 'Прогресс');
     await expect(page.getByRole('button', { name: /^Топ игроков/ })).toBeVisible();
     // «Друзья» — дверь внутри «Работы»
-    await nav.getByRole('button', { name: 'Работа', exact: true }).click();
+    await openView(page, 'Работа');
     await page.getByRole('button', { name: /^Коллеги и знакомые/ }).click();
     await expect(page.getByRole('article', { name: 'Саня', exact: true })).toBeVisible();
     // Профиль — из HUD-портрета на «Сегодня»; дверь профиля — «Настройки»
-    await nav.getByRole('button', { name: 'Сегодня', exact: true }).click();
+    await goToday(page);
     await page.getByRole('button', { name: 'Открыть профиль' }).click();
     await expect(page.getByRole('heading', { name: 'Профиль' })).toBeVisible();
     await expect(page.getByRole('button', { name: /^Настройки/ })).toBeVisible();
-    await nav.getByRole('button', { name: 'Сегодня', exact: true }).click();
+    await goToday(page);
     await expect(roomThumb).toBeVisible();
   });
 }
@@ -54,15 +57,13 @@ for (const width of [320, 390, 480]) {
 test('development and shop keep reference-sized rows, not giant cards', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
-  const nav = page.getByRole('navigation', { name: 'Основная навигация' });
-  await nav.getByRole('button', { name: 'Развитие', exact: true }).click();
+  await openView(page, 'Развитие');
   await page.getByRole('tab', { name: /Направления/ }).click();
   const skill = page.getByRole('button', { name: 'JavaScript', exact: true });
   await expect(skill).toBeVisible();
   expect((await skill.boundingBox())!.height).toBeLessThanOrEqual(90);
-  // «Магазин» — дверь на «Сегодня» (A2)
-  await nav.getByRole('button', { name: 'Сегодня', exact: true }).click();
-  await page.getByRole('button', { name: 'Магазин', exact: true }).click();
+  // «Магазин» — экран «Архива» (IA «Колода»)
+  await openView(page, 'Магазин');
   const product = page.getByRole('article', { name: 'Бюджетный ПК', exact: true });
   await expect(product).toBeVisible();
   expect((await product.boundingBox())!.height).toBeLessThanOrEqual(100);

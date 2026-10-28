@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { openView, goToday } from './helpers/nav';
 
 test('shop recovers after HTTP failure and career has reachable vacancies', async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 844 });
@@ -9,13 +10,13 @@ test('shop recovers after HTTP failure and career has reachable vacancies', asyn
     else await route.continue();
   });
   await page.goto('/');
-  // «Магазин» ушёл из навигации (A2): это дверь на «Сегодня»
-  await page.getByRole('button', { name: 'Магазин', exact: true }).click();
+  // «Магазин» живёт в «Архиве» (IA «Колода»)
+  await openView(page, 'Магазин');
   await expect(page.getByText('Магазин недоступен', { exact: true })).toBeVisible();
   fail = false;
   await page.getByRole('button', { name: 'Повторить загрузку' }).click();
   await expect(page.getByRole('article', { name: 'Бюджетный ПК', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Работа', exact: true }).click();
+  await openView(page, 'Работа');
   await expect(page.getByRole('heading', { name: 'Доступные компании' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Откликнуться' }).first()).toBeVisible();
   expect(

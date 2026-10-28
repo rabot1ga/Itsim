@@ -97,7 +97,7 @@
 | EventCard / EventOutcomeCard / DaySummaryCard | как есть, внутри стека |
 | ActionGrid / NavLinks | карточки действий / пункты архива |
 | SkillsView / CareerView / ProgressView / … | экраны «Архива» (панели), не переписываются |
-| `.story-card` (e2e-контракт) | сохраняется: карточки стека получают класс `story-card` |
+| `.story-card` (e2e-контракт) | сохраняется ТОЛЬКО за событиями; карточки стека — свой класс `deck-card` |
 
 ## 7. Этапы
 

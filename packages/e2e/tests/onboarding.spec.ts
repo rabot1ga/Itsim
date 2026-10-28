@@ -35,7 +35,8 @@ test('первый запуск: слайды показываются, «Про
   await expect(page.getByRole('navigation', { name: 'Основная навигация' })).toBeVisible();
   expect(await page.evaluate((key) => localStorage.getItem(key), ONBOARDED_KEY)).toBeTruthy();
 
-  // обучение деланием: чек-лист «Первые шаги» живёт на «Сегодня»
+  // обучение деланием: чек-лист «Первые шаги» — карточка стека (после «Утро»)
+  await page.locator('[data-deck-id="morning"]').getByRole('button', { name: 'Дальше' }).click();
   await expect(page.getByTestId('first-steps')).toBeVisible();
 
   // повторный запуск — сразу игра, без обучения

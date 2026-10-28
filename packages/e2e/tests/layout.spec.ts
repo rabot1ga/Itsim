@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { resolveStory } from './helpers/story';
+import { openView, goToday } from './helpers/nav';
 
 for (const width of [320, 390, 480]) {
   test(`home HUD, room and shortcuts fit ${width}px`, async ({ page }) => {
@@ -25,8 +26,8 @@ for (const width of [320, 390, 480]) {
       })
     ).toBe(false);
 
-    // «Магазин» — дверь на «Сегодня» (A2), не таб
-    await page.getByRole('button', { name: 'Магазин', exact: true }).click();
+    // «Магазин» живёт в «Архиве» (IA «Колода»)
+    await openView(page, 'Магазин');
     await expect(roomThumb).toHaveCount(0);
     const filters = page.getByRole('group', { name: 'Категории товаров' });
     await expect(filters).toBeVisible();
@@ -41,14 +42,11 @@ for (const width of [320, 390, 480]) {
         return scroll.scrollWidth > scroll.clientWidth;
       })
     ).toBe(false);
-    await page
-      .getByRole('navigation', { name: 'Основная навигация' })
-      .getByRole('button', { name: 'Сегодня', exact: true })
-      .click();
+    await goToday(page);
     await expect(roomThumb).toBeVisible();
-    // Конструктор комнаты удалён (редизайн 22.10.2026): на «Дом» ведёт дверь
-    // на «Сегодня», там — карточка события с зонами-действиями.
-    await page.getByRole('button', { name: 'Дом', exact: true }).click();
+    // Возврат на «Сегодня» из архива — за ним снова сцена комнаты;
+    // «Дом» открывается тем же архивом (IA «Колода»).
+    await openView(page, 'Дом');
     await expect(page.getByRole('heading', { name: 'Дом' })).toBeVisible();
     await expect(page.getByLabel('Твоя комната').locator('.story-choice').first()).toBeVisible();
   });

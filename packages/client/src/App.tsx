@@ -83,7 +83,7 @@ const App: React.FC = () => {
     );
   }
   return (
-    <div className="app-container" data-ui-revision="10">
+    <div className="app-container" data-ui-revision="11">
       {(screen === 'game' || screen === 'menu') && (
         <>
           <ResourceBar />

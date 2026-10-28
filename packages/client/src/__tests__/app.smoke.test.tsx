@@ -54,29 +54,30 @@ describe('App', () => {
     HTMLCanvasElement.prototype.getContext = (() => null) as never;
   });
 
-  it('walks every tab and every side destination without crashing', async () => {
+  it('opens the archive sheet and walks every destination without crashing', async () => {
     localStorage.setItem('itsim_onboarded_v1', '1');
     render(<App />);
     const nav = await screen.findByRole('navigation', { name: 'Основная навигация' });
-    const tabs = ['Сегодня', 'Работа', 'Развитие', 'Прогресс'];
-    for (const label of tabs) {
-      fireEvent.click(within(nav).getByRole('button', { name: label }));
-      await waitFor(() => expect(screen.queryByText('Что-то сломалось')).toBeNull());
-    }
-
-    // «Мир» и боковые экраны живут в контекстных дверях — обходим те же вьюхи,
-    // что доступны из NavLinks (лист «⋮» с A2 упразднён).
+    // IA «Колода»: таббар упразднён — нижняя панель это «Сегодня» + «Архив»
+    fireEvent.click(within(nav).getByRole('button', { name: 'Архив' }));
+    const archive = await screen.findByRole('navigation', { name: 'Архив' });
+    expect(within(archive).getByRole('button', { name: /Работа/ })).toBeTruthy();
+    // каждая запись архива открывается без падений
     const destinations = [
-      'profile',
+      'career',
+      'skills',
+      'progress',
+      'overview',
+      'rest',
       'room',
-      'friends',
       'pet',
-      'leaderboard',
       'office',
       'mining',
-      'settings',
-      'rest',
       'shop',
+      'friends',
+      'leaderboard',
+      'profile',
+      'settings',
     ];
     const { useGameStore } = await import('../store/gameStore');
     for (const view of destinations) {
@@ -87,25 +88,38 @@ describe('App', () => {
     }
   });
 
-  it('keeps «Завершить день» docked outside the scroll area on every working tab', async () => {
+  it('ends the day from the deck end-card, the dock stays for working panels', async () => {
     localStorage.setItem('itsim_onboarded_v1', '1');
     render(<App />);
     const nav = await screen.findByRole('navigation', { name: 'Основная навигация' });
     // the store is a module singleton — the previous test may have parked it elsewhere
     fireEvent.click(within(nav).getByRole('button', { name: 'Сегодня' }));
 
-    // The dock is a sibling of the scroll area, not the last card inside it —
-    // that is the whole point: no scrolling to end the day.
-    const dock = await screen.findByRole('button', { name: /Завершить день/ });
-    expect(document.getElementById('game-scroll')?.contains(dock)).toBe(false);
+    // Стек дня: активная карточка с кнопками-дублёрами жеста; до конца
+    // доходим «Пропустить»/«Дальше», последняя карточка — «Завершить день».
+    // Между кликами ждём анимацию улёта (DeckCard ~160ms).
+    for (let i = 0; i < 12 && !document.querySelector('[data-deck-id="end"]'); i++) {
+      const skip = screen.queryByRole('button', { name: 'Пропустить' }) ?? screen.queryByRole('button', { name: 'Дальше' });
+      if (!skip) break;
+      fireEvent.click(skip);
+      await act(async () => {
+        await new Promise((r) => setTimeout(r, 220));
+      });
+      expect(screen.queryByText('Что-то сломалось')).toBeNull();
+    }
+    expect(document.querySelector('[data-deck-id="end"]')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Завершить' })).toBeTruthy();
 
-    for (const label of ['Работа', 'Развитие']) {
-      fireEvent.click(within(nav).getByRole('button', { name: label }));
+    // На рабочих панелях архива док остаётся — ход завершается оттуда.
+    const { useGameStore } = await import('../store/gameStore');
+    for (const view of ['career', 'skills']) {
+      act(() => {
+        useGameStore.getState().setView(view);
+      });
       expect(await screen.findByRole('button', { name: /Завершить день/ })).toBeTruthy();
     }
 
     // Боковые экраны — для осмотра, кнопка хода уступает место.
-    const { useGameStore } = await import('../store/gameStore');
     act(() => {
       useGameStore.getState().setView('settings');
     });

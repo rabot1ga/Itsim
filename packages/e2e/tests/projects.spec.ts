@@ -1,5 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
 import { act, resolveStory } from './helpers/story';
+import { openView, goToday } from './helpers/nav';
 
 /**
  * Contracts on the board — the «Работа» screen of reference 1.png.
@@ -20,10 +21,7 @@ async function openWork(page: Page): Promise<void> {
   await page.goto('/');
   expect((await page.request.post('/api/game/reset')).ok()).toBe(true);
   await page.reload();
-  await page
-    .getByRole('navigation', { name: 'Основная навигация' })
-    .getByRole('button', { name: 'Работа', exact: true })
-    .click();
+  await openView(page, 'Работа');
   await expect(board(page)).toBeVisible();
 }
 

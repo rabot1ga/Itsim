@@ -1,6 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { ratingMetricOf } from '@itsim/shared';
 import { resolveStory, act } from './helpers/story';
+import { openView } from './helpers/nav';
 
 /**
  * «Топ игроков» и вкладки по метрикам из ТЗ.
@@ -41,10 +42,7 @@ function boardRequests(page: Page) {
 async function openBoard(page: Page): Promise<void> {
   await act(page, async () => {
     // «Топ» живёт дверью на «Прогрессе» (A2), а не в листе «Меню»
-    await page
-      .getByRole('navigation', { name: 'Основная навигация' })
-      .getByRole('button', { name: 'Прогресс', exact: true })
-      .click();
+    await openView(page, 'Прогресс');
     await page.getByRole('button', { name: /^Топ игроков/ }).click();
     await expect(metricGroup(page)).toBeVisible();
   });

@@ -22,24 +22,19 @@ import { EventCard, EventOutcomeCard, type EventChoice } from './EventCard';
 import { DaySummaryCard } from './DaySummaryCard';
 import { ErrorToast } from './ErrorToast';
 import { DayEndDock } from './DayEndDock';
+import { DeckView } from './DeckView';
+import { ArchiveSheet } from './ArchiveSheet';
 /**
- * Новая IA (A2, 25.10.2026): четыре таба — Сегодня / Работа / Развитие /
- * Прогресс. «Мир» (дом, питомец, друзья, офис, майнинг, магазин) живёт в
- * контекстных дверях внутри экранов (NavLinks), лист «⋮» упразднён — один и
- * тот же экран больше не достигается тремя путями.
+ * IA «Колода» (DESIGN-DECK, 28.10.2026): нижняя панель — два контрока:
+ * «Сегодня» (стек карточек дня) и «Архив» (шторка со всеми экранами).
+ * Таббар упразднён: день проживается в стеке, а не разложен по вкладкам.
  */
-const TABS = [
-  { view: 'main', icon: 'calendar', label: t('Сегодня') },
-  { view: 'career', icon: 'briefcase', label: t('Работа') },
-  { view: 'skills', icon: 'book', label: t('Развитие') },
-  { view: 'progress', icon: 'chart', label: t('Прогресс') },
-] as const;
 /**
  * Tabs where a day is being spent, so the «Завершить день» dock belongs there.
  * Side screens (профиль, дом, настройки…) stay quiet — you go there to look,
  * not to burn the turn.
  */
-const DOCK_VIEWS = new Set<string>(['main', 'career', 'skills', 'rest', 'shop', 'office', 'pet']);
+const DOCK_VIEWS = new Set<string>(['career', 'skills', 'rest', 'shop', 'office', 'pet', 'overview']);
 export const GameScreen: React.FC = () => {
   const { currentView, setView } = useGameStore();
   const player = useGameStore((s) => s.player);
@@ -105,7 +100,10 @@ export const GameScreen: React.FC = () => {
       case 'friends':
         return <FriendsView />;
       case 'main':
-        return <DayView />;
+        return <DeckView />;
+      case 'overview':
+        return <DayView />; // «Обзор дня» из Архива: быт, майнинг, банк дней
+
       case 'skills':
         return <SkillsView />;
       case 'rest':
@@ -132,7 +130,7 @@ export const GameScreen: React.FC = () => {
       case 'settings':
         return <SettingsView />;
       default:
-        return <DayView />;
+        return <DeckView />;
     }
   };
   // Wrap tab switches with selection haptics
@@ -140,6 +138,7 @@ export const GameScreen: React.FC = () => {
     if (view !== currentView) haptic('selection');
     setView(view);
   };
+  const [archiveOpen, setArchiveOpen] = useState(false);
   return (
     <div className="relative flex-1 flex flex-col overflow-hidden">
       {/* Whatever the last action paid out, on its way up the screen */}
@@ -156,19 +155,29 @@ export const GameScreen: React.FC = () => {
       {/* End of the turn — docked above the nav so it never needs scrolling to */}
       <DayEndDock visible={DOCK_VIEWS.has(currentView) && !activeEvent && !outcome && !daySummary} />
 
-      {/* Bottom navigation */}
+      {/* Bottom controls: стек дня или архив жизни */}
       <nav className="tabbar" aria-label={t('Основная навигация')}>
-        {TABS.map((tab) => (
-          <NavButton
-            key={tab.view}
-            icon={tab.icon}
-            label={tab.label}
-            active={currentView === tab.view}
-            dot={tab.view === 'career' && offerWaiting}
-            onClick={() => nav(tab.view)}
-          />
-        ))}
+        <NavButton
+          icon="calendar"
+          label={t('Сегодня')}
+          active={!archiveOpen && currentView !== 'overview'}
+          onClick={() => {
+            nav('main');
+            setArchiveOpen(false);
+          }}
+        />
+        <NavButton
+          icon="box"
+          label={t('Архив')}
+          active={archiveOpen}
+          dot={offerWaiting}
+          onClick={() => {
+            haptic('selection');
+            setArchiveOpen(true);
+          }}
+        />
       </nav>
+      <ArchiveSheet open={archiveOpen} onClose={() => setArchiveOpen(false)} />
     </div>
   );
 };
