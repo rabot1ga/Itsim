@@ -4677,4 +4677,17 @@ Object.assign(en, {
   'Бот пришлёт сообщение, когда банк офлайн-дней заполнен. Выключено — напоминаний не будет': 'The bot pings you when the offline-day bank is full. Off — no nudges',
   'Ты свежий архитектор — борд выдвинет кандидатуру после {p0} дн. в грейде (сейчас {p1})': 'You are a fresh architect — the board nominates after {p0} days in grade (now {p1})',
   'Премия за грейд: +{p0}': 'Grade bonus: +{p0}',
+
+  // I (аудит 28.10): памятки об исходах событий — лента «Знаковые события»
+  'Победа на хакатоне: приз, слава и три бессонные ночи': 'Hackathon win: prize, fame and three sleepless nights',
+  'Помог стажёру разобраться — впервые в роли наставника': 'Helped an intern figure it out — first time as a mentor',
+  'Поддержал тимлида в тяжёлый день — он это запомнит': 'Supported the team lead on a rough day — he will remember',
+  'Сходил на свадьбу друга из универа': 'Went to a university friend’s wedding',
+  'Выбил пересмотр зарплаты: разговор, который стоит нервов': 'Negotiated a salary review: a talk worth the nerves',
+  'Первый забег с клубом: 5 км без остановки': 'First run with the club: 5 km non-stop',
+  'Починил открытую библиотеку перед её релизом': 'Fixed an open-source library right before its release',
+  'Стартап Кости закрыл раунд — доля окупилась': 'Kostya’s startup closed a round — the stake paid off',
+  'Вложил выручку из стартапа Кости обратно в проект': 'Reinvested the Kostya-startup payout back into the project',
+  'Стал контрибьютором открытого проекта': 'Became a contributor to an open-source project',
+  'Мейнтейнер популярного открытого проекта': 'Maintainer of a popular open-source project',
 });

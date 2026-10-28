@@ -532,6 +532,8 @@ export interface EventEffects {
   burnoutDays?: number;
   /** D2: networking contacts (мероприятия/знакомые) */
   contacts?: number;
+  /** I (аудит 28.10): памятка об исходе события — в ленту «Знаковые события» */
+  memory?: { key: string; params?: Record<string, unknown> };
 }
 
 export interface ChainEventRef {
