@@ -76,6 +76,8 @@ export interface Milestone {
   key: string;
   /** параметры подписи; строковые значения t() авто-переводит */
   params?: Record<string, unknown>;
+  /** H: премия за веху (грейд senior+), уже начисленная на момент поста */
+  bonus?: number;
 }
 
 /** Якоря позиций питомца на сцене комнаты (роадмап: скины и позиции). */
@@ -190,6 +192,12 @@ export interface PlayerState {
   activeProject?: PlayerProject | null;
   /** отклик на заказ, отправленный сегодня; ответ приходит при смене дня */
   freelanceBid?: FreelanceBid | null;
+  /** F (аудит 28.10): серия отказов на бирже — pity поднимает шанс следующей ставки */
+  freelanceRejectStreak?: number;
+  /** F: серия отказов на собеседованиях — pity поднимает шанс следующего интервью */
+  interviewRejectStreak?: number;
+  /** D (аудит 28.10): серверная правда о push-нуджах бота (undefined = включены) */
+  notificationsEnabled?: boolean;
   /** ids of projects delivered in this life */
   projectsDone?: string[];
 
@@ -524,6 +532,8 @@ export interface EventEffects {
   burnoutDays?: number;
   /** D2: networking contacts (мероприятия/знакомые) */
   contacts?: number;
+  /** I (аудит 28.10): памятка об исходе события — в ленту «Знаковые события» */
+  memory?: { key: string; params?: Record<string, unknown> };
 }
 
 export interface ChainEventRef {

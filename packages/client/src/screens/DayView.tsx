@@ -4,6 +4,7 @@ import { useGameStore } from '../store/gameStore';
 import { HomeRoomCard } from '../components/HomeRoomCard';
 import { ActionGrid, toTile } from '../components/ActionGrid';
 import { challengeDelegate, pickDayPlan } from './dayPlan';
+import { ReadyCard, FirstStepsCard } from '../components/MorningBrief';
 import { SprintCard } from '../components/SprintCard';
 import { SectionTitle } from '../components/ui';
 import { PixelIcon } from '../components/pixel/PixelIcon';
@@ -208,6 +209,10 @@ export const DayView: React.FC = () => {
           )}
         </section>
       )}
+
+      {/* G: крючки «почти готово» (утренняя сводка) + B: чек-лист «Первые шаги» */}
+      <ReadyCard />
+      <FirstStepsCard />
 
       {/* План дня: быстрые действия прямо здесь — без прыжков по табам (B, 28.10) */}
       <section aria-label={t('План дня')}>

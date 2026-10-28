@@ -52,9 +52,15 @@ export const SettingsView: React.FC = () => {
             <Toggle
               checked={notifications}
               label={t('Уведомления')}
-              onChange={(v) => flip(PREF_KEYS.notifications, v, setNotifications)}
+              onChange={(v) => {
+                setNotifications(v);
+                void useGameStore.getState().setNotifications(v); // D: серверная правда для бота
+              }}
             />
           </div>
+          <p className="text-2xs text-ink-600 px-1 -mt-1">
+            {t('Бот пришлёт сообщение, когда банк офлайн-дней заполнен. Выключено — напоминаний не будет')}
+          </p>
           <div className="settings-row">
             <span className="emoji" aria-hidden="true"></span>
             <span className="settings-row-label">{t('Звук')}</span>

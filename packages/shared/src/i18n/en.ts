@@ -4641,4 +4641,53 @@ Object.assign(en, {
   'День 2 — цепочка: действие → завершить': 'Day 2 — the loop: act → wrap up',
   'Повтори вчерашний ритм: 2–3 действия из плана (или из табов «Работа» и «Развитие»), затем «Завершить день». Пока зарплаты нет, деньги дают подработки на «Работе» — следи за строкой «Стоимость дня».':
     'Repeat yesterday’s rhythm: 2–3 actions from the plan (or the "Work" and "Study" tabs), then "Wrap up the day". No salary yet — side gigs on "Work" pay the bills; watch the "Cost of the day" line.',
+
+  // A–F (аудит 28.10): виталы на всех табах, раскрытие «Развития», pay-off работы, pity
+  'Состояние': 'Vitals',
+  'Мотивация · опыт ×{p0}': 'Motivation · ×{p0} XP',
+  'Мотивация умножает весь опыт: ×{p0}': 'Motivation multiplies all XP: ×{p0}',
+  'опыт ×{p0}': 'XP ×{p0}',
+  'Готовые маршруты развития — загляни, когда определишься с направлением': 'Ready-made growth routes — peek once you know your direction',
+  'Постоянные бонусы за развитие — открываются по мере роста': 'Permanent perks from growth — unlock as you level up',
+  'доступно': 'available',
+  'повезёт: {p0}% за серию отказов': 'luck bonus: {p0}% for the losing streak',
+  'Задачи + разбор чужого кода. Растёшь не только ты (+{p0})': 'Tickets done + code reviews. You are not the only one growing (+{p0})',
+  'Закрыл рабочие задачи. Ретроспектива отменена, все свободны (+{p0})': 'Work tickets closed. Retro cancelled, everyone is free (+{p0})',
+  '«{p0}»: заказчик выбрал исполнителя опытнее. Попробуй ещё раз — следующая попытка +{p1}%': '“{p0}”: the client picked someone more senior. Try again — next attempt +{p1}%',
+  'Ты пропустил собеседование в «{p0}» — без кандидата решили не рисковать. Попробуй ещё раз через пару дней (следующее +{p1}%)': 'You missed the interview at “{p0}” — they would not risk it without a candidate. Try again in a couple of days (next one +{p1}%)',
+  'Собеседование ({correct}/{total}): «мы впечатлены, но решили двигаться с другим кандидатом». Подтяни навыки и пробуй снова! (следующее +{p0}%)': 'Interview ({correct}/{total}): “we are impressed but decided to move on with another candidate”. Sharpen your skills and try again! (next one +{p0}%)',
+
+  // B+G (аудит 28.10): «Первые шаги» + утренняя сводка «Что почти готово»
+  'Оффер «{p0}» сгорает через {p1} дн. — прими его в «Карьере»': 'The “{p0}” offer expires in {p1} d. — accept it in “Career”',
+  'Проект сдать сегодня — закрой задачи в «Карьере»': 'The project is due today — close its tasks in “Career”',
+  'Проект: {p0} дн. до дедлайна': 'Project: {p0} d. to the deadline',
+  'Ревью на «{p0}» — сегодня': 'The “{p0}” review is today',
+  'Ревью на «{p0}» через {p1} дн.': 'The “{p0}” review is in {p1} d.',
+  'Отклик на бирже: заказчик ответит утром': 'A board application is pending — the client answers in the morning',
+  'Сегодня зарплата': 'Payday is today',
+  'Зарплата через {p0} дн.': 'Payday in {p0} d.',
+  'Почти готово': 'Almost ready',
+  'Что почти готово': 'What is almost ready',
+  'Первые шаги': 'First steps',
+  'Выполни любое действие из плана дня': 'Complete any action from the day plan',
+  'Заверши день и посмотри сводку': 'Wrap up the day and check the summary',
+  'Выбери основной навык во вкладке «Развитие»': 'Pick your main skill in the “Study” tab',
+
+  // D+H (аудит 28.10): живые уведомления + финальный темп
+  'Бот пришлёт сообщение, когда банк офлайн-дней заполнен. Выключено — напоминаний не будет': 'The bot pings you when the offline-day bank is full. Off — no nudges',
+  'Ты свежий архитектор — борд выдвинет кандидатуру после {p0} дн. в грейде (сейчас {p1})': 'You are a fresh architect — the board nominates after {p0} days in grade (now {p1})',
+  'Премия за грейд: +{p0}': 'Grade bonus: +{p0}',
+
+  // I (аудит 28.10): памятки об исходах событий — лента «Знаковые события»
+  'Победа на хакатоне: приз, слава и три бессонные ночи': 'Hackathon win: prize, fame and three sleepless nights',
+  'Помог стажёру разобраться — впервые в роли наставника': 'Helped an intern figure it out — first time as a mentor',
+  'Поддержал тимлида в тяжёлый день — он это запомнит': 'Supported the team lead on a rough day — he will remember',
+  'Сходил на свадьбу друга из универа': 'Went to a university friend’s wedding',
+  'Выбил пересмотр зарплаты: разговор, который стоит нервов': 'Negotiated a salary review: a talk worth the nerves',
+  'Первый забег с клубом: 5 км без остановки': 'First run with the club: 5 km non-stop',
+  'Починил открытую библиотеку перед её релизом': 'Fixed an open-source library right before its release',
+  'Стартап Кости закрыл раунд — доля окупилась': 'Kostya’s startup closed a round — the stake paid off',
+  'Вложил выручку из стартапа Кости обратно в проект': 'Reinvested the Kostya-startup payout back into the project',
+  'Стал контрибьютором открытого проекта': 'Became a contributor to an open-source project',
+  'Мейнтейнер популярного открытого проекта': 'Maintainer of a popular open-source project',
 });

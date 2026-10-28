@@ -37,6 +37,17 @@ export function runCtoElection(
   if (!gate) return { error: t('Путь CTO не настроен в контенте') };
   if (state.grade !== 'architect') return { error: t('CTO выбирают из архитекторов — сначала дорасти до архит') };
   if (!state.job) return { error: t('Нужна большая компания: без штата и борда выборы не имеют смысла') };
+  // H (аудит 28.10): minDaysInGrade гейта CTO — порог выдвижения (был мёртвый конфиг 150)
+  const inGrade = state.job?.daysSinceLastPromotion ?? 0;
+  if (inGrade < (gate.minDaysInGrade ?? 0)) {
+    return {
+      error: t('Ты свежий архитектор — борд выдвинет кандидатуру после {p0} дн. в грейде (сейчас {p1})', {
+        p0: gate.minDaysInGrade,
+        p1: inGrade,
+      }),
+    };
+  }
+
   if ((state.ctoCooldownUntilDay ?? 0) > state.currentDay) {
     return {
       error: t('Борд ещё не отошёл после прошлого раунда. Попробуй через {p0} дн.', {

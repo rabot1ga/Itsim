@@ -28,6 +28,13 @@ export const EventEffectsSchema = z.object({
   burnoutDays: z.number().int().optional(),
   /** D2: networking contacts (мероприятия/знакомые) */
   contacts: z.number().int().optional(),
+  /** I: памятка об исходе — пост в ленту «Знаковые события» профиля */
+  memory: z
+    .object({
+      key: z.string().min(1).max(200),
+      params: z.record(z.string(), z.unknown()).optional(),
+    })
+    .optional(),
 });
 
 export const ChainEventRefSchema = z.object({

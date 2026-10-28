@@ -241,13 +241,18 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
           ),
         };
       }
+      // E (аудит 28.10): мгновенный pay-off. Зарплата приходит неделей — без
+      // дневной премии рутина не даёт награды (loop «действие → reward» рвётся).
+      const bonus = Math.round(weeklySalary(state.job.salary) * 0.04);
+      state.money += bonus;
       state.job.daysWorked += 1;
       state.motivation = clamp(state.motivation - 1, 0, 100);
+      delta.money = bonus;
       delta.skills = { [skillId]: { from: current.level, to: next.level } };
       return {
         message: carriesPeople
-          ? t('Задачи + разбор чужого кода. Растёшь не только ты')
-          : t('Закрыл рабочие задачи. Ретроспектива отменена, все свободны'),
+          ? t('Задачи + разбор чужого кода. Растёшь не только ты (+{p0})', { p0: fmtMoney(bonus) })
+          : t('Закрыл рабочие задачи. Ретроспектива отменена, все свободны (+{p0})', { p0: fmtMoney(bonus) }),
       };
     }
     case 'work_overtime': {
@@ -258,7 +263,8 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       state.skills = { ...state.skills, [skillId]: next };
       const bonus = Math.round(weeklySalary(state.job.salary) * 0.2);
       state.money += bonus;
-      state.motivation = clamp(state.motivation - 4, 0, 100);
+      // E: переработка больше не «платное наказание» — мотивация −4 → −2
+      state.motivation = clamp(state.motivation - 2, 0, 100);
       state.health = clamp(state.health - 1, 0, 100);
       state.job.daysWorked += 1;
       delta.money = bonus;
@@ -352,9 +358,12 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       });
       if (blocked) return { error: blocked };
       const chance = bidChance(def, { skillLevel, reputation: state.reputation });
+      // F: pity — серия отказов на бирже поднимает шанс (потолок +28%)
+      const pity = Math.min(4, state.freelanceRejectStreak ?? 0) * 0.07;
+      const withPity = Math.min(0.95, chance + pity);
       // D2: тёплый лид — разовый бонус к отклику
       const leadUsed = !!state.freelanceLead;
-      const finalChance = leadUsed ? Math.min(FREELANCE_LEAD_CAP, chance + FREELANCE_LEAD_BONUS) : chance;
+      const finalChance = leadUsed ? Math.min(FREELANCE_LEAD_CAP, withPity + FREELANCE_LEAD_BONUS) : withPity;
       if (leadUsed) state.freelanceLead = false;
       state.freelanceBid = { projectId: def.id, day: state.currentDay, chance: finalChance };
       state.freelanceDoneToday = true;
@@ -364,7 +373,8 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
         message: t('Отклик на «{p0}» отправлен. Заказчик ответит утром — шанс {p1}%', {
           p0: def.title,
           p1: Math.round(finalChance * 100),
-        }),
+        }) +
+          (pity > 0 ? ' ' + t('повезёт: {p0}% за серию отказов', { p0: Math.round(pity * 100) }) : ''),
         delta,
       };
     }

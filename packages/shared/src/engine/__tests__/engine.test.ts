@@ -330,6 +330,20 @@ describe('events', () => {
     expect(updated.reputation).toBe(100);
     expect(updated.skills.javascript.level).toBeGreaterThanOrEqual(1);
   });
+
+  it('applyEventEffects posts a memory to the profile feed and keeps the cap', () => {
+    const p = { ...basePlayer, currentDay: 12, milestones: [] as any[] };
+    const updated = applyEventEffects(p, {
+      text: 't',
+      effects: { memory: { key: 'Победа на хакатоне' } },
+    });
+    // памятка — пост в ленту «Знаковые события» (id детерминирован, сим ходит тем же кодом)
+    expect(updated.milestones).toHaveLength(1);
+    expect(updated.milestones![0]).toMatchObject({ id: 'mem:12:Победа на хакатоне:0', day: 12, key: 'Победа на хакатоне' });
+    // исход без памятки ленту не трогает
+    const plain = applyEventEffects({ ...basePlayer, milestones: updated.milestones }, { text: 't', effects: { motivation: 1 } });
+    expect(plain.milestones).toHaveLength(1);
+  });
 });
 
 describe('achievements', () => {

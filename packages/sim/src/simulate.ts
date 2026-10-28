@@ -408,7 +408,9 @@ function simulate(random: () => number, days: number = DAYS): Agent {
     // CTO: a board election, not a promotion (mirrors server cto_elect)
     if (p.grade === 'architect' && agent.hasJob && day >= agent.ctoNextTryDay) {
       const ctoGate = gateFor(CAREER_GATES, 'cto');
-      if (ctoGate) {
+      // H: порог выдвижения minDaysInGrade — свежий архитектор не баллотируется
+      const inGrade = (p.job?.daysSinceLastPromotion ?? 0) >= (ctoGate?.minDaysInGrade ?? 0);
+      if (ctoGate && inGrade) {
         const { chance, qualified } = ctoElectionChance(
           { ...(p as any), mainSkillId: p.mainSkillId ?? agent.mainSkill } as PlayerState,
           ctoGate

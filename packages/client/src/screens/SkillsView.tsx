@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { haptic } from '../lib/telegram';
 import { canUnlockPerk, archetypeToView, type ArchetypeDef } from '@itsim/shared';
-import { ScreenTitle, SectionTitle, Spinner, ResChip } from '../components/ui';
+import { ScreenTitle, SectionTitle, Spinner, ResChip, accordionBodyRef } from '../components/ui';
 import { ActionGrid, toTile } from '../components/ActionGrid';
 import { STUDY_ACTIONS } from './actionCatalogue';
 import { SkillList, BRANCH_META, type SkillInfo } from './SkillList';
@@ -81,6 +81,39 @@ function describeRequires(requires: Record<string, number>, skills: SkillInfo[])
     })
     .join(', ');
 }
+/**
+ * C (аудит 28.10): мета-системы не вываливаются на новичка. Блок свёрнут,
+ * пока в нём нет релевантного прогресса; заголовок несёт бейдж доступного.
+ */
+const Fold: React.FC<{
+  title: string;
+  hint: string;
+  defaultOpen: boolean;
+  badge?: React.ReactNode;
+  children: React.ReactNode;
+}> = ({ title, hint, defaultOpen, badge, children }) => {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <section className="card">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="w-full flex items-center gap-2 text-left touch-target"
+      >
+        <SectionTitle className="flex-1 !mb-0">{title}</SectionTitle>
+        {badge}
+        <span aria-hidden="true" className={`accordion-chevron shrink-0 ${open ? 'is-open' : ''}`}>
+          ▾
+        </span>
+      </button>
+      {!open && <p className="text-2xs text-ink-600 mt-1">{hint}</p>}
+      <div className={`accordion-body ${open ? 'open' : ''}`} ref={accordionBodyRef(open)}>
+        <div className="accordion-inner">{children}</div>
+      </div>
+    </section>
+  );
+};
+
 export const SkillsView: React.FC = () => {
   const player = useGameStore((s) => s.player);
   const setMainSkill = useGameStore((s) => s.setMainSkill);
@@ -280,8 +313,11 @@ export const SkillsView: React.FC = () => {
           )}
 
           {/* Curated routes: pick one and the list marks its milestones */}
-          <section className="card">
-            <SectionTitle>{t('Пути-архетипы')}</SectionTitle>
+          <Fold
+            title={t('Пути-архетипы')}
+            hint={t('Готовые маршруты развития — загляни, когда определишься с направлением')}
+            defaultOpen={Boolean(chosenArch) || (player.grade && player.grade !== 'unemployed' && player.grade !== 'intern')}
+          >
             {archViews.length === 0 ? (
               <p className="subtle mt-2">
                 {!loaded
@@ -356,11 +392,19 @@ export const SkillsView: React.FC = () => {
                 })}
               </div>
             )}
-          </section>
+          </Fold>
 
           {/* Perks */}
-          <section className="card">
-            <SectionTitle>{t('Перки')}</SectionTitle>
+          <Fold
+            title={t('Перки')}
+            hint={t('Постоянные бонусы за развитие — открываются по мере роста')}
+            defaultOpen={perks.length > 0 && ((player.perks ?? []).length > 0 || perks.some((perk) => canUnlockPerk(player, perk.requires, branchOf)))}
+            badge={
+              perks.some((perk) => !(player.perks ?? []).includes(perk.id) && canUnlockPerk(player, perk.requires, branchOf)) ? (
+                <ResChip tone="positive">{t('доступно')}</ResChip>
+              ) : undefined
+            }
+          >
             <div className="space-y-2 mt-3">
               {perks.map((perk) => {
                 const owned = (player.perks ?? []).includes(perk.id);
@@ -392,7 +436,7 @@ export const SkillsView: React.FC = () => {
               })}
               {perks.length === 0 && <p className="subtle">{t('Загрузка перков…')}</p>}
             </div>
-          </section>
+          </Fold>
         </>
       )}
     </div>

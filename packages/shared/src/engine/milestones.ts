@@ -19,7 +19,17 @@ export const MAX_MILESTONES = 30;
 /** Минимальный контур баланса для подписи финала (title из контента). */
 export interface MilestoneBalance {
   endings?: Record<string, { title?: string }>;
+  /** H: премия за грейд senior+ (переопределяется контентом) */
+  milestoneGradeBonus?: Record<string, number>;
 }
+
+/** H (аудит 28.10): веха-награда за тяжёлые грейды — разовая премия за жизнь. */
+export const GRADE_MILESTONE_BONUS: Record<string, number> = {
+  senior: 25_000,
+  teamlead: 50_000,
+  architect: 80_000,
+  cto: 150_000,
+};
 
 /** Русские формы слова «день»: 1 день, 2 дня, 5 дней. */
 export function dayWord(n: number): 'день' | 'дня' | 'дней' {
@@ -91,6 +101,16 @@ export function recordMilestones(state: PlayerState, balance?: MilestoneBalance)
   const facts = collectMilestones(state, balance);
   const have = new Set((state.milestones ?? []).map((m) => m.id));
   const fresh = facts.filter((f) => !have.has(f.id));
+  // H: премия за грейд senior+ начисляется ровно с фактом (идемпотентно по id)
+  const bonusTable = balance?.milestoneGradeBonus ?? GRADE_MILESTONE_BONUS;
+  for (const f of fresh) {
+    const grade = f.id.startsWith('grade:') ? f.id.slice(6) : '';
+    const bonus = bonusTable[grade];
+    if (bonus && (state.money ?? 0) >= 0) {
+      state.money = (state.money ?? 0) + bonus;
+      f.bonus = bonus;
+    }
+  }
   if (fresh.length > 0) {
     state.milestones = [...fresh.slice().reverse(), ...(state.milestones ?? [])].slice(0, MAX_MILESTONES);
   }

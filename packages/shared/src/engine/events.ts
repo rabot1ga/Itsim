@@ -1,5 +1,6 @@
 import { PlayerState, GameEvent, EventChoice } from '../types';
 import { clamp, weightedPick } from './utils';
+import { MAX_MILESTONES } from './milestones.js';
 import { applyXp, applySoftXp } from './skills';
 import { absorbJobWarning } from './relationships';
 import { addContacts } from './contacts';
@@ -199,6 +200,18 @@ export function applyEventEffects(p: PlayerState, choice: EventChoice): PlayerSt
   // D2: связи (мероприятия/знакомые) — с капом
   if (e.contacts !== undefined) {
     addContacts(next, e.contacts);
+  }
+
+  // I (аудит 28.10): памятка об исходе — пост в ленту «Знаковые события».
+  // Исход проживается один раз, поэтому дедуп по id не нужен; id —
+  // детерминированный (симулятор ходит тем же кодом).
+  if (e.memory) {
+    const feed = next.milestones ?? [];
+    const id = `mem:${next.currentDay ?? 1}:${e.memory.key}:${feed.length}`;
+    next.milestones = [
+      { id, day: next.currentDay ?? 1, key: e.memory.key, params: e.memory.params },
+      ...feed,
+    ].slice(0, MAX_MILESTONES);
   }
 
   return next;

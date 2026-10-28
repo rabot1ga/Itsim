@@ -33,8 +33,10 @@ test('archetype routes: choose → milestones in the list → clear → guarded 
   await page.getByRole('tab', { name: /Направления/ }).click();
 
   // ── the routes section renders with progress derived from live levels ───
+  // C (аудит 28.10): секция свёрнута для новичка — раскрываем тапом
   const rail = page.locator('section.card').filter({ hasText: 'Пути-архетипы' });
   await expect(rail).toBeVisible({ timeout: 15_000 });
+  await rail.getByRole('button', { name: /Пути-архетипы/ }).click();
   const frontendCard = rail.locator('div.tile').filter({ hasText: 'Путь фронтендера' });
   await expect(frontendCard).toBeVisible();
   // fresh player: 0/4 and the first milestone is the next goal

@@ -2,6 +2,8 @@ import { t, currentLocale, setLocale, isLocale, hasStoredLocale, type Locale, fm
 import { create } from 'zustand';
 import { haptic, referralFromStartParam } from '../lib/telegram';
 import { playSfx } from '../lib/sfx';
+import { markFirstStep } from '../lib/firstSteps';
+import { PREF_KEYS, writePref } from '../lib/prefs';
 import type { PetRoomPosition } from '@itsim/shared';
 export type Screen = 'menu' | 'game' | 'loading';
 const API_BASE = '/api';
@@ -160,6 +162,8 @@ interface GameState {
   dropGain: (id: number) => void;
   unlockPerk: (perkId: string) => Promise<boolean>;
   setMainSkill: (skillId: string) => Promise<boolean>;
+  /** D: тумблер «Уведомления» — серверная правда для бота-нуджей */
+  setNotifications: (enabled: boolean) => Promise<boolean>;
   /** pick (or clear, with '') the route highlighted on the skill map (P1.3) */
   chooseArchetype: (archetypeId: string) => Promise<boolean>;
   /** one-time-per-life bonus for walking a route to the end (P1.3) */
@@ -283,6 +287,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         }),
       });
       if (res.data?.state) {
+        markFirstStep('action'); // B: чек-лист «Первые шаги»
         set((s) => ({
           player: res.data.state,
           activeEvent: res.data.activeEvent ?? null,
@@ -504,6 +509,23 @@ export const useGameStore = create<GameState>((set, get) => ({
       return false;
     }
   },
+  setNotifications: async (enabled) => {
+    writePref(PREF_KEYS.notifications, enabled); // мгновенный фидбек на устройстве
+    try {
+      const res = await api('/game/notifications', {
+        method: 'POST',
+        body: JSON.stringify({ enabled }),
+      });
+      if (res.data?.state) {
+        set({ player: res.data.state, error: null });
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error('setNotifications error:', err);
+      return false;
+    }
+  },
   setMainSkill: async (skillId) => {
     try {
       const res = await api('/game/main-skill', {
@@ -511,6 +533,7 @@ export const useGameStore = create<GameState>((set, get) => ({
         body: JSON.stringify({ skillId }),
       });
       if (res.data?.state) {
+        markFirstStep('focus'); // B: чек-лист «Первые шаги»
         haptic('selection');
         set({ player: res.data.state, error: null });
         track('skill_pick', { skillId });

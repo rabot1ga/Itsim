@@ -69,6 +69,7 @@ export async function adminRoutes(app: FastifyInstance) {
     const now = Date.now();
     const states = await scanStates();
     const candidates = states
+      .filter(({ state }) => state.notificationsEnabled !== false) // D: тумблер «Уведомления»
       .filter(({ state }) => (state.bankedDays ?? 0) >= minBankedDays)
       .filter(({ state }) => now - (state.lastNudgeAt ?? 0) > cooldownMs)
       .filter(({ state }) => !state.careerEnding)

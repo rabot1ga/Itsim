@@ -139,6 +139,25 @@ export async function miscRoutes(app: FastifyInstance) {
     return { state: respondState(state) };
   });
   /**
+   * POST /api/game/notifications — тумблер «Уведомления» (D, аудит 28.10).
+   *
+   * Раньше переключатель писал только в localStorage устройства: бот шлёт
+   * нуджи «банк дней полон» с сервера и ничего о префе не знал. Теперь флаг
+   * живёт в сейве — джоб уважает его при рассылке.
+   */
+  app.post('/notifications', async (request, reply) => {
+    const user = (request as any).telegramUser;
+    const userId = String(user.id);
+    const { enabled } = request.body as { enabled?: unknown };
+    if (typeof enabled !== 'boolean') return reply.status(400).send({ error: t('Некорректный вариант ответа') });
+    const state = (await loadState(userId)) as StoredState | null;
+    if (!state) return reply.status(404).send({ error: 'Game not started' });
+    state.notificationsEnabled = enabled;
+    await saveState(userId, state);
+    return { state: respondState(state) };
+  });
+
+  /**
    * POST /api/game/pet-room — скины и позиции питомца в комнате (роадмап).
    *
    * Косметика сейва (не правила): `skin` — id настоящего питомца из
