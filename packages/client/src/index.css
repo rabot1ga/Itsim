@@ -2378,19 +2378,30 @@ select {
 .room-pet-emoji {
   display: inline-block;
 }
+.room-pet-img {
+  display: inline-block;
+  width: 38px;
+  height: 38px;
+  vertical-align: bottom;
+  image-rendering: pixelated;
+  image-rendering: -webkit-optimize-contrast; /* Safari: чёткая пиксельная сетка */
+}
 .room-pet-badges {
   font-size: 14px;
   margin-left: 2px;
   vertical-align: super;
 }
 /* Анимации питомца: idle — покачивание, happy — подпрыгивание, sleep — дыхание */
-.room-pet--idle .room-pet-emoji {
+.room-pet--idle .room-pet-emoji,
+.room-pet--idle .room-pet-img {
   animation: pet-bob 3.2s ease-in-out infinite;
 }
-.room-pet--happy .room-pet-emoji {
+.room-pet--happy .room-pet-emoji,
+.room-pet--happy .room-pet-img {
   animation: pet-hop 1.1s ease-in-out infinite;
 }
-.room-pet--sleep .room-pet-emoji {
+.room-pet--sleep .room-pet-emoji,
+.room-pet--sleep .room-pet-img {
   animation: pet-breathe 4s ease-in-out infinite;
 }
 .room-pet-zzz {
@@ -2512,8 +2523,104 @@ select {
   .room-pet--idle .room-pet-emoji,
   .room-pet--happy .room-pet-emoji,
   .room-pet--sleep .room-pet-emoji,
+  .room-pet--idle .room-pet-img,
+  .room-pet--happy .room-pet-img,
+  .room-pet--sleep .room-pet-img,
   .room-pet-zzz,
   .room-pet-spark {
     animation: none;
   }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Высокий контраст (долг «режим высокого контраста», docs/TODO.md §5).
+   Тумблер в «Настройках» пишет data-contrast="high" на <html>; перекрываем
+   палитру, а не отдельные компоненты: дом остаётся тёмным, но текст — чистый
+   белый, границы — явные, акценты — максимально различимые.
+   ═══════════════════════════════════════════════════════════════════════════ */
+[data-contrast='high'] {
+  --bg: #000000;
+  --bg-raise: #050505;
+  --surface: #000000;
+  --surface-alt: #0a0a0a;
+  --well: #000000;
+  --line: #ffffff;
+  --line-strong: #ffffff;
+
+  --text: #ffffff;
+  --text-dim: #f2f2f2;
+  --text-mute: #d6d6d6;
+  --text-faint: #b3b3b3;
+
+  --green: #5cff9d;
+  --green-dark: #2be07c;
+  --green-deep: #0f7a45;
+  --orange: #ffc14d;
+  --red: #ff7a7a;
+  --purple: #c9a8ff;
+  --blue: #8fd3ff;
+  --gold: #ffe066;
+  --gold-deep: #d4a800;
+}
+
+[data-contrast='high'] .card,
+[data-contrast='high'] .panel-note {
+  border: 1px solid var(--line);
+  box-shadow: none;
+}
+
+[data-contrast='high'] .btn {
+  border: 1px solid var(--line-strong);
+}
+
+/* Сводка дня (DaySummaryCard): лог сообщений сервера внутри story-card */
+.day-summary-log {
+  margin: 0.5rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.day-summary-log li {
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: var(--text-dim);
+  padding-left: 0.9rem;
+  position: relative;
+}
+.day-summary-log li::before {
+  content: '·';
+  position: absolute;
+  left: 0.25rem;
+  color: var(--text-faint);
+}
+
+/* Единый тост ошибок (G): виден на любом экране, тап — скрыть */
+.error-toast {
+  position: absolute;
+  left: 0.75rem;
+  right: 0.75rem;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 5.5rem);
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--red);
+  border-radius: 12px;
+  background: #1b1214;
+  color: var(--red);
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  text-align: left;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+.error-toast-x {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+.day-dock-hint.is-urgent {
+  color: var(--red);
+  font-weight: 600;
 }

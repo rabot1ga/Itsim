@@ -34,7 +34,8 @@ describe('RoomView: питомец в комнате', () => {
     const pet = document.querySelector('.room-pet') as HTMLElement;
     expect(pet).toBeTruthy();
     expect(pet.getAttribute('role')).toBe('img');
-    expect(pet.querySelector('.room-pet-emoji')?.textContent).toBe('🐱');
+    // Портрет — пиксельный ассет (lib/petPortraits.ts), эмодзи — только фолбэк.
+    expect(pet.querySelector('.room-pet-img')?.getAttribute('src')).toBe('/art/pet-v1/pet_cat.png');
     expect(pet.querySelector('.room-pet-badges')?.textContent).toBe('🎀');
     // якорь позиции по умолчанию — коврик (50%, 84%)
     expect(pet.style.left).toBe('50%');
@@ -56,9 +57,9 @@ describe('RoomView: питомец в комнате', () => {
     expect(pet.style.left).toBe('16%');
     expect(pet.style.top).toBe('58%');
 
-    // смена скина: у собаки свой эмодзи
+    // смена скина: у собаки свой портрет
     fireEvent.click(screen.getByText('🐶'));
-    expect(document.querySelector('.room-pet-emoji')?.textContent).toBe('🐶');
+    expect(document.querySelector('.room-pet-img')?.getAttribute('src')).toBe('/art/pet-v1/pet_dog.png');
 
     fireEvent.click(screen.getByText('Убрать питомца'));
     expect(document.querySelector('.room-pet')).toBeNull();

@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { ScreenTitle, SectionTitle, Toggle } from '../components/ui';
 import { haptic } from '../lib/telegram';
+import { PREF_KEYS, readPref, writePref, setContrast, contrastEnabled } from '../lib/prefs';
+import { playSfx } from '../lib/sfx';
 import { PixelIcon } from '../components/pixel/PixelIcon';
 /**
  * Settings — local, honest and small.
@@ -11,33 +13,14 @@ import { PixelIcon } from '../components/pixel/PixelIcon';
  * owns the save, so the only destructive action we offer is «Новая жизнь»
  * (a real prestige reset through the API) and clearing the local preferences.
  */
-const KEYS = {
-  notifications: 'itsim_pref_notifications',
-  sound: 'itsim_pref_sound',
-  haptics: 'itsim_pref_haptics',
-};
-function readPref(key: string, fallback: boolean): boolean {
-  try {
-    const value = localStorage.getItem(key);
-    return value === null ? fallback : value === '1';
-  } catch {
-    return fallback;
-  }
-}
-function writePref(key: string, value: boolean): void {
-  try {
-    localStorage.setItem(key, value ? '1' : '0');
-  } catch {
-    /* preferences are optional */
-  }
-}
 
 export const SettingsView: React.FC = () => {
   const startNewLife = useGameStore((s) => s.startNewLife);
   const setLanguage = useGameStore((s) => s.setLanguage);
-  const [notifications, setNotifications] = useState(() => readPref(KEYS.notifications, true));
-  const [sound, setSound] = useState(() => readPref(KEYS.sound, false));
-  const [haptics, setHaptics] = useState(() => readPref(KEYS.haptics, true));
+  const [notifications, setNotifications] = useState(() => readPref(PREF_KEYS.notifications, true));
+  const [sound, setSound] = useState(() => readPref(PREF_KEYS.sound, false));
+  const [haptics, setHaptics] = useState(() => readPref(PREF_KEYS.haptics, true));
+  const [contrast, setContrastState] = useState(contrastEnabled);
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
   const flip = (key: string, value: boolean, set: (next: boolean) => void) => {
@@ -69,23 +52,38 @@ export const SettingsView: React.FC = () => {
             <Toggle
               checked={notifications}
               label={t('Уведомления')}
-              onChange={(v) => flip(KEYS.notifications, v, setNotifications)}
+              onChange={(v) => flip(PREF_KEYS.notifications, v, setNotifications)}
             />
           </div>
           <div className="settings-row">
             <span className="emoji" aria-hidden="true"></span>
             <span className="settings-row-label">{t('Звук')}</span>
-            <Toggle checked={sound} label={t('Звук')} onChange={(v) => flip(KEYS.sound, v, setSound)} />
+            <Toggle
+              checked={sound}
+              label={t('Звук')}
+              onChange={(v) => {
+                flip(PREF_KEYS.sound, v, setSound);
+                if (v) playSfx('success'); // превью уровня громкости
+              }}
+            />
           </div>
           <div className="settings-row">
             <span className="emoji" aria-hidden="true"></span>
             <span className="settings-row-label">{t('Вибрация')}</span>
-            <Toggle checked={haptics} label={t('Вибрация')} onChange={(v) => flip(KEYS.haptics, v, setHaptics)} />
+            <Toggle checked={haptics} label={t('Вибрация')} onChange={(v) => flip(PREF_KEYS.haptics, v, setHaptics)} />
           </div>
           <div className="settings-row">
             <span className="emoji" aria-hidden="true"></span>
-            <span className="settings-row-label">{t('Тема')}</span>
-            <span className="settings-row-value">{t('Тёмная')}</span>
+            <span className="settings-row-label">{t('Высокий контраст')}</span>
+            <Toggle
+              checked={contrast}
+              label={t('Высокий контраст')}
+              onChange={(v) => {
+                setContrastState(v);
+                setContrast(v); // вешает/снимает data-contrast="high" на <html>
+                haptic('selection');
+              }}
+            />
           </div>
         </div>
       </section>

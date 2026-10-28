@@ -1,4 +1,5 @@
 import { t } from './i18n';
+import { PREF_KEYS, readPref } from './prefs';
 /**
  * Telegram Mini App helpers — one place for all WebApp API access.
  *
@@ -151,6 +152,8 @@ export type HapticKind =
   | 'warning';
 /** No-op outside Telegram or on clients without HapticFeedback. */
 export function haptic(kind: HapticKind = 'tap'): void {
+  // Настройка «Вибрация» (SettingsView) — device-преф, default on
+  if (!readPref(PREF_KEYS.haptics, true)) return;
   const hf = getTelegram()?.HapticFeedback;
   if (!hf) return;
   try {
