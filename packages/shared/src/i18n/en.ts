@@ -4787,4 +4787,11 @@ Object.assign(en, {
   'Экспресс-конспект': 'Crash notes',
   'Экспресс-конспект: {skillId}{leveled} — выжимка за один вечер, но голова кипит':
     'Crash notes: {skillId}{leveled} — one evening of distillation, brain at boiling point',
+
+  // стадия 4 «Колода»: полировка — темы, пустые состояния
+  'Загляни завтра — новые заказы приходят с утра.': 'Come back tomorrow — new orders arrive in the morning.',
+  'Заказчики пока молчат': 'Clients are quiet for now',
+  Светлая: 'Light',
+  'Тема оформления': 'Appearance theme',
+  Чернильная: 'Ink',
 });

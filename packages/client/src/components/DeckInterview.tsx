@@ -2,6 +2,7 @@ import { t } from '../lib/i18n';
 import React, { useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { haptic } from '../lib/telegram';
+import { playSfx } from '../lib/sfx';
 import { DeckCard } from './DeckCard';
 import { PixelIcon } from './pixel/PixelIcon';
 
@@ -65,6 +66,7 @@ export const DeckInterview: React.FC<{ onDone: () => void }> = ({ onDone }) => {
     setBusy(false);
     if (data) {
       haptic(data.correct ? 'success' : 'error');
+      playSfx(data.correct ? 'success' : 'error');
       setAnswers((a) => ({
         ...a,
         [q.id]: { correct: data.correct, correctIndex: data.correctIndex, explanation: data.explanation },
@@ -85,6 +87,7 @@ export const DeckInterview: React.FC<{ onDone: () => void }> = ({ onDone }) => {
     setBusy(false);
     if (data) {
       haptic(data.result === 'offer' ? 'success' : 'warning');
+      playSfx(data.result === 'offer' ? 'success' : 'error');
       setFinish(data);
       setPhase('result');
     } else {

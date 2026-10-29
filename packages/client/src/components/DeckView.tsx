@@ -10,6 +10,8 @@ import { PixelIcon } from './pixel/PixelIcon';
 import { pickDayPlan } from '../screens/dayPlan';
 import { tipForDay } from '../screens/dayTips';
 import { ONBOARDING_KEY } from '../lib/firstSteps';
+import { haptic } from '../lib/telegram';
+import { playSfx } from '../lib/sfx';
 import {
   cardModifiersFor,
   projectComplete,
@@ -152,6 +154,8 @@ export const DeckView: React.FC = () => {
     hint: m.hint ? t(m.hint) : undefined,
     badge: t(m.source.name),
     run: async () => {
+      haptic('selection');
+      playSfx('tap');
       setBusy(true);
       try {
         await performAction(m.actionId, m.params ?? { skillId: player.mainSkillId || 'javascript' });
@@ -176,6 +180,7 @@ export const DeckView: React.FC = () => {
         {slot.kind === 'intro' &&
           (slot.step === 0 ? (
             <DeckCard
+              key="intro-1"
               id="intro-1"
               icon="star"
               tone="day"
@@ -186,6 +191,7 @@ export const DeckView: React.FC = () => {
             />
           ) : (
             <DeckCard
+              key="intro-2"
               id="intro-2"
               icon="bolt"
               tone="day"
@@ -197,6 +203,7 @@ export const DeckView: React.FC = () => {
 
         {slot.kind === 'morning' && (
           <DeckCard
+            key="morning"
             id="morning"
             icon="calendar"
             tone="day"
@@ -211,6 +218,7 @@ export const DeckView: React.FC = () => {
 
         {slot.kind === 'hooks' && (
           <DeckCard
+            key="hooks"
             id="hooks"
             icon="target"
             tone="hook"
@@ -274,6 +282,7 @@ export const DeckView: React.FC = () => {
 
         {slot.kind === 'payday' && (
           <DeckCard
+            key="payday"
             id="payday"
             icon="star"
             tone="day"
@@ -290,6 +299,7 @@ export const DeckView: React.FC = () => {
 
         {slot.kind === 'weekly_review' && (
           <DeckCard
+            key="weekly_review"
             id="weekly_review"
             icon="chart"
             tone="day"
@@ -312,6 +322,7 @@ export const DeckView: React.FC = () => {
 
         {slot.kind === 'project' && (
           <DeckCard
+            key="project"
             id="project"
             icon="laptop"
             tone="hook"
@@ -371,6 +382,7 @@ export const DeckView: React.FC = () => {
 
         {slot.kind === 'action' && (
           <DeckCard
+            key={slot.action.id}
             id={slot.action.id}
             icon={slot.action.icon}
             title={slot.action.name}
@@ -391,6 +403,7 @@ export const DeckView: React.FC = () => {
 
         {slot.kind === 'sprint' && (
           <DeckCard
+            key="sprint"
             id="sprint"
             icon="trophy"
             tone="hook"
@@ -403,6 +416,7 @@ export const DeckView: React.FC = () => {
 
         {slot.kind === 'end' && (
           <DeckCard
+            key="end"
             id="end"
             icon="moon"
             tone="end"
@@ -415,6 +429,8 @@ export const DeckView: React.FC = () => {
                 setBusy(true);
                 try {
                   await advanceDay();
+                  haptic('success');
+                  playSfx('success');
                 } finally {
                   setBusy(false);
                 }
@@ -425,7 +441,7 @@ export const DeckView: React.FC = () => {
       </div>
 
       <div className="deck-footer">
-        <span className="deck-dots num" aria-label={t('Осталось карточек: {p0}', { p0: left })}>
+        <span className="deck-dots num" aria-live="polite" aria-label={t('Осталось карточек: {p0}', { p0: left })}>
           {t('Осталось карточек: {p0}', { p0: left })}
         </span>
         <button className="btn btn-ghost deck-btn" onClick={() => setView('overview')}>

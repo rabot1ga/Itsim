@@ -2,6 +2,7 @@ import { t } from '../lib/i18n';
 import React, { useRef, useState } from 'react';
 import { PixelIcon } from './pixel/PixelIcon';
 import { haptic } from '../lib/telegram';
+import { playSfx } from '../lib/sfx';
 
 /**
  * Карточка стека (DESIGN-DECK §2): одно решение за раз.
@@ -47,6 +48,7 @@ export const DeckCard: React.FC<{
     const action = dir === 1 ? right : left;
     if (!action || busy) return;
     haptic('tap');
+    playSfx('tap'); // звук жеста (преф «Звук», выключен по умолчанию)
     setFlying(dir);
     await new Promise((r) => setTimeout(r, 160)); // улёт карточки
     setFlying(0);

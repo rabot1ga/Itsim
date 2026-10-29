@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import './index.css';
 import { initTelegramApp } from './lib/telegram';
-import { applyContrast } from './lib/prefs';
+import { applyContrast, applyTheme } from './lib/prefs';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
 // Telegram chrome: fullscreen, stable viewport height, dark header, haptics-ready.
@@ -11,6 +11,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 initTelegramApp();
 // High-contrast preference (device-local) — before first paint.
 applyContrast();
+applyTheme();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

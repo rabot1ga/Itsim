@@ -74,6 +74,10 @@
   --radius-chip: 999px;
   --tap: 44px;
 
+  /* ── Motion (стадия 4 «Колода»): единый ритм 120–220ms ── */
+  --deck-dur: 180ms;
+  --deck-ease: cubic-bezier(0.22, 0.8, 0.32, 1);
+
   --shadow-card: 0 2px 6px rgba(0, 0, 0, 0.3);
   --shadow-raise: 0 10px 30px -14px rgba(0, 0, 0, 0.85);
   --shadow-pop: 0 14px 40px -18px rgba(0, 0, 0, 0.9);
@@ -2519,6 +2523,12 @@ select {
   .hud-xp > i {
     transition: none;
   }
+  .deck-slot {
+    animation: none;
+  }
+  .deck-card {
+    transition: none;
+  }
   .room-pet,
   .room-pet--idle .room-pet-emoji,
   .room-pet--happy .room-pet-emoji,
@@ -2530,6 +2540,41 @@ select {
   .room-pet-spark {
     animation: none;
   }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Светлая тема (стадия 4 «Колода»). data-theme="light" на <html> перекрывает
+   палитру целиком; семантика ресурсов (energy=blue и т.п.) не меняется.
+   ═══════════════════════════════════════════════════════════════════════════ */
+:root[data-theme='light'] {
+  --bg: #eef1f6;
+  --bg-raise: #ffffff;
+  --surface: #ffffff;
+  --surface-alt: #f4f6fa;
+  --surface-2: rgba(20, 25, 34, 0.04);
+  --border-soft: rgba(20, 25, 34, 0.12);
+  --well: #e8ecf2;
+  --line: #d4dae4;
+  --line-strong: #b7c0ce;
+
+  --text: #141922;
+  --text-dim: #3d4654;
+  --text-mute: #66707f;
+  --text-faint: #98a2b1;
+
+  --green: #1f9d55;
+  --green-dark: #177a42;
+  --green-deep: #0f5130;
+  --orange: #c97f0e;
+  --red: #cf3f3e;
+  --purple: #6b4fd0;
+  --blue: #2b7fc4;
+  --gold: #b98f16;
+  --gold-deep: #8a6a12;
+
+  --shadow-card: 0 2px 6px rgba(20, 25, 34, 0.12);
+  --shadow-raise: 0 10px 30px -14px rgba(20, 25, 34, 0.25);
+  --shadow-pop: 0 14px 40px -18px rgba(20, 25, 34, 0.3);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -2672,9 +2717,9 @@ select {
   touch-action: pan-y;
   user-select: none;
   transition:
-    transform 0.18s ease,
-    opacity 0.18s ease;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+    transform var(--deck-dur) var(--deck-ease),
+    opacity var(--deck-dur) var(--deck-ease);
+  box-shadow: var(--shadow-raise);
 }
 .deck-card-day {
   border-color: rgba(120, 160, 255, 0.35);
@@ -2684,6 +2729,19 @@ select {
 }
 .deck-card-end {
   border-color: rgba(200, 160, 255, 0.4);
+}
+@keyframes deckIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.deck-slot {
+  animation: deckIn 0.22s var(--deck-ease);
 }
 .deck-fly-right {
   transform: translateX(120%) rotate(10deg);
