@@ -164,6 +164,37 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
     return { message: t('Учёба: {skillId}{leveled}', { skillId: skillId, leveled: leveled }), delta };
   }
   switch (actionId) {
+    // ---- Модификатор «Скорочтение»: экспресс-конспект ----
+    case 'express_learn': {
+      if (!state.perks.includes('perk_speed_reader')) {
+        return { error: t('Нужен перк «Скорочтение»') };
+      }
+      const skillId = params?.skillId || state.mainSkillId || 'javascript';
+      const skillDef = (content.skills as any[]).find((s) => s.id === skillId);
+      if (!skillDef) return { error: t('Неизвестный навык') };
+      if (!canLearnSkill(state, skillDef)) {
+        const parentReq = Object.entries(skillDef.unlockAt ?? {})
+          .map(([pid, lvl]) => `${pid} ${lvl}+`)
+          .join(', ');
+        return {
+          error: t('Навык «{p0}» заблокирован. Нужно: {parentReq}', { p0: skillDef.name, parentReq: parentReq }),
+        };
+      }
+      const base = content.balance.xpSources?.['study_book']?.xp ?? 8;
+      const current = state.skills[skillId] ?? { level: 0, xp: 0 };
+      const next = applyXp(current, xpGain(state, content, Math.round(base * 1.5)), xpMotivation(state, content));
+      state.skills = { ...state.skills, [skillId]: next };
+      state.mainSkillId = skillId;
+      state.motivation = clamp(state.motivation - 2, 0, 100);
+      delta.skills = { [skillId]: { from: current.level, to: next.level } };
+      const leveled = next.level > current.level ? ` (${current.level} → ${next.level})` : '';
+      return {
+        message: t('Экспресс-конспект: {skillId}{leveled} — выжимка за один вечер, но голова кипит', {
+          skillId: skillId,
+          leveled: leveled,
+        }),
+      };
+    }
     // ---- English (soft skill, gates foreign companies) ----
     case 'study_english': {
       // Единая правда — balance.xpSources (A3 из ANALYSIS-2026-10-25-balance)
@@ -213,6 +244,23 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
         delta,
       };
     }
+    case 'morning_coffee': {
+      // модификатор «Кофемашина»: утренняя карточка открывает новый вариант
+      if (!state.items.includes('coffee_maker')) {
+        return { error: t('Нужна кофемашина — загляни в «Магазин»') };
+      }
+      if ((state.coffeeDay ?? -1) === state.currentDay) {
+        return { error: t('Кофе уже был сегодня — второй не в счёт') };
+      }
+      state.coffeeDay = state.currentDay;
+      state.energy = Math.min(state.maxEnergy, state.energy + 3);
+      state.motivation = clamp(state.motivation + 2, 0, 100);
+      delta.energy = state.energy;
+      delta.motivation = 2;
+      return {
+        message: t('Свежий кофе: +3 энергии и +2 настроения. День начинается правильно'),
+      };
+    }
     // ---- Work ----
     case 'work_task': {
       if (!state.job) return { error: t('У тебя нет работы. Сначала откликнись на вакансию в разделе «Карьера»') };
@@ -255,6 +303,39 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
           : t('Закрыл рабочие задачи. Ретроспектива отменена, все свободны (+{p0})', { p0: fmtMoney(bonus) }),
       };
     }
+    case 'delegate_task': {
+      // модификатор карты «Наставник» (perk_mentor): новый вариант ответа на
+      // карточке работы — меньше XP себе, но лидерство и настроение не страдают
+      if (!state.perks.includes('perk_mentor')) {
+        return { error: t('Нужен перк «Наставник» — без него стажёр не справится') };
+      }
+      if (!state.job) return { error: t('У тебя нет работы. Сначала откликнись на вакансию в разделе «Карьера»') };
+      const skillId = state.mainSkillId;
+      const current = state.skills[skillId] ?? { level: 0, xp: 0 };
+      const xp = xpGain(state, content, 4);
+      const next = applyXp(current, xp, xpMotivation(state, content));
+      state.skills = { ...state.skills, [skillId]: next };
+      const lead = state.softSkills['leadership'] ?? { level: 0, xp: 0 };
+      state.softSkills = {
+        ...state.softSkills,
+        leadership: applySoftXp(lead, 10, softOpts(content)),
+      };
+      const bonus = Math.round(weeklySalary(state.job.salary) * 0.02);
+      state.money += bonus;
+      state.job.daysWorked += 1;
+      state.motivation = clamp(state.motivation + 2, 0, 100);
+      delta.money = bonus;
+      delta.skills = { [skillId]: { from: current.level, to: next.level } };
+      delta.softSkills = {
+        leadership: { from: lead.level, to: state.softSkills['leadership'].level },
+      };
+      return {
+        message: t('Задача ушла стажёру: ты разжевал, он закрыл. Лидерство +{p0}, премия +{p1}', {
+          p0: 10,
+          p1: fmtMoney(bonus),
+        }),
+      };
+    }
     case 'work_overtime': {
       if (!state.job) return { error: t('У тебя нет работы') };
       const skillId = state.mainSkillId;
@@ -280,6 +361,27 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       delta.reputation = 0.5;
       delta.skills = { [skillId]: { from: current.level, to: next.level } };
       return { message: t('Пет-проект: ещё один TODO-трекер в портфолио. Репутация растёт') };
+    }
+    case 'monetize_project': {
+      // модификатор «Подработчик со стажем»: пет-проект приносит деньги
+      if (!state.perks.includes('perk_hustler')) {
+        return { error: t('Нужен перк «Подработчик со стажем»') };
+      }
+      const skillId = state.mainSkillId;
+      const current = state.skills[skillId] ?? { level: 0, xp: 0 };
+      const next = applyXp(current, xpGain(state, content, 6), xpMotivation(state, content));
+      state.skills = { ...state.skills, [skillId]: next };
+      state.reputation = clamp(state.reputation + 0.5, 0, 100);
+      const income = 9000;
+      state.money += income;
+      delta.money = income;
+      delta.reputation = 0.5;
+      delta.skills = { [skillId]: { from: current.level, to: next.level } };
+      return {
+        message: t('Первый платящий клиент пет-проекта: +{p0}. Опыта меньше, но счёт пополнился', {
+          p0: fmtMoney(income),
+        }),
+      };
     }
     // ---- Projects with deadlines: won by bidding, never handed out ----
     case 'project_task': {

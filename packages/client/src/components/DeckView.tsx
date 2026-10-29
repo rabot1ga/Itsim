@@ -1,4 +1,4 @@
-import { t } from '../lib/i18n';
+import { t, fmtMoney } from '../lib/i18n';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { DeckCard, DeckCost } from './DeckCard';
@@ -10,7 +10,15 @@ import { PixelIcon } from './pixel/PixelIcon';
 import { pickDayPlan } from '../screens/dayPlan';
 import { tipForDay } from '../screens/dayTips';
 import { ONBOARDING_KEY } from '../lib/firstSteps';
-import { projectComplete, projectDaysLeft, projectProgress, type ProjectDef } from '@itsim/shared';
+import {
+  cardModifiersFor,
+  projectComplete,
+  projectDaysLeft,
+  projectProgress,
+  weeklySalary,
+  type CardModifier,
+  type ProjectDef,
+} from '@itsim/shared';
 
 /**
  * Стек дня (DESIGN-DECK §3): интро → утро → собеседование → крючки →
@@ -23,6 +31,8 @@ type Slot =
   | { kind: 'morning' }
   | { kind: 'interview' }
   | { kind: 'hooks'; hints: Hint[]; steps: ReturnType<typeof firstStepsItems> }
+  | { kind: 'payday' }
+  | { kind: 'weekly_review' }
   | { kind: 'project' }
   | { kind: 'action'; action: ReturnType<typeof pickDayPlan>[number] }
   | { kind: 'sprint' }
@@ -44,7 +54,8 @@ function markOnboarded(): void {
   }
 }
 
-function buildQueue(
+// экспортируется для тестов: состав стека дня — контракт DESIGN-DECK §3/§7.3
+export function buildQueue(
   player: any,
   careerOutlook: any,
   steps: ReturnType<typeof useFirstSteps>,
@@ -58,6 +69,10 @@ function buildQueue(
   const hints = collectReadyHints(player, careerOutlook);
   const firstSteps = firstStepsItems(player, steps);
   if (hints.length > 0 || firstSteps) queue.push({ kind: 'hooks', hints, steps: firstSteps });
+  // «Сезон» недели (§7.3): зарплата и ревью — карточки-события недели
+  const day = player?.currentDay ?? 1;
+  if (player?.job && day % 7 === 0) queue.push({ kind: 'payday' });
+  if (day % 7 === 3) queue.push({ kind: 'weekly_review' });
   if (player?.activeProject) queue.push({ kind: 'project' });
   for (const action of pickDayPlan(player).slice(0, 5)) {
     queue.push({ kind: 'action', action });
@@ -131,6 +146,22 @@ export const DeckView: React.FC = () => {
     next();
   };
 
+  // модификаторы карт: новый выбор, открытый перком/предметом (§7.3)
+  const toVariant = (m: CardModifier, advance: boolean) => ({
+    label: t(m.label),
+    hint: m.hint ? t(m.hint) : undefined,
+    badge: t(m.source.name),
+    run: async () => {
+      setBusy(true);
+      try {
+        await performAction(m.actionId, m.params ?? { skillId: player.mainSkillId || 'javascript' });
+      } finally {
+        setBusy(false);
+      }
+      if (advance) next();
+    },
+  });
+
   // проект: карточка живёт, пока игрок сам не уйдёт («Позже»)
   const active = player.activeProject as any;
   const def = active && defs ? defs.find((d) => d.id === active.id) : undefined;
@@ -171,6 +202,7 @@ export const DeckView: React.FC = () => {
             tone="day"
             title={t('День {p0}', { p0: day })}
             flavor={tipForDay(day)?.body}
+            variants={cardModifiersFor(player, 'morning').map((m) => toVariant(m, false))}
             right={{ label: t('Дальше'), run: next, tone: 'ghost' }}
           />
         )}
@@ -238,6 +270,44 @@ export const DeckView: React.FC = () => {
               )}
             </ul>
           </DeckCard>
+        )}
+
+        {slot.kind === 'payday' && (
+          <DeckCard
+            id="payday"
+            icon="star"
+            tone="day"
+            title={t('Зарплата за неделю')}
+            meta={
+              <span className="deck-cost num">
+                {t('Начислено: {p0}', { p0: fmtMoney(player.job ? weeklySalary(player.job.salary) : 0) })}
+              </span>
+            }
+            flavor={t('Деньги уже на счёте — сводка дня покажет итоги')}
+            right={{ label: t('Отлично'), run: next, tone: 'ghost' }}
+          />
+        )}
+
+        {slot.kind === 'weekly_review' && (
+          <DeckCard
+            id="weekly_review"
+            icon="chart"
+            tone="day"
+            title={t('Ревью недели')}
+            flavor={
+              careerOutlook?.kind === 'promotion'
+                ? t('Следующий шаг: {p0} — прогресс {p1}%, до ревью {p2} дн.', {
+                    p0: careerOutlook.label,
+                    p1: careerOutlook.progress ?? 0,
+                    p2: careerOutlook.daysToReview ?? 0,
+                  })
+                : careerOutlook?.kind === 'top'
+                  ? t('Ты на вершине лестницы — держи темп')
+                  : t('Планы на неделю смотрятся в разделе «Карьера»')
+            }
+            left={{ label: t('К деталям'), run: () => setView('career'), tone: 'ghost' }}
+            right={{ label: t('Дальше'), run: next, tone: 'ghost' }}
+          />
         )}
 
         {slot.kind === 'project' && (
@@ -313,6 +383,7 @@ export const DeckView: React.FC = () => {
             }
             flavor={slot.action.hint}
             busy={busy}
+            variants={cardModifiersFor(player, slot.action.id).map((m) => toVariant(m, true))}
             left={{ label: t('Пропустить'), run: next, tone: 'ghost' }}
             right={{ label: t('Сделать'), run: () => runAction(slot.action.id) }}
           />

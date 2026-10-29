@@ -4752,4 +4752,39 @@ Object.assign(en, {
   'повезёт: следующее собеседование +{p0}%': 'luck: next interview +{p0}%',
   'повезёт: следующий отклик +{p0}%': 'luck: next reply +{p0}%',
   'шанс был {p0}%': 'chance was {p0}%',
+
+  // стадия 3 «Колода»: модификаторы карт и сезон недели
+  '+3 энергии и +2 настроения раз в день': '+3 energy and +2 mood once a day',
+  'Делегировать стажёру': 'Delegate to the intern',
+  'Деньги вместо части опыта: первый платящий клиент': 'Money instead of part of the XP: your first paying client',
+  'Деньги уже на счёте — сводка дня покажет итоги': 'The money is in — the day summary shows the totals',
+  'Задача ушла стажёру: ты разжевал, он закрыл. Лидерство +{p0}, премия +{p1}':
+    'Task went to the intern: you broke it down, they closed it. Leadership +{p0}, bonus +{p1}',
+  'Зарплата за неделю': 'Weekly salary',
+  'К деталям': 'Details',
+  'Кофе уже был сегодня — второй не в счёт': 'Coffee already happened today — no second round',
+  'Меньше опыта себе, но растёт лидерство и настроение не падает':
+    'Less XP for you, but leadership grows and mood holds',
+  'Монетизировать пет-проект': 'Monetize the pet project',
+  'На 50% больше опыта, но −2 к настроению': '50% more XP, but −2 mood',
+  Наставник: 'Mentor',
+  'Начать день с кофе': 'Start the day with coffee',
+  'Начислено: {p0}': 'Credited: {p0}',
+  'Нужен перк «Наставник» — без него стажёр не справится':
+    'Requires the «Mentor» perk — the intern cannot wing it alone',
+  'Нужен перк «Подработчик со стажем»': 'Requires the «Seasoned side-hustler» perk',
+  'Нужен перк «Скорочтение»': 'Requires the «Speed reading» perk',
+  'Нужна кофемашина — загляни в «Магазин»': 'You need a coffee machine — check the «Shop»',
+  Отлично: 'Nice',
+  'Первый платящий клиент пет-проекта: +{p0}. Опыта меньше, но счёт пополнился':
+    'First paying client of the pet project: +{p0}. Less XP, but the account grew',
+  'Планы на неделю смотрятся в разделе «Карьера»': 'Weekly plans live in the «Career» section',
+  'Ревью недели': 'Weekly review',
+  'Свежий кофе: +3 энергии и +2 настроения. День начинается правильно':
+    'Fresh coffee: +3 energy and +2 mood. The day starts right',
+  'Следующий шаг: {p0} — прогресс {p1}%, до ревью {p2} дн.': 'Next step: {p0} — progress {p1}%, review in {p2} d',
+  'Ты на вершине лестницы — держи темп': 'You are at the top of the ladder — keep the pace',
+  'Экспресс-конспект': 'Crash notes',
+  'Экспресс-конспект: {skillId}{leveled} — выжимка за один вечер, но голова кипит':
+    'Crash notes: {skillId}{leveled} — one evening of distillation, brain at boiling point',
 });

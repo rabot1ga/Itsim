@@ -47,6 +47,8 @@ export type StoredState = PlayerState & {
   mainSkillId: string;
   petFedToday: boolean;
   networkingToday?: number;
+  /** день, когда уже был утренний кофе (модификатор карты «Кофемашина») */
+  coffeeDay?: number;
   /** first day the player has been holding the savings cushion for the next flat */
   savingsSinceDay?: number;
   firstName: string;
@@ -78,6 +80,11 @@ export const GRADE_POSITIONS: Record<Grade, string> = {
 /** The default energy cost table for non-study actions. */
 export const EXTRA_ENERGY_COSTS: Record<string, number> = {
   work_task: 4,
+  // модификаторы карт (DESIGN-DECK §7.3): новые варианты ответа
+  delegate_task: 4,
+  express_learn: 2,
+  monetize_project: 3,
+  morning_coffee: 0,
   work_overtime: 5,
   pet_project: 3,
   freelance: 3,

@@ -2826,3 +2826,44 @@ select {
 .deck-option[data-state='dim'] {
   opacity: 0.45;
 }
+
+/* Варианты-модификаторы (§7.3): новый выбор, открытый перком/предметом */
+.deck-variants {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.55rem;
+}
+.deck-variant {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  border-radius: 12px;
+  border: 1px solid rgba(120, 160, 255, 0.35);
+  background: rgba(120, 160, 255, 0.08);
+  font-size: 0.85rem;
+  color: var(--text-primary, #eef1f8);
+}
+.deck-variant-label {
+  display: block;
+  font-weight: 600;
+}
+.deck-variant-hint {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.72rem;
+  opacity: 0.75;
+}
+.deck-variant-badge {
+  flex-shrink: 0;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid rgba(120, 160, 255, 0.35);
+  font-size: 0.68rem;
+  opacity: 0.85;
+}
+.deck-variant:disabled {
+  opacity: 0.5;
+}

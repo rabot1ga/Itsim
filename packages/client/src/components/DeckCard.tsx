@@ -17,6 +17,13 @@ export interface DeckAction {
   tone?: 'primary' | 'ghost';
 }
 
+/** Вариант-модификатор: новый выбор, открытый перком/предметом (§7.3) */
+export interface DeckVariant extends DeckAction {
+  hint?: string;
+  /** бейдж источника: «Наставник», «Кофемашина» */
+  badge?: string;
+}
+
 export const DeckCard: React.FC<{
   id: string;
   icon: string;
@@ -27,8 +34,9 @@ export const DeckCard: React.FC<{
   left?: DeckAction;
   right?: DeckAction;
   busy?: boolean;
+  variants?: DeckVariant[];
   children?: React.ReactNode;
-}> = ({ id, icon, title, meta, flavor, tone = 'action', left, right, busy, children }) => {
+}> = ({ id, icon, title, meta, flavor, tone = 'action', left, right, busy, variants, children }) => {
   const [dx, setDx] = useState(0);
   const [flying, setFlying] = useState<0 | 1 | -1>(0);
   const start = useRef<number | null>(null);
@@ -81,6 +89,21 @@ export const DeckCard: React.FC<{
         {meta && <div className="deck-card-meta">{meta}</div>}
         {children && <div className="deck-card-body">{children}</div>}
         {flavor && <p className="deck-card-flavor">{flavor}</p>}
+        {variants && variants.length > 0 && (
+          <ul className="deck-variants">
+            {variants.map((v) => (
+              <li key={v.label}>
+                <button className="deck-variant" data-deck-variant="1" disabled={busy} onClick={() => void v.run()}>
+                  <span className="flex-1 min-w-0 text-left">
+                    <span className="deck-variant-label">{v.label}</span>
+                    {v.hint && <span className="deck-variant-hint">{v.hint}</span>}
+                  </span>
+                  {v.badge && <span className="deck-variant-badge">{v.badge}</span>}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
       {(left || right) && (
         <div className="deck-actions">

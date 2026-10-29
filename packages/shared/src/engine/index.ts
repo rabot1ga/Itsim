@@ -24,3 +24,4 @@ export * from './anomaly';
 export * from './payments';
 export * from './relationships';
 export * from './contacts';
+export * from './cardModifiers';
