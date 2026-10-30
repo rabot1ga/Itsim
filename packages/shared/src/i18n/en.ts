@@ -4794,4 +4794,22 @@ Object.assign(en, {
   Светлая: 'Light',
   'Тема оформления': 'Appearance theme',
   Чернильная: 'Ink',
+
+  // стадия 1 «Живой мир»: следы памяти мира
+  '«{p0}» не дождалась на собеседование — отказ': '«{p0}» did not wait for you at the interview — rejected',
+  '«{p0}» прислала оффер': '«{p0}» sent an offer',
+  'Мир помнит': 'The world remembers',
+  'Отказался от проекта': 'Dropped the project',
+  'Отказался от проекта «{p0}» — заказчик запомнит': 'Dropped the project «{p0}» — the client will remember',
+  'Отклик в «{p0}» отклонили на скрининге': 'Application to «{p0}» was rejected at screening',
+  'Отклик в «{p0}» — ждёшь собеседования': 'Applied to «{p0}» — waiting for the interview',
+  'Отклик на заказ «{p0}» — ждёшь ответа утром': 'Bid on the gig «{p0}» — answer comes in the morning',
+  'Отозвал отклик — передумал': 'Pulled the application — changed your mind',
+  'Принял оффер «{p0}» — новая глава в резюме': 'Accepted the offer from «{p0}» — a new chapter in the CV',
+  'Провалил собеседование — отказ': 'Failed the interview — rejected',
+  'Провёл вечер с другом: {p0}': 'Spent an evening with a friend: {p0}',
+  'Прошёл собеседование — прислали оффер': 'Passed the interview — an offer arrived',
+  'Сдал «{p0}» в срок': 'Delivered «{p0}» on time',
+  'Сдал «{p0}» с опозданием': 'Delivered «{p0}» late',
+  'день {p0}': 'day {p0}',
 });

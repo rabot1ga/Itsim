@@ -93,6 +93,28 @@ export interface PetRoomLook {
 
 // ---- Player State ----
 
+/** След в памяти мира (DESIGN-LIVING-WORLD §2): значимый акт, который
+ *  вернётся событием, эффектом или строкой «Тебя помнят…». */
+export interface MemoryRecord {
+  id: string;
+  day: number;
+  /** о ком/чём след: 'company:portal_2000' | 'npc:masha' | 'rival' | 'self' */
+  subject: string;
+  kind: 'application' | 'hire' | 'fire' | 'promotion' | 'conflict' | 'friend' | 'freelance' | 'project' | 'event';
+  /** RU-текст для Хроники (перевод на границе, t()) */
+  text: string;
+}
+
+/** Стойкость компании-работодателя (§2): компания помнит отклики и работу. */
+export interface CompanyStanding {
+  applied: number;
+  offers: number;
+  rejections: number;
+  daysWorked: number;
+  /** ушёл по-плохому — дверь закрыта до этого дня */
+  closedUntilDay?: number;
+}
+
 export interface PlayerState {
   /** Секретная соль серверного RNG (P2.4); клиенту не отдаётся. */
   rngSalt?: string;
@@ -161,6 +183,10 @@ export interface PlayerState {
   milestones?: Milestone[];
   /** одноразовый seed ленты: сейвы до фичи не ретро-постятся */
   milestonesSeeded?: boolean;
+  /** Память мира (DESIGN-LIVING-WORLD): следы значимых актов, cap 60. */
+  memories?: MemoryRecord[];
+  /** Стойкость компаний-работодателей: помнят отклики/работу/уходы. */
+  companyStanding?: Record<string, CompanyStanding>;
   /** Скины и позиции питомца в комнате (роадмап): косметика сейва. */
   petRoom?: PetRoomLook;
 

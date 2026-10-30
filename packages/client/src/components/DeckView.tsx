@@ -19,6 +19,7 @@ import {
   projectProgress,
   weeklySalary,
   type CardModifier,
+  type MemoryRecord,
   type ProjectDef,
 } from '@itsim/shared';
 
@@ -33,6 +34,7 @@ type Slot =
   | { kind: 'morning' }
   | { kind: 'interview' }
   | { kind: 'hooks'; hints: Hint[]; steps: ReturnType<typeof firstStepsItems> }
+  | { kind: 'memory'; memories: MemoryRecord[] }
   | { kind: 'payday' }
   | { kind: 'weekly_review' }
   | { kind: 'project' }
@@ -64,6 +66,7 @@ export function buildQueue(
   onboarded: boolean
 ): Slot[] {
   const queue: Slot[] = [];
+  const day = player?.currentDay ?? 1;
   // B: онбординг — первые карточки стека, а не лекция перед игрой
   if (!onboarded) queue.push({ kind: 'intro', step: 0 }, { kind: 'intro', step: 1 });
   queue.push({ kind: 'morning' });
@@ -71,8 +74,12 @@ export function buildQueue(
   const hints = collectReadyHints(player, careerOutlook);
   const firstSteps = firstStepsItems(player, steps);
   if (hints.length > 0 || firstSteps) queue.push({ kind: 'hooks', hints, steps: firstSteps });
+  // «Живой мир» (DESIGN-LIVING-WORLD): карточка «Мир помнит» раз в 3 дня
+  const memories = (player?.memories ?? []) as MemoryRecord[];
+  if (memories.length > 0 && day % 3 === 2) {
+    queue.push({ kind: 'memory', memories: memories.slice(0, 2) });
+  }
   // «Сезон» недели (§7.3): зарплата и ревью — карточки-события недели
-  const day = player?.currentDay ?? 1;
   if (player?.job && day % 7 === 0) queue.push({ kind: 'payday' });
   if (day % 7 === 3) queue.push({ kind: 'weekly_review' });
   if (player?.activeProject) queue.push({ kind: 'project' });
@@ -276,6 +283,34 @@ export const DeckView: React.FC = () => {
                   </span>
                 </li>
               )}
+            </ul>
+          </DeckCard>
+        )}
+
+        {slot.kind === 'memory' && (
+          <DeckCard
+            key="memory"
+            id="memory"
+            icon="chat"
+            tone="hook"
+            title={t('Мир помнит')}
+            right={{ label: t('Дальше'), run: next, tone: 'ghost' }}
+          >
+            <ul className="deck-rows">
+              {slot.memories.map((m) => (
+                <li key={m.id}>
+                  <span className="deck-row">
+                    <PixelIcon
+                      name={m.kind === 'friend' ? 'person' : m.kind === 'project' ? 'laptop' : 'chat'}
+                      size={14}
+                    />
+                    <span className="flex-1 min-w-0 text-left text-xs text-ink-200">{t(m.text)}</span>
+                    <span className="text-ink-600 num text-2xs" aria-hidden="true">
+                      {t('день {p0}', { p0: m.day })}
+                    </span>
+                  </span>
+                </li>
+              ))}
             </ul>
           </DeckCard>
         )}

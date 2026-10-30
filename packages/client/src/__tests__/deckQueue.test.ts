@@ -52,6 +52,16 @@ describe('buildQueue: сезон недели', () => {
     expect(q[q.length - 1]).toBe('end');
   });
 
+  it('«Мир помнит» — раз в три дня, если есть следы', () => {
+    const mem = [{ id: 'm1', day: 1, subject: 'self', kind: 'event', text: 'След' }];
+    // day % 3 === 2 → карточка есть
+    expect(kinds(player({ currentDay: 5, memories: mem }))).toContain('memory');
+    // в другой день — нет
+    expect(kinds(player({ currentDay: 6, memories: mem }))).not.toContain('memory');
+    // без следов — нет
+    expect(kinds(player({ currentDay: 5, memories: [] }))).not.toContain('memory');
+  });
+
   it('интро — первые карточки только без флага onboarded', () => {
     const fresh = kinds(player({ currentDay: 5 }), false);
     expect(fresh.slice(0, 2)).toEqual(['intro', 'intro']);

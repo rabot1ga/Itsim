@@ -22,6 +22,8 @@ import {
   rollInterview,
   seededRng,
   type Offer,
+  recordMemory,
+  bumpCompanyStanding,
 } from '@itsim/shared';
 import {
   balanceRng,
@@ -211,6 +213,12 @@ export async function interviewRoutes(app: FastifyInstance) {
         companyToxicity: company?.toxicity ?? 0,
       };
       state.pendingOffers = [...state.pendingOffers, offer];
+      bumpCompanyStanding(state, offer.companyId, 'offers');
+      recordMemory(state, {
+        subject: `company:${offer.companyId}`,
+        kind: 'application',
+        text: t('Прошёл собеседование — прислали оффер', {}),
+      });
       app.status = 'accepted';
       app.result = 'accepted';
       resultMessage = usedRecommendation
@@ -227,6 +235,12 @@ export async function interviewRoutes(app: FastifyInstance) {
     } else {
       app.status = 'rejected';
       app.result = 'rejected';
+      bumpCompanyStanding(state, app.companyId, 'rejections');
+      recordMemory(state, {
+        subject: `company:${app.companyId}`,
+        kind: 'application',
+        text: t('Провалил собеседование — отказ', {}),
+      });
       const streak = Math.min(4, (state.interviewRejectStreak ?? 0) + 1);
       state.interviewRejectStreak = streak;
       resultMessage = t(

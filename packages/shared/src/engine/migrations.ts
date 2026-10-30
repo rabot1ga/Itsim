@@ -232,8 +232,13 @@ export function normalizeState(state: any): void {
     'recentEventTags',
     'entitlements',
     'badges',
+    'memories',
   ] as const) {
     if (!Array.isArray(state[key])) state[key] = [];
+  }
+  // память мира (DESIGN-LIVING-WORLD): стойкость компаний — объект-словарь
+  if (!state.companyStanding || typeof state.companyStanding !== 'object' || Array.isArray(state.companyStanding)) {
+    state.companyStanding = {};
   }
   for (const [id, def] of Object.entries(SOFT_SKILL_DEFAULTS)) {
     const cur = state.softSkills[id];

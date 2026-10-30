@@ -41,6 +41,8 @@ import {
   type Application,
   type GameEvent,
   type Offer,
+  recordMemory,
+  bumpCompanyStanding,
 } from '@itsim/shared';
 import { clamp, contactsOf } from '@itsim/shared';
 import {
@@ -465,6 +467,13 @@ function resolveInterview(state: StoredState, app: Application, content: any, me
     state.pendingOffers = [...state.pendingOffers, offer];
     app.status = 'accepted';
     app.result = 'accepted';
+    // «Живой мир»: оффер — след (DESIGN-LIVING-WORLD)
+    bumpCompanyStanding(state, company.id, 'offers');
+    recordMemory(state, {
+      subject: `company:${company.id}`,
+      kind: 'application',
+      text: t('«{p0}» прислала оффер', { p0: company.name }),
+    });
     messages.push(
       t(
         'Ты пропустил собеседование в «{p0}» — но резюме так понравилось, что прислали оффер: {p1}, {p2}/мес. Действует 5 дней — принять в «Карьере»',
@@ -478,6 +487,12 @@ function resolveInterview(state: StoredState, app: Application, content: any, me
   } else {
     app.status = 'rejected';
     app.result = 'rejected';
+    bumpCompanyStanding(state, company.id, 'rejections');
+    recordMemory(state, {
+      subject: `company:${company.id}`,
+      kind: 'application',
+      text: t('«{p0}» не дождалась на собеседование — отказ', { p0: company.name }),
+    });
     const streak = Math.min(4, (state.interviewRejectStreak ?? 0) + 1);
     state.interviewRejectStreak = streak;
     messages.push(

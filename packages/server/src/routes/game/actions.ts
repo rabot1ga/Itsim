@@ -48,6 +48,8 @@ import {
   P2P_DISCOUNT_RATE,
   type Application,
   type PlayerState,
+  recordMemory,
+  bumpCompanyStanding,
 } from '@itsim/shared';
 import {
   ACTION_MONEY_COSTS,
@@ -418,6 +420,13 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       state.reputation = clamp(state.reputation + payout.reputation, 0, 100);
       state.projectsDone = [...(state.projectsDone ?? []), def.id];
       state.activeProject = null;
+      recordMemory(state, {
+        subject: `client:${def.id}`,
+        kind: 'project',
+        text: payout.late
+          ? t('Сдал «{p0}» с опозданием', { p0: def.title })
+          : t('Сдал «{p0}» в срок', { p0: def.title }),
+      });
       delta.money = payout.money;
       delta.reputation = payout.reputation;
       delta.activeProject = null;
@@ -444,6 +453,11 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       state.reputation = clamp(state.reputation - penalty, 0, 100);
       state.activeProject = null;
       delta.reputation = -penalty;
+      recordMemory(state, {
+        subject: def ? `client:${def.id}` : 'self',
+        kind: 'project',
+        text: def ? t('Отказался от проекта «{p0}» — заказчик запомнит', { p0: def.title }) : t('Отказался от проекта'),
+      });
       delta.activeProject = null;
       return { message: t('Проект брошен. Заказчик расстроен: −{penalty} репутации', { penalty: penalty }), delta };
     }
@@ -471,6 +485,12 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       state.freelanceDoneToday = true;
       state.lastFreelanceDay = state.currentDay;
       delta.freelanceBid = state.freelanceBid;
+      // «Живой мир»: заказчик запомнит отклик
+      recordMemory(state, {
+        subject: `client:${def.id}`,
+        kind: 'freelance',
+        text: t('Отклик на заказ «{p0}» — ждёшь ответа утром', { p0: def.title }),
+      });
       return {
         message:
           t('Отклик на «{p0}» отправлен. Заказчик ответит утром — шанс {p1}%', {
@@ -536,6 +556,11 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
         return { error: t('Вы уже виделись сегодня. Завтра вновь — и будет новый разговор') };
       }
       markSpentTime(state, npcId);
+      recordMemory(state, {
+        subject: `npc:${npcId}`,
+        kind: 'friend',
+        text: t('Провёл вечер с другом: {p0}', { p0: npc.name }),
+      });
       const before = state.relationships[npcId] ?? 0;
       state.relationships = {
         ...state.relationships,
@@ -723,9 +748,22 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       };
       state.currentApplication = application;
       delta.application = application;
+      // «Живой мир»: компания помнит отклики (DESIGN-LIVING-WORLD, закон 1)
+      bumpCompanyStanding(state, companyId, 'applied');
       if (!screen.passed) {
+        bumpCompanyStanding(state, companyId, 'rejections');
+        recordMemory(state, {
+          subject: `company:${companyId}`,
+          kind: 'application',
+          text: t('Отклик в «{p0}» отклонили на скрининге', { p0: company.name }),
+        });
         return { message: `📄 ${company.name}: ${screen.msg}`, delta };
       }
+      recordMemory(state, {
+        subject: `company:${companyId}`,
+        kind: 'application',
+        text: t('Отклик в «{p0}» — ждёшь собеседования', { p0: company.name }),
+      });
       return {
         message: t('Отклик в «{p0}» отправлен. {p1} Собеседование через 2 дня', {
           p0: company.name,
@@ -735,8 +773,16 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
     }
     case 'cancel_application': {
       if (!state.currentApplication) return { error: t('Нет активного отклика') };
+      const cancelled = state.currentApplication;
       state.currentApplication = null;
       state.interviewSession = undefined;
+      if (cancelled) {
+        recordMemory(state, {
+          subject: `company:${cancelled.companyId}`,
+          kind: 'application',
+          text: t('Отозвал отклик — передумал'),
+        });
+      }
       return { message: t('Отклик отозван. Заказчики кармы плакали') };
     }
     case 'accept_offer': {
@@ -758,6 +804,13 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       state.pendingOffers = [];
       state.currentApplication = null;
       delta.job = state.job;
+      // «Живой мир»: принятый оффер — след найма
+      bumpCompanyStanding(state, offer.companyId, 'offers');
+      recordMemory(state, {
+        subject: `company:${offer.companyId}`,
+        kind: 'hire',
+        text: t('Принял оффер «{p0}» — новая глава в резюме', { p0: company.name }),
+      });
       return {
         message: t('Ты принят в «{p0}» на позицию {p1}! Зарплата: {p2}/мес', {
           p0: company.name,

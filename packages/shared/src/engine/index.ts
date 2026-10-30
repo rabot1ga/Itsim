@@ -25,3 +25,4 @@ export * from './payments';
 export * from './relationships';
 export * from './contacts';
 export * from './cardModifiers';
+export * from './memory';
