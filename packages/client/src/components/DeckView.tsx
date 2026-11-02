@@ -19,6 +19,8 @@ import {
   projectProgress,
   weeklySalary,
   type CardModifier,
+  playerPower,
+  rivalGap,
   type MemoryRecord,
   type ProjectDef,
 } from '@itsim/shared';
@@ -35,6 +37,7 @@ type Slot =
   | { kind: 'interview' }
   | { kind: 'hooks'; hints: Hint[]; steps: ReturnType<typeof firstStepsItems> }
   | { kind: 'memory'; memories: MemoryRecord[] }
+  | { kind: 'rival'; gap: number }
   | { kind: 'payday' }
   | { kind: 'weekly_review' }
   | { kind: 'project' }
@@ -78,6 +81,11 @@ export function buildQueue(
   const memories = (player?.memories ?? []) as MemoryRecord[];
   if (memories.length > 0 && day % 3 === 2) {
     queue.push({ kind: 'memory', memories: memories.slice(0, 2) });
+  }
+  // соперник: карточка в окне ревью (пятница) или когда опередил
+  if (player?.rival) {
+    const gap = rivalGap(player);
+    if (day % 7 === 5 || gap < 0) queue.push({ kind: 'rival', gap });
   }
   // «Сезон» недели (§7.3): зарплата и ревью — карточки-события недели
   if (player?.job && day % 7 === 0) queue.push({ kind: 'payday' });
@@ -313,6 +321,32 @@ export const DeckView: React.FC = () => {
               ))}
             </ul>
           </DeckCard>
+        )}
+
+        {slot.kind === 'rival' && (
+          <DeckCard
+            key="rival"
+            id="rival"
+            icon="person"
+            tone="hook"
+            title={t('Соперник: {p0}', { p0: player.rival.name })}
+            meta={
+              <span className="deck-cost num">
+                {t('запас')} {Math.round(playerPower(player))} · {t('у {p0}', { p0: player.rival.name })}{' '}
+                {Math.round(player.rival.progress)}
+              </span>
+            }
+            flavor={
+              slot.gap < 0
+                ? t('{p0} впереди на {p1} пунктов — ревью будет горячим', {
+                    p0: player.rival.name,
+                    p1: Math.max(1, Math.round(-slot.gap)),
+                  })
+                : t('Ты впереди на {p1} пунктов — держи темп', { p1: Math.max(1, Math.round(slot.gap)) })
+            }
+            left={{ label: t('К деталям'), run: () => setView('career'), tone: 'ghost' }}
+            right={{ label: t('Дальше'), run: next, tone: 'ghost' }}
+          />
         )}
 
         {slot.kind === 'payday' && (

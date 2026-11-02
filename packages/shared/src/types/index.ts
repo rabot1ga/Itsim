@@ -105,6 +105,18 @@ export interface MemoryRecord {
   text: string;
 }
 
+/** Соперник (§2, стадия 2): претендент на ту же ступень. */
+export interface Rival {
+  /** RU-имя (t() на границе рендера) */
+  name: string;
+  /** ветка/сфера — для карточки */
+  branch: string;
+  /** «запас» соперника в единицах playerPower */
+  progress: number;
+  /** день появления */
+  day: number;
+}
+
 /** Стойкость компании-работодателя (§2): компания помнит отклики и работу. */
 export interface CompanyStanding {
   applied: number;
@@ -187,6 +199,8 @@ export interface PlayerState {
   memories?: MemoryRecord[];
   /** Стойкость компаний-работодателей: помнят отклики/работу/уходы. */
   companyStanding?: Record<string, CompanyStanding>;
+  /** Соперник за повышение (DESIGN-LIVING-WORLD, стадия 2). */
+  rival?: Rival;
   /** Скины и позиции питомца в комнате (роадмап): косметика сейва. */
   petRoom?: PetRoomLook;
 

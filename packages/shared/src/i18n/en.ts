@@ -4812,4 +4812,23 @@ Object.assign(en, {
   'Сдал «{p0}» в срок': 'Delivered «{p0}» on time',
   'Сдал «{p0}» с опозданием': 'Delivered «{p0}» late',
   'день {p0}': 'day {p0}',
+
+  // стадия 2 «Живой мир»: соперник
+  '{p0} впереди на {p1} пунктов — ревью будет горячим': '{p0} is ahead by {p1} points — the review will be hot',
+  '{p0} закрыл крупный проект — теперь впереди': '{p0} closed a big project — now ahead',
+  '{p0} отметился на конференции — дышит в спину': '{p0} spoke at a conference — breathing down your neck',
+  Артём: 'Artyom',
+  Вера: 'Vera',
+  Даша: 'Dasha',
+  Женя: 'Zhenya',
+  Кирилл: 'Kirill',
+  Лена: 'Lena',
+  Марина: 'Marina',
+  'Ревью на {p0}: место занято — {p1} был впереди на {p2} пунктов':
+    'Review for {p0}: the seat is taken — {p1} was ahead by {p2} points',
+  'Соперник: {p0}': 'Rival: {p0}',
+  Тимур: 'Timur',
+  'Ты впереди на {p1} пунктов — держи темп': 'You are ahead by {p1} points — keep the pace',
+  запас: 'power',
+  'у {p0}': '{p0} has',
 });

@@ -236,6 +236,10 @@ export function normalizeState(state: any): void {
   ] as const) {
     if (!Array.isArray(state[key])) state[key] = [];
   }
+  // соперник (стадия 2): битая форма — снести, создастся при следующем найме
+  if (state.rival != null && (typeof state.rival.name !== 'string' || typeof state.rival.progress !== 'number')) {
+    delete state.rival;
+  }
   // память мира (DESIGN-LIVING-WORLD): стойкость компаний — объект-словарь
   if (!state.companyStanding || typeof state.companyStanding !== 'object' || Array.isArray(state.companyStanding)) {
     state.companyStanding = {};

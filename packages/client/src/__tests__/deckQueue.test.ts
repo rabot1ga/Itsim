@@ -62,6 +62,26 @@ describe('buildQueue: сезон недели', () => {
     expect(kinds(player({ currentDay: 5, memories: [] }))).not.toContain('memory');
   });
 
+  it('соперник: карточка в пятницу или когда опередил', () => {
+    const rival = { name: 'Марина', branch: 'main', progress: 25, day: 1 };
+    // пятница (day % 7 === 5) при наличии соперника
+    expect(kinds(player({ currentDay: 5, rival }))).toContain('rival');
+    // соперник опередил (progress 25 > power 14) — карточка в любой день
+    expect(kinds(player({ currentDay: 2, rival }))).toContain('rival');
+    // соперник позади и не пятница — нет
+    expect(
+      kinds(
+        player({
+          currentDay: 2,
+          rival: { ...rival, progress: 1 },
+          skills: { javascript: { level: 5, xp: 0 } },
+        })
+      )
+    ).not.toContain('rival');
+    // без соперника — нет
+    expect(kinds(player({ currentDay: 5 }))).not.toContain('rival');
+  });
+
   it('интро — первые карточки только без флага onboarded', () => {
     const fresh = kinds(player({ currentDay: 5 }), false);
     expect(fresh.slice(0, 2)).toEqual(['intro', 'intro']);

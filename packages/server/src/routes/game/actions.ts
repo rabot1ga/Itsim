@@ -50,6 +50,7 @@ import {
   type PlayerState,
   recordMemory,
   bumpCompanyStanding,
+  ensureRival,
 } from '@itsim/shared';
 import {
   ACTION_MONEY_COSTS,
@@ -804,7 +805,8 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       state.pendingOffers = [];
       state.currentApplication = null;
       delta.job = state.job;
-      // «Живой мир»: принятый оффер — след найма
+      // «Живой мир»: принятый оффер — след найма; с этого дня растёт соперник
+      ensureRival(state);
       bumpCompanyStanding(state, offer.companyId, 'offers');
       recordMemory(state, {
         subject: `company:${offer.companyId}`,

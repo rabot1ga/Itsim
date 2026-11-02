@@ -111,6 +111,33 @@ describe('следы карьеры', () => {
   });
 });
 
+describe('соперник (стадия 2)', () => {
+  it('найм создаёт соперника, рост соперника виден в gap', async () => {
+    await reset(9104);
+    await patch(9104, {
+      pendingOffers: [
+        {
+          companyId: 'portal_2000',
+          position: 'Junior-разработчик',
+          grade: 'junior',
+          salary: 90_000,
+          requirements: { javascript: 20 },
+          expiresInDays: 5,
+          interviewBar: 1,
+          companyToxicity: 0,
+        },
+      ],
+    });
+    const r = await act(9104, 'accept_offer', { companyId: 'portal_2000' });
+    expect(r.statusCode).toBe(200);
+    const state = (await loadState('9104')) as any;
+    expect(state.rival?.name).toBeTruthy();
+    expect(typeof state.rival.progress).toBe('number');
+    // найм — тоже след памяти
+    expect(state.memories[0].kind).toBe('hire');
+  });
+});
+
 describe('следы дружбы', () => {
   it('вечер с другом пишется следом', async () => {
     await reset(9103);

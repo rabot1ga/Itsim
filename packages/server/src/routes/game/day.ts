@@ -43,6 +43,10 @@ import {
   type Offer,
   recordMemory,
   bumpCompanyStanding,
+  advanceRival,
+  ensureRival,
+  rivalGap,
+  rivalPressure,
 } from '@itsim/shared';
 import { clamp, contactsOf } from '@itsim/shared';
 import {
@@ -133,6 +137,21 @@ export function advanceDay(state: StoredState, content: any, messages: string[])
     messages.push(
       t('Дмитрий Борисович опять свёл дискуссию к лекции — настроение −{p0}', { p0: TOXIC_MOTIVATION_HIT })
     );
+  }
+  // 4c. «Живой мир» (стадия 2): соперник растёт каждый день; изредка — след
+  if (state.job) {
+    const rival = ensureRival(state);
+    advanceRival(state, 0.8 + rng() * 0.4);
+    if (rng() < 0.12) {
+      const ahead = rivalGap(state) < 0;
+      recordMemory(state, {
+        subject: 'rival',
+        kind: 'event',
+        text: ahead
+          ? t('{p0} закрыл крупный проект — теперь впереди', { p0: rival.name })
+          : t('{p0} отметился на конференции — дышит в спину', { p0: rival.name }),
+      });
+    }
   }
   // 5. Weekly salary
   if (state.job && state.currentDay % 7 === 0) {
@@ -404,10 +423,21 @@ function tryPromote(state: StoredState, company: any, content: any, messages: st
   if (!progress.ok) return;
   // D1: тимлид ≥ 60 заступается — ревью проходит легче
   const surplus = gateSurplus(progress) + teamleadSurplusBonus(state);
-  if (!promotionChance(surplus, gate.competition ?? 1, rng)) {
+  // «Живой мир» (стадия 2): соперник давит на ревью — разрыв виден в сообщении
+  ensureRival(state);
+  const pressure = rivalPressure(state);
+  const competition = Math.max(0.3, (gate.competition ?? 1) + pressure);
+  if (!promotionChance(surplus, competition, rng)) {
     // No spam: tell the player only on the day the review happened
+    const gap = Math.round(rivalGap(state));
     messages.push(
-      t('Ревью на {p0}: место пока занято. Ты у уреза — качай глубину, не ширину', { p0: gate.label ?? gate.grade })
+      pressure > 0
+        ? t('Ревью на {p0}: место занято — {p1} был впереди на {p2} пунктов', {
+            p0: gate.label ?? gate.grade,
+            p1: state.rival!.name,
+            p2: Math.max(1, -gap),
+          })
+        : t('Ревью на {p0}: место пока занято. Ты у уреза — качай глубину, не ширину', { p0: gate.label ?? gate.grade })
     );
     return;
   }
