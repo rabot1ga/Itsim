@@ -138,6 +138,51 @@ describe('соперник (стадия 2)', () => {
   });
 });
 
+describe('сиквелы (стадия 3)', () => {
+  it('вечер с другом сажает затравку; созревший сиквел стреляет утром', async () => {
+    await reset(9105);
+    await patch(9105, { energy: 10 });
+    await act(9105, 'spend_time_with_friend', { npcId: 'uni_friend' });
+    let state = (await loadState('9105')) as any;
+    expect(state.memorySeeds.map((s: any) => s.tag)).toContain('friend_recommendation');
+
+    // заставляем созреть другую затравку (без when) и закрываем день
+    state.memorySeeds = [
+      ...state.memorySeeds.filter((s: any) => s.tag !== 'friend_recommendation'),
+      { tag: 'client_returns', plantedDay: 1, dueDay: 1, expiresDay: 99 },
+    ];
+    await saveState('9105', state);
+    const day = await app.inject({
+      method: 'POST',
+      url: '/api/game/advance-day',
+      headers: { authorization: tma(9105) },
+    });
+    expect(day.statusCode).toBe(200);
+    state = (await loadState('9105')) as any;
+    // сиквел сработал и потребил затравку
+    expect(state.activeEventId).toBe('sequel_client_returns_01');
+    expect(state.memorySeeds.map((s: any) => s.tag)).not.toContain('client_returns');
+  });
+
+  it('выбор события сажает затравку (choice.sequel)', async () => {
+    await reset(9106);
+    await patch(9106, {
+      activeEventId: 'sequel_hr_second_chance_01',
+      eventHistory: {},
+      recentEventTags: [],
+    });
+    const r = await app.inject({
+      method: 'POST',
+      url: '/api/game/event-choice',
+      headers: { authorization: tma(9106) },
+      payload: { eventId: 'sequel_hr_second_chance_01', choiceIndex: 0 },
+    });
+    expect(r.statusCode).toBe(200);
+    const state = (await loadState('9106')) as any;
+    expect(state.memorySeeds.map((s: any) => s.tag)).toContain('hr_second_visit');
+  });
+});
+
 describe('следы дружбы', () => {
   it('вечер с другом пишется следом', async () => {
     await reset(9103);

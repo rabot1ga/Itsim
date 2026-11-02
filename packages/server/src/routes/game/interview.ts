@@ -24,6 +24,7 @@ import {
   type Offer,
   recordMemory,
   bumpCompanyStanding,
+  plantSeed,
 } from '@itsim/shared';
 import {
   balanceRng,
@@ -221,6 +222,8 @@ export async function interviewRoutes(app: FastifyInstance) {
       });
       app.status = 'accepted';
       app.result = 'accepted';
+      // «Живой мир» (стадия 3): о новой работе узнают старые коллеги
+      plantSeed(state, { tag: 'old_colleague_heard', afterDays: 4 + Math.floor(balanceRng(state)() * 4) });
       resultMessage = usedRecommendation
         ? t('По тёплой рекомендации тебя взяли без долгих разговоров. Оффер: {p0}, {p1}/мес — прими его в «Карьере»', {
             p0: app.position,

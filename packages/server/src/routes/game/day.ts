@@ -47,6 +47,10 @@ import {
   ensureRival,
   rivalGap,
   rivalPressure,
+  plantSeed,
+  maturedSeeds,
+  consumeSeed,
+  dropExpiredSeeds,
 } from '@itsim/shared';
 import { clamp, contactsOf } from '@itsim/shared';
 import {
@@ -113,10 +117,12 @@ export function advanceDay(state: StoredState, content: any, messages: string[])
     if (state.jobWarnings >= 3) {
       messages.push(t('Три предупреждения — тебя уволили из {p0}. Свобода!', { p0: company?.name ?? 'компании' }));
       state.job = null;
+      plantSeed(state, { tag: 'ex_employer_calls', afterDays: 4 + Math.floor(rng() * 4) });
       loseCtoSeat(state, content, messages, t('Борд не стал ждать третьего предупреждения'));
     } else if (company && rng() < (company.culture?.layoffRisk ?? 0)) {
       messages.push(t('Сокращение в «{p0}». Ты в списке. Рынок, держись!', { p0: company.name }));
       state.job = null;
+      plantSeed(state, { tag: 'ex_employer_calls', afterDays: 4 + Math.floor(rng() * 4) });
       loseCtoSeat(state, content, messages, t('Сокращение дошло до верхнего этажа'));
     } else {
       // Review cadence is per-gate (minDaysInGrade) and lives inside tryPromote
@@ -315,6 +321,8 @@ export function advanceDay(state: StoredState, content: any, messages: string[])
       if (outcome === 'won') {
         state.activeProject = startProject(def, state.currentDay);
         state.freelanceRejectStreak = 0;
+        // «Живой мир» (стадия 3): успешный заказ может вернуться постоянством
+        plantSeed(state, { tag: 'regular_client', afterDays: 5 + Math.floor(rng() * 4) });
         messages.push(
           t('Заказчик выбрал тебя: «{p0}». Дедлайн — день {p1}', {
             p0: def.title,
@@ -453,6 +461,8 @@ function tryPromote(state: StoredState, company: any, content: any, messages: st
   state.grade = gate.grade;
   state.lastPromotionDay = state.currentDay;
   state.reputation = clamp(state.reputation + 3, 0, 100);
+  // «Живой мир» (стадия 3): повышение не проходит мимо близких
+  plantSeed(state, { tag: 'mentor_proud', afterDays: 2 + Math.floor(rng() * 3) });
   messages.push(
     t('Повышение! Теперь ты {p0} ({p1}/мес). Поздравляем, тебя ждёт ещё больше созвонов', {
       p0: GRADE_POSITIONS[gate.grade],
@@ -546,6 +556,18 @@ function maybeTriggerEvent(state: StoredState, content: any): GameEvent | null {
     const [due] = state.pendingEvents.splice(dueIndex, 1);
     const event = (content.events as any[]).find((e) => e.id === due.eventId);
     if (event) {
+      state.activeEventId = event.id;
+      return event;
+    }
+  }
+  // «Живой мир» (стадия 3): созревшие сиквелы — выше случайных событий,
+  // но ниже сюжетных окон (pendingEvents)
+  dropExpiredSeeds(state);
+  for (const seed of maturedSeeds(state)) {
+    const variants = (content.events as any[]).filter((e) => e.sequelTag === seed.tag);
+    consumeSeed(state, seed.tag);
+    if (variants.length > 0) {
+      const event = variants[Math.floor(rng() * variants.length)];
       state.activeEventId = event.id;
       return event;
     }

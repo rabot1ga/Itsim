@@ -51,6 +51,7 @@ import {
   recordMemory,
   bumpCompanyStanding,
   ensureRival,
+  plantSeed,
 } from '@itsim/shared';
 import {
   ACTION_MONEY_COSTS,
@@ -428,6 +429,9 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
           ? t('Сдал «{p0}» с опозданием', { p0: def.title })
           : t('Сдал «{p0}» в срок', { p0: def.title }),
       });
+      if (!payout.late) {
+        plantSeed(state, { tag: 'client_returns', afterDays: 4 + Math.floor(rng() * 5) });
+      }
       delta.money = payout.money;
       delta.reputation = payout.reputation;
       delta.activeProject = null;
@@ -562,6 +566,12 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
         kind: 'friend',
         text: t('Провёл вечер с другом: {p0}', { p0: npc.name }),
       });
+      // «Живой мир» (стадия 3): тёплая дружба прорастает рекомендацией
+      plantSeed(state, {
+        tag: 'friend_recommendation',
+        afterDays: 3 + Math.floor(rng() * 4),
+        when: { minRelation: { [npcId]: 40 } },
+      });
       const before = state.relationships[npcId] ?? 0;
       state.relationships = {
         ...state.relationships,
@@ -689,6 +699,8 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       }
       const npcs = content.npcs as any[];
       state.networkingToday = (state.networkingToday ?? 0) + 1;
+      // «Живой мир» (стадия 3): митапы прорастают приглашениями
+      plantSeed(state, { tag: 'conference_invite', afterDays: 6 + Math.floor(rng() * 5) });
       if (npcs.length > 0 && rng() < 0.3) {
         const npc = npcs[Math.floor(rng() * npcs.length)];
         state.relationships = {
@@ -758,6 +770,8 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
           kind: 'application',
           text: t('Отклик в «{p0}» отклонили на скрининге', { p0: company.name }),
         });
+        // «Живой мир» (стадия 3): отказы тоже сажают семена
+        plantSeed(state, { tag: 'hr_second_chance', afterDays: 5 + Math.floor(rng() * 5) });
         return { message: `📄 ${company.name}: ${screen.msg}`, delta };
       }
       recordMemory(state, {

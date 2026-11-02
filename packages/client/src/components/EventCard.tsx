@@ -23,6 +23,8 @@ export interface EventCardProps {
   title: string;
   description: string;
   tags?: string[];
+  /** «Живой мир» (стадия 3): событие-сиквел — мир вернул продолжение */
+  sequelTag?: string;
   choices: EventChoice[];
   player?: EventPlayer;
   error?: string | null;
@@ -61,6 +63,7 @@ export const EventCard: React.FC<EventCardProps> = ({
   title,
   description,
   tags = [],
+  sequelTag,
   choices,
   player,
   error,
@@ -87,8 +90,8 @@ export const EventCard: React.FC<EventCardProps> = ({
   return (
     <section className={`story-card ${cardTone(tags)} animate-pop-in`} aria-label={title} aria-busy={busy !== null}>
       <div className="story-card-kicker">
-        <PixelIcon name="dice" size={12} />
-        {t('Случайное событие')}
+        <PixelIcon name={sequelTag ? 'chat' : 'dice'} size={12} />
+        {sequelTag ? t('Продолжение истории') : t('Случайное событие')}
       </div>
       <img className="story-card-art" src={eventArtwork(tags, title, eventId)} alt="" width={384} height={288} />
       <div className="story-card-copy">

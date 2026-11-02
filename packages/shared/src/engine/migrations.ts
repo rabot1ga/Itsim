@@ -233,9 +233,14 @@ export function normalizeState(state: any): void {
     'entitlements',
     'badges',
     'memories',
+    'memorySeeds',
   ] as const) {
     if (!Array.isArray(state[key])) state[key] = [];
   }
+  // затравки сиквелов (стадия 3): битые записи выкидываем
+  state.memorySeeds = (state.memorySeeds ?? []).filter(
+    (s: any) => s && typeof s.tag === 'string' && typeof s.dueDay === 'number' && typeof s.expiresDay === 'number'
+  );
   // соперник (стадия 2): битая форма — снести, создастся при следующем найме
   if (state.rival != null && (typeof state.rival.name !== 'string' || typeof state.rival.progress !== 'number')) {
     delete state.rival;

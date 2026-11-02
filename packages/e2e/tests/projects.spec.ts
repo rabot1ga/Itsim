@@ -139,13 +139,24 @@ test('a missed deadline drops the contract and costs reputation', async ({ page 
     const response = await page.request.get('/api/game/state');
     return (await response.json()).state.reputation as number;
   };
-  const before = await reputation();
 
   // Deadline is 5 days out; walking past it must expire the contract.
-  for (let day = 0; day < 6; day++) await endDay(page);
+  for (let day = 0; day < 5; day++) await endDay(page);
+  await expect(board(page).getByRole('article', { name: /^Активный проект/ })).toBeVisible();
 
-  await expect(board(page).getByRole('article', { name: /^Активный проект/ })).toHaveCount(0);
+  // Финальный день меряем отдельно: штраф дедлайна применяется в advanceDay,
+  // а эффекты утреннего «живого мира» — только когда сюжет решён. Замеряем
+  // репутацию между ними: так контракт «дедлайн стоит репутации» детерминирован
+  // и не шумит от событий/сиквелов.
+  const before = await reputation();
+  const day = await dayNumber(page);
+  await page.getByRole('button', { name: /^Завершить день / }).click();
+  await expect(dayPill(page)).toHaveText(`День ${day + 1}`, { timeout: 30_000 });
+  await page.getByRole('button', { name: /^(Далее|Готово)$/ }).click();
   expect(await reputation()).toBeLessThan(before + 1);
+
+  await resolveStory(page);
+  await expect(board(page).getByRole('article', { name: /^Активный проект/ })).toHaveCount(0);
 });
 
 test('dropping a contract frees the board immediately', async ({ page }) => {

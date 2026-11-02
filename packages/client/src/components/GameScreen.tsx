@@ -72,6 +72,7 @@ export const GameScreen: React.FC = () => {
     if (activeEvent && player) {
       return (
         <EventCard
+          sequelTag={activeEvent.sequelTag}
           key={activeEvent.id}
           eventId={activeEvent.id}
           title={activeEvent.title}

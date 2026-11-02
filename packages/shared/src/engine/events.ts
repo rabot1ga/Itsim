@@ -1,5 +1,6 @@
 import { PlayerState, GameEvent, EventChoice } from '../types';
 import { clamp, weightedPick } from './utils';
+import { plantSeed } from './sequels';
 import { MAX_MILESTONES } from './milestones.js';
 import { applyXp, applySoftXp } from './skills';
 import { absorbJobWarning } from './relationships';
@@ -147,10 +148,12 @@ export function pickEvent(p: PlayerState, pool: GameEvent[], rng: () => number):
  * Returns a NEW state object (shallow copy) — the caller must use the result.
  */
 export function applyEventEffects(p: PlayerState, choice: EventChoice): PlayerState {
-  const e = choice.effects;
-  if (!e) return p;
-
   const next: PlayerState = { ...p };
+  // «Живой мир» (стадия 3): выбор может посадить затравку сиквела
+  if (choice.sequel) plantSeed(next, choice.sequel);
+
+  const e = choice.effects;
+  if (!e) return next;
 
   // Apply numeric effects
   if (e.energy !== undefined) next.energy = clamp(next.energy + e.energy, 0, next.maxEnergy);

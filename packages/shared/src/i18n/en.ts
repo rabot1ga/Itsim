@@ -4831,4 +4831,7 @@ Object.assign(en, {
   'Ты впереди на {p1} пунктов — держи темп': 'You are ahead by {p1} points — keep the pace',
   запас: 'power',
   'у {p0}': '{p0} has',
+
+  // стадия 3 «Живой мир»: сиквелы
+  'Продолжение истории': 'The story continues',
 });

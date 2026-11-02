@@ -27,3 +27,4 @@ export * from './contacts';
 export * from './cardModifiers';
 export * from './memory';
 export * from './rival';
+export * from './sequels';

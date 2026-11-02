@@ -1,0 +1,277 @@
+[
+  {
+    "id": "sequel_ex_employer_01",
+    "title": "📞 Звонок из прошлого",
+    "description": "На экране — номер бывшего работодателя. «Слушай, мы скучаем. Команда не та без тебя. Вернись — обсудим условия». Ты помнишь и боль, и народ.",
+    "tags": ["sequel", "career"],
+    "weight": 8,
+    "cooldownDays": 40,
+    "maxOccurrences": 1,
+    "minGameDay": 10,
+    "sequelTag": "ex_employer_calls",
+    "choices": [
+      {
+        "text": "Вернуться — но уже с условиями",
+        "effects": { "money": 15000, "reputation": 3, "motivation": -3 },
+        "sequel": { "tag": "ex_employer_dinner", "afterDays": 3, "when": { "employed": true } }
+      },
+      {
+        "text": "Вежливо отказать",
+        "effects": { "motivation": 4, "reputation": 1 }
+      },
+      {
+        "text": "Попросить фидбек, а не работу",
+        "effects": { "skill": { "communication": 15 }, "motivation": 1 }
+      }
+    ]
+  },
+  {
+    "id": "sequel_ex_employer_02",
+    "title": "🍽️ Ужин с бывшими",
+    "description": "Ты зашёл «просто поужинать» — и всё тот же офис, тот же смех. «Ну что, как там, в новом месте?» Смотрят внимательно: кто знает, что ты ответишь.",
+    "tags": ["sequel", "career", "social"],
+    "weight": 8,
+    "cooldownDays": 40,
+    "maxOccurrences": 1,
+    "sequelTag": "ex_employer_dinner",
+    "choices": [
+      {
+        "text": "Хвалить новое место, но без злорадства",
+        "effects": { "reputation": 2, "contacts": 1, "motivation": 2 }
+      },
+      {
+        "text": "Замолчать и слушать — вдруг пригодится",
+        "effects": { "skill": { "communication": 10 }, "energy": -1 }
+      }
+    ]
+  },
+  {
+    "id": "sequel_friend_rec_01",
+    "title": "🤝 Друг тянет тебя в команду",
+    "description": "«Слушай, у нас открывается ставка. Я уже скинул твоё резюме — просто скажи, что согласен». Дружба — лучший рекрутер, но и спрос с тебя спросят.",
+    "tags": ["sequel", "career", "friends"],
+    "weight": 8,
+    "cooldownDays": 30,
+    "maxOccurrences": 1,
+    "minGameDay": 5,
+    "sequelTag": "friend_recommendation",
+    "choices": [
+      {
+        "text": "Согласиться — дружба дороже",
+        "effects": { "reputation": 3, "contacts": 2, "motivation": 3 }
+      },
+      {
+        "text": "Попросить время подумать",
+        "effects": { "motivation": 1 },
+        "sequel": { "tag": "friend_rec_answer", "afterDays": 3 }
+      },
+      {
+        "text": "Отказать мягко — не хочу смешивать",
+        "effects": { "relation": { "uni_friend": -3 }, "karma": 1 }
+      }
+    ]
+  },
+  {
+    "id": "sequel_friend_rec_02",
+    "title": "✉️ Друг ждёт ответа",
+    "description": "«Ну как, решаешь? Ставка не висит вечно». Вопрос простой — но за ним видно надежду друга.",
+    "tags": ["sequel", "career", "friends"],
+    "weight": 8,
+    "cooldownDays": 30,
+    "maxOccurrences": 1,
+    "sequelTag": "friend_rec_answer",
+    "choices": [
+      {
+        "text": "Всё-таки согласиться",
+        "effects": { "reputation": 2, "contacts": 1, "relation": { "uni_friend": 5 }, "motivation": 2 }
+      },
+      {
+        "text": "Отказать окончательно, но по-человечески",
+        "effects": { "relation": { "uni_friend": -1 }, "motivation": 1 }
+      }
+    ]
+  },
+  {
+    "id": "sequel_client_returns_01",
+    "title": "📬 Заказчик вернулся",
+    "description": "«Здравствуйте! Вы отлично закрыли прошлый проект. Есть похожий — но срочный. Возьмётесь?» Старый клиент — лучший клиент, но дедлайн пахнет ночами.",
+    "tags": ["sequel", "freelance"],
+    "weight": 8,
+    "cooldownDays": 30,
+    "maxOccurrences": 1,
+    "minGameDay": 5,
+    "sequelTag": "client_returns",
+    "choices": [
+      {
+        "text": "Взяться — клиент того стоит",
+        "effects": { "money": 9000, "reputation": 2, "energy": -3 }
+      },
+      {
+        "text": "Поднять цену за срочность",
+        "effects": { "money": 15000, "reputation": -1 }
+      },
+      {
+        "text": "Передать другу — за комиссию",
+        "effects": { "money": 3000, "contacts": 1, "karma": 1 }
+      }
+    ]
+  },
+  {
+    "id": "sequel_hr_second_chance_01",
+    "title": "🔄 HR пересмотрел резюме",
+    "description": "«Здравствуйте! Ваш профиль застрял у нас в голове. Позицию закрыли, но открывается похожая. Хотите попробовать снова?» Иногда отказ — это просто «не сегодня».",
+    "tags": ["sequel", "career"],
+    "weight": 8,
+    "cooldownDays": 30,
+    "maxOccurrences": 1,
+    "sequelTag": "hr_second_chance",
+    "choices": [
+      {
+        "text": "Попробовать снова — вторая попытка честная",
+        "effects": { "reputation": 2, "energy": -1 },
+        "sequel": { "tag": "hr_second_visit", "afterDays": 4 }
+      },
+      {
+        "text": "Спросить, что именно не понравилось",
+        "effects": { "skill": { "communication": 12 }, "motivation": 1 }
+      },
+      {
+        "text": "Отказаться — уже не горю",
+        "effects": { "motivation": 2 }
+      }
+    ]
+  },
+  {
+    "id": "sequel_hr_second_visit_01",
+    "title": "🎯 Собеседование во второй заход",
+    "description": "Ты снова в переговорке — но теперь знаешь их вопросы, а они знают твоё упрямство. Дежавю? Нет, опыт.",
+    "tags": ["sequel", "career"],
+    "weight": 8,
+    "cooldownDays": 30,
+    "maxOccurrences": 1,
+    "sequelTag": "hr_second_visit",
+    "choices": [
+      {
+        "text": "Отвечать уверенно — ты уже не новичок в этой комнате",
+        "effects": { "reputation": 4, "motivation": 3, "skill": { "communication": 10 } }
+      },
+      {
+        "text": "Честно признать волнение",
+        "effects": { "motivation": 2, "skill": { "stress_resistance": 10 } }
+      }
+    ]
+  },
+  {
+    "id": "sequel_regular_client_01",
+    "title": "⭐ Постоянный заказчик",
+    "description": "«Работать с вами удобно. Давайте на постоянку?» Заказчик предлагает поток мелких задач — небольших, но стабильных. Спокойная гавань для кошелька.",
+    "tags": ["sequel", "freelance"],
+    "weight": 8,
+    "cooldownDays": 30,
+    "maxOccurrences": 1,
+    "sequelTag": "regular_client",
+    "choices": [
+      {
+        "text": "Согласиться на поток",
+        "effects": { "money": 6000, "reputation": 2 }
+      },
+      {
+        "text": "Спросить скидку на оборудование",
+        "effects": { "money": 10000, "energy": -1 }
+      },
+      {
+        "text": "Держать тариф, но выбирать задачи",
+        "effects": { "money": 4000, "motivation": 2 }
+      }
+    ]
+  },
+  {
+    "id": "sequel_mentor_proud_01",
+    "title": "🥳 Маша гордится тобой",
+    "description": "«Я слышала, тебя повысили! Я всегда говорила — ты недооценён». Маша светится так, будто повысили её. И от этого на душе тепло.",
+    "tags": ["sequel", "social", "friends"],
+    "weight": 8,
+    "cooldownDays": 30,
+    "maxOccurrences": 1,
+    "sequelTag": "mentor_proud",
+    "choices": [
+      {
+        "text": "Отметить — заодно угостить команду",
+        "effects": { "money": -2000, "relation": { "junior_colleague": 8 }, "motivation": 4, "contacts": 1 }
+      },
+      {
+        "text": "Сказать спасибо — она вложилась в твой рост",
+        "effects": { "relation": { "junior_colleague": 5 }, "motivation": 2 }
+      },
+      {
+        "text": "Спустить на землю: «это ещё не финал»",
+        "effects": { "motivation": 1, "skill": { "time_management": 10 } }
+      }
+    ]
+  },
+  {
+    "id": "sequel_conference_invite_01",
+    "title": "🎤 Тебя зовут выступить",
+    "description": "Организаторы митапа: «Слышали, у вас интересный опыт. Расскажете? Пятнадцать минут, живая аудитория». Пятнадцать минут славы — или позора?",
+    "tags": ["sequel", "career", "social"],
+    "weight": 8,
+    "cooldownDays": 40,
+    "maxOccurrences": 1,
+    "sequelTag": "conference_invite",
+    "choices": [
+      {
+        "text": "Согласиться — это же нетворкинг",
+        "effects": { "reputation": 4, "skill": { "public_speaking": 20 }, "energy": -3 },
+        "sequel": { "tag": "conference_feedback", "afterDays": 4 }
+      },
+      {
+        "text": "Отказать — ещё не готов",
+        "effects": { "motivation": -1, "skill": { "stress_resistance": 8 } }
+      }
+    ]
+  },
+  {
+    "id": "sequel_conference_feedback_01",
+    "title": "☕ После доклада",
+    "description": "Доклад прошёл. Двое подходят с вопросами, один просит контакты, а в чате мероприятия уже появился твой слайд. Так и рождается репутация.",
+    "tags": ["sequel", "career", "social"],
+    "weight": 8,
+    "cooldownDays": 40,
+    "maxOccurrences": 1,
+    "sequelTag": "conference_feedback",
+    "choices": [
+      {
+        "text": "Общаться до последнего гостя",
+        "effects": { "contacts": 3, "reputation": 3, "energy": -2, "motivation": 2 }
+      },
+      {
+        "text": "Тихо уйти на позитиве",
+        "effects": { "motivation": 3, "health": 2 }
+      }
+    ]
+  },
+  {
+    "id": "sequel_colleague_heard_01",
+    "title": "👀 Бывший коллега узнал",
+    "description": "«Ого, ты уже тут! Ну как, нормальное место?» Бывший коллега пишет в личку — за любопытством читается своя усталость. Может, ты знаешь лекарство?",
+    "tags": ["sequel", "career", "social"],
+    "weight": 8,
+    "cooldownDays": 30,
+    "maxOccurrences": 1,
+    "sequelTag": "old_colleague_heard",
+    "choices": [
+      {
+        "text": "Похвастаться — но с уважением к прошлому",
+        "effects": { "reputation": 2, "motivation": 2 }
+      },
+      {
+        "text": "Позвать к себе — нужен человек",
+        "effects": { "contacts": 2, "reputation": 1, "karma": 1 }
+      },
+      {
+        "text": "Сочувственно выслушать",
+        "effects": { "skill": { "communication": 12 }, "energy": -1 }
+      }
+    ]
+  }
+]
