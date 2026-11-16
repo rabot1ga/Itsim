@@ -61,6 +61,13 @@ import {
   TRAINING,
   FOOD,
   REST,
+  runFight,
+  winOdds,
+  fighterHp,
+  STYLES,
+  STYLE_PERKS,
+  ensureCombat,
+  type Fighter,
 } from '@itsim/shared';
 import {
   ACTION_MONEY_COSTS,
@@ -512,6 +519,116 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
             p1: Math.round(finalChance * 100),
           }) + (pity > 0 ? ' ' + t('повезёт: {p0}% за серию отказов', { p0: Math.round(pity * 100) }) : ''),
         delta,
+      };
+    }
+    // ---- Punch IT (DESIGN-PUNCH §3): бои и стили ----
+    case 'choose_style': {
+      const style = String(params?.style ?? '');
+      if (!['bear', 'tiger', 'wind'].includes(style)) return { error: t('Неизвестный стиль боя') };
+      state.style = style;
+      return { message: t('Стиль боя: {p0}', { p0: STYLES[style as keyof typeof STYLES].label }) };
+    }
+    case 'buy_style_perk': {
+      const perkId = String(params?.perk ?? '');
+      const perk = (STYLE_PERKS as Record<string, any>)[perkId];
+      if (!perk) return { error: t('Неизвестный перк') };
+      ensureCombat(state);
+      const perks = state.stylePerks ?? [];
+      if (perks.includes(perkId)) return { error: t('Этот перк уже открыт') };
+      const level = (state.combat as Record<string, { level: number }>)[perk.stat].level;
+      if (level < perk.need) {
+        return { error: t('Нужен стат {p0} {p1}+ — сейчас {p2}', { p0: perk.stat, p1: perk.need, p2: level }) };
+      }
+      if (state.money < perk.cost) return { error: t('Не хватает денег на перк') };
+      state.money -= perk.cost;
+      state.stylePerks = [...perks, perkId];
+      return { message: t('Перк открыт: {p0}', { p0: perk.label }) };
+    }
+    case 'preview_fight': {
+      if (state.fightDoneToday) return { error: t('Сегодня ты уже дрался — завтра снова') };
+      if (!canSpendSlots(state, 1)) return { error: t('Слоты на сегодня кончились — заверши день') };
+      if ((state.energy ?? 0) < 3) return { error: t('Сил нет — сначала поешь или отдохни') };
+      ensureCombat(state);
+      const rng = balanceRng(state);
+      const lvl = ((state.combat!.power.level + state.combat!.agility.level + state.combat!.speed.level) / 3) | 0;
+      const names = ['Гоша', 'Тимоха', 'Санёк', 'Витёк', 'Кабан', 'Пима', 'Жора', 'Косой'];
+      const opponent = {
+        name: names[Math.floor(rng() * names.length)],
+        power: Math.max(3, lvl + Math.floor(rng() * 7) - 3),
+        agility: Math.max(3, lvl + Math.floor(rng() * 7) - 3),
+        speed: Math.max(3, lvl + Math.floor(rng() * 7) - 3),
+        style: (['bear', 'tiger', 'wind'] as const)[Math.floor(rng() * 3)],
+      };
+      state.pendingFight = opponent;
+      return { message: t('Соперник найден: {p0}. Решишься?', { p0: opponent.name }) };
+    }
+    case 'street_fight': {
+      const pending = state.pendingFight;
+      if (!pending) return { error: t('Сначала найди соперника') };
+      if (state.fightDoneToday) return { error: t('Сегодня ты уже дрался — завтра снова') };
+      if (!canSpendSlots(state, 1)) return { error: t('Слоты на сегодня кончились — заверши день') };
+      if ((state.energy ?? 0) < 3) return { error: t('Сил нет — сначала поешь или отдохни') };
+      ensureCombat(state);
+      const stake = Math.max(0, Math.min(5000, Number(params?.stake ?? 0) || 0));
+      if (state.money < stake) return { error: t('Не хватает денег на ставку') };
+      const rng = balanceRng(state);
+      const opponent: Fighter = { ...pending, style: pending.style as Fighter['style'], perks: [] };
+      state.pendingFight = null as never;
+      delete state.pendingFight;
+      const playerFighter: Fighter = {
+        name: 'Ты',
+        power: state.combat!.power.level,
+        agility: state.combat!.agility.level,
+        speed: state.combat!.speed.level,
+        style: (state.style ?? 'bear') as Fighter['style'],
+        perks: state.stylePerks ?? [],
+      };
+      const odds = winOdds(playerFighter, opponent);
+      const result = runFight(playerFighter, opponent, rng);
+      state.lastFight = {
+        won: result.winner === 'a',
+        opponent: opponent.name,
+        odds,
+        log: result.rounds.map((r) => ({
+          round: r.round,
+          attacker: r.attacker,
+          kind: r.kind,
+          damage: r.damage,
+          hpA: r.hpA,
+          hpB: r.hpB,
+        })),
+      };
+      state.slotsUsed = (state.slotsUsed ?? 0) + 1;
+      state.energy = Math.max(0, (state.energy ?? 0) - 3);
+      state.fightDoneToday = true;
+      const won = result.winner === 'a';
+      if (won) {
+        state.money += stake * 2;
+        state.reputation = clamp(state.reputation + 2, 0, 100);
+        state.motivation = clamp(state.motivation + 3, 0, 100);
+        recordMemory(state, {
+          subject: 'self',
+          kind: 'fight',
+          text: t('Победил в уличном бою: {p0} (ставка {p1})', { p0: opponent.name, p1: stake }),
+        });
+        return {
+          message: t('Победа! {p0} повержен. Приз: {p1}', { p0: opponent.name, p1: fmtMoney(stake * 2) }),
+        };
+      }
+      const injury = rng() < 0.25;
+      const hp = fighterHp(playerFighter);
+      const damageTaken = Math.round((hp - result.hpLeft) * 0.5) + 4;
+      state.health = clamp(state.health - damageTaken, 0, 100);
+      state.motivation = clamp(state.motivation - 3, 0, 100);
+      recordMemory(state, {
+        subject: 'self',
+        kind: 'fight',
+        text: t('Проиграл в уличном бою: {p0}', { p0: opponent.name }),
+      });
+      return {
+        message:
+          t('Поражение от {p0}. −{p1} здоровья', { p0: opponent.name, p1: damageTaken }) +
+          (injury ? ' ' + t('Травма — завтра будет тяжелее') : ''),
       };
     }
     // ---- Punch IT (DESIGN-PUNCH §2): тайм-слоты дня ----

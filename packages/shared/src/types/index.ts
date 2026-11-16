@@ -100,7 +100,8 @@ export interface MemoryRecord {
   day: number;
   /** о ком/чём след: 'company:portal_2000' | 'npc:masha' | 'rival' | 'self' */
   subject: string;
-  kind: 'application' | 'hire' | 'fire' | 'promotion' | 'conflict' | 'friend' | 'freelance' | 'project' | 'event';
+  kind:
+    'application' | 'hire' | 'fire' | 'promotion' | 'conflict' | 'friend' | 'freelance' | 'project' | 'event' | 'fight';
   /** RU-текст для Хроники (перевод на границе, t()) */
   text: string;
 }
@@ -227,6 +228,21 @@ export interface PlayerState {
   slotsUsed?: number;
   /** Боевой треугольник (§2): сила/ловкость/скорость, кривая как у скиллов. */
   combat?: Record<'power' | 'agility' | 'speed', SkillLevel>;
+  /** Выбранный боевой стиль (§3): 'bear' | 'tiger' | 'wind'. */
+  style?: string;
+  /** Открытые перки стилей (§3). */
+  stylePerks?: string[];
+  /** Один бой в день (§4): сбрасывается в advanceDay. */
+  fightDoneToday?: boolean;
+  /** Найденный соперник уличного боя (preview_fight → street_fight). */
+  pendingFight?: { name: string; power: number; agility: number; speed: number; style: string };
+  /** Последний бой: лог раундов для карточки боя (§3). */
+  lastFight?: {
+    won: boolean;
+    opponent: string;
+    odds: number;
+    log: Array<{ round: number; attacker: string; kind: string; damage: number; hpA: number; hpB: number }>;
+  };
   /** Скины и позиции питомца в комнате (роадмап): косметика сейва. */
   petRoom?: PetRoomLook;
 

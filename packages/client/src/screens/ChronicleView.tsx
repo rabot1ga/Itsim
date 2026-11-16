@@ -22,12 +22,13 @@ interface CompanyLite {
 }
 
 /** Значимый акт — значок. Мелочи остаются текстом. */
-function kindIcon(kind: MemoryRecord['kind']): 'person' | 'laptop' | 'briefcase' | 'trend' | 'warn' | 'chat' {
+function kindIcon(kind: MemoryRecord['kind']): 'person' | 'laptop' | 'briefcase' | 'trend' | 'warn' | 'chat' | 'bolt' {
   if (kind === 'friend') return 'person';
   if (kind === 'project' || kind === 'freelance') return 'laptop';
   if (kind === 'application' || kind === 'hire' || kind === 'fire') return 'briefcase';
   if (kind === 'promotion') return 'trend';
   if (kind === 'conflict') return 'warn';
+  if (kind === 'fight') return 'bolt';
   return 'chat';
 }
 

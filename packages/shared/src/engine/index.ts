@@ -29,3 +29,4 @@ export * from './memory';
 export * from './rival';
 export * from './sequels';
 export * from './punch';
+export * from './combat';

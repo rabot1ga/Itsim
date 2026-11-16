@@ -79,6 +79,16 @@ export const GRADE_POSITIONS: Record<Grade, string> = {
 };
 /** The default energy cost table for non-study actions. */
 export const EXTRA_ENERGY_COSTS: Record<string, number> = {
+  // Punch IT (DESIGN-PUNCH): энергия этих действий считается в их кейсах
+  train: 0,
+  eat: 0,
+  rest: 0,
+  work_shift: 0,
+  order_work: 0,
+  choose_style: 0,
+  buy_style_perk: 0,
+  preview_fight: 0,
+  street_fight: 0,
   work_task: 4,
   // модификаторы карт (DESIGN-DECK §7.3): новые варианты ответа
   delegate_task: 4,
