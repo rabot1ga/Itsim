@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { openView } from './helpers/nav';
 
 for (const width of [320, 390, 480]) {
   test(`story card uses scene, named effects and failure retry at ${width}px`, async ({ page }) => {
@@ -77,9 +78,6 @@ test('profile opens from portrait and exposes live stats and goals', async ({ pa
   await expect(moodBanner).toHaveAttribute('src', /^\/art\/profile\/(normal|tired|burnout)\.webp$/);
   await expect(profile.locator('img[src^="/layers/"]')).toHaveCount(0);
   // Цели и достижения переехали на экран «Прогресс» (A2, 25.10.2026)
-  await page
-    .getByRole('navigation', { name: 'Основная навигация' })
-    .getByRole('button', { name: 'Прогресс', exact: true })
-    .click();
+  await openView(page, 'Прогресс');
   await expect(page.getByRole('heading', { name: /^Цели/ })).toBeVisible();
 });

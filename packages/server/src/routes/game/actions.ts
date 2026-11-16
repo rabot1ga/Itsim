@@ -48,6 +48,10 @@ import {
   P2P_DISCOUNT_RATE,
   type Application,
   type PlayerState,
+  recordMemory,
+  bumpCompanyStanding,
+  ensureRival,
+  plantSeed,
 } from '@itsim/shared';
 import {
   ACTION_MONEY_COSTS,
@@ -164,6 +168,37 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
     return { message: t('Учёба: {skillId}{leveled}', { skillId: skillId, leveled: leveled }), delta };
   }
   switch (actionId) {
+    // ---- Модификатор «Скорочтение»: экспресс-конспект ----
+    case 'express_learn': {
+      if (!state.perks.includes('perk_speed_reader')) {
+        return { error: t('Нужен перк «Скорочтение»') };
+      }
+      const skillId = params?.skillId || state.mainSkillId || 'javascript';
+      const skillDef = (content.skills as any[]).find((s) => s.id === skillId);
+      if (!skillDef) return { error: t('Неизвестный навык') };
+      if (!canLearnSkill(state, skillDef)) {
+        const parentReq = Object.entries(skillDef.unlockAt ?? {})
+          .map(([pid, lvl]) => `${pid} ${lvl}+`)
+          .join(', ');
+        return {
+          error: t('Навык «{p0}» заблокирован. Нужно: {parentReq}', { p0: skillDef.name, parentReq: parentReq }),
+        };
+      }
+      const base = content.balance.xpSources?.['study_book']?.xp ?? 8;
+      const current = state.skills[skillId] ?? { level: 0, xp: 0 };
+      const next = applyXp(current, xpGain(state, content, Math.round(base * 1.5)), xpMotivation(state, content));
+      state.skills = { ...state.skills, [skillId]: next };
+      state.mainSkillId = skillId;
+      state.motivation = clamp(state.motivation - 2, 0, 100);
+      delta.skills = { [skillId]: { from: current.level, to: next.level } };
+      const leveled = next.level > current.level ? ` (${current.level} → ${next.level})` : '';
+      return {
+        message: t('Экспресс-конспект: {skillId}{leveled} — выжимка за один вечер, но голова кипит', {
+          skillId: skillId,
+          leveled: leveled,
+        }),
+      };
+    }
     // ---- English (soft skill, gates foreign companies) ----
     case 'study_english': {
       // Единая правда — balance.xpSources (A3 из ANALYSIS-2026-10-25-balance)
@@ -213,6 +248,23 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
         delta,
       };
     }
+    case 'morning_coffee': {
+      // модификатор «Кофемашина»: утренняя карточка открывает новый вариант
+      if (!state.items.includes('coffee_maker')) {
+        return { error: t('Нужна кофемашина — загляни в «Магазин»') };
+      }
+      if ((state.coffeeDay ?? -1) === state.currentDay) {
+        return { error: t('Кофе уже был сегодня — второй не в счёт') };
+      }
+      state.coffeeDay = state.currentDay;
+      state.energy = Math.min(state.maxEnergy, state.energy + 3);
+      state.motivation = clamp(state.motivation + 2, 0, 100);
+      delta.energy = state.energy;
+      delta.motivation = 2;
+      return {
+        message: t('Свежий кофе: +3 энергии и +2 настроения. День начинается правильно'),
+      };
+    }
     // ---- Work ----
     case 'work_task': {
       if (!state.job) return { error: t('У тебя нет работы. Сначала откликнись на вакансию в разделе «Карьера»') };
@@ -255,6 +307,39 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
           : t('Закрыл рабочие задачи. Ретроспектива отменена, все свободны (+{p0})', { p0: fmtMoney(bonus) }),
       };
     }
+    case 'delegate_task': {
+      // модификатор карты «Наставник» (perk_mentor): новый вариант ответа на
+      // карточке работы — меньше XP себе, но лидерство и настроение не страдают
+      if (!state.perks.includes('perk_mentor')) {
+        return { error: t('Нужен перк «Наставник» — без него стажёр не справится') };
+      }
+      if (!state.job) return { error: t('У тебя нет работы. Сначала откликнись на вакансию в разделе «Карьера»') };
+      const skillId = state.mainSkillId;
+      const current = state.skills[skillId] ?? { level: 0, xp: 0 };
+      const xp = xpGain(state, content, 4);
+      const next = applyXp(current, xp, xpMotivation(state, content));
+      state.skills = { ...state.skills, [skillId]: next };
+      const lead = state.softSkills['leadership'] ?? { level: 0, xp: 0 };
+      state.softSkills = {
+        ...state.softSkills,
+        leadership: applySoftXp(lead, 10, softOpts(content)),
+      };
+      const bonus = Math.round(weeklySalary(state.job.salary) * 0.02);
+      state.money += bonus;
+      state.job.daysWorked += 1;
+      state.motivation = clamp(state.motivation + 2, 0, 100);
+      delta.money = bonus;
+      delta.skills = { [skillId]: { from: current.level, to: next.level } };
+      delta.softSkills = {
+        leadership: { from: lead.level, to: state.softSkills['leadership'].level },
+      };
+      return {
+        message: t('Задача ушла стажёру: ты разжевал, он закрыл. Лидерство +{p0}, премия +{p1}', {
+          p0: 10,
+          p1: fmtMoney(bonus),
+        }),
+      };
+    }
     case 'work_overtime': {
       if (!state.job) return { error: t('У тебя нет работы') };
       const skillId = state.mainSkillId;
@@ -280,6 +365,27 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       delta.reputation = 0.5;
       delta.skills = { [skillId]: { from: current.level, to: next.level } };
       return { message: t('Пет-проект: ещё один TODO-трекер в портфолио. Репутация растёт') };
+    }
+    case 'monetize_project': {
+      // модификатор «Подработчик со стажем»: пет-проект приносит деньги
+      if (!state.perks.includes('perk_hustler')) {
+        return { error: t('Нужен перк «Подработчик со стажем»') };
+      }
+      const skillId = state.mainSkillId;
+      const current = state.skills[skillId] ?? { level: 0, xp: 0 };
+      const next = applyXp(current, xpGain(state, content, 6), xpMotivation(state, content));
+      state.skills = { ...state.skills, [skillId]: next };
+      state.reputation = clamp(state.reputation + 0.5, 0, 100);
+      const income = 9000;
+      state.money += income;
+      delta.money = income;
+      delta.reputation = 0.5;
+      delta.skills = { [skillId]: { from: current.level, to: next.level } };
+      return {
+        message: t('Первый платящий клиент пет-проекта: +{p0}. Опыта меньше, но счёт пополнился', {
+          p0: fmtMoney(income),
+        }),
+      };
     }
     // ---- Projects with deadlines: won by bidding, never handed out ----
     case 'project_task': {
@@ -316,6 +422,16 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       state.reputation = clamp(state.reputation + payout.reputation, 0, 100);
       state.projectsDone = [...(state.projectsDone ?? []), def.id];
       state.activeProject = null;
+      recordMemory(state, {
+        subject: `client:${def.id}`,
+        kind: 'project',
+        text: payout.late
+          ? t('Сдал «{p0}» с опозданием', { p0: def.title })
+          : t('Сдал «{p0}» в срок', { p0: def.title }),
+      });
+      if (!payout.late) {
+        plantSeed(state, { tag: 'client_returns', afterDays: 4 + Math.floor(rng() * 5) });
+      }
       delta.money = payout.money;
       delta.reputation = payout.reputation;
       delta.activeProject = null;
@@ -342,6 +458,11 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       state.reputation = clamp(state.reputation - penalty, 0, 100);
       state.activeProject = null;
       delta.reputation = -penalty;
+      recordMemory(state, {
+        subject: def ? `client:${def.id}` : 'self',
+        kind: 'project',
+        text: def ? t('Отказался от проекта «{p0}» — заказчик запомнит', { p0: def.title }) : t('Отказался от проекта'),
+      });
       delta.activeProject = null;
       return { message: t('Проект брошен. Заказчик расстроен: −{penalty} репутации', { penalty: penalty }), delta };
     }
@@ -369,12 +490,18 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       state.freelanceDoneToday = true;
       state.lastFreelanceDay = state.currentDay;
       delta.freelanceBid = state.freelanceBid;
+      // «Живой мир»: заказчик запомнит отклик
+      recordMemory(state, {
+        subject: `client:${def.id}`,
+        kind: 'freelance',
+        text: t('Отклик на заказ «{p0}» — ждёшь ответа утром', { p0: def.title }),
+      });
       return {
-        message: t('Отклик на «{p0}» отправлен. Заказчик ответит утром — шанс {p1}%', {
-          p0: def.title,
-          p1: Math.round(finalChance * 100),
-        }) +
-          (pity > 0 ? ' ' + t('повезёт: {p0}% за серию отказов', { p0: Math.round(pity * 100) }) : ''),
+        message:
+          t('Отклик на «{p0}» отправлен. Заказчик ответит утром — шанс {p1}%', {
+            p0: def.title,
+            p1: Math.round(finalChance * 100),
+          }) + (pity > 0 ? ' ' + t('повезёт: {p0}% за серию отказов', { p0: Math.round(pity * 100) }) : ''),
         delta,
       };
     }
@@ -434,6 +561,17 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
         return { error: t('Вы уже виделись сегодня. Завтра вновь — и будет новый разговор') };
       }
       markSpentTime(state, npcId);
+      recordMemory(state, {
+        subject: `npc:${npcId}`,
+        kind: 'friend',
+        text: t('Провёл вечер с другом: {p0}', { p0: npc.name }),
+      });
+      // «Живой мир» (стадия 3): тёплая дружба прорастает рекомендацией
+      plantSeed(state, {
+        tag: 'friend_recommendation',
+        afterDays: 3 + Math.floor(rng() * 4),
+        when: { minRelation: { [npcId]: 40 } },
+      });
       const before = state.relationships[npcId] ?? 0;
       state.relationships = {
         ...state.relationships,
@@ -561,6 +699,8 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       }
       const npcs = content.npcs as any[];
       state.networkingToday = (state.networkingToday ?? 0) + 1;
+      // «Живой мир» (стадия 3): митапы прорастают приглашениями
+      plantSeed(state, { tag: 'conference_invite', afterDays: 6 + Math.floor(rng() * 5) });
       if (npcs.length > 0 && rng() < 0.3) {
         const npc = npcs[Math.floor(rng() * npcs.length)];
         state.relationships = {
@@ -621,9 +761,24 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       };
       state.currentApplication = application;
       delta.application = application;
+      // «Живой мир»: компания помнит отклики (DESIGN-LIVING-WORLD, закон 1)
+      bumpCompanyStanding(state, companyId, 'applied');
       if (!screen.passed) {
+        bumpCompanyStanding(state, companyId, 'rejections');
+        recordMemory(state, {
+          subject: `company:${companyId}`,
+          kind: 'application',
+          text: t('Отклик в «{p0}» отклонили на скрининге', { p0: company.name }),
+        });
+        // «Живой мир» (стадия 3): отказы тоже сажают семена
+        plantSeed(state, { tag: 'hr_second_chance', afterDays: 5 + Math.floor(rng() * 5) });
         return { message: `📄 ${company.name}: ${screen.msg}`, delta };
       }
+      recordMemory(state, {
+        subject: `company:${companyId}`,
+        kind: 'application',
+        text: t('Отклик в «{p0}» — ждёшь собеседования', { p0: company.name }),
+      });
       return {
         message: t('Отклик в «{p0}» отправлен. {p1} Собеседование через 2 дня', {
           p0: company.name,
@@ -633,8 +788,16 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
     }
     case 'cancel_application': {
       if (!state.currentApplication) return { error: t('Нет активного отклика') };
+      const cancelled = state.currentApplication;
       state.currentApplication = null;
       state.interviewSession = undefined;
+      if (cancelled) {
+        recordMemory(state, {
+          subject: `company:${cancelled.companyId}`,
+          kind: 'application',
+          text: t('Отозвал отклик — передумал'),
+        });
+      }
       return { message: t('Отклик отозван. Заказчики кармы плакали') };
     }
     case 'accept_offer': {
@@ -656,6 +819,14 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
       state.pendingOffers = [];
       state.currentApplication = null;
       delta.job = state.job;
+      // «Живой мир»: принятый оффер — след найма; с этого дня растёт соперник
+      ensureRival(state);
+      bumpCompanyStanding(state, offer.companyId, 'offers');
+      recordMemory(state, {
+        subject: `company:${offer.companyId}`,
+        kind: 'hire',
+        text: t('Принял оффер «{p0}» — новая глава в резюме', { p0: company.name }),
+      });
       return {
         message: t('Ты принят в «{p0}» на позицию {p1}! Зарплата: {p2}/мес', {
           p0: company.name,

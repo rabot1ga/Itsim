@@ -10,7 +10,7 @@ import {
   projectProgress,
 } from '@itsim/shared';
 import { useGameStore } from '../store/gameStore';
-import { Spinner } from './ui';
+import { Spinner, EmptyState } from './ui';
 /**
  * Биржа заказов — the «Работа» screen of reference 1.png.
  *
@@ -224,7 +224,11 @@ export const ProjectBoard: React.FC = () => {
         </>
       )}
       {projects && projects.length === 0 && !failed && (
-        <p className="text-xs text-ink-400">{t('Заказчики пока молчат — заказов нет.')}</p>
+        <EmptyState
+          icon="laptop"
+          title={t('Заказчики пока молчат')}
+          hint={t('Загляни завтра — новые заказы приходят с утра.')}
+        />
       )}
       <p className="text-2xs text-ink-600">
         {t('Один отклик в день, −')}

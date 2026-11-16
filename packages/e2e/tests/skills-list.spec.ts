@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { openView, goToday } from './helpers/nav';
 
 /**
  * «Развитие» — таб нижней навигации (A2; прежний «Обучение» переименован)
@@ -6,10 +7,8 @@ import { test, expect, type Page } from '@playwright/test';
  * ещё до первого асерта.
  */
 async function openLearning(page: Page) {
-  await page
-    .getByRole('navigation', { name: 'Основная навигация' })
-    .getByRole('button', { name: 'Развитие', exact: true })
-    .click();
+  await page;
+  await openView(page, 'Развитие');
 }
 
 /**

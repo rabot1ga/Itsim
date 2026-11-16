@@ -1,5 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
 import { resolveStory } from './helpers/story';
+import { openView } from './helpers/nav';
 
 /**
  * Smoke run of the whole loop (roadmap P0.5):
@@ -24,8 +25,7 @@ test('fresh run: three actions → end of day → buy cosmetics → telemetry', 
   await expect(energyMeter(page)).toHaveAttribute('title', /^Энергия: 10\/10$/);
 
   // Study actions live on the «Развитие» tab (A2: было «Обучение»).
-  const nav = page.getByRole('navigation', { name: 'Основная навигация' });
-  await nav.getByRole('button', { name: 'Развитие', exact: true }).click();
+  await openView(page, 'Развитие');
 
   // Real random events may interrupt any action, not only end-of-day.
   for (const [name, energyCost] of [
@@ -56,9 +56,8 @@ test('fresh run: three actions → end of day → buy cosmetics → telemetry', 
   await expect(page.getByRole('button', { name: /^Завершить день 2/ })).toBeVisible();
 
   // ── shop: buy a cheap decor item (Кактус на стол, 500 ₽) ────────────────
-  // «Магазин» — дверь на «Сегодня» (A2), не таб
-  await nav.getByRole('button', { name: 'Сегодня', exact: true }).click();
-  await page.getByRole('button', { name: 'Магазин', exact: true }).click();
+  // «Магазин» живёт в «Архиве» (IA «Колода»)
+  await openView(page, 'Магазин');
   await page
     .getByRole('group', { name: 'Категории товаров' })
     .getByRole('button', { name: 'Для дома', exact: true })

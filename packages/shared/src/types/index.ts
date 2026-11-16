@@ -93,6 +93,58 @@ export interface PetRoomLook {
 
 // ---- Player State ----
 
+/** След в памяти мира (DESIGN-LIVING-WORLD §2): значимый акт, который
+ *  вернётся событием, эффектом или строкой «Тебя помнят…». */
+export interface MemoryRecord {
+  id: string;
+  day: number;
+  /** о ком/чём след: 'company:portal_2000' | 'npc:masha' | 'rival' | 'self' */
+  subject: string;
+  kind: 'application' | 'hire' | 'fire' | 'promotion' | 'conflict' | 'friend' | 'freelance' | 'project' | 'event';
+  /** RU-текст для Хроники (перевод на границе, t()) */
+  text: string;
+}
+
+/** Условие созревания затравки сиквела (§4, стадия 3). */
+export interface SeedWhen {
+  employed?: boolean;
+  jobless?: boolean;
+  minRelation?: Record<string, number>;
+}
+
+/** Затравка сиквела (§2): семя, посаженное значимым актом или выбором. */
+export interface MemorySeed {
+  tag: string;
+  plantedDay: number;
+  /** день, когда сиквел может созреть */
+  dueDay: number;
+  /** после этого дня затравка гниёт и удаляется */
+  expiresDay: number;
+  when?: SeedWhen;
+}
+
+/** Соперник (§2, стадия 2): претендент на ту же ступень. */
+export interface Rival {
+  /** RU-имя (t() на границе рендера) */
+  name: string;
+  /** ветка/сфера — для карточки */
+  branch: string;
+  /** «запас» соперника в единицах playerPower */
+  progress: number;
+  /** день появления */
+  day: number;
+}
+
+/** Стойкость компании-работодателя (§2): компания помнит отклики и работу. */
+export interface CompanyStanding {
+  applied: number;
+  offers: number;
+  rejections: number;
+  daysWorked: number;
+  /** ушёл по-плохому — дверь закрыта до этого дня */
+  closedUntilDay?: number;
+}
+
 export interface PlayerState {
   /** Секретная соль серверного RNG (P2.4); клиенту не отдаётся. */
   rngSalt?: string;
@@ -161,6 +213,14 @@ export interface PlayerState {
   milestones?: Milestone[];
   /** одноразовый seed ленты: сейвы до фичи не ретро-постятся */
   milestonesSeeded?: boolean;
+  /** Память мира (DESIGN-LIVING-WORLD): следы значимых актов, cap 60. */
+  memories?: MemoryRecord[];
+  /** Стойкость компаний-работодателей: помнят отклики/работу/уходы. */
+  companyStanding?: Record<string, CompanyStanding>;
+  /** Соперник за повышение (DESIGN-LIVING-WORLD, стадия 2). */
+  rival?: Rival;
+  /** Затравки сиквелов (стадия 3): созревшие дают события-продолжения. */
+  memorySeeds?: MemorySeed[];
   /** Скины и позиции питомца в комнате (роадмап): косметика сейва. */
   petRoom?: PetRoomLook;
 
@@ -464,6 +524,8 @@ export interface GameEvent {
   minGameDay?: number;
   conditions?: EventConditions;
   chainOnly?: boolean;
+  /** Сиквел (стадия 3): событие срабатывает из затравки с этим тегом */
+  sequelTag?: string;
   /** Triggered by a player action with a probability (never in the day pool) */
   actionTrigger?: ActionEventTrigger;
   /** Рабочие теги требуют работы; эти события — исключения (внешние предложения и т.п.) */
@@ -507,6 +569,17 @@ export interface EventChoice {
   effects: EventEffects;
   followup?: string;
   chain?: ChainEventRef;
+  /** Сиквел (стадия 3): выбор сажает затравку — мир вернёт продолжение */
+  sequel?: SequelSeedSpec;
+}
+
+/** Как выбор сажает затравку сиквела. */
+export interface SequelSeedSpec {
+  tag: string;
+  afterDays: number;
+  /** сколько дней затравка ждёт созревания после dueDay */
+  ttlDays?: number;
+  when?: SeedWhen;
 }
 
 export interface EventChoiceRequires {

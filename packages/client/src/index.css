@@ -74,6 +74,10 @@
   --radius-chip: 999px;
   --tap: 44px;
 
+  /* ── Motion (стадия 4 «Колода»): единый ритм 120–220ms ── */
+  --deck-dur: 180ms;
+  --deck-ease: cubic-bezier(0.22, 0.8, 0.32, 1);
+
   --shadow-card: 0 2px 6px rgba(0, 0, 0, 0.3);
   --shadow-raise: 0 10px 30px -14px rgba(0, 0, 0, 0.85);
   --shadow-pop: 0 14px 40px -18px rgba(0, 0, 0, 0.9);
@@ -2519,6 +2523,12 @@ select {
   .hud-xp > i {
     transition: none;
   }
+  .deck-slot {
+    animation: none;
+  }
+  .deck-card {
+    transition: none;
+  }
   .room-pet,
   .room-pet--idle .room-pet-emoji,
   .room-pet--happy .room-pet-emoji,
@@ -2530,6 +2540,41 @@ select {
   .room-pet-spark {
     animation: none;
   }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Светлая тема (стадия 4 «Колода»). data-theme="light" на <html> перекрывает
+   палитру целиком; семантика ресурсов (energy=blue и т.п.) не меняется.
+   ═══════════════════════════════════════════════════════════════════════════ */
+:root[data-theme='light'] {
+  --bg: #eef1f6;
+  --bg-raise: #ffffff;
+  --surface: #ffffff;
+  --surface-alt: #f4f6fa;
+  --surface-2: rgba(20, 25, 34, 0.04);
+  --border-soft: rgba(20, 25, 34, 0.12);
+  --well: #e8ecf2;
+  --line: #d4dae4;
+  --line-strong: #b7c0ce;
+
+  --text: #141922;
+  --text-dim: #3d4654;
+  --text-mute: #66707f;
+  --text-faint: #98a2b1;
+
+  --green: #1f9d55;
+  --green-dark: #177a42;
+  --green-deep: #0f5130;
+  --orange: #c97f0e;
+  --red: #cf3f3e;
+  --purple: #6b4fd0;
+  --blue: #2b7fc4;
+  --gold: #b98f16;
+  --gold-deep: #8a6a12;
+
+  --shadow-card: 0 2px 6px rgba(20, 25, 34, 0.12);
+  --shadow-raise: 0 10px 30px -14px rgba(20, 25, 34, 0.25);
+  --shadow-pop: 0 14px 40px -18px rgba(20, 25, 34, 0.3);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -2645,4 +2690,238 @@ select {
 .hud-mult {
   padding: 0 1.35rem;
   text-align: right;
+}
+
+/* ============ DESIGN-DECK (28.10.2026): стек дня ============ */
+.deck {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-bottom: 0.5rem;
+}
+.deck-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+.deck-slot {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+.deck-card {
+  background: var(--surface-2, rgba(255, 255, 255, 0.045));
+  border: 1px solid var(--border-soft, rgba(255, 255, 255, 0.1));
+  border-radius: 18px;
+  padding: 1rem 1.05rem 1.1rem;
+  touch-action: pan-y;
+  user-select: none;
+  transition:
+    transform var(--deck-dur) var(--deck-ease),
+    opacity var(--deck-dur) var(--deck-ease);
+  box-shadow: var(--shadow-raise);
+}
+.deck-card-day {
+  border-color: rgba(120, 160, 255, 0.35);
+}
+.deck-card-hook {
+  border-color: rgba(120, 220, 170, 0.32);
+}
+.deck-card-end {
+  border-color: rgba(200, 160, 255, 0.4);
+}
+@keyframes deckIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.deck-slot {
+  animation: deckIn 0.22s var(--deck-ease);
+}
+.deck-fly-right {
+  transform: translateX(120%) rotate(10deg);
+  opacity: 0;
+}
+.deck-fly-left {
+  transform: translateX(-120%) rotate(-10deg);
+  opacity: 0;
+}
+.deck-card-head {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-bottom: 0.45rem;
+}
+.deck-card-title {
+  font-size: 1.02rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-primary, #eef1f8);
+}
+.deck-card-meta {
+  margin-bottom: 0.45rem;
+}
+.deck-cost {
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+  color: var(--text-faint, #8b93a7);
+}
+.deck-reward {
+  color: var(--accent-moss, #8fd6a8);
+}
+.deck-card-body {
+  margin: 0.25rem 0;
+}
+.deck-card-flavor {
+  margin-top: 0.55rem;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--text-muted, #97a0b5);
+}
+.deck-actions {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+}
+.deck-btn {
+  flex: 1;
+  min-height: 44px;
+}
+.deck-btn-spacer {
+  flex: 1;
+}
+.deck-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+.deck-row {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  padding: 0.45rem 0.55rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+}
+.deck-row[data-done='true'] {
+  opacity: 0.6;
+}
+.deck-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  padding: 0 0.15rem;
+}
+.deck-dots {
+  font-size: 0.72rem;
+  color: var(--text-faint, #8b93a7);
+}
+
+/* Архив: шторка со всеми экранами */
+.archive-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 220;
+  background: rgba(6, 8, 14, 0.55);
+  display: flex;
+  align-items: flex-end;
+}
+.archive-sheet {
+  width: 100%;
+  max-height: 78vh;
+  overflow-y: auto;
+  background: var(--surface-1, #12151d);
+  border-radius: 22px 22px 0 0;
+  padding: 1rem 0.95rem calc(0.9rem + env(safe-area-inset-bottom));
+  border: 1px solid var(--border-soft, rgba(255, 255, 255, 0.1));
+}
+.archive-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  color: var(--text-primary, #eef1f8);
+}
+.archive-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.55rem;
+}
+.archive-item {
+  text-align: left;
+}
+
+/* Варианты ответа карточек (квиз собеседования, события) */
+.deck-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+.deck-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.55rem;
+  width: 100%;
+  text-align: left;
+  padding: 0.65rem 0.75rem;
+  border-radius: 12px;
+  border: 1px solid var(--border-soft, rgba(255, 255, 255, 0.1));
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 0.85rem;
+  color: var(--text-primary, #eef1f8);
+}
+.deck-option[data-state='correct'] {
+  border-color: rgba(120, 220, 170, 0.6);
+  background: rgba(120, 220, 170, 0.12);
+}
+.deck-option[data-state='dim'] {
+  opacity: 0.45;
+}
+
+/* Варианты-модификаторы (§7.3): новый выбор, открытый перком/предметом */
+.deck-variants {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.55rem;
+}
+.deck-variant {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  border-radius: 12px;
+  border: 1px solid rgba(120, 160, 255, 0.35);
+  background: rgba(120, 160, 255, 0.08);
+  font-size: 0.85rem;
+  color: var(--text-primary, #eef1f8);
+}
+.deck-variant-label {
+  display: block;
+  font-weight: 600;
+}
+.deck-variant-hint {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.72rem;
+  opacity: 0.75;
+}
+.deck-variant-badge {
+  flex-shrink: 0;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid rgba(120, 160, 255, 0.35);
+  font-size: 0.68rem;
+  opacity: 0.85;
+}
+.deck-variant:disabled {
+  opacity: 0.5;
 }

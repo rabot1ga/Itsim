@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { resolveStory, act } from './helpers/story';
+import { openView } from './helpers/nav';
 
 /**
  * Свёрнутая секция не должна ничего обещать ни глазу, ни пальцу, ни клавиатуре.
@@ -21,10 +22,7 @@ import { resolveStory, act } from './helpers/story';
 /** В новой IA (A2) «Развитие» — только таб, но скоуп по навигации не мешает. */
 async function openLearning(page: Page) {
   await act(page, async () => {
-    await page
-      .getByRole('navigation', { name: 'Основная навигация' })
-      .getByRole('button', { name: 'Развитие', exact: true })
-      .click();
+    await openView(page, 'Развитие');
     await page.getByRole('tab', { name: /Направления/ }).click();
     await expect(page.getByRole('region', { name: 'Список навыков' })).toBeVisible();
   });

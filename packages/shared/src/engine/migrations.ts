@@ -232,8 +232,22 @@ export function normalizeState(state: any): void {
     'recentEventTags',
     'entitlements',
     'badges',
+    'memories',
+    'memorySeeds',
   ] as const) {
     if (!Array.isArray(state[key])) state[key] = [];
+  }
+  // затравки сиквелов (стадия 3): битые записи выкидываем
+  state.memorySeeds = (state.memorySeeds ?? []).filter(
+    (s: any) => s && typeof s.tag === 'string' && typeof s.dueDay === 'number' && typeof s.expiresDay === 'number'
+  );
+  // соперник (стадия 2): битая форма — снести, создастся при следующем найме
+  if (state.rival != null && (typeof state.rival.name !== 'string' || typeof state.rival.progress !== 'number')) {
+    delete state.rival;
+  }
+  // память мира (DESIGN-LIVING-WORLD): стойкость компаний — объект-словарь
+  if (!state.companyStanding || typeof state.companyStanding !== 'object' || Array.isArray(state.companyStanding)) {
+    state.companyStanding = {};
   }
   for (const [id, def] of Object.entries(SOFT_SKILL_DEFAULTS)) {
     const cur = state.softSkills[id];

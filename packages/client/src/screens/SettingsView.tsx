@@ -3,7 +3,16 @@ import React, { useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { ScreenTitle, SectionTitle, Toggle } from '../components/ui';
 import { haptic } from '../lib/telegram';
-import { PREF_KEYS, readPref, writePref, setContrast, contrastEnabled } from '../lib/prefs';
+import {
+  PREF_KEYS,
+  readPref,
+  writePref,
+  setContrast,
+  contrastEnabled,
+  readTheme,
+  setTheme,
+  type ThemeName,
+} from '../lib/prefs';
 import { playSfx } from '../lib/sfx';
 import { PixelIcon } from '../components/pixel/PixelIcon';
 /**
@@ -21,6 +30,7 @@ export const SettingsView: React.FC = () => {
   const [sound, setSound] = useState(() => readPref(PREF_KEYS.sound, false));
   const [haptics, setHaptics] = useState(() => readPref(PREF_KEYS.haptics, true));
   const [contrast, setContrastState] = useState(contrastEnabled);
+  const [theme, setThemeState] = useState<ThemeName>(readTheme);
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
   const flip = (key: string, value: boolean, set: (next: boolean) => void) => {
@@ -90,6 +100,31 @@ export const SettingsView: React.FC = () => {
                 haptic('selection');
               }}
             />
+          </div>
+        </div>
+      </section>
+
+      <section className="card">
+        <SectionTitle>{t('Тема оформления')}</SectionTitle>
+        <div className="settings-row">
+          <PixelIcon name="star" size={14} />
+          <span className="settings-row-label">{t('Тема')}</span>
+          <div className="settings-row-value" role="group" aria-label={t('Тема оформления')}>
+            {(['ink', 'light'] as ThemeName[]).map((name) => (
+              <button
+                key={name}
+                type="button"
+                className={theme === name ? 'btn btn-primary' : 'btn btn-ghost'}
+                aria-pressed={theme === name}
+                onClick={() => {
+                  setThemeState(name);
+                  setTheme(name); // вешает/снимает data-theme="light" на <html>
+                  haptic('selection');
+                }}
+              >
+                {name === 'ink' ? t('Чернильная') : t('Светлая')}
+              </button>
+            ))}
           </div>
         </div>
       </section>

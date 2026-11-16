@@ -41,6 +41,16 @@ import {
   type Application,
   type GameEvent,
   type Offer,
+  recordMemory,
+  bumpCompanyStanding,
+  advanceRival,
+  ensureRival,
+  rivalGap,
+  rivalPressure,
+  plantSeed,
+  maturedSeeds,
+  consumeSeed,
+  dropExpiredSeeds,
 } from '@itsim/shared';
 import { clamp, contactsOf } from '@itsim/shared';
 import {
@@ -107,10 +117,12 @@ export function advanceDay(state: StoredState, content: any, messages: string[])
     if (state.jobWarnings >= 3) {
       messages.push(t('Три предупреждения — тебя уволили из {p0}. Свобода!', { p0: company?.name ?? 'компании' }));
       state.job = null;
+      plantSeed(state, { tag: 'ex_employer_calls', afterDays: 4 + Math.floor(rng() * 4) });
       loseCtoSeat(state, content, messages, t('Борд не стал ждать третьего предупреждения'));
     } else if (company && rng() < (company.culture?.layoffRisk ?? 0)) {
       messages.push(t('Сокращение в «{p0}». Ты в списке. Рынок, держись!', { p0: company.name }));
       state.job = null;
+      plantSeed(state, { tag: 'ex_employer_calls', afterDays: 4 + Math.floor(rng() * 4) });
       loseCtoSeat(state, content, messages, t('Сокращение дошло до верхнего этажа'));
     } else {
       // Review cadence is per-gate (minDaysInGrade) and lives inside tryPromote
@@ -131,6 +143,21 @@ export function advanceDay(state: StoredState, content: any, messages: string[])
     messages.push(
       t('Дмитрий Борисович опять свёл дискуссию к лекции — настроение −{p0}', { p0: TOXIC_MOTIVATION_HIT })
     );
+  }
+  // 4c. «Живой мир» (стадия 2): соперник растёт каждый день; изредка — след
+  if (state.job) {
+    const rival = ensureRival(state);
+    advanceRival(state, 0.8 + rng() * 0.4);
+    if (rng() < 0.12) {
+      const ahead = rivalGap(state) < 0;
+      recordMemory(state, {
+        subject: 'rival',
+        kind: 'event',
+        text: ahead
+          ? t('{p0} закрыл крупный проект — теперь впереди', { p0: rival.name })
+          : t('{p0} отметился на конференции — дышит в спину', { p0: rival.name }),
+      });
+    }
   }
   // 5. Weekly salary
   if (state.job && state.currentDay % 7 === 0) {
@@ -294,6 +321,8 @@ export function advanceDay(state: StoredState, content: any, messages: string[])
       if (outcome === 'won') {
         state.activeProject = startProject(def, state.currentDay);
         state.freelanceRejectStreak = 0;
+        // «Живой мир» (стадия 3): успешный заказ может вернуться постоянством
+        plantSeed(state, { tag: 'regular_client', afterDays: 5 + Math.floor(rng() * 4) });
         messages.push(
           t('Заказчик выбрал тебя: «{p0}». Дедлайн — день {p1}', {
             p0: def.title,
@@ -402,10 +431,21 @@ function tryPromote(state: StoredState, company: any, content: any, messages: st
   if (!progress.ok) return;
   // D1: тимлид ≥ 60 заступается — ревью проходит легче
   const surplus = gateSurplus(progress) + teamleadSurplusBonus(state);
-  if (!promotionChance(surplus, gate.competition ?? 1, rng)) {
+  // «Живой мир» (стадия 2): соперник давит на ревью — разрыв виден в сообщении
+  ensureRival(state);
+  const pressure = rivalPressure(state);
+  const competition = Math.max(0.3, (gate.competition ?? 1) + pressure);
+  if (!promotionChance(surplus, competition, rng)) {
     // No spam: tell the player only on the day the review happened
+    const gap = Math.round(rivalGap(state));
     messages.push(
-      t('Ревью на {p0}: место пока занято. Ты у уреза — качай глубину, не ширину', { p0: gate.label ?? gate.grade })
+      pressure > 0
+        ? t('Ревью на {p0}: место занято — {p1} был впереди на {p2} пунктов', {
+            p0: gate.label ?? gate.grade,
+            p1: state.rival!.name,
+            p2: Math.max(1, -gap),
+          })
+        : t('Ревью на {p0}: место пока занято. Ты у уреза — качай глубину, не ширину', { p0: gate.label ?? gate.grade })
     );
     return;
   }
@@ -421,6 +461,8 @@ function tryPromote(state: StoredState, company: any, content: any, messages: st
   state.grade = gate.grade;
   state.lastPromotionDay = state.currentDay;
   state.reputation = clamp(state.reputation + 3, 0, 100);
+  // «Живой мир» (стадия 3): повышение не проходит мимо близких
+  plantSeed(state, { tag: 'mentor_proud', afterDays: 2 + Math.floor(rng() * 3) });
   messages.push(
     t('Повышение! Теперь ты {p0} ({p1}/мес). Поздравляем, тебя ждёт ещё больше созвонов', {
       p0: GRADE_POSITIONS[gate.grade],
@@ -465,6 +507,13 @@ function resolveInterview(state: StoredState, app: Application, content: any, me
     state.pendingOffers = [...state.pendingOffers, offer];
     app.status = 'accepted';
     app.result = 'accepted';
+    // «Живой мир»: оффер — след (DESIGN-LIVING-WORLD)
+    bumpCompanyStanding(state, company.id, 'offers');
+    recordMemory(state, {
+      subject: `company:${company.id}`,
+      kind: 'application',
+      text: t('«{p0}» прислала оффер', { p0: company.name }),
+    });
     messages.push(
       t(
         'Ты пропустил собеседование в «{p0}» — но резюме так понравилось, что прислали оффер: {p1}, {p2}/мес. Действует 5 дней — принять в «Карьере»',
@@ -478,13 +527,22 @@ function resolveInterview(state: StoredState, app: Application, content: any, me
   } else {
     app.status = 'rejected';
     app.result = 'rejected';
+    bumpCompanyStanding(state, company.id, 'rejections');
+    recordMemory(state, {
+      subject: `company:${company.id}`,
+      kind: 'application',
+      text: t('«{p0}» не дождалась на собеседование — отказ', { p0: company.name }),
+    });
     const streak = Math.min(4, (state.interviewRejectStreak ?? 0) + 1);
     state.interviewRejectStreak = streak;
     messages.push(
-      t('Ты пропустил собеседование в «{p0}» — без кандидата решили не рисковать. Попробуй ещё раз через пару дней (следующее +{p1}%)', {
-        p0: company.name,
-        p1: Math.round(streak * 7),
-      })
+      t(
+        'Ты пропустил собеседование в «{p0}» — без кандидата решили не рисковать. Попробуй ещё раз через пару дней (следующее +{p1}%)',
+        {
+          p0: company.name,
+          p1: Math.round(streak * 7),
+        }
+      )
     );
   }
 }
@@ -498,6 +556,18 @@ function maybeTriggerEvent(state: StoredState, content: any): GameEvent | null {
     const [due] = state.pendingEvents.splice(dueIndex, 1);
     const event = (content.events as any[]).find((e) => e.id === due.eventId);
     if (event) {
+      state.activeEventId = event.id;
+      return event;
+    }
+  }
+  // «Живой мир» (стадия 3): созревшие сиквелы — выше случайных событий,
+  // но ниже сюжетных окон (pendingEvents)
+  dropExpiredSeeds(state);
+  for (const seed of maturedSeeds(state)) {
+    const variants = (content.events as any[]).filter((e) => e.sequelTag === seed.tag);
+    consumeSeed(state, seed.tag);
+    if (variants.length > 0) {
+      const event = variants[Math.floor(rng() * variants.length)];
       state.activeEventId = event.id;
       return event;
     }

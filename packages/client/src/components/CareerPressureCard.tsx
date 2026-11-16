@@ -1,7 +1,7 @@
 import { t, fmtNumber } from '../lib/i18n';
 import React, { useRef, useState } from 'react';
 import { useGameStore } from '../store/gameStore';
-import { metaXpBonusPct } from '@itsim/shared';
+import { metaXpBonusPct, playerPower } from '@itsim/shared';
 import { haptic } from '../lib/telegram';
 import { accordionBodyRef } from './ui';
 import { PixelIcon } from './pixel/PixelIcon';
@@ -208,6 +208,18 @@ export const CareerPressureCard: React.FC = () => {
                     ))
                   )}
                 </div>
+                {player.rival && (
+                  <div className="mt-2 flex items-center justify-between gap-2 text-xs">
+                    <span className="flex items-center gap-1.5 text-ink-300">
+                      <PixelIcon name="person" size={12} />
+                      {t('Соперник: {p0}', { p0: player.rival.name })}
+                    </span>
+                    <span className="num text-ink-400">
+                      {t('запас')} {Math.round(playerPower(player))} · {t('у {p0}', { p0: player.rival.name })}{' '}
+                      {Math.round(player.rival.progress)}
+                    </span>
+                  </div>
+                )}
                 <div className="mt-2 text-2xs text-ink-600 leading-relaxed">
                   {t('Грейды растут от глубины (основной навык + ветка), а не от количества курсов.')}
                 </div>

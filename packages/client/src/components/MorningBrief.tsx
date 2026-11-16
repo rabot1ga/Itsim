@@ -15,7 +15,7 @@ import { SectionTitle } from './ui';
  * B — чек-лист «Первые шаги»: обучение деланием вместо лекций. Живёт первые
  * дни и скрывается, когда все три шага закрыты.
  */
-function useFirstSteps(): FirstSteps {
+export function useFirstSteps(): FirstSteps {
   const [steps, setSteps] = useState<FirstSteps>(() => readFirstSteps());
   useEffect(() => {
     const sync = () => setSteps(readFirstSteps());
@@ -29,20 +29,18 @@ function useFirstSteps(): FirstSteps {
   return steps;
 }
 
-interface Hint {
+export interface Hint {
   id: string;
   icon: string;
   text: string;
   view?: string;
 }
 
-export const ReadyCard: React.FC = () => {
-  const player = useGameStore((s) => s.player);
-  const careerOutlook = useGameStore((s) => s.careerOutlook);
-  const setView = useGameStore((s) => s.setView);
-  if (!player) return null;
-  const day = player.currentDay ?? 1;
+/** G: крючки «почти готово» — для карточки стека и старого вида */
+export function collectReadyHints(player: any, careerOutlook: any): Hint[] {
+  const day = player?.currentDay ?? 1;
   const hints: Hint[] = [];
+  if (!player) return hints;
 
   // оффер сгорает
   const offer = (player.pendingOffers ?? []).find((o: any) => (o.expiresInDays ?? 99) <= 2 && o.expiresInDays > 0);
@@ -104,7 +102,14 @@ export const ReadyCard: React.FC = () => {
       });
     }
   }
+  return hints;
+}
 
+export const ReadyCard: React.FC = () => {
+  const player = useGameStore((s) => s.player);
+  const careerOutlook = useGameStore((s) => s.careerOutlook);
+  const setView = useGameStore((s) => s.setView);
+  const hints = collectReadyHints(player, careerOutlook);
   if (hints.length === 0) return null;
   return (
     <section className="card animate-pop-in" aria-label={t('Почти готово')}>
@@ -130,20 +135,32 @@ export const ReadyCard: React.FC = () => {
   );
 };
 
+export interface FirstStepsItem {
+  id: string;
+  done: boolean;
+  text: string;
+  view?: string;
+}
+
+/** B: чек-лист «Первые шаги» — строки для карточки стека и старого вида */
+export function firstStepsItems(player: any, steps: FirstSteps): FirstStepsItem[] | null {
+  if (!player) return null;
+  const dayDone = (player.currentDay ?? 1) >= 2;
+  const all = steps.action && steps.focus && dayDone;
+  if (all || (player.currentDay ?? 1) > 4) return null;
+  return [
+    { id: 'action', done: steps.action, text: t('Выполни любое действие из плана дня') },
+    { id: 'day', done: dayDone, text: t('Заверши день и посмотри сводку') },
+    { id: 'focus', done: steps.focus, text: t('Выбери основной навык во вкладке «Развитие»'), view: 'skills' },
+  ];
+}
+
 export const FirstStepsCard: React.FC = () => {
   const player = useGameStore((s) => s.player);
   const setView = useGameStore((s) => s.setView);
   const steps = useFirstSteps();
-  if (!player) return null;
-  const dayDone = (player.currentDay ?? 1) >= 2;
-  const all = steps.action && steps.focus && dayDone;
-  // чек-лист живёт первые дни; скрыт, когда всё закрыто
-  if (all || (player.currentDay ?? 1) > 4) return null;
-  const items = [
-    { id: 'action', done: steps.action, text: t('Выполни любое действие из плана дня'), view: undefined },
-    { id: 'day', done: dayDone, text: t('Заверши день и посмотри сводку'), view: undefined },
-    { id: 'focus', done: steps.focus, text: t('Выбери основной навык во вкладке «Развитие»'), view: 'skills' },
-  ];
+  const items = firstStepsItems(player, steps);
+  if (!items) return null;
   return (
     <section className="card animate-pop-in" aria-label={t('Первые шаги')} data-testid="first-steps">
       <SectionTitle className="mb-2">{t('Первые шаги')}</SectionTitle>

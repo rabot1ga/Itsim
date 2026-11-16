@@ -43,12 +43,30 @@ export const ChainEventRefSchema = z.object({
   chance: z.number().min(0).max(1),
 });
 
+export const SeedWhenSchema = z
+  .object({
+    employed: z.boolean().optional(),
+    jobless: z.boolean().optional(),
+    minRelation: z.record(z.string(), z.number()).optional(),
+  })
+  .strict();
+
+export const SequelSeedSchema = z
+  .object({
+    tag: z.string().min(1).max(64),
+    afterDays: z.number().int().min(1).max(30),
+    ttlDays: z.number().int().min(1).max(14).optional(),
+    when: SeedWhenSchema.optional(),
+  })
+  .strict();
+
 export const EventChoiceSchema = z.object({
   text: z.string().min(1).max(120),
   requires: EventChoiceRequiresSchema.optional(),
   effects: EventEffectsSchema,
   followup: z.string().max(400).optional(),
   chain: ChainEventRefSchema.optional(),
+  sequel: SequelSeedSchema.optional(),
 });
 
 export const EventConditionsSchema = z.object({
@@ -91,6 +109,7 @@ export const EventSchema = z.object({
   // Chain-only events never enter the random pool — they trigger
   // exclusively through `chain` references of other events
   chainOnly: z.boolean().default(false),
+  sequelTag: z.string().max(64).optional(),
   // Action-triggered events never enter the random pool either —
   // they roll after the matching player action
   actionTrigger: ActionEventTriggerSchema.optional(),

@@ -1,5 +1,6 @@
 import { test, expect, type Page } from '@playwright/test';
 import { resolveStory } from './helpers/story';
+import { openView, goToday } from './helpers/nav';
 
 /**
  * Горизонтального скролла нет ни на одном экране, ни в каком состоянии.
@@ -20,85 +21,30 @@ import { resolveStory } from './helpers/story';
 
 const TABS = ['Сегодня', 'Работа', 'Развитие', 'Прогресс'] as const;
 /**
- * Боковые экраны новой IA (A2): листа «Меню» больше нет, каждый экран живёт
- * своей дверью внутри табов. Роуты — как реально ходит игрок.
+ * IA «Колода» (DESIGN-DECK): таббар заменён «Сегодня» + «Архив»; экраны
+ * открываются через шторку архива — так же, как их открывает игрок.
  */
-const navTo = (page: import('@playwright/test').Page, tab: string) =>
-  page.getByRole('navigation', { name: 'Основная навигация' }).getByRole('button', { name: tab, exact: true }).click();
+const navTo = async (page: import('@playwright/test').Page, tab: string) => {
+  if (tab === 'Сегодня') return goToday(page);
+  return openView(page, tab);
+};
 const SIDE_ROUTES: ReadonlyArray<readonly [string, (page: import('@playwright/test').Page) => Promise<void>]> = [
-  [
-    'Профиль',
-    async (page) => {
-      await navTo(page, 'Сегодня');
-      await page.getByRole('button', { name: 'Открыть профиль' }).click();
-    },
-  ],
-  [
-    'Отдых',
-    async (page) => {
-      await navTo(page, 'Сегодня');
-      await page.getByRole('button', { name: 'Отдых', exact: true }).click();
-    },
-  ],
-  [
-    'Магазин',
-    async (page) => {
-      await navTo(page, 'Сегодня');
-      await page.getByRole('button', { name: 'Магазин', exact: true }).click();
-    },
-  ],
-  [
-    'Дом',
-    async (page) => {
-      await navTo(page, 'Сегодня');
-      await page.getByRole('button', { name: 'Дом', exact: true }).click();
-    },
-  ],
-  [
-    'Друзья',
-    async (page) => {
-      await navTo(page, 'Работа');
-      await page.getByRole('button', { name: /^Коллеги и знакомые/ }).click();
-    },
-  ],
-  [
-    'Офис',
-    async (page) => {
-      await navTo(page, 'Работа');
-      await page.getByRole('button', { name: /^Мой офис/ }).click();
-    },
-  ],
-  [
-    'Питомец',
-    async (page) => {
-      await navTo(page, 'Сегодня');
-      await page.getByRole('button', { name: 'Отдых', exact: true }).click();
-      await page.getByRole('button', { name: /^Питомец/ }).click();
-    },
-  ],
-  [
-    'Майнинг',
-    async (page) => {
-      await navTo(page, 'Сегодня');
-      await page.getByRole('button', { name: 'Магазин', exact: true }).click();
-      await page.getByRole('button', { name: /^Майнинг-ферма/ }).click();
-    },
-  ],
+  ['Профиль', (page) => openView(page, 'Профиль')],
+  ['Отдых', (page) => openView(page, 'Отдых')],
+  ['Магазин', (page) => openView(page, 'Магазин')],
+  ['Дом', (page) => openView(page, 'Дом')],
+  ['Друзья', (page) => openView(page, 'Друзья')],
+  ['Офис', (page) => openView(page, 'Офис')],
+  ['Питомец', (page) => openView(page, 'Питомец')],
+  ['Майнинг', (page) => openView(page, 'Майнинг-ферма')],
   [
     'Топ',
     async (page) => {
-      await navTo(page, 'Прогресс');
+      await openView(page, 'Прогресс');
       await page.getByRole('button', { name: /^Топ игроков/ }).click();
     },
   ],
-  [
-    'Настройки',
-    async (page) => {
-      await navTo(page, 'Сегодня');
-      await page.getByRole('button', { name: 'Открыть профиль' }).click();
-      await page.getByRole('button', { name: /^Настройки/ }).click();
-    },
-  ],
+  ['Настройки', (page) => openView(page, 'Настройки')],
 ];
 
 /** Сюжет после перехода по экранам — не часть проверки, поэтому чистим без
@@ -174,17 +120,16 @@ test('320px: ни один экран не раздается горизонта
   await dismissStory(page);
 
   const problems: string[] = [];
-  const nav = page.getByRole('navigation', { name: 'Основная навигация' });
 
   for (const label of TABS) {
-    await nav.getByRole('button', { name: label, exact: true }).click();
+    await navTo(page, label);
     const problem = await measure(page, label);
     if (problem) problems.push(problem);
   }
 
   // Состояние, в котором баг и жил: сетка путей + раскрытый аккордеон школы +
   // выбранный основной навык.
-  await nav.getByRole('button', { name: 'Развитие', exact: true }).click();
+  await navTo(page, 'Развитие');
   await page.getByRole('tab', { name: /Направления/ }).click();
   const list = page.getByRole('region', { name: 'Список навыков' });
   await expect(list).toBeVisible();

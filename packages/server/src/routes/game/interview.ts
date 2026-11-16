@@ -22,6 +22,9 @@ import {
   rollInterview,
   seededRng,
   type Offer,
+  recordMemory,
+  bumpCompanyStanding,
+  plantSeed,
 } from '@itsim/shared';
 import {
   balanceRng,
@@ -211,8 +214,16 @@ export async function interviewRoutes(app: FastifyInstance) {
         companyToxicity: company?.toxicity ?? 0,
       };
       state.pendingOffers = [...state.pendingOffers, offer];
+      bumpCompanyStanding(state, offer.companyId, 'offers');
+      recordMemory(state, {
+        subject: `company:${offer.companyId}`,
+        kind: 'application',
+        text: t('Прошёл собеседование — прислали оффер', {}),
+      });
       app.status = 'accepted';
       app.result = 'accepted';
+      // «Живой мир» (стадия 3): о новой работе узнают старые коллеги
+      plantSeed(state, { tag: 'old_colleague_heard', afterDays: 4 + Math.floor(balanceRng(state)() * 4) });
       resultMessage = usedRecommendation
         ? t('По тёплой рекомендации тебя взяли без долгих разговоров. Оффер: {p0}, {p1}/мес — прими его в «Карьере»', {
             p0: app.position,
@@ -227,6 +238,12 @@ export async function interviewRoutes(app: FastifyInstance) {
     } else {
       app.status = 'rejected';
       app.result = 'rejected';
+      bumpCompanyStanding(state, app.companyId, 'rejections');
+      recordMemory(state, {
+        subject: `company:${app.companyId}`,
+        kind: 'application',
+        text: t('Провалил собеседование — отказ', {}),
+      });
       const streak = Math.min(4, (state.interviewRejectStreak ?? 0) + 1);
       state.interviewRejectStreak = streak;
       resultMessage = t(
