@@ -28,3 +28,4 @@ export * from './cardModifiers';
 export * from './memory';
 export * from './rival';
 export * from './sequels';
+export * from './punch';

@@ -95,10 +95,10 @@ describe('App', () => {
     // the store is a module singleton — the previous test may have parked it elsewhere
     fireEvent.click(within(nav).getByRole('button', { name: 'Сегодня' }));
 
-    // Стек дня: активная карточка с кнопками-дублёрами жеста; до конца
-    // доходим «Пропустить»/«Дальше», последняя карточка — «Завершить день».
+    // Планер слотов (DESIGN-PUNCH) — новый «стек дня»: карточки дня
+    // закрываются «Пропустить»/«Дальше», ход завершается доком.
     // Между кликами ждём анимацию улёта (DeckCard ~160ms).
-    for (let i = 0; i < 12 && !document.querySelector('[data-deck-id="end"]'); i++) {
+    for (let i = 0; i < 12; i++) {
       const skip =
         screen.queryByRole('button', { name: 'Пропустить' }) ?? screen.queryByRole('button', { name: 'Дальше' });
       if (!skip) break;
@@ -108,8 +108,8 @@ describe('App', () => {
       });
       expect(screen.queryByText('Что-то сломалось')).toBeNull();
     }
-    expect(document.querySelector('[data-deck-id="end"]')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Завершить' })).toBeTruthy();
+    expect(screen.getByText('День — 5 слотов')).toBeTruthy();
+    expect(screen.getByRole('button', { name: /Штанга и жим/ })).toBeTruthy();
 
     // На рабочих панелях архива док остаётся — ход завершается оттуда.
     const { useGameStore } = await import('../store/gameStore');

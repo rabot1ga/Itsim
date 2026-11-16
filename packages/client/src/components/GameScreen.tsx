@@ -4,6 +4,7 @@ import { useGameStore } from '../store/gameStore';
 import { haptic } from '../lib/telegram';
 import { ProfileView } from '../screens/ProfileView';
 import { ChronicleView } from '../screens/ChronicleView';
+import { DayPlannerView } from '../screens/DayPlannerView';
 import { FriendsView } from '../screens/FriendsView';
 import { DayView } from '../screens/DayView';
 import { OfficeView } from '../screens/OfficeView';
@@ -23,7 +24,6 @@ import { EventCard, EventOutcomeCard, type EventChoice } from './EventCard';
 import { DaySummaryCard } from './DaySummaryCard';
 import { ErrorToast } from './ErrorToast';
 import { DayEndDock } from './DayEndDock';
-import { DeckView } from './DeckView';
 import { ArchiveSheet } from './ArchiveSheet';
 /**
  * IA «Колода» (DESIGN-DECK, 28.10.2026): нижняя панель — два контрока:
@@ -104,7 +104,7 @@ export const GameScreen: React.FC = () => {
       case 'friends':
         return <FriendsView />;
       case 'main':
-        return <DeckView />;
+        return <DayPlannerView />;
       case 'overview':
         return <DayView />; // «Обзор дня» из Архива: быт, майнинг, банк дней
 
@@ -134,7 +134,7 @@ export const GameScreen: React.FC = () => {
       case 'settings':
         return <SettingsView />;
       default:
-        return <DeckView />;
+        return <DayPlannerView />;
     }
   };
   // Wrap tab switches with selection haptics

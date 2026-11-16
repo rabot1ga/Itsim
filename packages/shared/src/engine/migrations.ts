@@ -237,6 +237,15 @@ export function normalizeState(state: any): void {
   ] as const) {
     if (!Array.isArray(state[key])) state[key] = [];
   }
+  // Punch IT (DESIGN-PUNCH): сытость/слоты/статы — мягкие дефолты старых сейвов
+  if (typeof state.hunger !== 'number' || Number.isNaN(state.hunger)) state.hunger = 70;
+  state.hunger = Math.max(0, Math.min(100, state.hunger));
+  if (typeof state.slotsUsed !== 'number' || state.slotsUsed < 0) state.slotsUsed = 0;
+  if (!state.combat || typeof state.combat !== 'object' || Array.isArray(state.combat)) state.combat = {};
+  for (const id of ['power', 'agility', 'speed'] as const) {
+    const s = (state.combat as Record<string, unknown>)[id] as any;
+    if (!s || typeof s.level !== 'number') (state.combat as Record<string, unknown>)[id] = { level: 5, xp: 0 };
+  }
   // затравки сиквелов (стадия 3): битые записи выкидываем
   state.memorySeeds = (state.memorySeeds ?? []).filter(
     (s: any) => s && typeof s.tag === 'string' && typeof s.dueDay === 'number' && typeof s.expiresDay === 'number'

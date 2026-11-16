@@ -66,7 +66,12 @@ export function buildQueue(
   player: any,
   careerOutlook: any,
   steps: ReturnType<typeof useFirstSteps>,
-  onboarded: boolean
+  onboarded: boolean,
+  /**
+   * 'cards' — «Ежедневные карточки» (DESIGN-PUNCH §6): информационный стек
+   * над планером дня; действия/спринт/финиш уходят в тайм-слоты планера.
+   */
+  variant: 'deck' | 'cards' = 'deck'
 ): Slot[] {
   const queue: Slot[] = [];
   const day = player?.currentDay ?? 1;
@@ -96,10 +101,13 @@ export function buildQueue(
   }
   if (player?.sprint) queue.push({ kind: 'sprint' });
   queue.push({ kind: 'end' });
+  if (variant === 'cards') {
+    return queue.filter((s) => !['action', 'sprint', 'end', 'interview'].includes(s.kind));
+  }
   return queue;
 }
 
-export const DeckView: React.FC = () => {
+export const DeckView: React.FC<{ variant?: 'deck' | 'cards' }> = ({ variant = 'deck' }) => {
   const player = useGameStore((s) => s.player);
   const careerOutlook = useGameStore((s) => s.careerOutlook);
   const setView = useGameStore((s) => s.setView);
@@ -127,12 +135,14 @@ export const DeckView: React.FC = () => {
   // Очередь — «снимок утра»: карточки не перетасовываются после каждого
   // действия (план меняется, стек — нет). Поэтому зависимость только `day`.
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const queue = useMemo(() => buildQueue(player, careerOutlook, steps, onboarded), [day, onboarded]);
+  const queue = useMemo(() => buildQueue(player, careerOutlook, steps, onboarded, variant), [day, onboarded, variant]);
   // новый день — новый стек
   useEffect(() => {
     setIndex(0);
   }, [day]);
   if (!player) return null;
+  // cards-режим: карточки кончились — планер ниже самодостаточен
+  if (variant === 'cards' && index >= queue.length) return null;
   const slot = queue[Math.min(index, queue.length - 1)];
   const left = queue.length - index;
   const introCount = onboarded ? 0 : 2;
@@ -186,10 +196,10 @@ export const DeckView: React.FC = () => {
   const def = active && defs ? defs.find((d) => d.id === active.id) : undefined;
   const nextTask = def && active ? def.tasks.find((tk) => !active.tasksDone?.includes(tk.id)) : undefined;
 
-  return (
-    <div className="deck animate-fade-in" aria-label={t('Сегодня')}>
+  const body = (
+    <>
       {/* сцена: комната над стеком — контекст, а не решение */}
-      <HomeRoomCard />
+      {variant === 'deck' && <HomeRoomCard />}
 
       <div className="deck-stage">
         {slot.kind === 'intro' &&
@@ -509,14 +519,22 @@ export const DeckView: React.FC = () => {
         )}
       </div>
 
-      <div className="deck-footer">
-        <span className="deck-dots num" aria-live="polite" aria-label={t('Осталось карточек: {p0}', { p0: left })}>
-          {t('Осталось карточек: {p0}', { p0: left })}
-        </span>
-        <button className="btn btn-ghost deck-btn" onClick={() => setView('overview')}>
-          {t('Все детали дня')} →
-        </button>
-      </div>
+      {variant === 'deck' && (
+        <div className="deck-footer">
+          <span className="deck-dots num" aria-live="polite" aria-label={t('Осталось карточек: {p0}', { p0: left })}>
+            {t('Осталось карточек: {p0}', { p0: left })}
+          </span>
+          <button className="btn btn-ghost deck-btn" onClick={() => setView('overview')}>
+            {t('Все детали дня')} →
+          </button>
+        </div>
+      )}
+    </>
+  );
+  if (variant === 'cards') return body;
+  return (
+    <div className="deck animate-fade-in" aria-label={t('Сегодня')}>
+      {body}
     </div>
   );
 };

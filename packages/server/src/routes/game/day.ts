@@ -51,6 +51,7 @@ import {
   maturedSeeds,
   consumeSeed,
   dropExpiredSeeds,
+  overnight,
 } from '@itsim/shared';
 import { clamp, contactsOf } from '@itsim/shared';
 import {
@@ -370,7 +371,13 @@ export function advanceDay(state: StoredState, content: any, messages: string[])
       );
     }
   }
+  // 8.6 Punch IT (DESIGN-PUNCH): ночь — голод падает, голодовка бьёт
+  const night = overnight(state);
+  if (night.starved) {
+    messages.push(t('Ты лёг спать голодным — здоровье пошатнулось'));
+  }
   // 9. Daily reset
+  state.slotsUsed = 0;
   state.freelanceDoneToday = false;
   state.sideJobDoneToday = false;
   state.petFedToday = false;

@@ -60,7 +60,7 @@ export const ChronicleView: React.FC = () => {
     return () => controller.abort();
   }, []);
 
-  const memories = (player?.memories ?? []) as MemoryRecord[];
+  const memories = useMemo(() => (player?.memories ?? []) as MemoryRecord[], [player]);
   const currentDay = player?.currentDay ?? 1;
 
   /** Недельная сводка «что мир запомнил» (закон 3 — память видна). */

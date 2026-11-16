@@ -221,6 +221,12 @@ export interface PlayerState {
   rival?: Rival;
   /** Затравки сиквелов (стадия 3): созревшие дают события-продолжения. */
   memorySeeds?: MemorySeed[];
+  /** Punch IT (DESIGN-PUNCH §2): сытость 0–100, голод бьёт по здоровью. */
+  hunger?: number;
+  /** Сколько слотов дня уже потрачено (день = 5 слотов). */
+  slotsUsed?: number;
+  /** Боевой треугольник (§2): сила/ловкость/скорость, кривая как у скиллов. */
+  combat?: Record<'power' | 'agility' | 'speed', SkillLevel>;
   /** Скины и позиции питомца в комнате (роадмап): косметика сейва. */
   petRoom?: PetRoomLook;
 

@@ -52,6 +52,15 @@ import {
   bumpCompanyStanding,
   ensureRival,
   plantSeed,
+  train as punchTrain,
+  eat as punchEat,
+  rest as punchRest,
+  WORK_SLOTS,
+  ORDER_SLOTS,
+  canSpendSlots,
+  TRAINING,
+  FOOD,
+  REST,
 } from '@itsim/shared';
 import {
   ACTION_MONEY_COSTS,
@@ -504,6 +513,76 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
           }) + (pity > 0 ? ' ' + t('повезёт: {p0}% за серию отказов', { p0: Math.round(pity * 100) }) : ''),
         delta,
       };
+    }
+    // ---- Punch IT (DESIGN-PUNCH §2): тайм-слоты дня ----
+    case 'train': {
+      const activity = String(params?.activity ?? '');
+      const r = punchTrain(state, activity);
+      if (!r.ok) {
+        return {
+          error:
+            r.error === 'slots'
+              ? t('Слоты на сегодня кончились — заверши день')
+              : r.error === 'money'
+                ? t('Не хватает денег на эту тренировку')
+                : r.error === 'energy'
+                  ? t('Сил нет — сначала поешь или отдохни')
+                  : t('Неизвестная тренировка'),
+        };
+      }
+      const def = TRAINING[activity];
+      return {
+        message:
+          t('{p0}: +{p1} к стату {p2}', { p0: def.label, p1: def.xp, p2: r.stat }) +
+          (r.levelsUp ? ' ' + t('Уровень стата вырос!') : ''),
+      };
+    }
+    case 'eat': {
+      const tier = String(params?.tier ?? '');
+      const r = punchEat(state, tier);
+      if (!r.ok) {
+        return { error: r.error === 'money' ? t('Не хватает денег на еду') : t('Неизвестная еда') };
+      }
+      const def = FOOD[tier];
+      return { message: t('{p0}: сытость +{p1}', { p0: def.label, p1: r.hunger }) };
+    }
+    case 'rest': {
+      const activity = String(params?.activity ?? '');
+      const r = punchRest(state, activity);
+      if (!r.ok) {
+        return {
+          error:
+            r.error === 'slots'
+              ? t('Слоты на сегодня кончились — заверши день')
+              : r.error === 'money'
+                ? t('Не хватает денег на отдых')
+                : t('Неизвестный отдых'),
+        };
+      }
+      const def = REST[activity];
+      return { message: t('{p0}: настроение +{p1}', { p0: def.label, p1: r.mood }) };
+    }
+    case 'work_shift': {
+      if (!state.job) return { error: t('Без работы смену не отработать') };
+      if (!canSpendSlots(state, WORK_SLOTS)) return { error: t('Слоты на сегодня кончились — заверши день') };
+      const pay = Math.round(state.job.salary / 22 / 100) * 100;
+      state.money += pay;
+      state.slotsUsed = (state.slotsUsed ?? 0) + WORK_SLOTS;
+      state.motivation = clamp(state.motivation - 2, 0, 100);
+      state.hunger = Math.max(0, (state.hunger ?? 70) - 6);
+      return { message: t('Смена закрыта: +{p0}. Дедлайны не ждут', { p0: fmtMoney(pay) }) };
+    }
+    case 'order_work': {
+      if (!canSpendSlots(state, ORDER_SLOTS)) return { error: t('Слоты на сегодня кончились — заверши день') };
+      const skillId = state.mainSkillId ?? Object.keys(state.skills)[0];
+      const level = state.skills[skillId]?.level ?? 0;
+      const pay = 1200 + 80 * level;
+      state.money += pay;
+      state.slotsUsed = (state.slotsUsed ?? 0) + ORDER_SLOTS;
+      state.energy = Math.max(0, state.energy - 3);
+      const current = state.skills[skillId] ?? { level: 0, xp: 0 };
+      state.skills = { ...state.skills, [skillId]: applyXp(current, 12, state.motivation) };
+      return { message: t('Заказ сдан: +{p0} и немного опыта', { p0: fmtMoney(pay) }) };
     }
     // ---- Side jobs (non-IT gigs: courier, barista, etc.) ----
     case 'side_job': {
