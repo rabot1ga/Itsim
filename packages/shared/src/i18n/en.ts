@@ -4834,4 +4834,26 @@ Object.assign(en, {
 
   // стадия 3 «Живой мир»: сиквелы
   'Продолжение истории': 'The story continues',
+
+  // стадия 4 «Живой мир»: Хроника
+  '{p0} впереди — ревью будет горячим': '{p0} is ahead — the review will be hot',
+  'За последние 7 дней мир запомнил {p0} событий. Последнее:':
+    'Over the last 7 days the world remembered {p0} events. The latest:',
+  'Загружаем хронику…': 'Loading the chronicle…',
+  'Компании помнят': 'Companies remember',
+  'Лента следов': 'Trail of traces',
+  'Люди и общая история': 'People and shared history',
+  'Мир ещё молчит': 'The world is still silent',
+  'Неделя в памяти': 'The week in memory',
+  'Первые следы появятся, когда что-то действительно случится: отклик, друг, проект.':
+    'The first traces appear when something actually happens: an application, a friend, a project.',
+  Соперник: 'Rival',
+  'Ты впереди — держи темп': 'You are ahead — keep the pace',
+  Хроника: 'Chronicle',
+  'близкий друг': 'close friend',
+  'дверь закрыта до дня {p0}': 'door closed until day {p0}',
+  знакомый: 'acquaintance',
+  напряжённые: 'strained',
+  'откликов: {p0} · офферов: {p1} · отказов: {p2}': 'applications: {p0} · offers: {p1} · rejections: {p2}',
+  'что мир помнит о тебе': 'what the world remembers about you',
 });

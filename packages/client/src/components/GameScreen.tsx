@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useGameStore } from '../store/gameStore';
 import { haptic } from '../lib/telegram';
 import { ProfileView } from '../screens/ProfileView';
+import { ChronicleView } from '../screens/ChronicleView';
 import { FriendsView } from '../screens/FriendsView';
 import { DayView } from '../screens/DayView';
 import { OfficeView } from '../screens/OfficeView';
@@ -96,6 +97,8 @@ export const GameScreen: React.FC = () => {
       );
     }
     switch (currentView) {
+      case 'chronicle':
+        return <ChronicleView />;
       case 'profile':
         return <ProfileView />;
       case 'friends':

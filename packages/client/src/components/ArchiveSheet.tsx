@@ -12,6 +12,7 @@ export const ARCHIVE_ENTRIES: Array<{ view: string; icon: string; label: string;
   { view: 'career', icon: 'briefcase', label: t('Работа'), hint: t('задачи, биржа, вакансии') },
   { view: 'skills', icon: 'book', label: t('Развитие'), hint: t('навыки, пути, перки') },
   { view: 'progress', icon: 'chart', label: t('Прогресс'), hint: t('лента, цели, рейтинг') },
+  { view: 'chronicle', icon: 'chat', label: t('Хроника'), hint: t('что мир помнит о тебе') },
   { view: 'overview', icon: 'calendar', label: t('Обзор дня'), hint: t('все детали: быт, майнинг, банк дней') },
   { view: 'rest', icon: 'walk', label: t('Отдых'), hint: t('сон, спорт, люди') },
   { view: 'room', icon: 'house', label: t('Дом'), hint: t('комната, декор, гардероб') },
