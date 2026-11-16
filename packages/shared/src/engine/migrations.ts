@@ -246,6 +246,8 @@ export function normalizeState(state: any): void {
     const s = (state.combat as Record<string, unknown>)[id] as any;
     if (!s || typeof s.level !== 'number') (state.combat as Record<string, unknown>)[id] = { level: 5, xp: 0 };
   }
+  // Punch IT (стадия 3): лиги/слава — мягкие дефолты
+  if (typeof state.fame !== 'number') state.fame = 0;
   // Punch IT (стадия 2): стиль/перки — мягкие дефолты
   if (typeof state.style !== 'string' || !['bear', 'tiger', 'wind'].includes(state.style)) state.style = 'bear';
   if (!Array.isArray(state.stylePerks)) state.stylePerks = [];

@@ -130,7 +130,7 @@ export const FightCard: React.FC = () => {
             {STAKE_OPTIONS.map((s) => (
               <button
                 key={s}
-                className={`btn text-2xs flex-1 ${stake === s ? 'btn-primary' : 'btn-secondary'}`}
+                className={`btn text-2xs flex-1 min-w-0 px-1 ${stake === s ? 'btn-primary' : 'btn-secondary'}`}
                 aria-pressed={stake === s}
                 onClick={() => setStake(s)}
               >

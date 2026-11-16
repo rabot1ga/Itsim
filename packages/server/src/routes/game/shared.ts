@@ -89,6 +89,9 @@ export const EXTRA_ENERGY_COSTS: Record<string, number> = {
   buy_style_perk: 0,
   preview_fight: 0,
   street_fight: 0,
+  league_fight: 0,
+  it_tourney: 0,
+  corp_tourney: 0,
   work_task: 4,
   // модификаторы карт (DESIGN-DECK §7.3): новые варианты ответа
   delegate_task: 4,

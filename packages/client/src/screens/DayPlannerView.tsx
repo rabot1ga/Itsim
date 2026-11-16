@@ -6,6 +6,7 @@ import { HomeRoomCard } from '../components/HomeRoomCard';
 import { DeckView } from '../components/DeckView';
 import { SectionTitle } from '../components/ui';
 import { FightCard } from '../components/FightCard';
+import { ArenaCard } from '../components/ArenaCard';
 import { haptic } from '../lib/telegram';
 import { playSfx } from '../lib/sfx';
 import { SLOTS_PER_DAY, TRAINING, FOOD, REST, DEFAULT_HUNGER, type StatId } from '@itsim/shared';
@@ -99,6 +100,8 @@ export const DayPlannerView: React.FC = () => {
       </section>
 
       <FightCard />
+
+      <ArenaCard />
 
       <section className="card space-y-1.5">
         <SectionTitle>{t('Тренировка')}</SectionTitle>

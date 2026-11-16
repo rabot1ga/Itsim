@@ -30,3 +30,4 @@ export * from './rival';
 export * from './sequels';
 export * from './punch';
 export * from './combat';
+export * from './leagues';

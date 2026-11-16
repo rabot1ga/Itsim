@@ -236,6 +236,22 @@ export interface PlayerState {
   fightDoneToday?: boolean;
   /** Найденный соперник уличного боя (preview_fight → street_fight). */
   pendingFight?: { name: string; power: number; agility: number; speed: number; style: string };
+  /** Сезон лиги (§5): дивизион/очки/титул. */
+  league?: {
+    division: 'bronze' | 'silver' | 'gold';
+    slot: number;
+    points: number;
+    wins: number;
+    losses: number;
+    season: number;
+    champion: boolean;
+  };
+  /** Слава (§5): 0–100, растёт турнирами. */
+  fame?: number;
+  /** Турниры выходного дня (§6): раз в день. */
+  leagueDoneToday?: boolean;
+  itTourneyDoneToday?: boolean;
+  corpTourneyDoneToday?: boolean;
   /** Последний бой: лог раундов для карточки боя (§3). */
   lastFight?: {
     won: boolean;

@@ -68,6 +68,13 @@ import {
   STYLE_PERKS,
   ensureCombat,
   type Fighter,
+  ensureLeague,
+  divisionOf,
+  leagueOpponentPower,
+  seasonOutcome,
+  IT_FORMATS,
+  itTourneyPrize,
+  corpTourneyPrize,
 } from '@itsim/shared';
 import {
   ACTION_MONEY_COSTS,
@@ -520,6 +527,161 @@ function applyAction(state: StoredState, actionId: string, params: any, content:
           }) + (pity > 0 ? ' ' + t('повезёт: {p0}% за серию отказов', { p0: Math.round(pity * 100) }) : ''),
         delta,
       };
+    }
+    // ---- Punch IT (DESIGN-PUNCH §5/§6): лиги и турниры ----
+    case 'league_fight': {
+      if (state.leagueDoneToday) return { error: t('Лига: матч уже был сегодня') };
+      if (!canSpendSlots(state, 1)) return { error: t('Слоты на сегодня кончились — заверши день') };
+      if ((state.energy ?? 0) < 3) return { error: t('Сил нет — сначала поешь или отдохни') };
+      ensureCombat(state);
+      ensureLeague(state);
+      const league = state.league!;
+      const stake = Math.max(0, Math.min(5000, Number(params?.stake ?? 0) || 0));
+      if (state.money < stake) return { error: t('Не хватает денег на ставку') };
+      const rng = balanceRng(state);
+      const power = leagueOpponentPower(league);
+      // титульный вечер — босс = соперник «Живого мира»
+      const isTitleNight = league.slot === 4 && divisionOf(league.division).id === 'gold' && !league.champion;
+      const opponent: Fighter = {
+        name: isTitleNight ? (state.rival?.name ?? 'Чемпион') : t('Боец лиги'),
+        power: power + Math.floor(rng() * 5) - 2,
+        agility: power + Math.floor(rng() * 5) - 2,
+        speed: power + Math.floor(rng() * 5) - 2,
+        style: (['bear', 'tiger', 'wind'] as const)[Math.floor(rng() * 3)],
+        perks: [],
+      };
+      const playerFighter: Fighter = {
+        name: 'Ты',
+        power: state.combat!.power.level,
+        agility: state.combat!.agility.level,
+        speed: state.combat!.speed.level,
+        style: (state.style ?? 'bear') as Fighter['style'],
+        perks: state.stylePerks ?? [],
+      };
+      const odds = winOdds(playerFighter, opponent);
+      const result = runFight(playerFighter, opponent, rng);
+      state.lastFight = {
+        won: result.winner === 'a',
+        opponent: opponent.name,
+        odds,
+        log: result.rounds.map((r) => ({
+          round: r.round,
+          attacker: r.attacker,
+          kind: r.kind,
+          damage: r.damage,
+          hpA: r.hpA,
+          hpB: r.hpB,
+        })),
+      };
+      state.slotsUsed = (state.slotsUsed ?? 0) + 1;
+      state.energy = Math.max(0, (state.energy ?? 0) - 3);
+      state.leagueDoneToday = true;
+      const div = divisionOf(league.division);
+      const won = result.winner === 'a';
+      league.slot += 1;
+      league.points += won ? 3 : 1;
+      league[won ? 'wins' : 'losses'] += 1;
+      let message = won
+        ? t('Лига: победа над {p0}! +3 очка. Приз: {p1}', { p0: opponent.name, p1: fmtMoney(div.win) })
+        : t('Лига: поражение от {p0}. +1 очко', { p0: opponent.name });
+      if (won) {
+        state.money += div.win + stake * 2;
+        state.fame = clamp((state.fame ?? 0) + 3, 0, 100);
+        recordMemory(state, {
+          subject: 'self',
+          kind: 'fight',
+          text: t('Победа в лиге над {p0} ({p1})', { p0: opponent.name, p1: div.label }),
+        });
+      } else {
+        const damageTaken = Math.round((fighterHp(playerFighter) - Math.max(0, result.hpLeft)) * 0.5) + 4;
+        state.health = clamp(state.health - damageTaken, 0, 100);
+        recordMemory(state, {
+          subject: 'self',
+          kind: 'fight',
+          text: t('Поражение в лиге от {p0}', { p0: opponent.name }),
+        });
+      }
+      // итог сезона
+      if (league.slot >= 5) {
+        const outcome = seasonOutcome(league, t);
+        state.money += outcome.bonus;
+        if (outcome.promoted) league.division = league.division === 'bronze' ? 'silver' : 'gold';
+        if (outcome.relegated) league.division = league.division === 'gold' ? 'silver' : 'bronze';
+        if (outcome.title) {
+          league.champion = true;
+          state.fame = clamp((state.fame ?? 0) + 10, 0, 100);
+          recordMemory(state, { subject: 'self', kind: 'fight', text: t('Чемпионский пояс завоёван!') });
+        }
+        message += ' · ' + outcome.text;
+        league.slot = 0;
+        league.points = 0;
+        league.season += 1;
+      }
+      return { message };
+    }
+    case 'it_tourney': {
+      if (state.itTourneyDoneToday) return { error: t('IT-турнир уже был сегодня') };
+      if (!canSpendSlots(state, 2)) return { error: t('Слоты на сегодня кончились — заверши день') };
+      if ((state.energy ?? 0) < 4) return { error: t('Сил нет — сначала поешь или отдохни') };
+      const entry = 2000;
+      if (state.money < entry) return { error: t('Не хватает на взнос: {p0}', { p0: entry }) };
+      const rng = balanceRng(state);
+      const fmt = IT_FORMATS[Math.floor(rng() * IT_FORMATS.length)];
+      const level = state.skills?.[fmt.skill]?.level ?? state.skills?.[state.mainSkillId ?? 'backend']?.level ?? 5;
+      const chance = Math.min(0.85, 0.25 + level * 0.03 + (state.motivation ?? 0) * 0.001);
+      const won = rng() < chance;
+      const prize = itTourneyPrize(level, state.fame ?? 0, won);
+      state.money += prize.money - entry;
+      state.fame = clamp((state.fame ?? 0) + prize.fame, 0, 100);
+      state.itTourneyDoneToday = true;
+      state.slotsUsed = (state.slotsUsed ?? 0) + 2;
+      state.energy = Math.max(0, (state.energy ?? 0) - 4);
+      if (won) {
+        state.reputation = clamp(state.reputation + 2, 0, 100);
+        recordMemory(state, {
+          subject: 'self',
+          kind: 'event',
+          text: t('Победа в IT-турнире: {p0}', { p0: fmt.label }),
+        });
+        return {
+          message: t('{p0}: победа! Приз: {p1} · слава +{p2}', {
+            p0: fmt.label,
+            p1: fmtMoney(prize.money),
+            p2: prize.fame,
+          }),
+        };
+      }
+      recordMemory(state, { subject: 'self', kind: 'event', text: t('IT-турнир {p0}: не вышло', { p0: fmt.label }) });
+      return { message: t('{p0}: поражение. Утешительные: {p1}', { p0: fmt.label, p1: fmtMoney(prize.money) }) };
+    }
+    case 'corp_tourney': {
+      if (state.corpTourneyDoneToday) return { error: t('Корпоративный турнир уже был сегодня') };
+      if (careerLevelIndex(state.grade) < careerLevelIndex('senior'))
+        return { error: t('Корпоративные турниры — с уровня senior') };
+      if (!canSpendSlots(state, 2)) return { error: t('Слоты на сегодня кончились — заверши день') };
+      if ((state.energy ?? 0) < 4) return { error: t('Сил нет — сначала поешь или отдохни') };
+      const rng = balanceRng(state);
+      const skill = (state.leadership ?? 0) + (state.reputation ?? 0) * 0.5;
+      const chance = Math.min(0.85, 0.2 + skill * 0.006);
+      const won = rng() < chance;
+      const prize = corpTourneyPrize(state.reputation ?? 0, state.leadership ?? 0, won);
+      state.money += prize.money;
+      state.fame = clamp((state.fame ?? 0) + prize.fame, 0, 100);
+      state.reputation = clamp(state.reputation + prize.rep, 0, 100);
+      state.corpTourneyDoneToday = true;
+      state.slotsUsed = (state.slotsUsed ?? 0) + 2;
+      state.energy = Math.max(0, (state.energy ?? 0) - 4);
+      if (won) {
+        recordMemory(state, { subject: 'self', kind: 'event', text: t('Победа в корпоративном турнире') });
+        return {
+          message: t('Корпоративный турнир: победа! Приз: {p0} · слава +{p1}', {
+            p0: fmtMoney(prize.money),
+            p1: prize.fame,
+          }),
+        };
+      }
+      recordMemory(state, { subject: 'self', kind: 'event', text: t('Корпоративный турнир: не вышло') });
+      return { message: t('Корпоративный турнир: поражение. Утешительные: {p0}', { p0: fmtMoney(prize.money) }) };
     }
     // ---- Punch IT (DESIGN-PUNCH §3): бои и стили ----
     case 'choose_style': {
